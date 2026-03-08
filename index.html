@@ -171,6 +171,37 @@ body.modo-claro .toggle-track{background:rgba(0,0,0,.15)}
 .toggle-track::before{content:'';position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .toggle-sw input:checked+.toggle-track{background:var(--r)}
 .toggle-sw input:checked+.toggle-track::before{transform:translateX(22px)}
+
+/* ── MODO VISUALIZACIÓN (TABLET/TALLER) ── */
+body.modo-visualizacion #topbar .logo::after{content:' · Solo lectura';font-size:12px;font-weight:600;color:var(--tx2);letter-spacing:0;font-family:var(--font)}
+.kiosk-badge{display:none;background:rgba(255,152,0,.15);border:1px solid rgba(255,152,0,.35);color:#ff9800;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.5px}
+body.modo-visualizacion .kiosk-badge{display:inline-flex;align-items:center;gap:5px}
+/* Ocultar botones de acción en modo visualización */
+body.modo-visualizacion .btn-nuevo,
+body.modo-visualizacion .btn-p[onclick*="nuevo"],
+body.modo-visualizacion .btn-p[onclick*="Nuevo"],
+body.modo-visualizacion .btn-p[onclick*="Nueva"],
+body.modo-visualizacion .btn-p[onclick*="nueva"],
+body.modo-visualizacion [onclick*="abrirNuevo"],
+body.modo-visualizacion [onclick*="abrirNueva"],
+body.modo-visualizacion [onclick*="guardar"],
+body.modo-visualizacion [onclick*="eliminar"],
+body.modo-visualizacion [onclick*="borrar"],
+body.modo-visualizacion [onclick*="doLogout"],
+body.modo-visualizacion .btn-del{display:none!important}
+/* Pantalla kiosk (pantalla de selección de vista) */
+#screenKiosk{background:var(--bg)}
+.kiosk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:8px 0}
+.kiosk-tile{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:.2s;min-height:130px;text-align:center}
+.kiosk-tile:hover,.kiosk-tile:active{border-color:var(--r);background:rgba(var(--theme-rgb),.08);transform:translateY(-2px)}
+.kiosk-tile-ico{font-size:40px;line-height:1}
+.kiosk-tile-label{font-size:15px;font-weight:800;color:var(--tx)}
+.kiosk-tile-sub{font-size:11px;color:var(--tx2);margin-top:-4px}
+.kiosk-header{text-align:center;padding:32px 0 24px}
+.kiosk-header-title{font-size:26px;font-weight:900;color:var(--tx);margin-bottom:6px}
+.kiosk-header-sub{font-size:13px;color:var(--tx2)}
+.kiosk-exit-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:24px;padding:12px 24px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;font-size:13px;font-weight:700;color:var(--tx2);cursor:pointer;width:100%;font-family:var(--font);transition:.15s}
+.kiosk-exit-btn:hover{border-color:var(--r);color:var(--r)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{height:100%;height:100dvh}
 body{height:100%;height:100dvh;overflow:hidden;background:#0d0d0d;font-family:var(--font);color:var(--tx);font-size:15px;display:flex;flex-direction:column}
@@ -216,20 +247,20 @@ body.modo-claro #topbar{background:#ffffff}
 
 /* ── DRAWER ── */
 #drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1150;display:none;backdrop-filter:blur(2px)}
-#drawer{position:fixed;right:-300px;left:auto;top:0;bottom:0;width:285px;background:#111;border-left:1px solid var(--border);border-right:none;z-index:1160;transition:right .28s cubic-bezier(.4,0,.2,1);overflow-y:auto;padding-bottom:20px}
+#drawer{position:fixed;right:-300px;left:auto;top:0;bottom:0;width:285px;background:#242424;border-left:1px solid rgba(255,255,255,.12);border-right:none;z-index:1160;transition:right .28s cubic-bezier(.4,0,.2,1);overflow-y:auto;padding-bottom:20px}
 #drawer.open{right:0}
-.drawer-head{padding:24px 20px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;cursor:pointer}
+.drawer-head{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.12);display:flex;align-items:center;gap:14px;cursor:pointer}
 .drawer-ava{width:52px;height:52px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;font-size:26px;border:3px solid rgba(var(--theme-rgb),.3);flex-shrink:0;overflow:hidden}
 .drawer-ava img{width:100%;height:100%;object-fit:cover}
 .drawer-name{font-size:15px;font-weight:800;color:var(--tx)}
 .drawer-sub{font-size:12px;color:var(--tx2);margin-top:2px}
-.d-section{padding:14px 20px 4px;font-size:10px;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:2px;text-transform:uppercase}
-.d-item{display:flex;align-items:center;gap:12px;padding:11px 20px;font-size:13px;font-weight:700;color:var(--tx2);cursor:pointer;transition:.15s;border-left:3px solid transparent}
+.d-section{padding:14px 20px 4px;font-size:10px;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase}
+.d-item{display:flex;align-items:center;gap:12px;padding:11px 20px;font-size:13px;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer;transition:.15s;border-left:3px solid transparent}
 .d-item:hover,.d-item.active{color:var(--tx);background:rgba(var(--theme-rgb),.06);border-left-color:var(--r)}
 .d-icon{font-size:18px;width:24px;text-align:center}
 #drawerGrupoSec{display:none}
 .d-grupo-label{padding:10px 20px 4px;font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
-.d-sep{height:1px;background:var(--border);margin:10px 20px}
+.d-sep{height:1px;background:rgba(255,255,255,.1);margin:10px 20px}
 
 /* ── AUTH ── */
 .auth-logo{font-family:'Anton',sans-serif;font-size:64px;color:#fff;text-shadow:0 0 40px rgba(229,57,53,.6);margin-bottom:6px;text-align:center}
@@ -706,6 +737,7 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
   <!-- TOPBAR -->
   <div id="topbar">
     <span class="logo" onclick="goScreen('inicio')" style="cursor:pointer" title="Inicio">Joyvi</span>
+    <span class="kiosk-badge">👁️ Visualización</span>
     <button class="tb-btn" onclick="goScreen('notificaciones')" style="position:relative">
       🔔<span class="notif-dot" id="notifDot"></span>
     </button>
@@ -745,6 +777,7 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
       <div class="d-item" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon">⚙️</span>Administración</div>
     </div>
     <div class="d-sep" style="margin-top:auto"></div>
+    <div class="d-item" onclick="activarModoVisualizacion();cerrarDrawer()" style="color:#ff9800"><span class="d-icon">🏭</span>Modo visualización</div>
     <div class="d-item" onclick="doLogout()" style="color:#ff5252;margin-top:8px"><span class="d-icon">🚪</span>Cerrar sesión</div>
   </div>
 
@@ -761,6 +794,45 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 
   <!-- TOAST -->
   <div id="toastWrap"></div>
+
+  <!-- KIOSK SCREEN -->
+  <div class="screen" id="screenKiosk">
+    <div class="scroll-pad">
+      <div class="kiosk-header">
+        <div style="font-size:48px;margin-bottom:10px">🏭</div>
+        <div class="kiosk-header-title">Joyvi — Modo Taller</div>
+        <div class="kiosk-header-sub">Vista de solo lectura · Selecciona una sección</div>
+      </div>
+      <div class="kiosk-grid">
+        <div class="kiosk-tile" onclick="kioskIr('grupo')">
+          <div class="kiosk-tile-ico">👷</div>
+          <div class="kiosk-tile-label">Clientes</div>
+          <div class="kiosk-tile-sub">Fichas y contactos</div>
+        </div>
+        <div class="kiosk-tile" onclick="kioskIr('partes')">
+          <div class="kiosk-tile-ico">🔧</div>
+          <div class="kiosk-tile-label">Partes</div>
+          <div class="kiosk-tile-sub">Órdenes de trabajo</div>
+        </div>
+        <div class="kiosk-tile" onclick="kioskIr('averias')">
+          <div class="kiosk-tile-ico">⚠️</div>
+          <div class="kiosk-tile-label">Averías</div>
+          <div class="kiosk-tile-sub">Pendientes de resolver</div>
+        </div>
+        <div class="kiosk-tile" onclick="kioskIr('mantenimiento')">
+          <div class="kiosk-tile-ico">🔩</div>
+          <div class="kiosk-tile-label">Mantenimientos</div>
+          <div class="kiosk-tile-sub">Programados</div>
+        </div>
+        <div class="kiosk-tile" onclick="kioskIr('calendario')" style="grid-column:1/-1">
+          <div class="kiosk-tile-ico">📅</div>
+          <div class="kiosk-tile-label">Calendario</div>
+          <div class="kiosk-tile-sub">Vista semanal de trabajos</div>
+        </div>
+      </div>
+      <button class="kiosk-exit-btn" onclick="salirModoVisualizacion()">🔓 Salir del modo visualización</button>
+    </div>
+  </div>
 
   <!-- INSTALL BANNER PWA -->
   <div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;padding:12px 16px;background:var(--card);border-top:1px solid rgba(var(--theme-rgb),.3);box-shadow:0 -4px 24px rgba(0,0,0,.6)">
@@ -1258,7 +1330,7 @@ const iniciarFCMForeground=()=>{
 };
 
 // NAVEGACIÓN — History API (botón atrás nativo del navegador/móvil)
-const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',estadisticas:'screenEstadisticas',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',horas:'screenHoras',log:'screenLog'};
+const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',estadisticas:'screenEstadisticas',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',horas:'screenHoras',log:'screenLog',kiosk:'screenKiosk'};
 
 // Flag para evitar bucles al manejar popstate
 let _navFromPop=false;
@@ -5600,6 +5672,17 @@ const renderPerfil=()=>{
         <span class="toggle-track"></span>
       </label>
     </div>
+    <div style="height:1px;background:var(--border);margin:8px 0"></div>
+    <div class="toggle-row" style="align-items:flex-start">
+      <div>
+        <div class="toggle-label">🏭 Modo visualización</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:200px;line-height:1.4">Solo lectura para tablet en el taller. Muestra clientes, partes, averías, mantenimientos y calendario sin poder editar.</div>
+      </div>
+      <label class="toggle-sw" style="margin-top:2px;flex-shrink:0">
+        <input type="checkbox" id="toggleKiosk" onchange="this.checked?activarModoVisualizacion():salirModoVisualizacion()" ${localStorage.getItem('joyvi_kiosk')==='1'?'checked':''}>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
     <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;margin-top:4px">Color de acento</div>
     <div class="tema-selector">
       <div class="tema-btn tema-btn-rojo ${(!document.body.classList.contains('theme-azul')&&!document.body.classList.contains('theme-morado'))?'sel':''}" onclick="cambiarTema('rojo')" title="Rojo (predeterminado)">
@@ -5954,6 +6037,39 @@ const _checkBackupAutomatico=async()=>{
              avsAbiertas,facturacion:partes.reduce((a,p)=>a+calcTotal(p),0)}
     });
   }catch(e){}
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MODO VISUALIZACIÓN (TABLET/TALLER)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const _aplicarModoVisualizacion=()=>{
+  const activo=localStorage.getItem('joyvi_kiosk')==='1';
+  document.body.classList.toggle('modo-visualizacion',activo);
+};
+_aplicarModoVisualizacion();
+
+window.activarModoVisualizacion=()=>{
+  localStorage.setItem('joyvi_kiosk','1');
+  _aplicarModoVisualizacion();
+  toast('🏭 Modo visualización activado','o');
+  // Registrar pantalla kiosk en el mapa de screens
+  if(!screens['kiosk'])screens['kiosk']='screenKiosk';
+  setTimeout(()=>goScreen('kiosk'),300);
+  cerrarDrawer&&cerrarDrawer();
+};
+
+window.salirModoVisualizacion=()=>{
+  localStorage.removeItem('joyvi_kiosk');
+  _aplicarModoVisualizacion();
+  toast('🔓 Modo normal restaurado','o');
+  goScreen('inicio');
+  renderPerfil&&renderPerfil();
+};
+
+window.kioskIr=(dest)=>{
+  if(dest==='partes'){goScreen('grupo');setTimeout(()=>switchGTab&&switchGTab('part'),300);}
+  else if(dest==='grupo'){goScreen('grupo');setTimeout(()=>switchGTab&&switchGTab('cli'),300);}
+  else goScreen(dest);
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
