@@ -32,13 +32,13 @@ messaging.onBackgroundMessage(payload => {
   const d = payload.data || {};
   self.registration.showNotification(n.title || '🔔 Joyvi', {
     body: n.body || 'Nueva notificación',
-    icon: d.icon || '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: d.icon || '/JOYVI-APP/icon-192.png',
+    badge: '/JOYVI-APP/icon-192.png',
     vibrate: [300,100,300,100,300],
     tag: d.tag || 'joyvi-notif-' + Date.now(),
     renotify: true,
     requireInteraction: true,
-    data: { url: d.url || '/' }
+    data: { url: d.url || '/JOYVI-APP/' }
   });
 });
 
@@ -48,20 +48,20 @@ self.addEventListener('push', e => {
   try { d = e.data.json(); } catch { d = { title: '🔔 Joyvi', body: 'Nueva notificación' }; }
   e.waitUntil(self.registration.showNotification(d.title || '🔔 Joyvi', {
     body: d.body || 'Nueva notificación',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/JOYVI-APP/icon-192.png',
+    badge: '/JOYVI-APP/icon-192.png',
     vibrate: [300,100,300,100,300],
     tag: 'joyvi-notif-' + Date.now(),
     renotify: true,
     requireInteraction: true,
-    data: { url: '/' }
+    data: { url: '/JOYVI-APP/' }
   }));
 });
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(clients.matchAll({ type:'window', includeUncontrolled:true }).then(cs => {
-    const url = e.notification.data?.url || '/';
+    const url = e.notification.data?.url || '/JOYVI-APP/';
     const w = cs.find(c => c.url.includes(location.origin));
     if (w) return w.focus();
     return clients.openWindow(url);

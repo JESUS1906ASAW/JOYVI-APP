@@ -7,8 +7,8 @@
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/JOYVI-APP/",
+  "scope": "/JOYVI-APP/",
   "id": "joyvi-electrobombas-app",
   "theme_color": "#e53935",
   "background_color": "#0d0d0d",
@@ -16,7 +16,7 @@
   "prefer_related_applications": false,
   "screenshots": [
     {
-      "src": "/icon-512.png",
+      "src": "/JOYVI-APP/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
@@ -25,25 +25,25 @@
   ],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/JOYVI-APP/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/JOYVI-APP/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-192-maskable.png",
+      "src": "/JOYVI-APP/icon-192-maskable.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-512-maskable.png",
+      "src": "/JOYVI-APP/icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
