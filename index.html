@@ -4032,16 +4032,15 @@ window.guardarParte=async(id)=>{
     else{
       const ref=await addDoc(collection(db,'grupos',CGID,'partes'),{...data,creado:serverTimestamp()});
       parteId=ref.id;
-      // Notificación al grupo: nuevo parte creado
+      // Notificación a TODOS los miembros del grupo (incluido quien lo crea)
       try{
-        const destGrupoParte=[...new Set(CG?.miembros||[])].filter(uid=>uid&&uid!==CU?.uid);
-        if(destGrupoParte.length){
-          const estadoParte = $('pEst')?.value || 'pendiente';
-          const estadoLabel = estadoParte === 'completado' ? ' ✅ completado' : ' (pendiente)';
+        const todosLosUids=[...new Set(CG?.miembros||[])].filter(uid=>!!uid);
+        if(todosLosUids.length){
+          const cliLabel=cliNom?`${cliNom}`:'sin cliente';
           await crearNotificacion(
-            destGrupoParte,
-            `📋 ${tit}`,
-            `${CUD?.nombre||'Un técnico'} ha registrado un parte${cliNom?' para '+cliNom:''}${estadoLabel}. Pulsa para verlo.`,
+            todosLosUids,
+            `📋 Nuevo parte — ${cliLabel}`,
+            `${CUD?.nombre||'Un técnico'} ha creado un parte: "${tit}". Pulsa para verlo.`,
             {tipo:'nuevo_parte',grupoId:CGID,parteId,grupoNombre:CG?.nombre||'',clienteNombre:cliNom}
           );
         }
@@ -5944,17 +5943,7 @@ window._completarMantCalConfirmado=async(id,fecha)=>{
       creado:serverTimestamp()
     });
 
-    // Notificación al admin
-    try{
-      if(CG?.adminUid){
-        await crearNotificacion(
-          [CG.adminUid],
-          '🔧 Mantenimiento completado',
-          `"${m.nombreTrabajo}" completado para ${cliNom} por ${CUD?.nombre||'un técnico'} el ${fecha}.`,
-          {tipo:'mant_completado',grupoId:CGID,clienteId:m.clienteId||'',mantenimientoId:id}
-        );
-      }
-    }catch(e){}
+    // Sin notificación por mantenimiento — solo se notifica el parte cuando se guarda
 
     // — Abrir formulario de nuevo parte pre-rellenado (esperar que el toast desaparezca) —
     setTimeout(()=>abrirParteDesdeMantenimiento(m,cli,fecha),900);
@@ -8403,18 +8392,27 @@ const _vSetMsg = (txt) => {
   if (el) el.innerHTML = txt;
 };
 
-// ── TTS ──
+// ── TTS — para el mic antes de hablar, lo reactiva cuando termina ──
 const _vHablar = (txt, cb) => {
+  // Parar el mic antes de hablar para que STT no capture la propia voz
+  if (V.rec) { try { V.rec.stop(); } catch(e){} V.rec = null; }
+  V._recActivo = false;
   window.speechSynthesis.cancel();
   _vCargarVoz();
   const u = new SpeechSynthesisUtterance(txt);
   u.lang = 'es-ES';
-  u.rate = 1.05;
+  u.rate = 1.08;
   u.pitch = 1;
   if (V._vozVoice) u.voice = V._vozVoice;
   V._hablando = true;
-  u.onend = () => { V._hablando = false; if (cb) cb(); };
-  u.onerror = () => { V._hablando = false; if (cb) cb(); };
+  u.onend = () => {
+    V._hablando = false;
+    if (cb) cb();
+  };
+  u.onerror = () => {
+    V._hablando = false;
+    if (cb) cb();
+  };
   window.speechSynthesis.speak(u);
 };
 
@@ -9843,103 +9841,128 @@ const _vMostrarResultados = (items, tipo, titulo) => {
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MOTOR DE RECONOCIMIENTO DE VOZ — ESCUCHA COMPLETA
+// MOTOR DE RECONOCIMIENTO DE VOZ — ESCUCHA CONTINUA
+// Sin timer de silencio. Solo cierra con palabra de cierre
+// o botón manual. El mic se reactiva solo si el motor STT
+// se para por timeout interno del sistema (~10-15s).
+// El mic NUNCA se abre mientras el asistente está hablando.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+// Abrir micrófono — SOLO llamar cuando TTS ya ha terminado
 const _vAbrirMic = () => {
+  // Guardia: no abrir si el asistente está hablando
+  if (V._hablando) return;
+  // Guardia: no abrir si ya estamos procesando o en candidatos
+  if (V.fase === 'procesando' || V.fase === 'candidatos') return;
+
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { toast('Tu dispositivo no soporta reconocimiento de voz','e'); return; }
-  if (V.rec) { try { V.rec.abort(); } catch(e){} }
 
-  V.rec = new SR();
-  V.rec.lang = 'es-ES';
-  V.rec.continuous = true;
-  V.rec.interimResults = true;
-  V.rec.maxAlternatives = 1;
-  V._transcripcionFinal = '';
+  // Abortar instancia anterior si existe
+  if (V.rec) { try { V.rec.abort(); } catch(e){} V.rec = null; }
+
+  const rec = new SR();
+  rec.lang = 'es-ES';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.maxAlternatives = 1;
+  V.rec = rec;
+  // NUNCA resetear _transcripcionFinal aquí
+  // Se resetea solo en abrirAsistenteVoz() y vozCancelar()
   V._transcripcionParcial = '';
 
-  V.rec.onstart = () => {
+  rec.onstart = () => {
     V._recActivo = true;
     V.fase = 'escuchando';
     _vActualizarUI();
-    // Solo mostrar "escuchando" si es la primera vez
-    if (!V._transcripcionFinal) {
-      _vSetMsg('Escuchando… habla todo lo que quieras. Di <em>"listo"</em> o <em>"ya está"</em> cuando termines.');
+    const heardEl = document.getElementById('vozHeard');
+    if (heardEl && !V._transcripcionFinal) {
+      _vSetMsg('🎙️ Escuchando… habla todo lo que quieras.<br><span style="font-size:11px;opacity:.65">Di <em>"listo"</em> o <em>"ya está"</em> cuando termines</span>');
     }
   };
 
-  V.rec.onresult = (ev) => {
+  rec.onresult = (ev) => {
+    // Ignorar si el asistente está hablando ahora mismo
+    if (V._hablando) return;
+
     let interim = '';
     let finalNuevo = '';
     for (let i = ev.resultIndex; i < ev.results.length; i++) {
-      const res = ev.results[i];
-      if (res.isFinal) {
-        finalNuevo += res[0].transcript + ' ';
-      } else {
-        interim = res[0].transcript;
-      }
+      const r = ev.results[i];
+      if (r.isFinal) finalNuevo += r[0].transcript + ' ';
+      else interim = r[0].transcript;
     }
 
-    // Anti-duplicados: solo añadir si el texto nuevo no está ya incluido
-    if (finalNuevo) {
-      const nuevoNorm = finalNuevo.trim().toLowerCase();
-      const actualNorm = V._transcripcionFinal.trim().toLowerCase();
-      // Evitar añadir si ya termina en ese fragmento (duplicado por reinicio de rec)
-      if (!actualNorm.endsWith(nuevoNorm) && !actualNorm.includes(nuevoNorm)) {
+    // Añadir texto final nuevo — anti-duplicados entre reinicios
+    if (finalNuevo.trim()) {
+      const nn = finalNuevo.trim().toLowerCase();
+      const an = V._transcripcionFinal.trim().toLowerCase();
+      if (!an.endsWith(nn) && !an.includes(nn)) {
         V._transcripcionFinal += finalNuevo;
-      } else if (!actualNorm) {
+      } else if (!an) {
         V._transcripcionFinal += finalNuevo;
       }
     }
     V._transcripcionParcial = interim;
 
-    // Mostrar transcripción en tiempo real
+    // Mostrar en tiempo real
     const heardEl = document.getElementById('vozHeard');
     if (heardEl) {
-      heardEl.innerHTML = `🗣️ <b>${V._transcripcionFinal}${interim ? '<em style="opacity:.6">'+interim+'</em>' : ''}</b>`;
+      heardEl.innerHTML = V._transcripcionFinal
+        ? '🗣️ <b>' + V._transcripcionFinal + (interim ? '<em style="opacity:.5">' + interim + '</em>' : '') + '</b>'
+        : (interim ? '<em style="opacity:.5">🎙️ ' + interim + '</em>' : '');
     }
 
-    // Detectar palabras de finalización explícita — más completas
-    const todoTexto = (V._transcripcionFinal + interim).toLowerCase();
-    if (/\b(listo|ya\s+est[aá]|fin\b|eso\s+es\s+todo|termina[r]?|termino|ya\s+termin[eé]|he\s+terminado|con\s+eso\s+es\s+suficiente|comprendo|eso\s+es\s+todo|completa[r]?|completado|guarda[r]?|guardar|ya\s+vale|con\s+eso\s+basta|eso\s+ser[ií]a\s+todo|nada\s+m[aá]s)\s*\.?\s*$/.test(todoTexto.trim())) {
-      // Quitar la palabra de cierre del texto final antes de procesar
-      V._transcripcionFinal = V._transcripcionFinal.replace(/\b(listo|ya\s+est[aá]|eso\s+es\s+todo|termina[r]?|termino|ya\s+termin[eé]|he\s+terminado|con\s+eso\s+es\s+suficiente|comprendo|eso\s+es\s+todo|completa[r]?|completado|guarda[r]?|guardar|ya\s+vale|con\s+eso\s+basta|eso\s+ser[ií]a\s+todo|nada\s+m[aá]s)\s*\.?\s*$/gi, '').trim();
-      setTimeout(_vProcesarFinal, 300);
-      return;
+    // Detectar palabras de cierre — SOLO al final de la frase
+    const todo = (V._transcripcionFinal + interim).trim().toLowerCase();
+    const CIERRE = /\b(listo|ya\s+est[aá]|fin\b|eso\s+es\s+todo|ya\s+termin[eé]|he\s+terminado|ya\s+est[aá]\s+listo|con\s+eso\s+basta|eso\s+ser[ií]a\s+todo|nada\s+m[aá]s|ya\s+vale|termino|ya\s+acab[eé])\s*\.?\s*$/;
+    if (CIERRE.test(todo)) {
+      // Quitar la palabra de cierre antes de procesar
+      V._transcripcionFinal = V._transcripcionFinal
+        .replace(/\b(listo|ya\s+est[aá]|fin\b|eso\s+es\s+todo|ya\s+termin[eé]|he\s+terminado|ya\s+est[aá]\s+listo|con\s+eso\s+basta|eso\s+ser[ií]a\s+todo|nada\s+m[aá]s|ya\s+vale|termino|ya\s+acab[eé])\s*\.?\s*$/gi, '')
+        .trim();
+      clearTimeout(V._silenceTimer);
+      setTimeout(_vProcesarFinal, 200);
     }
-
-    // SIN timer de silencio: el diálogo SOLO se cierra con palabra de cierre o botón manual
-    // El técnico puede hacer pausas largas sin que se corte el dictado
   };
 
-  V.rec.onerror = (ev) => {
+  rec.onerror = (ev) => {
     V._recActivo = false;
     if (ev.error === 'no-speech') {
-      // Sin actividad de voz — reiniciar mic (el técnico puede estar pensando)
-      if (V.fase === 'escuchando') {
-        setTimeout(() => { if (V.fase === 'escuchando') _vAbrirMic(); }, 200);
+      // El motor se paró porque no oyó nada — reiniciar solo si seguimos en fase escuchando
+      if (V.fase === 'escuchando' && !V._hablando) {
+        V.rec = null;
+        setTimeout(() => { if (V.fase === 'escuchando' && !V._hablando) _vAbrirMic(); }, 300);
       }
-    } else if (ev.error !== 'aborted') {
-      V.fase = 'idle';
-      _vActualizarUI();
-      _vSetMsg('Error de micrófono. Vuelve a pulsar para hablar.');
+    } else if (ev.error === 'aborted') {
+      // Aborto intencionado — no hacer nada
+    } else {
+      // Error real
+      if (V.fase === 'escuchando') {
+        V.fase = 'idle';
+        _vActualizarUI();
+        _vSetMsg('Error de micrófono. Pulsa el botón para volver a hablar.');
+      }
     }
   };
 
-  V.rec.onend = () => {
+  rec.onend = () => {
     V._recActivo = false;
-    if (V.fase === 'escuchando') {
-      // Motor STT detenido por timeout interno del sistema (~10-15s)
-      // SIEMPRE reiniciar — el técnico no ha dicho palabra de cierre
-      V.rec = null;
+    V.rec = null;
+    // Reiniciar SOLO si seguimos escuchando y el asistente no está hablando
+    if (V.fase === 'escuchando' && !V._hablando) {
       setTimeout(() => {
-        if (V.fase === 'escuchando') _vAbrirMic();
-      }, 250);
+        if (V.fase === 'escuchando' && !V._hablando) _vAbrirMic();
+      }, 300);
     }
   };
 
-  try { V.rec.start(); } catch(e) { toast('Error al abrir el micrófono','e'); }
+  try {
+    rec.start();
+  } catch(e) {
+    V.rec = null;
+    toast('Error al abrir el micrófono','e');
+  }
 };
 
 const _vProcesarFinal = async () => {
@@ -9953,19 +9976,23 @@ const _vProcesarFinal = async () => {
   _vActualizarUI();
   _vSetMsg(`<div class="voz-think"><div class="voz-dot"></div><div class="voz-dot"></div><div class="voz-dot"></div></div>`);
 
-  // ── Es consulta o acción de sistema ──
-  if (_vEsConsulta(texto) || _vEsLlamada(texto) || _vEsNavegacion(texto) || _vEsFuturoImposible(texto)) {
+  // ── Cancelar ──
+  if (/^(cancelar|salir|cerrar|no\s+nada|olvida|adios|hasta\s+luego)\s*$/i.test(texto.trim())) {
+    cerrarAsistenteVoz();
+    return;
+  }
+
+  // ── Prioridad: intención de CREACIÓN detectada → siempre crear documento ──
+  // Si la frase contiene una intención explícita de crear, no va a consulta
+  const _tieneIntencionCrear = /\b(crea[r]?|crear?|nuevo?|nueva?|abrir?|registra[r]?|apunta[r]?|añade?[r]?|hace[r]?|quiero\s+crear?|quiero\s+hace[r]?|genera[r]?|dar\s+de\s+alta|parte\s+para|aver[ií]a\s+(?:en|para|de)|mantenimiento\s+(?:para|de)|presupuesto\s+(?:para|de)|cliente\s+nuevo|nuevo\s+cliente)\b/i.test(texto);
+
+  // ── Es consulta o acción de sistema (solo si NO es intención de crear) ──
+  if (!_tieneIntencionCrear && (_vEsConsulta(texto) || _vEsLlamada(texto) || _vEsNavegacion(texto) || _vEsFuturoImposible(texto))) {
     V.fase = 'consulta';
     _vActualizarUI();
     await _vProcessarConsulta(texto);
     V.fase = 'idle';
     _vActualizarUI();
-    return;
-  }
-
-  // ── Cancelar ──
-  if (/^(cancelar|salir|cerrar|no\s+nada|olvida|adios|hasta\s+luego)\s*$/i.test(texto.trim())) {
-    cerrarAsistenteVoz();
     return;
   }
 
@@ -9998,44 +10025,61 @@ const _vProcesarFinal = async () => {
     console.error('Error extrayendo datos:', e);
     V.fase = 'idle';
     _vActualizarUI();
-    _vSetMsg('No pude procesar lo que dijiste. Intenta de nuevo.');
-    toast('Error al procesar la frase','e');
+    _vSetMsg('<span style="color:var(--r)">No pude procesar eso. Intenta de nuevo con <em>"parte para [cliente], [descripción]"</em></span>');
+    // Ofrecer reintentar — abrir mic de nuevo para que pueda repetir
+    setTimeout(() => {
+      if (V.fase === 'idle') {
+        V._transcripcionFinal = '';
+        V._transcripcionParcial = '';
+        const h = document.getElementById('vozHeard');
+        if (h) h.innerHTML = '';
+        _vAbrirMic();
+      }
+    }, 2500);
   }
 };
 
 // ── Botón manual del micrófono ──
 window.vozEscuchar = () => {
   if (V.fase === 'escuchando') {
-    // Parar y procesar
+    // El técnico pulsa el botón para terminar — equivale a decir "listo"
     clearTimeout(V._silenceTimer);
-    if (V.rec) { try { V.rec.stop(); } catch(e){} }
-    if (V._transcripcionFinal.trim().length > 2) {
+    if (V.rec) { try { V.rec.stop(); } catch(e){} V.rec = null; }
+    if (V._transcripcionFinal.trim().length > 1) {
       _vProcesarFinal();
     } else {
       V.fase = 'idle';
       _vActualizarUI();
-      _vSetMsg('Di algo como <em>"parte para García, bomba sin caudal, dos horas"</em> o <em>"averías pendientes"</em>');
+      _vSetMsg('No escuché nada. Pulsa el micrófono y habla.');
     }
     return;
   }
   if (V.fase === 'procesando' || V.fase === 'candidatos') return;
+  // Nueva sesión de dictado — resetear transcripción
+  V._transcripcionFinal = '';
+  V._transcripcionParcial = '';
+  const heardEl = document.getElementById('vozHeard');
+  if (heardEl) heardEl.innerHTML = '';
   _vAbrirMic();
 };
 
 window.vozCancelar = () => {
+  window.speechSynthesis.cancel();
+  V._hablando = false;
   clearTimeout(V._silenceTimer);
-  if (V.rec) { try { V.rec.abort(); } catch(e){} }
+  if (V.rec) { try { V.rec.abort(); } catch(e){} V.rec = null; }
   const extra = document.getElementById('vozCandidatos');
   if (extra) extra.remove();
   const extra2 = document.getElementById('vozResultados');
   if (extra2) extra2.remove();
   V.fase = 'idle';
-  V._transcripcionFinal = '';
+  V._transcripcionFinal = '';   // reset al cancelar
   V._transcripcionParcial = '';
   V._pendienteAccion = null;
   _vActualizarUI();
-  _vSetMsg('Di algo como <em>"parte para García, bomba sin caudal, dos horas"</em> o <em>"averías pendientes"</em>');
-  document.getElementById('vozHeard').innerHTML = '';
+  _vSetMsg('Di algo como <em>"parte para García, bomba sin caudal"</em> o <em>"mantenimiento para Casa del Pago"</em>');
+  const heardEl = document.getElementById('vozHeard');
+  if (heardEl) heardEl.innerHTML = '';
 };
 
 window.vozSaltar = () => {}; // ya no se usa, se mantiene por compatibilidad HTML
@@ -10193,50 +10237,57 @@ window.abrirAsistenteVoz = () => {
   if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
     if (typeof toast==='function') toast('Tu dispositivo no soporta reconocimiento de voz','e'); return;
   }
-  // Reset estado
+
+  // ── Reset completo de estado ──
+  window.speechSynthesis.cancel();
+  V._hablando = false;
   V.fase = 'idle';
-  V._transcripcionFinal = '';
+  V._transcripcionFinal = '';   // reset AQUÍ (no en _vAbrirMic)
   V._transcripcionParcial = '';
   V._pendienteAccion = null;
   V._candidatosCliente = [];
-  if (V.rec) { try { V.rec.abort(); } catch(e){} V.rec = null; }
   clearTimeout(V._silenceTimer);
+  if (V.rec) { try { V.rec.abort(); } catch(e){} V.rec = null; }
 
-  // Limpiar paneles anteriores
+  // Limpiar paneles y DOM
   const c1 = document.getElementById('vozCandidatos'); if (c1) c1.remove();
   const c2 = document.getElementById('vozResultados'); if (c2) c2.remove();
 
-  // Cargar diccionario del grupo en background
   _vCargarDictGrupo();
-
   _vCargarVozGuardada();
   _vCargarVoz();
 
   document.getElementById('vozOverlay').classList.add('open');
   document.getElementById('vozSheet').classList.add('open');
-  document.getElementById('vozHeard').innerHTML = '';
+  const heardEl = document.getElementById('vozHeard');
+  if (heardEl) heardEl.innerHTML = '';
   document.getElementById('vozProg').style.display = 'none';
   document.getElementById('vozBtnSkip').style.display = 'none';
   document.getElementById('vozBtnCancel').style.display = 'inline-flex';
 
   const nombre = (typeof CUD !== 'undefined' && CUD?.nombre) ? CUD.nombre.split(/\s+/)[0] : '';
   const saludos = nombre ? [
-    `${nombre}, habla con calma. Tengo 5 segundos de pausa. Di todo de una vez.`,
-    `¿Qué creamos hoy, ${nombre}? Parte, avería, mantenimiento o presupuesto.`,
-    `Dime, ${nombre}. Una sola frase completa y lo proceso todo.`,
-    `Listo ${nombre}. Habla sin prisa — te escucho hasta que termines.`,
+    `¿Qué creamos, ${nombre}? Dime el tipo de documento y el cliente.`,
+    `Listo ${nombre}. Dime qué documento crear y para qué cliente.`,
+    `Adelante, ${nombre}. Parte, avería, mantenimiento o presupuesto.`,
   ] : [
-    'Habla con calma. Tengo 5 segundos de pausa para que pienses.',
-    'Di lo que necesitas en una frase completa.',
-    '¿Qué creamos? Parte, avería, mantenimiento, presupuesto o cliente.',
-    'Adelante, una frase completa y abro el formulario.',
+    '¿Qué documento creamos? Dime el tipo y el cliente.',
+    'Adelante. Dime qué crear y para qué cliente.',
+    '¿Qué creamos? Parte, avería, mantenimiento, presupuesto o cliente nuevo.',
   ];
   const saludo = saludos[Math.floor(Math.random()*saludos.length)];
-  _vSetMsg(`${saludo}<br><span style="font-size:11px;opacity:.6;font-weight:600">Ej: "mantenimiento para Casa del Pago, revisión de descalcificador, tipo semanal"</span>`);
+
+  _vSetMsg('<span style="font-size:13px;font-weight:700">' + saludo + '</span><br><span style="font-size:11px;opacity:.6;font-weight:600">Habla todo lo que quieras. Di <em>"listo"</em> cuando termines.</span>');
   _vActualizarUI();
 
-  // Arrancar micrófono automáticamente
-  setTimeout(() => _vHablar(saludo, () => setTimeout(_vAbrirMic, 300)), 200);
+  // ── El mic se abre SOLO DESPUÉS de que el asistente termina de hablar ──
+  // Esto evita que STT capture la voz del propio asistente
+  _vHablar(saludo, () => {
+    // Pausa extra tras el eco del altavoz antes de abrir el mic
+    setTimeout(() => {
+      if (V.fase !== 'escuchando') _vAbrirMic();
+    }, 500);
+  });
 };
 
 window.cerrarAsistenteVoz = () => {
