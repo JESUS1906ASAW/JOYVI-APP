@@ -3183,12 +3183,22 @@ window.guardarMantInline=async()=>{
 
 // Completar/desmarcar desde el tab inline de calendario
 window.completarMantCal3=async(id,fecha,btn)=>{
-  // Reutiliza la misma lógica que completarMantCal pero recarga el tab
   const m=allMantenimientos.find(x=>x.id===id);if(!m)return;
   const cli=allClientes.find(c=>c.id===m.clienteId);
   const cliNom=cli?.nombre||m.clienteNombre||'el cliente';
-  const ok=confirm(`¿Marcar "${m.nombreTrabajo}" como completado?\n\nQuedará registrado en la ficha de ${cliNom}.\nA continuación se abrirá el formulario de nuevo parte.\n\nPulsa Aceptar para confirmar.`);
-  if(!ok)return;
+  // Usar SB en lugar de confirm() nativo
+  abrirSB(`✅ ${m.nombreTrabajo}`,`
+    <div style="background:linear-gradient(135deg,rgba(76,175,80,.15),rgba(76,175,80,.05));border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid rgba(76,175,80,.2)">
+      <div style="font-size:13px;font-weight:800;color:#4caf50;margin-bottom:4px">¿Marcar como completado?</div>
+      <div style="font-size:13px;color:var(--tx2)">Se registrará en la ficha de <strong>${cliNom}</strong> y se abrirá el formulario de parte con los datos rellenados.</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" onclick="cerrarSBTotal();_completarMantCalConfirmado('${id}','${fecha}')">✅ Confirmar</button>
+      <button class="btn btn-s" style="flex:1" onclick="cerrarSBTotal()">Cancelar</button>
+    </div>
+  `);
+  return;
+  const _neverReach=true;
   const taskEl=document.getElementById('caltask3_'+id+'_'+fecha);
   if(taskEl){taskEl.classList.add('done');const brow=taskEl.querySelector('.btn-row-cal');if(brow)brow.innerHTML=`<button class="btn btn-s btn-sm" style="color:var(--tx2)" disabled>↩️ Desmarcando…</button>`;}
   try{
@@ -3204,8 +3214,7 @@ window.completarMantCal3=async(id,fecha,btn)=>{
       if(m.frecuencia&&freqDays2[m.frecuencia]){const sig=new Date(fecha+'T00:00:00');sig.setDate(sig.getDate()+freqDays2[m.frecuencia]);allMantenimientos[idx]={...m,ultimoCompletado:fecha,fechaProxima:sig.toISOString().split('T')[0]};}
       else{allMantenimientos[idx]={...m,estado:'completado',ultimoCompletado:fecha};}
     }
-    toast('✅ Completado — creando parte…','o');
-    setTimeout(()=>abrirParteDesdeMantenimiento(m,cli,fecha),600);
+    // El formulario de parte lo abre _completarMantCalConfirmado
   }catch(e){toast('Error al guardar','e');}
 };
 window.desmarcarMantCal3=async(id,fecha,btn)=>{
@@ -4027,11 +4036,13 @@ window.guardarParte=async(id)=>{
       try{
         const destGrupoParte=[...new Set(CG?.miembros||[])].filter(uid=>uid&&uid!==CU?.uid);
         if(destGrupoParte.length){
+          const estadoParte = $('pEst')?.value || 'pendiente';
+          const estadoLabel = estadoParte === 'completado' ? ' ✅ completado' : ' (pendiente)';
           await crearNotificacion(
             destGrupoParte,
-            `📋 Nuevo parte: ${tit}`,
-            `${CUD?.nombre||'Un técnico'} ha creado un parte${cliNom?' para '+cliNom:''}.`,
-            {tipo:'nuevo_parte',grupoId:CGID,parteId,grupoNombre:CG?.nombre||''}
+            `📋 ${tit}`,
+            `${CUD?.nombre||'Un técnico'} ha registrado un parte${cliNom?' para '+cliNom:''}${estadoLabel}. Pulsa para verlo.`,
+            {tipo:'nuevo_parte',grupoId:CGID,parteId,grupoNombre:CG?.nombre||'',clienteNombre:cliNom}
           );
         }
       }catch(e){}
@@ -5846,14 +5857,26 @@ window.completarMantCal=async(id,fecha,btn)=>{
   const cli=allClientes.find(c=>c.id===m.clienteId);
   const cliNom=cli?.nombre||m.clienteNombre||'el cliente';
 
-  // — Confirmación explicando que va a la ficha del cliente y se creará un parte —
-  const ok=confirm(
-    `¿Marcar "${m.nombreTrabajo}" como completado?\n\n`+
-    `Quedará registrado en la ficha de ${cliNom}.\n`+
-    `A continuación se abrirá el formulario de nuevo parte con los datos ya rellenados para que puedas completarlo y guardarlo.\n\n`+
-    `Pulsa Aceptar para confirmar.`
-  );
-  if(!ok)return;
+  // Sin confirm() nativo — abrimos directamente el SB de confirmación
+  // para no bloquear el event loop y garantizar que el formulario de parte se abre
+  abrirSB(`✅ ${m.nombreTrabajo}`, `
+    <div style="background:linear-gradient(135deg,rgba(76,175,80,.15),rgba(76,175,80,.05));border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid rgba(76,175,80,.2)">
+      <div style="font-size:13px;font-weight:800;color:#4caf50;margin-bottom:4px">¿Marcar como completado?</div>
+      <div style="font-size:13px;color:var(--tx2)">Se registrará en la ficha de <strong>${cliNom}</strong> y se abrirá el formulario de parte con los datos ya rellenados.</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" onclick="cerrarSBTotal();_completarMantCalConfirmado('${id}','${fecha}')">✅ Confirmar</button>
+      <button class="btn btn-s" style="flex:1" onclick="cerrarSBTotal()">Cancelar</button>
+    </div>
+  `);
+  return; // El resto lo maneja _completarMantCalConfirmado
+};
+
+// — Confirmar completar mantenimiento (llamado desde el SB de confirmación) —
+window._completarMantCalConfirmado=async(id,fecha)=>{
+  const m=allMantenimientos.find(x=>x.id===id);if(!m)return;
+  const cli=allClientes.find(c=>c.id===m.clienteId);
+  const cliNom=cli?.nombre||m.clienteNombre||'el cliente';
 
   // — Feedback visual inmediato: marcar como done en el DOM —
   const taskEl=document.getElementById('caltask_'+id+'_'+fecha);
@@ -5933,14 +5956,14 @@ window.completarMantCal=async(id,fecha,btn)=>{
       }
     }catch(e){}
 
-    // — Abrir formulario de nuevo parte pre-rellenado —
-    setTimeout(()=>abrirParteDesdeMantenimiento(m,cli,fecha),600);
+    // — Abrir formulario de nuevo parte pre-rellenado (esperar que el toast desaparezca) —
+    setTimeout(()=>abrirParteDesdeMantenimiento(m,cli,fecha),900);
 
   }catch(e){toast('Error al guardar','e');console.error(e);}
 };
 
 // — Abrir formulario de nuevo parte pre-rellenado desde un mantenimiento completado —
-const abrirParteDesdeMantenimiento=(m,cli,fechaCompletado)=>{
+window.abrirParteDesdeMantenimiento=(m,cli,fechaCompletado)=>{
   const cliId=m.clienteId||'';
   const cliNom=cli?.nombre||m.clienteNombre||'';
   const edificio=m.clienteEdificio||cli?.edificio||'';
@@ -7604,9 +7627,9 @@ window._notifVerParte=async(parteId, grupoId)=>{
       await new Promise(r=>setTimeout(r,600));
     }
     const p=allPartes.find(x=>x.id===parteId);
-    if(p){ goScreen('grupo'); setTimeout(()=>verParte(parteId),200); return; }
+    if(p){ goScreen('grupo'); setTimeout(()=>{switchGTab&&switchGTab('part');setTimeout(()=>verParte(parteId),100);},200); return; }
     const snap2=await getDoc(doc(db,'grupos',grupoId||CGID,'partes',parteId));
-    if(snap2.exists()){ goScreen('grupo'); setTimeout(()=>verParte(parteId),200); }
+    if(snap2.exists()){ goScreen('grupo'); setTimeout(()=>{switchGTab&&switchGTab('part');setTimeout(()=>verParte(parteId),100);},200); }
     else { toast('Parte no encontrado','e'); }
   }catch(e){ toast('No se pudo abrir el parte','e'); }
 };
@@ -8769,13 +8792,30 @@ const _vParseImportes = (txt) => {
 
 const _vDetectarTipo = (txt) => {
   const t = _vNorm(txt||'');
-  if (/\b(averia|averiada?|averiado?|estropead[ao]|fallo|urgente|emergencia|problema|rotura|fuga|no\s+funciona|sin\s+agua)\b/.test(t)
+
+  // ── Patrón explícito de intención primero ──
+  // "quiero crear una avería / parte / mantenimiento / presupuesto / cliente para X"
+  // "crear avería en X", "nueva avería para X", "apunta una avería", etc.
+  const mIntencion = t.match(/(?:quiero\s+crear|crear|nueva?|nuevo?|abrir|registrar|apunta[r]?|a[ñn]ade?[r]?|hace[r]?|generar?)\s+(?:una?\s+)?(\w+)/);
+  if (mIntencion) {
+    const doc = mIntencion[1];
+    if (/^aver[ií]a/.test(doc)) return 'averia';
+    if (/^parte/.test(doc)) return 'parte';
+    if (/^mant/.test(doc)) return 'mantenimiento';
+    if (/^presupu/.test(doc)) return 'presupuesto';
+    if (/^cliente/.test(doc)) return 'cliente';
+  }
+
+  // ── Detección por contenido ──
+  if (/\b(averia|averiada?|averiado?|estropead[ao]|fallo\s+en|urgente|emergencia|problema\s+en|rotura|fuga|no\s+funciona|sin\s+agua|no\s+arranca)\b/.test(t)
     && !/\b(parte|presupuesto|mantenimiento)\b/.test(t))
     return 'averia';
   if (/\b(presupuesto|cotizacion|precio\s+para|cuanto\s+costaria|precio\s+aproximado)\b/.test(t))
     return 'presupuesto';
-  if (/\b(mantenimiento|revision\s+periodica|revision\s+anual|revision\s+mensual|inspeccion\s+periodica|cada\s+\w+\s+mes|semestral|trimestral|mensual|anual|revision\s+de\s+instalacion)\b/.test(t))
+  if (/\b(mantenimiento|revision\s+periodica|revision\s+anual|revision\s+mensual|inspeccion\s+periodica|cada\s+\w+\s+mes|semestral|trimestral|mensual|anual|semanal|quincenal|revision\s+de\s+instalacion)\b/.test(t))
     return 'mantenimiento';
+  if (/\b(cliente\s+nuevo|nuevo\s+cliente|dar\s+de\s+alta|alta\s+de\s+cliente|registrar\s+cliente|a[ñn]adir\s+cliente)\b/.test(t))
+    return 'cliente';
   if (/\b(parte|trabajo\s+realizado?|visita\s+realizada?)\b/.test(t))
     return 'parte';
   // Inferencia por contenido: importe + duración → parte
@@ -8917,7 +8957,45 @@ const _vExtraerTodo = async (txt) => {
     }
   }
 
-  // ── Extraer duración ──
+  // ── Extraer frecuencia de mantenimiento ──
+  let frecuencia = '';
+  if (tipo === 'mantenimiento') {
+    const tNormFrec = _vNorm(t);
+    if (/\b(diario|cada\s+dia|todos\s+los\s+dias)\b/.test(tNormFrec)) frecuencia = 'Diario';
+    else if (/\b(semanal|cada\s+semana|todas\s+las\s+semanas|una\s+vez\s+a\s+la\s+semana)\b/.test(tNormFrec)) frecuencia = 'Semanal';
+    else if (/\b(quincenal|cada\s+quince\s+dias|cada\s+dos\s+semanas)\b/.test(tNormFrec)) frecuencia = 'Quincenal';
+    else if (/\b(mensual|cada\s+mes|todos\s+los\s+meses|una\s+vez\s+al\s+mes)\b/.test(tNormFrec)) frecuencia = 'Mensual';
+    else if (/\b(bimestral|cada\s+dos\s+meses)\b/.test(tNormFrec)) frecuencia = 'Bimestral';
+    else if (/\b(trimestral|cada\s+tres\s+meses|cada\s+trimestre)\b/.test(tNormFrec)) frecuencia = 'Trimestral';
+    else if (/\b(semestral|cada\s+seis\s+meses|dos\s+veces\s+al\s+a[ñn]o)\b/.test(tNormFrec)) frecuencia = 'Semestral';
+    else if (/\b(anual|cada\s+a[ñn]o|todos\s+los\s+a[ñn]os|una\s+vez\s+al\s+a[ñn]o)\b/.test(tNormFrec)) frecuencia = 'Anual';
+  }
+
+  // ── Extraer tareas del mantenimiento ──
+  let tareasMantenimiento = '';
+  if (tipo === 'mantenimiento') {
+    const tareasPatterns = [
+      /(?:a[ñn]ade?|a[ñn]adir|incluye?|incluir|con|y)\s+(revisi[oó]n\s+de\s+[\w\s]+)/gi,
+      /(?:revision|revisión|cambio|limpieza|inspeccion|inspección|comprobacion|comprobación|ajuste|sustitución|sustitucion)\s+(?:de\s+)?[\w\s,y]+/gi,
+    ];
+    const tareasEncontradas = [];
+    for (const pat of tareasPatterns) {
+      const matches = t.matchAll ? [...t.matchAll(pat)] : [];
+      for (const m of matches) tareasEncontradas.push(m[0].trim());
+    }
+    if (tareasEncontradas.length) {
+      tareasMantenimiento = tareasEncontradas.map(ta => _vReformular(ta)).join('. ');
+    }
+  }
+
+  // ── Detectar si el cliente no existe y hay nombre nuevo explícito ──
+  let nombreClienteNuevo = '';
+  if (!clienteEncontrado && candidatos.length === 0) {
+    // Buscar patrón "para [nombre]" o "cliente [nombre]" o "de [nombre]"
+    const mNuevoCli = t.match(/(?:para|cliente|de)\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){0,3})/);
+    if (mNuevoCli) nombreClienteNuevo = mNuevoCli[1].trim();
+  }
+
   const duracion = _vParseDuracion(t) || '';
 
   // ── Extraer importes ──
@@ -8983,6 +9061,20 @@ const _vExtraerTodo = async (txt) => {
     }
   }
 
+  // ── Auto-enriquecer datos del cliente encontrado ──
+  // Vuelca teléfono, edificio y dirección automáticamente del cliente
+  // El técnico no necesita dictarlos — se sacan de la ficha
+  if (clienteEncontrado) {
+    clienteEncontrado = {
+      ...clienteEncontrado,
+      // Asegurar que los campos están disponibles en el objeto cliente
+      telefono: clienteEncontrado.telefono || '',
+      edificio: clienteEncontrado.edificio || '',
+      direccion: clienteEncontrado.direccion || '',
+      email: clienteEncontrado.email || '',
+    };
+  }
+
   return {
     tipo,
     cliente: clienteEncontrado,
@@ -8994,6 +9086,9 @@ const _vExtraerTodo = async (txt) => {
     fecha,
     urgente,
     estado,
+    frecuencia,
+    tareasMantenimiento,
+    nombreClienteNuevo,
     importeManoObra: importes.gratuito ? 0 : (importes.manoObra || 0),
     importeMateriales: importes.gratuito ? 0 : (importes.materiales || 0),
     importeDesplazamiento: importes.gratuito ? 0 : (importes.desplazamiento || 0),
@@ -9002,30 +9097,115 @@ const _vExtraerTodo = async (txt) => {
   };
 };
 
+// ─────────────────────────────────────────────────────
+// EXTRACTOR POR TIPO — limpia y adapta los datos según
+// qué documento se va a crear. Solo extrae campos relevantes.
+// ─────────────────────────────────────────────────────
+const _vAdaptarPorTipo = (datos) => {
+  const d = {...datos};
+
+  switch (d.tipo) {
+
+    case 'averia': {
+      // Avería: tipo de avería como título, descripción del problema, urgencia
+      if (!d.titulo || d.titulo.startsWith('Avería —') || d.titulo === 'Avería') {
+        const mTipo = (datos.descripcion||'').match(/^(.{5,60}?)[.,]/);
+        if (mTipo) d.titulo = mTipo[1].trim();
+        else if (d.cliente) d.titulo = 'Avería — ' + d.cliente.nombre;
+      }
+      d.importeManoObra = 0; d.importeMateriales = 0; d.importeDesplazamiento = 0;
+      d.frecuencia = ''; d.tareasMantenimiento = '';
+      break;
+    }
+
+    case 'mantenimiento': {
+      // Mantenimiento: nombre trabajo, frecuencia, fecha, tareas/notas
+      if (!d.titulo || d.titulo.startsWith('Mantenimiento —') || d.titulo === 'Mantenimiento') {
+        const mTrabajo = (datos.descripcion||'').match(/^(.{5,60}?)[.,]/);
+        if (mTrabajo) d.titulo = mTrabajo[1].trim();
+        else if (d.tareasMantenimiento) d.titulo = d.tareasMantenimiento.split('.')[0].trim().slice(0,60);
+        else if (d.cliente) d.titulo = 'Mantenimiento — ' + d.cliente.nombre;
+      }
+      if (!d.tareasMantenimiento && d.descripcion) d.tareasMantenimiento = d.descripcion;
+      d.importeManoObra = 0; d.importeMateriales = 0; d.importeDesplazamiento = 0;
+      break;
+    }
+
+    case 'presupuesto': {
+      // Presupuesto: título, descripción trabajos, importes
+      if (!d.titulo || d.titulo.startsWith('Presupuesto —') || d.titulo === 'Presupuesto') {
+        const mTrab = (datos.descripcion||'').match(/^(.{5,60}?)[.,]/);
+        if (mTrab) d.titulo = mTrab[1].trim();
+        else if (d.cliente) d.titulo = 'Presupuesto — ' + d.cliente.nombre;
+      }
+      d.frecuencia = ''; d.tareasMantenimiento = '';
+      break;
+    }
+
+    case 'parte': {
+      // Parte: título trabajo, descripción, materiales, duración, importes, estado
+      if (!d.titulo || d.titulo === 'Parte de trabajo' || d.titulo.startsWith('Parte —')) {
+        const mTrab = (datos.descripcion||'').match(/^(.{5,60}?)[.,]/);
+        if (mTrab) d.titulo = mTrab[1].trim();
+        else if (d.cliente) d.titulo = 'Parte — ' + d.cliente.nombre;
+      }
+      d.frecuencia = ''; d.tareasMantenimiento = '';
+      break;
+    }
+
+    case 'cliente': {
+      // Cliente nuevo: solo nombre
+      d.descripcion = ''; d.materiales = ''; d.duracion = '';
+      d.importeManoObra = 0; d.importeMateriales = 0; d.importeDesplazamiento = 0;
+      d.frecuencia = ''; d.tareasMantenimiento = '';
+      break;
+    }
+  }
+  return d;
+};
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ABRIR FORMULARIO PRE-RELLENADO (FORMULARIO FLASH)
+// FORMULARIO FLASH — abre el formulario NATIVO de la app
+// pre-rellenado con todos los datos extraídos por voz.
+// El técnico solo tiene que revisar y pulsar Guardar.
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const _vAbrirFormularioFlash = (datos) => {
-  const cli = datos.cliente;
-  const cliId = cli?.id || '';
-  const cliNom = cli?.nombre || '';
-
+  // Adaptar y limpiar los datos extraídos según el tipo de documento
+  datos = _vAdaptarPorTipo(datos);
   switch (datos.tipo) {
-    case 'averia':
-      _vAbrirFormAveria(datos);
-      break;
-    case 'mantenimiento':
-      _vAbrirFormMantenimiento(datos);
-      break;
-    case 'presupuesto':
-      _vAbrirFormPresupuesto(datos);
-      break;
-    default:
-      _vAbrirFormParte(datos);
+    case 'averia':      _vAbrirFormAveria(datos);       break;
+    case 'mantenimiento': _vAbrirFormMantenimiento(datos); break;
+    case 'presupuesto': _vAbrirFormPresupuesto(datos);  break;
+    case 'cliente':     _vAbrirFormCliente(datos);      break;
+    default:            _vAbrirFormParte(datos);
   }
 };
 
+// ── Inyectar datos en campos ya visibles del formulario (tras abrir) ──
+const _vInyectar = (mapa) => {
+  setTimeout(() => {
+    for (const [id, val] of Object.entries(mapa)) {
+      if (val === undefined || val === null || val === '') continue;
+      const el = document.getElementById(id);
+      if (!el) continue;
+      if (el.tagName === 'SELECT') {
+        // Buscar option por value exacto o por texto insensible
+        const valNorm = String(val).toLowerCase();
+        const opt = [...el.options].find(o =>
+          o.value.toLowerCase() === valNorm || o.text.toLowerCase() === valNorm
+        );
+        if (opt) el.value = opt.value;
+      } else if (el.type === 'checkbox') {
+        el.checked = !!val;
+      } else {
+        el.value = val;
+      }
+    }
+  }, 320);
+};
+
+// ━━━━ PARTE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _vAbrirFormParte = (datos) => {
   const cli = datos.cliente;
   const cliId = cli?.id || '';
@@ -9037,57 +9217,34 @@ const _vAbrirFormParte = (datos) => {
   const chipsTpl = plantillas.map(t => `<div class="pchip" onclick="document.getElementById('pTit').value='${t}'">${t}</div>`).join('');
 
   cerrarAsistenteVoz();
-  abrirSB('Nuevo parte — desde asistente', `
-    <div style="background:linear-gradient(135deg,rgba(var(--theme-rgb),.1),rgba(var(--theme-rgb),.04));border-radius:12px;padding:10px 14px;margin-bottom:14px;border:1px solid rgba(var(--theme-rgb),.2);font-size:12px;color:var(--r);font-weight:700">
-      🎙️ Datos extraídos por el asistente — revisa y guarda
+
+  // Abrir formulario nativo con indicador de voz
+  abrirSB('Nuevo parte', `
+    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      Creado por asistente de voz — revisa y guarda
     </div>
     <div class="fsec"><div class="fsec-title">Información general</div>
-      <div class="fgrp"><label>Título *</label>
-        <input id="pTit" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Título del parte">
-      </div>
+      <div class="fgrp"><label>Título *</label><input id="pTit" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Reparación bomba sumergible"></div>
       ${chipsTpl?`<div class="plantilla-chips">${chipsTpl}</div>`:''}
-      <div class="fgrp"><label>Cliente</label>
-        <select id="pCli" onchange="autoEdificio(this)">
-          <option value="">Sin cliente</option>${cliOpts}
-        </select>
-      </div>
-      <div class="fgrp"><label>Edificio / Comunidad</label>
-        <input id="pEdif" value="${(cli?.edificio||'').replace(/"/g,'&quot;')}" placeholder="Edificio">
-      </div>
-      <div class="fgrp"><label>Dirección</label>
-        <input id="pDir" value="${(cli?.direccion||'').replace(/"/g,'&quot;')}" placeholder="Dirección">
-      </div>
-      <div class="fgrp"><label>Teléfono</label>
-        <input id="pTel" value="${(cli?.telefono||'').replace(/"/g,'&quot;')}" placeholder="Teléfono" type="tel">
-      </div>
-      <div class="fgrp"><label>Operario</label>
-        <input id="pOpe" value="${typeof CUD!=='undefined'?CUD?.nombre||'':''}" placeholder="Nombre operario">
-      </div>
-      <div class="fgrp"><label>Descripción</label>
-        <textarea id="pDesc" style="min-height:90px">${datos.descripcion||''}</textarea>
-      </div>
+      <div class="fgrp"><label>Cliente</label><select id="pCli" onchange="autoEdificio(this)"><option value="">Sin cliente</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Edificio / Comunidad</label><input id="pEdif" value="${(cli?.edificio||'').replace(/"/g,'&quot;')}" placeholder="Se rellena automáticamente si el cliente lo tiene"></div>
+      <div class="fgrp"><label>Dirección</label><input id="pDir" value="${(cli?.direccion||'').replace(/"/g,'&quot;')}" placeholder="Se rellena automáticamente desde la ficha del cliente"></div>
+      <div class="fgrp"><label>Teléfono</label><input id="pTel" value="${(cli?.telefono||'').replace(/"/g,'&quot;')}" placeholder="Se rellena automáticamente desde la ficha del cliente" type="tel"></div>
+      <div class="fgrp"><label>Operario</label><input id="pOpe" value="${(typeof CUD!=='undefined'?CUD?.nombre||'':'')}" placeholder="Nombre operario"></div>
+      <div class="fgrp"><label>Descripción</label><textarea id="pDesc" placeholder="Descripción del trabajo...">${datos.descripcion||''}</textarea></div>
     </div>
     <div class="fsec"><div class="fsec-title">Trabajo</div>
-      <div class="fgrp"><label>Materiales / Equipos</label>
-        <textarea id="pMat" style="min-height:60px" placeholder="Materiales usados...">${datos.materiales||''}</textarea>
-      </div>
-      <div class="fgrp"><label>Duración</label>
-        <input id="pDur" value="${datos.duracion||''}" placeholder="Ej: 2h, 30min">
-      </div>
+      <div class="fgrp"><label>Materiales usados</label><textarea id="pMat" placeholder="Lista de materiales...">${datos.materiales||''}</textarea></div>
+      <div class="fgrp"><label>Duración</label><input id="pDur" value="${datos.duracion||''}" placeholder="Ej: 2 horas"></div>
     </div>
     <div class="fsec"><div class="fsec-title">Importes</div>
-      <div class="fgrp"><label>Mano de obra (€)</label>
-        <input type="number" id="pMO" value="${datos.importeManoObra||''}" placeholder="0.00" step="0.01" min="0">
-      </div>
-      <div class="fgrp"><label>Materiales (€)</label>
-        <input type="number" id="pMatE" value="${datos.importeMateriales||''}" placeholder="0.00" step="0.01" min="0">
-      </div>
+      <div class="fgrp"><label>Mano de obra (€)</label><input type="number" id="pMO" value="${datos.importeManoObra||''}" placeholder="0.00" step="0.01" min="0"></div>
+      <div class="fgrp"><label>Materiales (€)</label><input type="number" id="pMatE" value="${datos.importeMateriales||''}" placeholder="0.00" step="0.01" min="0"></div>
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:12px;cursor:pointer">
         <input type="checkbox" id="pIVA" ${datos.aplicarIVA?'checked':''}> Aplicar IVA 21% a materiales
       </label>
-      <div class="fgrp"><label>Desplazamiento (€)</label>
-        <input type="number" id="pDesp" value="${datos.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0">
-      </div>
+      <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="pDesp" value="${datos.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0"></div>
     </div>
     <div class="fsec"><div class="fsec-title">Estado</div>
       <div class="fgrp"><select id="pEst">
@@ -9108,6 +9265,7 @@ const _vAbrirFormParte = (datos) => {
   `);
 };
 
+// ━━━━ AVERÍA ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _vAbrirFormAveria = (datos) => {
   const cli = datos.cliente;
   const cliId = cli?.id || '';
@@ -9117,9 +9275,11 @@ const _vAbrirFormAveria = (datos) => {
   ).join('');
 
   cerrarAsistenteVoz();
-  abrirSB('Nueva avería — desde asistente', `
-    <div style="background:linear-gradient(135deg,rgba(255,112,67,.12),rgba(255,112,67,.04));border-radius:12px;padding:10px 14px;margin-bottom:14px;border:1px solid rgba(255,112,67,.25);font-size:12px;color:#ff7043;font-weight:700">
-      🎙️ Datos extraídos — revisa y guarda
+
+  abrirSB('Nueva avería', `
+    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      Creado por asistente de voz — revisa y guarda
     </div>
     <div class="fsec">
       <div class="fgrp"><label>Cliente</label>
@@ -9127,47 +9287,191 @@ const _vAbrirFormAveria = (datos) => {
           <option value="">— Seleccionar —</option>${cliOpts}
         </select>
       </div>
-      <div class="fgrp"><label>Dirección</label>
-        <input id="avDir" value="${(cli?.direccion||'').replace(/"/g,'&quot;')}" placeholder="Dirección">
-      </div>
-      <div class="fgrp"><label>Edificio</label>
-        <input id="avEdif" value="${(cli?.edificio||'').replace(/"/g,'&quot;')}" placeholder="Edificio o comunidad">
-      </div>
-      <div class="fgrp"><label>Teléfono</label>
-        <input id="avTel" value="${(cli?.telefono||'').replace(/"/g,'&quot;')}" placeholder="Teléfono" type="tel">
-      </div>
-      <div class="fgrp"><label>Tipo de avería</label>
-        <input id="avTipo" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Bomba sin caudal, fuga en tubería...">
-      </div>
-      <div class="fgrp"><label>Descripción</label>
-        <textarea id="avDesc" rows="3">${datos.descripcion||''}</textarea>
-      </div>
+      <div class="fgrp"><label>Dirección</label><input id="avDir" value="${(cli?.direccion||'').replace(/"/g,'&quot;')}" placeholder="Dirección del cliente"></div>
+      <div class="fgrp"><label>Edificio / Comunidad</label><input id="avEdif" value="${(cli?.edificio||'').replace(/"/g,'&quot;')}" placeholder="Edificio o comunidad"></div>
+      <div class="fgrp"><label>Teléfono</label><input id="avTel" value="${(cli?.telefono||'').replace(/"/g,'&quot;')}" placeholder="Teléfono de contacto" type="tel"></div>
+      <div class="fgrp"><label>Tipo de avería / problema</label><input id="avTipo" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Bomba sin caudal, fuga en tubería..."></div>
+      <div class="fgrp"><label>Descripción</label><textarea id="avDesc" rows="3" placeholder="Detalla el problema...">${datos.descripcion||''}</textarea></div>
       ${datos.urgente?`<div style="background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--r);font-weight:700;margin-bottom:10px">⚡ Marcada como urgente</div>`:''}
       <button class="btn btn-p" style="width:100%" onclick="guardarAveria()">⚡ Guardar avería</button>
     </div>
   `);
 };
 
+// ━━━━ MANTENIMIENTO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _vAbrirFormMantenimiento = (datos) => {
+  const cli = datos.cliente;
+  const cliId = cli?.id || '';
+  const cliNom = cli?.nombre || '';
+  const cliDir = cli?.direccion || '';
+  const cliTel = cli?.telefono || '';
+  const cliEdif = cli?.edificio || '';
+
+  // Mapear la frecuencia al valor real del select nativo
+  const _frecMap = {
+    'diario':'', 'semanal':'semanal', 'quincenal':'quincenal',
+    'mensual':'mensual', 'bimestral':'bimestral', 'trimestral':'trimestral',
+    'semestral':'semestral', 'anual':''
+  };
+  const frecVal = datos.frecuencia ? (_frecMap[datos.frecuencia.toLowerCase()] ?? '') : '';
+  const notas = datos.tareasMantenimiento || datos.descripcion || '';
+  const hoy = new Date().toISOString().split('T')[0];
+
   cerrarAsistenteVoz();
-  if (typeof abrirFormMantenimiento === 'function') {
-    abrirFormMantenimiento(datos.cliente?.id || '', datos.titulo, datos.descripcion);
-  } else if (typeof abrirNuevoMantenimiento === 'function') {
-    abrirNuevoMantenimiento(datos.cliente?.id || '');
-  } else {
-    toast('Abre la sección de mantenimientos para crear uno nuevo','i');
-    goScreen('mantenimiento');
+
+  // Usar la función nativa _abrirFormMantSB que es el formulario real de la app
+  if (typeof window._abrirFormMantSB === 'function') {
+    window._abrirFormMantSB(cliId, cliNom || 'Sin cliente', {});
+    // Inyectar todos los datos en los campos del formulario nativo
+    _vInyectar({
+      mNomSB: datos.titulo || '',
+      mCliSB: cliId,
+      mDirSB: cliDir,
+      mTelSB: cliTel,
+      mEdifSB: cliEdif,
+      mFrecSB: frecVal,
+      mFechaSB: datos.fecha || hoy,
+      mNotasSB: notas,
+    });
+    return;
   }
+
+  // Fallback: formulario de respaldo si _abrirFormMantSB no existe
+  const cliOpts = (typeof allClientes !== 'undefined' ? allClientes.filter(c=>!c.archivado) : []).map(c =>
+    `<option value="${c.id}" ${c.id===cliId?'selected':''}>${c.nombre}</option>`
+  ).join('');
+  const frecOpts = [
+    ['','Sin recurrencia'],['semanal','Semanal (7 días)'],['quincenal','Quincenal (14 días)'],
+    ['mensual','Mensual (30 días)'],['bimestral','Bimestral (60 días)'],
+    ['trimestral','Trimestral (90 días)'],['semestral','Semestral (180 días)']
+  ].map(([v,l]) => `<option value="${v}" ${frecVal===v?'selected':''}>${l}</option>`).join('');
+
+  abrirSB('Nuevo mantenimiento', `
+    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      Creado por asistente de voz — revisa y guarda
+    </div>
+    <div class="fsec">
+      <div class="fgrp"><label>Cliente</label>
+        <select id="mCliSB" onchange="(function(){var c=window.allClientes&&window.allClientes.find(x=>x.id===document.getElementById('mCliSB').value);if(c){var d=document.getElementById('mDirSB');var t=document.getElementById('mTelSB');var e=document.getElementById('mEdifSB');if(d&&c.direccion)d.value=c.direccion;if(t&&c.telefono)t.value=c.telefono;if(e&&c.edificio)e.value=c.edificio;}})()">
+          <option value="">Sin cliente</option>${cliOpts}
+        </select>
+      </div>
+      <div class="fgrp"><label>Dirección</label><input id="mDirSB" value="${cliDir.replace(/"/g,'&quot;')}" placeholder="Dirección del cliente"></div>
+      <div class="fgrp"><label>Teléfono</label><input id="mTelSB" value="${cliTel.replace(/"/g,'&quot;')}" placeholder="Teléfono de contacto" type="tel"></div>
+      <div class="fgrp"><label>Edificio / Comunidad</label><input id="mEdifSB" value="${cliEdif.replace(/"/g,'&quot;')}" placeholder="Edificio o comunidad"></div>
+      <div class="fgrp"><label>Nombre del trabajo *</label><input id="mNomSB" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Revisión mensual bomba"></div>
+      <div class="fgrp"><label>Frecuencia</label><select id="mFrecSB">${frecOpts}</select></div>
+      <div class="fgrp"><label>Fecha inicio</label><input type="date" id="mFechaSB" value="${datos.fecha||hoy}"></div>
+      <div class="fgrp"><label>Notas</label><textarea id="mNotasSB" placeholder="Observaciones…">${notas}</textarea></div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:16px">
+        <div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Guardar como plantilla</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
+          <input type="checkbox" id="mPlantSB" style="width:16px;height:16px;accent-color:var(--r)"> Guardar nombre como plantilla
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
+          <input type="checkbox" id="mPlantFullSB" style="width:16px;height:16px;accent-color:var(--r)" onchange="document.getElementById('mPlantFullNameSB').style.display=this.checked?'block':'none'"> Guardar como plantilla completa
+        </label>
+        <div id="mPlantFullNameSB" style="display:none;margin-top:6px">
+          <input id="mPlantFullNomSB" class="sbox" placeholder="Nombre de la plantilla…" style="margin:0">
+        </div>
+      </div>
+      <button class="btn btn-p" onclick="guardarMantDesdeSB()">💾 Programar mantenimiento</button>
+    </div>
+  `);
 };
 
+// ━━━━ PRESUPUESTO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _vAbrirFormPresupuesto = (datos) => {
+  const cli = datos.cliente;
+  const cliId = cli?.id || '';
+  const clis = (typeof allClientes !== 'undefined') ? allClientes.filter(c=>!c.archivado) : [];
+  const cliOpts = clis.map(c =>
+    `<option value="${c.id}" ${c.id===cliId?'selected':''}>${c.nombre}</option>`
+  ).join('');
+
   cerrarAsistenteVoz();
+
+  // Usar función nativa si existe, inyectando datos después
   if (typeof abrirNuevoPresupuesto === 'function') {
-    abrirNuevoPresupuesto(datos.cliente?.id || '');
-  } else {
-    toast('Abre la sección de presupuestos','i');
-    goScreen('presupuestos');
+    try {
+      abrirNuevoPresupuesto(cliId);
+      _vInyectar({
+        presuTit: datos.titulo,
+        presTitulo: datos.titulo,
+        presuNotas: datos.descripcion,
+        presDesc: datos.descripcion,
+        presuDesc: datos.descripcion,
+        presuMO: datos.importeManoObra || '',
+        presManoObra: datos.importeManoObra || '',
+        presuMat: datos.importeMateriales || '',
+        presMateriales: datos.importeMateriales || '',
+        presuDesp: datos.importeDesplazamiento || '',
+      });
+      return;
+    } catch(e) {}
   }
+
+  // Fallback presupuesto
+  abrirSB('Nuevo presupuesto', `
+    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      Creado por asistente de voz — revisa y guarda
+    </div>
+    <div class="fsec">
+      <div class="fgrp"><label>Título *</label><input id="presuTit" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Sustitución bomba principal"></div>
+      <div class="fgrp"><label>Cliente</label><select id="presuCli"><option value="">— Seleccionar —</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Descripción / Trabajos</label><textarea id="presuNotas" style="min-height:90px" placeholder="Descripción del trabajo...">${datos.descripcion||''}</textarea></div>
+      <div class="fgrp"><label>Materiales</label><textarea id="presuMat" style="min-height:60px" placeholder="Lista de materiales...">${datos.materiales||''}</textarea></div>
+    </div>
+    <div class="fsec"><div class="fsec-title">Importes</div>
+      <div class="fgrp"><label>Mano de obra (€)</label><input type="number" id="presuMO" value="${datos.importeManoObra||''}" placeholder="0.00" step="0.01" min="0"></div>
+      <div class="fgrp"><label>Materiales (€)</label><input type="number" id="presuMatE" value="${datos.importeMateriales||''}" placeholder="0.00" step="0.01" min="0"></div>
+      <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="presuDesp" value="${datos.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0"></div>
+    </div>
+    <button class="btn btn-p" onclick="guardarPresupuesto()">💾 Guardar presupuesto</button>
+  `);
+};
+
+// ━━━━ CLIENTE NUEVO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const _vAbrirFormCliente = (datos) => {
+  const preData = {
+    nombre: datos.nombreClienteNuevo || datos.titulo || '',
+    notas: datos.descripcion || '',
+  };
+
+  cerrarAsistenteVoz();
+
+  // Usar el formulario nativo abrirFCli que ya existe en la app
+  if (typeof abrirFCli === 'function') {
+    abrirFCli('', preData);
+    return;
+  }
+
+  // Fallback cliente
+  abrirSB('Nuevo cliente', `
+    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      Creado por asistente de voz — revisa y guarda
+    </div>
+    <div class="fsec"><div class="fsec-title">Datos personales</div>
+      <div class="fgrp"><label>Nombre *</label><input id="cNom" value="${(preData.nombre||'').replace(/"/g,'&quot;')}" placeholder="Nombre del cliente"></div>
+      <div class="fgrp"><label>Nombre del edificio / comunidad</label><input id="cEdif" value="" placeholder="Ej: Comunidad Las Flores"></div>
+      <div class="fgrp"><label>Teléfono</label><input type="tel" id="cTel" value="" placeholder="600 000 000"></div>
+      <div class="fgrp"><label>Dirección</label><input id="cDir" value="" placeholder="Calle, número, ciudad"></div>
+      <div class="fgrp"><label>Email</label><input type="email" id="cEmail" value="" placeholder="cliente@email.com"></div>
+      <div class="fgrp"><label>Notas</label><textarea id="cNotas" placeholder="Observaciones...">${preData.notas||''}</textarea></div>
+    </div>
+    <div class="fsec"><div class="fsec-title">Indicador de color</div>
+      <div class="ind-opts">
+        <div class="ind-opt ind-r" onclick="selInd('rojo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e53935;margin-right:5px;vertical-align:middle"></span>Rojo</div>
+        <div class="ind-opt ind-y" onclick="selInd('amarillo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc107;margin-right:5px;vertical-align:middle"></span>Amarillo</div>
+        <div class="ind-opt ind-g sel" onclick="selInd('verde')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4caf50;margin-right:5px;vertical-align:middle"></span>Verde</div>
+      </div>
+      <input type="hidden" id="cColor" value="verde">
+    </div>
+    <button class="btn btn-p" onclick="guardarCli('')">💾 Guardar cliente</button>
+  `);
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -9559,50 +9863,63 @@ const _vAbrirMic = () => {
     V._recActivo = true;
     V.fase = 'escuchando';
     _vActualizarUI();
-    _vSetMsg('Escuchando… habla todo lo que quieras, sin prisa.');
+    // Solo mostrar "escuchando" si es la primera vez
+    if (!V._transcripcionFinal) {
+      _vSetMsg('Escuchando… habla todo lo que quieras. Di <em>"listo"</em> o <em>"ya está"</em> cuando termines.');
+    }
   };
 
   V.rec.onresult = (ev) => {
     let interim = '';
-    let final = V._transcripcionFinal;
+    let finalNuevo = '';
     for (let i = ev.resultIndex; i < ev.results.length; i++) {
       const res = ev.results[i];
       if (res.isFinal) {
-        final += res[0].transcript + ' ';
+        finalNuevo += res[0].transcript + ' ';
       } else {
         interim = res[0].transcript;
       }
     }
-    V._transcripcionFinal = final;
+
+    // Anti-duplicados: solo añadir si el texto nuevo no está ya incluido
+    if (finalNuevo) {
+      const nuevoNorm = finalNuevo.trim().toLowerCase();
+      const actualNorm = V._transcripcionFinal.trim().toLowerCase();
+      // Evitar añadir si ya termina en ese fragmento (duplicado por reinicio de rec)
+      if (!actualNorm.endsWith(nuevoNorm) && !actualNorm.includes(nuevoNorm)) {
+        V._transcripcionFinal += finalNuevo;
+      } else if (!actualNorm) {
+        V._transcripcionFinal += finalNuevo;
+      }
+    }
     V._transcripcionParcial = interim;
 
     // Mostrar transcripción en tiempo real
     const heardEl = document.getElementById('vozHeard');
     if (heardEl) {
-      heardEl.innerHTML = `🗣️ <b>${final}${interim ? '<em style="opacity:.6">'+interim+'</em>' : ''}</b>`;
+      heardEl.innerHTML = `🗣️ <b>${V._transcripcionFinal}${interim ? '<em style="opacity:.6">'+interim+'</em>' : ''}</b>`;
     }
 
-    // Detectar palabras de finalización
-    const todoTexto = (final + interim).toLowerCase();
-    if (/\b(listo|ya\s+está|ya\s+esta|fin|eso\s+es\s+todo|termina|para)\s*$/.test(todoTexto.trim())) {
-      _vProcesarFinal();
+    // Detectar palabras de finalización explícita — más completas
+    const todoTexto = (V._transcripcionFinal + interim).toLowerCase();
+    if (/\b(listo|ya\s+est[aá]|fin\b|eso\s+es\s+todo|termina[r]?|termino|ya\s+termin[eé]|he\s+terminado|con\s+eso\s+es\s+suficiente|comprendo|eso\s+es\s+todo|completa[r]?|completado|guarda[r]?|guardar|ya\s+vale|con\s+eso\s+basta|eso\s+ser[ií]a\s+todo|nada\s+m[aá]s)\s*\.?\s*$/.test(todoTexto.trim())) {
+      // Quitar la palabra de cierre del texto final antes de procesar
+      V._transcripcionFinal = V._transcripcionFinal.replace(/\b(listo|ya\s+est[aá]|eso\s+es\s+todo|termina[r]?|termino|ya\s+termin[eé]|he\s+terminado|con\s+eso\s+es\s+suficiente|comprendo|eso\s+es\s+todo|completa[r]?|completado|guarda[r]?|guardar|ya\s+vale|con\s+eso\s+basta|eso\s+ser[ií]a\s+todo|nada\s+m[aá]s)\s*\.?\s*$/gi, '').trim();
+      setTimeout(_vProcesarFinal, 300);
       return;
     }
 
-    // Reset timer de silencio — 2 segundos sin hablar → procesar
-    clearTimeout(V._silenceTimer);
-    V._silenceTimer = setTimeout(() => {
-      if (V._transcripcionFinal.trim().length > 2) _vProcesarFinal();
-    }, 2000);
+    // SIN timer de silencio: el diálogo SOLO se cierra con palabra de cierre o botón manual
+    // El técnico puede hacer pausas largas sin que se corte el dictado
   };
 
   V.rec.onerror = (ev) => {
     V._recActivo = false;
     if (ev.error === 'no-speech') {
-      // No habló nada, volver a estado listo
-      V.fase = 'idle';
-      _vActualizarUI();
-      _vSetMsg('No escuché nada. Pulsa el micrófono para hablar.');
+      // Sin actividad de voz — reiniciar mic (el técnico puede estar pensando)
+      if (V.fase === 'escuchando') {
+        setTimeout(() => { if (V.fase === 'escuchando') _vAbrirMic(); }, 200);
+      }
     } else if (ev.error !== 'aborted') {
       V.fase = 'idle';
       _vActualizarUI();
@@ -9613,13 +9930,12 @@ const _vAbrirMic = () => {
   V.rec.onend = () => {
     V._recActivo = false;
     if (V.fase === 'escuchando') {
-      // Si terminó por timeout del STT y hay texto, procesar
-      if (V._transcripcionFinal.trim().length > 2) {
-        _vProcesarFinal();
-      } else {
-        V.fase = 'idle';
-        _vActualizarUI();
-      }
+      // Motor STT detenido por timeout interno del sistema (~10-15s)
+      // SIEMPRE reiniciar — el técnico no ha dicho palabra de cierre
+      V.rec = null;
+      setTimeout(() => {
+        if (V.fase === 'escuchando') _vAbrirMic();
+      }, 250);
     }
   };
 
@@ -9656,6 +9972,14 @@ const _vProcesarFinal = async () => {
   // ── CREACIÓN: extraer todo y abrir formulario ──
   try {
     const datos = await _vExtraerTodo(texto);
+
+    // Si es creación de cliente nuevo, abrir directamente sin buscar cliente
+    if (datos.tipo === 'cliente') {
+      V.fase = 'idle';
+      _vActualizarUI();
+      _vAbrirFormularioFlash(datos);
+      return;
+    }
 
     // Si hay candidatos de cliente sin resolver → mostrar selector
     if (!datos.cliente && datos.candidatos.length > 0) {
@@ -9897,18 +10221,18 @@ window.abrirAsistenteVoz = () => {
 
   const nombre = (typeof CUD !== 'undefined' && CUD?.nombre) ? CUD.nombre.split(/\s+/)[0] : '';
   const saludos = nombre ? [
-    `${nombre}, habla sin prisa. Lo proceso todo de una vez.`,
-    `¿Qué creamos hoy, ${nombre}?`,
-    `Dime, ${nombre}. Una sola frase y lo tengo.`,
-    `Listo ${nombre}. Habla y abro el formulario.`,
+    `${nombre}, habla con calma. Tengo 5 segundos de pausa. Di todo de una vez.`,
+    `¿Qué creamos hoy, ${nombre}? Parte, avería, mantenimiento o presupuesto.`,
+    `Dime, ${nombre}. Una sola frase completa y lo proceso todo.`,
+    `Listo ${nombre}. Habla sin prisa — te escucho hasta que termines.`,
   ] : [
-    'Di lo que necesitas en una sola frase.',
-    'Habla sin prisa. Lo proceso todo de golpe.',
-    '¿Qué creamos? Parte, avería, mantenimiento…',
-    'Adelante, una frase y abro el formulario.',
+    'Habla con calma. Tengo 5 segundos de pausa para que pienses.',
+    'Di lo que necesitas en una frase completa.',
+    '¿Qué creamos? Parte, avería, mantenimiento, presupuesto o cliente.',
+    'Adelante, una frase completa y abro el formulario.',
   ];
   const saludo = saludos[Math.floor(Math.random()*saludos.length)];
-  _vSetMsg(`${saludo}<br><span style="font-size:11px;opacity:.6;font-weight:600">Ej: "parte para García, bomba sin caudal, dos horas, sesenta euros"</span>`);
+  _vSetMsg(`${saludo}<br><span style="font-size:11px;opacity:.6;font-weight:600">Ej: "mantenimiento para Casa del Pago, revisión de descalcificador, tipo semanal"</span>`);
   _vActualizarUI();
 
   // Arrancar micrófono automáticamente
