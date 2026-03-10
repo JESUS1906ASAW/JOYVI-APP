@@ -1201,14 +1201,9 @@ import {
 import {
   getMessaging, getToken, onMessage
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
-import {
-  getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
-
 const fbApp   = initializeApp(FB_CFG);
 const auth    = getAuth(fbApp);
 const db      = getFirestore(fbApp);
-const storage = getStorage(fbApp);
 let fcmMessaging = null;
 try{ fcmMessaging = getMessaging(fbApp); }catch(e){}
 
@@ -1369,7 +1364,11 @@ const _sndDelete=()=>{try{const ac=audioCtx();if(!ac)return;[[300,.0,.07],[220,.
 })();
 
 // ── IMAGEN HELPER: comprime imagen y devuelve base64 ──
-// Comprime imagen y devuelve Blob (no base64) — mucho más ligero
+// ── CLOUDINARY — subida directa sin servidor ──
+const _CLD_CLOUD  = 'dtdebyvuk';
+const _CLD_PRESET = 'joyvi_fotos';
+
+// Comprime imagen y devuelve Blob
 const comprimirImgBlob=async(file)=>{
   const MAX_SIZE=1200;
   return new Promise((res,rej)=>{
@@ -1385,19 +1384,23 @@ const comprimirImgBlob=async(file)=>{
   });
 };
 
-// Sube imagen a Firebase Storage y devuelve la URL pública
-// path ejemplo: "grupos/CGID/imagenes/uuid.jpg"
-const _subirImgStorage=async(file, storagePath)=>{
+// Sube a Cloudinary y devuelve { url, publicId }
+const _subirImgCloudinary=async(file, folder='grupos')=>{
   const blob = await comprimirImgBlob(file);
-  const sRef = storageRef(storage, storagePath);
-  await uploadBytes(sRef, blob, {contentType:'image/jpeg'});
-  return await getDownloadURL(sRef);
+  const fd = new FormData();
+  fd.append('file', blob, 'foto.jpg');
+  fd.append('upload_preset', _CLD_PRESET);
+  fd.append('folder', folder);
+  const resp = await fetch(`https://api.cloudinary.com/v1_1/${_CLD_CLOUD}/image/upload`, {method:'POST', body:fd});
+  if(!resp.ok) throw new Error('Cloudinary error '+resp.status);
+  const data = await resp.json();
+  return { url: data.secure_url, publicId: data.public_id };
 };
 
 // Genera ID único simple
 const _uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 
-// COMPATIBILIDAD: comprimirImg sigue existiendo pero ya no se llama directamente
+// COMPATIBILIDAD: comprimirImg legacy (base64) — solo para lectura de fotos antiguas
 const comprimirImg=async(file)=>{
   const MAX_SIZE=1200;
   return new Promise((res,rej)=>{
@@ -5502,11 +5505,9 @@ window.subirFotosMant=async(mantId,files)=>{
   toast('Subiendo fotos...','i');
   for(const file of Array.from(files)){
     try{
-      const imgId=_uid();
-      const path=`grupos/${CGID}/mantenimientos/${mantId}/${imgId}.jpg`;
-      const url=await _subirImgStorage(file, path);
+      const {url, publicId} = await _subirImgCloudinary(file, `joyvi/${CGID}/mantenimientos/${mantId}`);
       await addDoc(collection(db,'grupos',CGID,'mantenimientos',mantId,'fotos'),{
-        url,storagePath:path,creado:serverTimestamp()
+        url, publicId, creado:serverTimestamp()
       });
       subidas++;
     }catch(e){console.error(e);toast('Error con foto','e')}
@@ -5516,10 +5517,6 @@ window.subirFotosMant=async(mantId,files)=>{
 window.borrarMantFoto=async(mantId,fotoId)=>{
   if(!confirm('¿Eliminar esta foto?'))return;
   try{
-    const snap=await getDoc(doc(db,'grupos',CGID,'mantenimientos',mantId,'fotos',fotoId));
-    if(snap.exists()&&snap.data().storagePath){
-      try{await deleteObject(storageRef(storage,snap.data().storagePath));}catch(e){}
-    }
     await deleteDoc(doc(db,'grupos',CGID,'mantenimientos',mantId,'fotos',fotoId));
     toast('Foto eliminada','i');verMant(mantId,true);
   }catch(e){toast('Error','e')}
@@ -6374,15 +6371,12 @@ window.subirImagenesInstalacion=async()=>{
   let subidas=0;
   for(const file of _imgFilesPending){
     try{
-      const imgId=_uid();
-      const path=`grupos/${CGID}/imagenes/${imgId}.jpg`;
-      const url=await _subirImgStorage(file, path);
+      const {url, publicId} = await _subirImgCloudinary(file, `joyvi/${CGID}/imagenes`);
       await addDoc(collection(db,'grupos',CGID,'imagenes'),{
         clienteId:cliId||'',
         clienteNombre:cli?.nombre||'',
         descripcion:desc||file.name,
-        url,
-        storagePath:path,
+        url, publicId,
         creado:serverTimestamp()
       });
       subidas++;
@@ -6396,11 +6390,6 @@ window.subirImagenesInstalacion=async()=>{
 window.borrarImagen=async(id)=>{
   if(!confirm('¿Eliminar esta imagen?'))return;
   try{
-    // Intentar borrar de Storage si tiene storagePath
-    const snap=await getDoc(doc(db,'grupos',CGID,'imagenes',id));
-    if(snap.exists()&&snap.data().storagePath){
-      try{await deleteObject(storageRef(storage,snap.data().storagePath));}catch(e){}
-    }
     await deleteDoc(doc(db,'grupos',CGID,'imagenes',id));
     toast('Imagen eliminada','i');cerrarSB();renderImagenes();
   }catch(e){toast('Error','e')}
@@ -6459,12 +6448,10 @@ window.subirFotosCliente=async(cliId,files)=>{
   toast('Subiendo fotos...','i');
   for(const file of Array.from(files)){
     try{
-      const imgId=_uid();
-      const path=`grupos/${CGID}/imagenes/${imgId}.jpg`;
-      const url=await _subirImgStorage(file, path);
+      const {url, publicId} = await _subirImgCloudinary(file, `joyvi/${CGID}/clientes/${cliId}`);
       await addDoc(collection(db,'grupos',CGID,'imagenes'),{
         clienteId:cliId,clienteNombre:c.nombre,descripcion:desc||file.name,
-        url,storagePath:path,creado:serverTimestamp()
+        url, publicId, creado:serverTimestamp()
       });
       subidas++;
     }catch(e){console.error(e);toast('Error','e')}
@@ -6769,11 +6756,9 @@ window.subirAveriaFotos=async(avId,files)=>{
   toast('Subiendo fotos...','i');
   for(const file of Array.from(files)){
     try{
-      const imgId=_uid();
-      const path=`grupos/${CGID}/averias/${avId}/${imgId}.jpg`;
-      const url=await _subirImgStorage(file, path);
+      const {url, publicId} = await _subirImgCloudinary(file, `joyvi/${CGID}/averias/${avId}`);
       await addDoc(collection(db,'grupos',CGID,'averias',avId,'fotos'),{
-        url,storagePath:path,creado:serverTimestamp()
+        url, publicId, creado:serverTimestamp()
       });
     }catch(e){toast('Error con foto','e')}
   }
@@ -6783,10 +6768,6 @@ window.subirAveriaFotos=async(avId,files)=>{
 window.borrarAveriaFoto=async(avId,fotoId)=>{
   if(!confirm('¿Eliminar foto?'))return;
   try{
-    const snap=await getDoc(doc(db,'grupos',CGID,'averias',avId,'fotos',fotoId));
-    if(snap.exists()&&snap.data().storagePath){
-      try{await deleteObject(storageRef(storage,snap.data().storagePath));}catch(e){}
-    }
     await deleteDoc(doc(db,'grupos',CGID,'averias',avId,'fotos',fotoId));
     verAveria(avId);
   }catch(e){toast('Error','e')}
