@@ -134,108 +134,6 @@ body.modo-claro .stat2-num{color:#111}
   body.modo-claro .fgrp select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='rgba(0,0,0,.4)'/%3E%3C/svg%3E")}
 }
 
-/* ── ASISTENTE DE VOZ ── */
-@keyframes vozPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
-@keyframes vozBar{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
-@keyframes vozThink{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
-@keyframes vozFabPulse{0%,100%{box-shadow:0 4px 20px rgba(var(--theme-rgb),.5)}50%{box-shadow:0 4px 32px rgba(var(--theme-rgb),.8),0 0 0 8px rgba(var(--theme-rgb),.15)}}
-#vozFab{animation:vozFabPulse 2.5s infinite}
-#vozFab:hover{transform:scale(1.1)!important}
-#vozOverlay{position:fixed;inset:0;z-index:1900;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
-#vozOverlay.open{opacity:1;pointer-events:all}
-#vozSheet{position:fixed;bottom:0;left:0;right:0;z-index:1910;background:var(--card);border-radius:26px 26px 0 0;border-top:1px solid var(--border);box-shadow:0 -8px 40px rgba(0,0,0,.55);transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);padding-bottom:env(safe-area-inset-bottom,16px)}
-#vozSheet.open{transform:translateY(0)}
-.voz-handle{width:40px;height:5px;background:rgba(255,255,255,.14);border-radius:3px;margin:12px auto 0}
-body.modo-claro .voz-handle{background:rgba(0,0,0,.1)}
-.voz-hdr{display:flex;align-items:center;gap:12px;padding:14px 18px 10px}
-.voz-ava{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--r2),var(--r3));display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;flex-shrink:0;transition:.3s}
-.voz-ava.listening{animation:vozFabPulse 1s infinite}
-.voz-ava.speaking{background:linear-gradient(135deg,#1565c0,#1e88e5)}
-.voz-hdr-txt{flex:1;min-width:0}
-.voz-hdr-name{font-size:16px;font-weight:900;color:var(--tx)}
-.voz-hdr-st{font-size:12px;color:var(--tx2);margin-top:1px;font-weight:600}
-.voz-x{width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--tx2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-body.modo-claro .voz-x{background:rgba(0,0,0,.07)}
-.voz-msg{margin:0 18px 12px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.2);border-radius:16px 16px 16px 4px;padding:13px 15px;font-size:14px;font-weight:600;color:var(--tx);line-height:1.55;min-height:52px}
-.voz-think{display:flex;gap:6px;align-items:center}
-.voz-dot{width:9px;height:9px;border-radius:50%;background:var(--r);animation:vozThink 1s infinite}
-.voz-dot:nth-child(2){animation-delay:.2s}.voz-dot:nth-child(3){animation-delay:.4s}
-.voz-heard{padding:0 18px 6px;font-size:12px;color:var(--tx2);font-style:italic;min-height:20px;font-weight:600}
-.voz-heard b{color:var(--tx);font-style:normal}
-.voz-waves{display:flex;align-items:center;justify-content:center;gap:4px;height:32px;padding:0 18px 4px}
-.voz-wbar{width:4px;border-radius:2px;background:var(--r);animation:vozBar .75s ease-in-out infinite}
-.voz-wbar:nth-child(1){animation-delay:.0s;height:10px}.voz-wbar:nth-child(2){animation-delay:.1s;height:18px}
-.voz-wbar:nth-child(3){animation-delay:.2s;height:26px}.voz-wbar:nth-child(4){animation-delay:.3s;height:20px}
-.voz-wbar:nth-child(5){animation-delay:.4s;height:14px}.voz-wbar:nth-child(6){animation-delay:.5s;height:22px}
-.voz-wbar:nth-child(7){animation-delay:.6s;height:16px}
-.voz-prog{padding:0 18px 10px;display:none}
-.voz-prog-lbl{font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px}
-.voz-steps{display:flex;gap:4px}
-.voz-stp{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.09);transition:.35s}
-.voz-stp.done{background:var(--r)}.voz-stp.cur{background:rgba(var(--theme-rgb),.4);animation:vozThink .9s infinite}
-body.modo-claro .voz-stp{background:rgba(0,0,0,.09)}
-.voz-resumen{margin:0 18px 10px;max-height:175px;overflow-y:auto;display:none;border-radius:14px;border:1px solid var(--border);overflow:hidden}
-.voz-res-row{display:flex;align-items:baseline;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border)}
-.voz-res-row:last-child{border-bottom:none}
-.voz-res-lbl{font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.7px;min-width:82px;flex-shrink:0}
-.voz-res-val{font-size:13px;font-weight:700;color:var(--tx);word-break:break-word}
-.voz-res-val.empty{color:var(--tx3);font-style:italic}
-.voz-btns{display:flex;gap:8px;padding:4px 14px 14px;align-items:stretch}
-.voz-btn-mic{flex:1;height:56px;border-radius:18px;border:none;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;font-size:15px;font-weight:900;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;box-shadow:0 4px 20px rgba(var(--theme-rgb),.38)}
-.voz-btn-mic:active{transform:scale(.97)}.voz-btn-mic:disabled{opacity:.45;cursor:not-allowed}
-/* ── Botón OMITIR ── */
-.voz-btn-skip{width:72px;height:56px;padding:0;border-radius:18px;border:none;
-  background:linear-gradient(145deg,rgba(99,179,237,.18),rgba(66,153,225,.08));
-  color:#63b3ed;font-family:var(--font);cursor:pointer;display:none;
-  flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  transition:.18s;position:relative;overflow:hidden;
-  box-shadow:0 2px 10px rgba(66,153,225,.2),inset 0 1px 0 rgba(99,179,237,.25)}
-.voz-btn-skip::before{content:'';position:absolute;inset:0;border-radius:18px;
-  border:1.5px solid rgba(99,179,237,.35);pointer-events:none}
-.voz-btn-skip:hover{background:linear-gradient(145deg,rgba(99,179,237,.28),rgba(66,153,225,.16));
-  box-shadow:0 4px 16px rgba(66,153,225,.35),inset 0 1px 0 rgba(99,179,237,.3)}
-.voz-btn-skip:active{transform:scale(.95)}
-.voz-btn-skip .vbsk-ico{font-size:18px;line-height:1;filter:drop-shadow(0 1px 3px rgba(66,153,225,.5))}
-.voz-btn-skip .vbsk-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;opacity:.85}
-/* ── Botón CANCELAR ── */
-.voz-btn-cancel{width:62px;height:56px;padding:0;border-radius:18px;border:none;
-  background:linear-gradient(145deg,rgba(245,101,101,.18),rgba(229,62,62,.07));
-  color:#fc8181;font-family:var(--font);cursor:pointer;display:none;
-  flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  transition:.18s;position:relative;overflow:hidden;
-  box-shadow:0 2px 10px rgba(229,62,62,.18),inset 0 1px 0 rgba(252,129,129,.2)}
-.voz-btn-cancel::before{content:'';position:absolute;inset:0;border-radius:18px;
-  border:1.5px solid rgba(245,101,101,.35);pointer-events:none}
-.voz-btn-cancel:hover{background:linear-gradient(145deg,rgba(245,101,101,.28),rgba(229,62,62,.16));
-  box-shadow:0 4px 16px rgba(229,62,62,.32),inset 0 1px 0 rgba(252,129,129,.25)}
-.voz-btn-cancel:active{transform:scale(.95)}
-.voz-btn-cancel .vbcn-ico{font-size:17px;line-height:1;filter:drop-shadow(0 1px 3px rgba(229,62,62,.5))}
-.voz-btn-cancel .vbcn-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;opacity:.85}
-body.modo-claro .voz-btn-skip{background:linear-gradient(145deg,rgba(49,130,206,.12),rgba(49,130,206,.05));color:#2b6cb0;box-shadow:0 2px 8px rgba(49,130,206,.15)}
-body.modo-claro .voz-btn-skip::before{border-color:rgba(49,130,206,.3)}
-body.modo-claro .voz-btn-cancel{background:linear-gradient(145deg,rgba(197,48,48,.1),rgba(197,48,48,.04));color:#c53030;box-shadow:0 2px 8px rgba(197,48,48,.12)}
-body.modo-claro .voz-btn-cancel::before{border-color:rgba(197,48,48,.28)}
-
-/* ── SELECTOR DE TEMA Y VOZ (perfil) ── */
-.voz-selector-list{display:flex;flex-direction:column;gap:4px;margin-top:10px}
-.voz-sel-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1.5px solid var(--border);cursor:pointer;transition:.15s}
-.voz-sel-item:hover{border-color:var(--r);background:rgba(var(--theme-rgb),.07)}
-.voz-sel-item.sel{border-color:var(--r);background:rgba(var(--theme-rgb),.12)}
-body.modo-claro .voz-sel-item{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.1)}
-body.modo-claro .voz-sel-item:hover{border-color:var(--r);background:rgba(var(--theme-rgb),.06)}
-body.modo-claro .voz-sel-item.sel{border-color:var(--r);background:rgba(var(--theme-rgb),.1)}
-.voz-sel-ico{font-size:20px;flex-shrink:0}
-.voz-sel-info{flex:1;min-width:0}
-.voz-sel-name{font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.voz-sel-meta{font-size:11px;color:var(--tx2);margin-top:1px}
-.voz-sel-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0}
-.voz-sel-badge.google{background:rgba(66,133,244,.15);color:#4285f4}
-.voz-sel-badge.microsoft{background:rgba(0,120,212,.13);color:#0078d4}
-.voz-sel-badge.apple{background:rgba(100,100,100,.12);color:#aaa}
-.voz-sel-badge.otro{background:rgba(255,255,255,.08);color:var(--tx2)}
-.voz-sel-check{font-size:16px;flex-shrink:0;opacity:0}
-.voz-sel-item.sel .voz-sel-check{opacity:1}
-
 
 /* Switch toggle modo claro */
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
@@ -783,6 +681,46 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
       /* Light mode: still keep black for avatars */
   body.modo-claro body.modo-claro 
   body.modo-claro .grupo-ava,body.modo-claro body.modo-claro .hero-ava{background:transparent !important}
+
+/* ══════════ ASISTENTE DE VOZ v4 ══════════ */
+@keyframes vozBar{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@keyframes vozSpin{to{transform:rotate(360deg)}}
+@keyframes vozFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#vozOverlay{position:fixed;inset:0;z-index:1900;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s}
+#vozOverlay.open{opacity:1;pointer-events:all}
+#vozSheet{position:fixed;bottom:0;left:0;right:0;z-index:1910;background:var(--card);border-radius:22px 22px 0 0;border-top:1px solid var(--border);box-shadow:0 -6px 32px rgba(0,0,0,.45);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);padding-bottom:env(safe-area-inset-bottom,16px);min-height:160px;max-height:340px}
+#vozSheet.open{transform:translateY(0)}
+@media(min-width:600px){#vozSheet{max-width:420px;left:50%;transform:translateX(-50%) translateY(100%)}#vozSheet.open{transform:translateX(-50%) translateY(0)}}
+.voz-handle{width:36px;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin:10px auto 0}
+body.modo-claro .voz-handle{background:rgba(0,0,0,.1)}
+.voz-body{padding:16px 20px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;min-height:120px}
+.voz-btn-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,255,255,.07);color:var(--tx2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.voz-btn-x:hover{background:rgba(255,255,255,.13);color:var(--tx)}
+body.modo-claro .voz-btn-x{background:rgba(0,0,0,.06)}
+.voz-est{width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;animation:vozFadeIn .2s ease}
+.voz-waves{display:flex;align-items:center;gap:4px;height:36px}
+.voz-wbar{width:4px;border-radius:2px;background:var(--r);animation:vozBar .7s ease-in-out infinite}
+.voz-wbar:nth-child(1){height:10px;animation-delay:.0s}.voz-wbar:nth-child(2){height:20px;animation-delay:.1s}.voz-wbar:nth-child(3){height:28px;animation-delay:.2s}.voz-wbar:nth-child(4){height:22px;animation-delay:.3s}.voz-wbar:nth-child(5){height:16px;animation-delay:.4s}.voz-wbar:nth-child(6){height:24px;animation-delay:.5s}.voz-wbar:nth-child(7){height:12px;animation-delay:.6s}
+.voz-hint{font-size:13px;font-weight:600;color:var(--tx2);text-align:center}
+.voz-hint em{color:var(--tx);font-style:normal;font-weight:800}
+.voz-transcript{font-size:14px;font-weight:700;color:var(--tx);text-align:center;min-height:20px;max-height:60px;overflow:hidden;line-height:1.4;word-break:break-word}
+.voz-transcript em{color:var(--tx2);font-weight:400}
+.voz-spinner{width:32px;height:32px;border-radius:50%;border:3px solid rgba(var(--theme-rgb),.15);border-top-color:var(--r);animation:vozSpin .7s linear infinite}
+.voz-cand-title{font-size:13px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px}
+.voz-cand-item{width:100%;display:flex;align-items:center;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:14px;padding:10px 14px;cursor:pointer;transition:.15s;font-family:var(--font);text-align:left}
+.voz-cand-item:hover{border-color:rgba(var(--theme-rgb),.5);background:rgba(var(--theme-rgb),.06)}
+.voz-cand-ava{width:34px;height:34px;border-radius:50%;background:rgba(var(--theme-rgb),.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:var(--r);flex-shrink:0}
+.voz-cand-info{flex:1;min-width:0}
+.voz-cand-nom{font-size:14px;font-weight:800;color:var(--tx)}
+.voz-cand-sub{font-size:11px;color:var(--tx2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voz-btn-stop{height:44px;padding:0 22px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s;box-shadow:0 3px 14px rgba(var(--theme-rgb),.35)}
+.voz-btn-stop:active{transform:scale(.97)}
+.voz-btn-sec{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--tx2);font-size:12px;font-weight:700;font-family:var(--font);padding:8px 16px;border-radius:10px;cursor:pointer;transition:.15s}
+.voz-btn-sec:hover{border-color:var(--r);color:var(--r)}
+body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
+.voz-error-ico{font-size:28px}
+.voz-error-msg{font-size:13px;font-weight:700;color:var(--tx2);text-align:center;max-width:280px}
+#btnVozTopbar.activo svg{stroke:var(--r)}
 </style>
 </head>
 <body>
@@ -841,15 +779,14 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
     <span class="logo" onclick="if(!document.body.classList.contains('modo-visualizacion'))goScreen('inicio')" style="cursor:pointer" title="Inicio">Joyvi</span>
     <span class="kiosk-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Visualización</span>
     <button class="tb-btn" id="btnVozTopbar" onclick="abrirAsistenteVoz()" title="Asistente de voz" style="position:relative">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg><span id="vozPulseDot" style="display:none;position:absolute;top:3px;right:3px;width:9px;height:9px;background:#ff5252;border-radius:50%;animation:vozPulse 1s infinite"></span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+      <span id="vozActivoDot" style="display:none;position:absolute;top:3px;right:3px;width:8px;height:8px;background:#ff5252;border-radius:50%"></span>
     </button>
     <button class="tb-btn" onclick="goScreen('notificaciones')" style="position:relative">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot"></span>
     </button>
     <button class="tb-btn" onclick="abrirDrawer()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
   </div>
-  <!-- Botón flotante asistente de voz (visible cuando topbar no se ve) -->
-  <button id="vozFab" onclick="abrirAsistenteVoz()" style="display:none;position:fixed;bottom:24px;right:20px;z-index:999;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--r2),var(--r));border:none;box-shadow:0 4px 20px rgba(var(--theme-rgb),.5);cursor:pointer;align-items:center;justify-content:center;transition:.2s" title="Asistente de voz"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></button>
 
   <!-- DRAWER -->
   <div id="drawerOverlay" onclick="cerrarDrawer()"></div>
@@ -861,6 +798,50 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
       </div>
     </div>
     <div id="drawerBody"></div>
+  </div>
+
+  <!-- ══════════ ASISTENTE DE VOZ v4 ══════════ -->
+  <div id="vozOverlay" onclick="cerrarAsistenteVoz()"></div>
+  <div id="vozSheet">
+    <div class="voz-handle"></div>
+    <div class="voz-body">
+      <!-- Estado: escuchando (también usado para preguntar datos faltantes) -->
+      <div id="vozEstEscucha" class="voz-est" style="display:none">
+        <div class="voz-waves">
+          <div class="voz-wbar"></div><div class="voz-wbar"></div><div class="voz-wbar"></div>
+          <div class="voz-wbar"></div><div class="voz-wbar"></div><div class="voz-wbar"></div>
+          <div class="voz-wbar"></div>
+        </div>
+        <div class="voz-hint" id="vozHint">Habla ahora · Di <em>"listo"</em> para terminar</div>
+        <div class="voz-transcript" id="vozTranscript"></div>
+        <button class="voz-btn-stop" onclick="vozPararManual()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          Parar
+        </button>
+      </div>
+      <!-- Estado: procesando -->
+      <div id="vozEstProc" class="voz-est" style="display:none">
+        <div class="voz-spinner"></div>
+        <div class="voz-hint">Analizando…</div>
+      </div>
+      <!-- Estado: candidatos (ambigüedad de cliente) -->
+      <div id="vozEstCand" class="voz-est" style="display:none">
+        <div class="voz-cand-title">¿Qué cliente es?</div>
+        <div id="vozCandLista"></div>
+        <button class="voz-btn-sec" onclick="vozSinCliente()">Ninguno de estos</button>
+      </div>
+      <!-- Estado: error -->
+      <div id="vozEstError" class="voz-est" style="display:none">
+        <div class="voz-error-ico">⚠️</div>
+        <div class="voz-error-msg" id="vozErrorMsg">No entendí eso. Inténtalo de nuevo.</div>
+        <button class="voz-btn-stop" onclick="vozReintentar()">🎙️ Reintentar</button>
+      </div>
+      <!-- Estado: idle (inicial, antes de abrir mic) -->
+      <div id="vozEstIdle" class="voz-est">
+        <div class="voz-hint" style="opacity:.5">Abriendo micrófono…</div>
+      </div>
+    </div>
+    <button class="voz-btn-x" onclick="cerrarAsistenteVoz()">✕</button>
   </div>
 
   <!-- SLIDE-OVER -->
@@ -1128,43 +1109,6 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
   <!-- ─── PANTALLA: PERFIL ─── -->
   <div class="screen" id="screenPerfil">
     <div class="scroll-pad" id="perfilContent"></div>
-  </div>
-
-  <!-- ═══════════ ASISTENTE DE VOZ ═══════════ -->
-  <div id="vozOverlay" onclick="cerrarAsistenteVoz()"></div>
-  <div id="vozSheet">
-    <div class="voz-handle"></div>
-    <div class="voz-hdr">
-      <div class="voz-ava" id="vozAva"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></div>
-      <div class="voz-hdr-txt">
-        <div class="voz-hdr-name">Asistente Joyvi</div>
-        <div class="voz-hdr-st" id="vozSt">Listo</div>
-      </div>
-      <button class="voz-x" onclick="cerrarAsistenteVoz()">✕</button>
-    </div>
-    <div class="voz-msg" id="vozMsg">Di algo como <em>"crear un parte nuevo"</em> o <em>"parte para García"</em></div>
-    <div class="voz-heard" id="vozHeard"></div>
-    <div class="voz-waves" id="vozWaves" style="display:none">
-      <div class="voz-wbar"></div><div class="voz-wbar"></div><div class="voz-wbar"></div>
-      <div class="voz-wbar"></div><div class="voz-wbar"></div><div class="voz-wbar"></div>
-      <div class="voz-wbar"></div>
-    </div>
-    <div class="voz-prog" id="vozProg">
-      <div class="voz-prog-lbl">Progreso del parte</div>
-      <div class="voz-steps" id="vozSteps"></div>
-    </div>
-    <div class="voz-resumen" id="vozResumen"></div>
-    <div class="voz-btns">
-      <button class="voz-btn-mic" id="vozBtnMic" onclick="vozEscuchar()">
-        <span id="vozBtnIco"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span id="vozBtnLbl">Pulsa para hablar</span>
-      </button>
-      <button class="voz-btn-skip" id="vozBtnSkip" onclick="vozSaltar()" style="display:none;flex-direction:column">
-        <span class="vbsk-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg></span><span class="vbsk-lbl">Omitir</span>
-      </button>
-      <button class="voz-btn-cancel" id="vozBtnCancel" onclick="vozCancelar()" style="display:none;flex-direction:column">
-        <span class="vbcn-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span><span class="vbcn-lbl">Cancelar</span>
-      </button>
-    </div>
   </div>
 
 </div>
@@ -2356,14 +2300,6 @@ const renderInicio=async()=>{
       }
     },{passive:true});
   }
-  // Render gráfica de aprendizaje (con debounce para evitar duplicados)
-  clearTimeout(window._graficaTimer);
-  window._graficaTimer = setTimeout(() => {
-    // Eliminar cualquier gráfica anterior antes de renderizar
-    const prev = document.getElementById('vozGraficaAprendizaje');
-    if (prev) prev.remove();
-    _vRenderGraficaAprendizaje();
-  }, 350);
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3143,7 +3079,6 @@ window.guardarMantSBNuevo = async () => {
   const dir = document.getElementById('_mantSBDir')?.value.trim()||cli?.direccion||'';
   const edif = document.getElementById('_mantSBEdif')?.value.trim()||cli?.edificio||'';
   const tel = document.getElementById('_mantSBTel')?.value.trim()||cli?.telefono||'';
-  try{ window._aprenderGuardado('mantenimiento',{nombreTrabajo:nom,notas}); }catch(_){}
   try{
     await addDoc(collection(db,'grupos',CGID,'mantenimientos'),{
       clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:dir,clienteEdificio:edif,clienteTelefono:tel,
@@ -3168,7 +3103,6 @@ window.guardarMantInline=async()=>{
   const gMEdif=$('gMEdif')?.value.trim()||cli?.edificio||'';
   const gMTel=$('gMTel')?.value.trim()||cli?.telefono||'';
   // Aprender
-  try{ window._aprenderGuardado('mantenimiento', { nombreTrabajo:nom, notas }); }catch(_){}
   try{
     await addDoc(collection(db,'grupos',CGID,'mantenimientos'),{
       clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:gMDir,clienteEdificio:gMEdif,clienteTelefono:gMTel,
@@ -3700,7 +3634,6 @@ window.guardarMantDesdeSB=async()=>{
   const esPlantFull=$('mPlantFullSB')?.checked||false;
   const mantData={clienteId:cliId,clienteNombre:cli?.nombre||'',clienteDireccion:mantDir,clienteTelefono:mantTel,clienteEdificio:mantEdif,nombreTrabajo:nom,frecuencia:frec,fechaInicio:fecha,fechaProxima:fecha,estado:'pendiente',notas,creado:serverTimestamp()};
   // Aprender
-  try{ window._aprenderGuardado('mantenimiento', { nombreTrabajo:nom, notas }); }catch(_){}
   try{
     await addDoc(collection(db,'grupos',CGID,'mantenimientos'),mantData);
     if(esPlant&&!mantPlantillas.includes(nom)){
@@ -3731,8 +3664,7 @@ window.abrirFCli=async(id, preData)=>{
       Importar desde la agenda del móvil
     </button>`:'';
   const html=`
-    ${vd.nombre?`<div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>Creado por asistente de voz — revisa y guarda</div>`:''}
-    ${agendaBtn}
+        ${agendaBtn}
     <div class="fsec"><div class="fsec-title">Datos personales</div>
       <div class="fgrp"><label>Nombre *</label><input id="cNom" value="${vd.nombre||c?.nombre||''}" placeholder="Nombre del cliente"></div>
       <div class="fgrp"><label>Nombre del edificio / comunidad</label><input id="cEdif" value="${vd.edificio||c?.edificio||''}" placeholder="Ej: Comunidad Las Flores, Edif. Torre Norte..."></div>
@@ -3960,8 +3892,7 @@ window.abrirFParte=async(id,preCliId,preData)=>{
   const cliOpts=allClientes.filter(c=>!c.archivado).map(c=>`<option value="${c.id}" data-edif="${(c.edificio||'').replace(/"/g,'&quot;')}" data-dir="${(c.direccion||'').replace(/"/g,'&quot;')}" data-tel="${(c.telefono||'').replace(/"/g,'&quot;')}" ${(preCliId===c.id||p?.clienteId===c.id)?'selected':''}>${c.nombre}</option>`).join('');
   const chipsTpl=plantillas.map(t=>`<div class="pchip" onclick="document.getElementById('pTit').value='${t}'">${t}</div>`).join('');
   abrirSB(id?'Editar parte':'Nuevo parte',`
-    ${preData?`<div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>Creado por asistente de voz — revisa y guarda</div>`:''}
-    <div class="fsec"><div class="fsec-title">Información general</div>
+        <div class="fsec"><div class="fsec-title">Información general</div>
       <div class="fgrp"><label>Título *</label><input id="pTit" value="${vd.titulo||p?.titulo||''}" placeholder="Ej: Reparación bomba sumergible"></div>
       ${chipsTpl?`<div class="plantilla-chips">${chipsTpl}</div>`:''}
       <div class="fgrp"><label>Cliente</label><select id="pCli" onchange="autoEdificio(this)"><option value="">Sin cliente</option>${cliOpts}</select></div>
@@ -4024,8 +3955,6 @@ window.guardarParte=async(id)=>{
   const direccionParte=$('pDir')?.value.trim()||'';
   const telefonoParte=$('pTel')?.value.trim()||'';
   const data={titulo:tit,clienteId:cliId,clienteNombre:cliNom,edificio:edificioParte,clienteDireccion:direccionParte,clienteTelefono:telefonoParte,operario:$('pOpe').value.trim(),descripcion:$('pDesc').value.trim(),materiales:$('pMat').value.trim(),duracion:$('pDur').value.trim(),importeManoObra:parseFloat($('pMO').value)||0,importeMateriales:parseFloat($('pMatE').value)||0,importeDesplazamiento:parseFloat($('pDesp').value)||0,aplicarIVAMateriales:$('pIVA').checked,estado:$('pEst').value,esPlantilla:esPlant,actualizado:serverTimestamp()};
-  // Aprender de lo que el usuario realmente guardó vs lo que propuso el asistente
-  try{ window._aprenderGuardado('parte', { titulo:tit, descripcion:$('pDesc').value.trim(), materiales:$('pMat').value.trim() }); }catch(_){}
   try{
     let parteId=id;
     if(id)await updateDoc(doc(db,'grupos',CGID,'partes',id),data);
@@ -5352,7 +5281,6 @@ window.guardarMant=async()=>{
   const telVal=$('mTel')?.value.trim()||cli?.telefono||'';
   const mantData={clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:dirVal,clienteEdificio:edifVal,clienteTelefono:telVal,nombreTrabajo:nom,frecuencia:frec,fechaInicio:fecha,fechaProxima:fecha,estado:'pendiente',notas:$('mNotas').value.trim(),creado:serverTimestamp()};
   // Aprender
-  try{ window._aprenderGuardado('mantenimiento', { nombreTrabajo:nom, notas:$('mNotas').value.trim() }); }catch(_){}
   try{
     await addDoc(collection(db,'grupos',CGID,'mantenimientos'),mantData);
     if(esPlant&&!mantPlantillas.includes(nom)){
@@ -5461,7 +5389,6 @@ window.guardarEditMant=async(id)=>{
   const telVal=$('eMTel')?.value.trim()||cli?.telefono||'';
   const guardarPlant=$('eMPlant')?.checked;
   // Aprender de la edición (sin snapshot: el usuario editó manualmente, peso doble)
-  try{ window._vSnapshotAsistente=null; window._aprenderGuardado('mantenimiento', { nombreTrabajo:nom, notas:notasVal }); }catch(_){}
   try{
     await updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{
       nombreTrabajo:nom,
@@ -6705,7 +6632,6 @@ window.guardarAveria=async()=>{
   const tipo=$('avTipo').value.trim();
   if(!cliId||!tipo){toast('Selecciona cliente y tipo de avería','e');return}
   // Aprender
-  try{ window._aprenderGuardado('averia', { tipo, descripcion:$('avDesc').value.trim() }); }catch(_){}
   try{
     await addDoc(collection(db,'grupos',CGID,'averias'),{
       clienteId:cliId,
@@ -7140,7 +7066,6 @@ window.guardarPresupuesto=async()=>{
   const desp=parseFloat($('prDesp')?.value)||0;
   const partRows=[];  // partidas eliminadas del formulario
   // Aprender
-  try{ window._aprenderGuardado('presupuesto', { titulo, notas:$('prNotas')?.value.trim()||'' }); }catch(_){}
   try{
     await addDoc(collection(db,'grupos',CGID,'presupuestos'),{
       clienteId:cliId,
@@ -7753,20 +7678,13 @@ const renderPerfil=()=>{
       <div><div class="toggle-label">Pantalla de solo lectura</div><div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:200px">Para tablets en taller. No permite crear ni editar.</div></div>
       <label class="toggle-sw" style="margin-top:2px;flex-shrink:0"><input type="checkbox" id="toggleKiosk" onchange="this.checked?activarModoVisualizacion():salirModoVisualizacion()" ${_esModoSimple?'checked':''}><span class="toggle-track"></span></label>
     </div>
-  </div>
-
-  <!-- ── VOZ ── -->
-  <div class="fsec" id="vozSelectorSec">
-    <div class="fsec-title">🎤 Voz del asistente</div>
-    <div class="voz-selector-list" id="vozSelectorList">
-      <div style="font-size:12px;color:var(--tx2)">Cargando voces...</div>
-    </div>
+  </div></div>
   </div>
 
   <button class="btn btn-del" style="margin-top:8px" onclick="doLogout()">🚪 Cerrar sesión</button>`;
 
   $('perfilContent').innerHTML = html;
-  setTimeout(_vRenderSelectorVoces, 150);
+
 };;
 
 window.guardarPerfil=async()=>{
@@ -8324,1990 +8242,1247 @@ window.cambiarModoClaro=activar=>{
   toast(activar?'☀️ Modo claro activado':'🌙 Modo oscuro activado','o');
 };
 
+// ════════════════════════════════════════════════════════
+// ASISTENTE DE VOZ JOYVI v4
+// Dictado único → extracción local → formulario pre-rellenado
+// Sin API externa · Sin SpeechSynthesis en flujo principal
+// ════════════════════════════════════════════════════════
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ASISTENTE DE VOZ JOYVI v3 — DICTADO ÚNICO + FORMULARIO FLASH
-// Sin preguntas campo a campo · Sin confirmaciones habladas
-// Escucha completa → extrae todo → abre formulario pre-rellenado
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const V = {
-  rec: null,
-  fase: 'idle', // idle | escuchando | procesando | candidatos | consulta
-  _timer: null,
-  _vozVoice: null,
-  _hablando: false,
-  _recActivo: false,
-  _silenceTimer: null,
-  _transcripcionParcial: '',
-  _transcripcionFinal: '',
-  _candidatosCliente: [],  // cuando hay ambigüedad de cliente
-  _pendienteAccion: null,  // datos extraídos esperando confirmación de cliente
-  _aliasAprendidos: {},    // {textoNorm: clienteId} guardado en localStorage
+const AV = {
+  rec:           null,    // instancia SpeechRecognition
+  fase:          'idle',  // idle | escuchando | procesando | candidatos | error
+  // ── Transcripción dividida en 2 capas ──
+  // sesionBase: texto ya confirmado de sesiones anteriores (antes de reiniciar el rec)
+  // sesionActual: texto final confirmado en ESTA sesión del rec
+  // transcParcial: interim (no confirmado) de esta sesión
+  sesionBase:    '',
+  sesionActual:  '',
+  transcParcial: '',
+  silenceTimer:  null,
+  _datosTemp:    null,    // datos extraídos pendientes (candidatos o turno 2)
+  _hasInterim:   false,   // hay texto interim activo (la persona está hablando)
+  _lastResultAt: 0,       // timestamp del último resultado recibido
+  // Propiedad computada: texto completo
+  get transcFinal(){ return (this.sesionBase+this.sesionActual).trim(); },
+  set transcFinal(v){ this.sesionBase=''; this.sesionActual=v; }, // reset total
 };
 
-// ── Cargar voz: respeta preferencia guardada, sino española disponible ──
-const _vCargarVoz = () => {
-  const guardada = localStorage.getItem('joyvi_voz');
-  const voces = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
-  if (!voces.length) return;
-  if (guardada) {
-    const voz = voces.find(v => v.name === guardada);
-    if (voz) { V._vozVoice = voz; return; }
-  }
-  // Preferir voz masculina natural
-  const pref = voces.find(v => /male|hombre|jorge|pablo|diego|miguel/i.test(v.name))
-    || voces.find(v => !v.name.toLowerCase().includes('female'))
-    || voces[0];
-  V._vozVoice = pref || null;
-};
-
-// ── Actualizar UI según estado ──
-const _vActualizarUI = () => {
-  const ava = document.getElementById('vozAva');
-  const st  = document.getElementById('vozSt');
-  const mic = document.getElementById('vozBtnMic');
-  const waves = document.getElementById('vozWaves');
-  if (!ava) return;
-  if (V.fase === 'escuchando') {
-    ava.className = 'voz-ava listening';
-    if (st) st.textContent = 'Escuchando…';
-    if (mic) { mic.disabled = false; mic.querySelector('#vozBtnLbl').textContent = 'Pulsa para terminar'; }
-    if (waves) waves.style.display = 'flex';
-  } else if (V.fase === 'procesando') {
-    ava.className = 'voz-ava speaking';
-    if (st) st.textContent = 'Procesando…';
-    if (mic) mic.disabled = true;
-    if (waves) waves.style.display = 'none';
-  } else {
-    ava.className = 'voz-ava';
-    if (st) st.textContent = 'Listo';
-    if (mic) { mic.disabled = false; if (mic.querySelector('#vozBtnLbl')) mic.querySelector('#vozBtnLbl').textContent = 'Pulsa para hablar'; }
-    if (waves) waves.style.display = 'none';
-  }
-};
-
-const _vSetMsg = (txt) => {
-  const el = document.getElementById('vozMsg');
-  if (el) el.innerHTML = txt;
-};
-
-// ── TTS — para el mic antes de hablar, lo reactiva cuando termina ──
-const _vHablar = (txt, cb) => {
-  // Parar el mic antes de hablar para que STT no capture la propia voz
-  if (V.rec) { try { V.rec.stop(); } catch(e){} V.rec = null; }
-  V._recActivo = false;
-  window.speechSynthesis.cancel();
-  _vCargarVoz();
-  const u = new SpeechSynthesisUtterance(txt);
-  u.lang = 'es-ES';
-  u.rate = 1.08;
-  u.pitch = 1;
-  if (V._vozVoice) u.voice = V._vozVoice;
-  V._hablando = true;
-  u.onend = () => {
-    V._hablando = false;
-    if (cb) cb();
-  };
-  u.onerror = () => {
-    V._hablando = false;
-    if (cb) cb();
-  };
-  window.speechSynthesis.speak(u);
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// NORMALIZACIÓN Y UTILIDADES
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vNorm = s => String(s||'').toLowerCase().trim()
+// ─── Utilidades de normalización ───────────────────────
+const _avNorm = s => String(s||'').toLowerCase().trim()
   .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
   .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
 
-// Distancia Levenshtein para fuzzy matching
-const _vLevenshtein = (a, b) => {
-  const m = a.length, n = b.length;
-  const dp = Array.from({length:m+1}, (_,i) => Array.from({length:n+1}, (_,j) => j === 0 ? i : i === 0 ? j : 0));
-  for (let i=1;i<=m;i++) for (let j=1;j<=n;j++)
-    dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+// Distancia Levenshtein
+const _avLev = (a,b) => {
+  const m=a.length,n=b.length;
+  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>j===0?i:i===0?j:0));
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
   return dp[m][n];
 };
 
-// Similitud 0-1 entre dos strings normalizados
-const _vSimilitud = (a, b) => {
-  const na=_vNorm(a), nb=_vNorm(b);
-  if (!na||!nb) return 0;
-  if (na===nb) return 1;
-  if (na.includes(nb)||nb.includes(na)) return 0.92;
-  const maxLen = Math.max(na.length, nb.length);
-  return Math.max(0, 1 - _vLevenshtein(na, nb) / maxLen);
+const _avSim = (a,b) => {
+  const na=_avNorm(a),nb=_avNorm(b);
+  if(!na||!nb)return 0;
+  if(na===nb)return 1;
+  if(na.includes(nb)||nb.includes(na))return 0.92;
+  return Math.max(0,1-_avLev(na,nb)/Math.max(na.length,nb.length));
 };
 
-// Similitud fonética simplificada para español
-const _vFonetico = s => _vNorm(s)
+const _avFon = s => _avNorm(s)
   .replace(/v/g,'b').replace(/ll/g,'y').replace(/ce|ci/g,'ze')
   .replace(/ge|gi/g,'je').replace(/qu/g,'k').replace(/ch/g,'x')
-  .replace(/[aeiou]/g,'a').replace(/(.)\1+/g,'$1');
+  .replace(/[aeiou]/g,'a').replace(/(.)\\1+/g,'$1');
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ALIAS APRENDIDOS (localStorage)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ─── Aliases (localStorage) ─────────────────────────────
+const _AV_ALIAS_KEY = 'joyvi_av_aliases_v4';
+const _avAliasLoad  = ()=>{ try{return JSON.parse(localStorage.getItem(_AV_ALIAS_KEY)||'{}')}catch{return{}} };
+const _avAliasSave  = (texto,cliId)=>{ const a=_avAliasLoad(); a[_avNorm(texto)]=cliId; try{localStorage.setItem(_AV_ALIAS_KEY,JSON.stringify(a))}catch{} };
 
-const _vAliasKey = 'joyvi_aliases_v1';
-const _vCargarAliases = () => {
-  try { return JSON.parse(localStorage.getItem(_vAliasKey)||'{}'); } catch(e) { return {}; }
-};
-const _vGuardarAlias = (texto, clienteId) => {
-  const aliases = _vCargarAliases();
-  aliases[_vNorm(texto)] = clienteId;
-  try { localStorage.setItem(_vAliasKey, JSON.stringify(aliases)); } catch(e) {}
-};
+// ─── Buscador de cliente (5 niveles) ────────────────────
+const _avBuscarCliente = texto => {
+  if(!texto||typeof allClientes==='undefined')return{encontrado:null,candidatos:[]};
+  const t=_avNorm(texto);
+  const clis=allClientes.filter(c=>!c.archivado);
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// BUSCADOR DE CLIENTE — 5 niveles, nunca asume
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // N1 — alias aprendido
+  const alias=_avAliasLoad();
+  if(alias[t]){const c=clis.find(x=>x.id===alias[t]);if(c)return{encontrado:c,candidatos:[]}}
 
-const _vBuscarCliente = (texto) => {
-  if (!texto || !allClientes) return { encontrado: null, candidatos: [] };
-  const t = _vNorm(texto);
-  const clis = allClientes.filter(c => !c.archivado);
+  // N2 — exacto
+  const exacto=clis.find(c=>_avNorm(c.nombre)===t);
+  if(exacto)return{encontrado:exacto,candidatos:[]};
 
-  // Nivel 1 — Alias aprendidos
-  const aliases = _vCargarAliases();
-  if (aliases[t]) {
-    const cli = clis.find(c => c.id === aliases[t]);
-    if (cli) return { encontrado: cli, candidatos: [] };
+  // N3 — contiene
+  const parcial=clis.filter(c=>{const n=_avNorm(c.nombre);return n.includes(t)||t.includes(n)});
+  if(parcial.length===1)return{encontrado:parcial[0],candidatos:[]};
+  if(parcial.length>1)return{encontrado:null,candidatos:parcial.slice(0,4)};
+
+  // N4 — palabras clave (>3 letras)
+  const pals=t.split(/\s+/).filter(p=>p.length>3);
+  if(pals.length){
+    const porPal=clis.filter(c=>pals.some(p=>_avNorm(c.nombre).includes(p)));
+    if(porPal.length===1)return{encontrado:porPal[0],candidatos:[]};
+    if(porPal.length>1&&porPal.length<=4)return{encontrado:null,candidatos:porPal};
   }
 
-  // Nivel 2 — Coincidencia directa (nombre tal cual está creado)
-  const directa = clis.find(c => _vNorm(c.nombre) === t);
-  if (directa) return { encontrado: directa, candidatos: [] };
+  // N5 — fuzzy + fonético
+  const scored=clis.map(c=>{
+    const n=_avNorm(c.nombre);
+    const sim=_avSim(t,n);
+    const fon=_avSim(_avFon(t),_avFon(n));
+    const dir=_avSim(t,_avNorm(c.direccion||''))*0.6;
+    const edi=_avSim(t,_avNorm(c.edificio||''))*0.65;
+    return{c,score:Math.max(sim,fon,dir,edi)};
+  }).filter(x=>x.score>0.5).sort((a,b)=>b.score-a.score);
 
-  // Nivel 3 — Contiene el texto o el texto lo contiene
-  const parcial = clis.filter(c => {
-    const n = _vNorm(c.nombre);
-    return n.includes(t) || t.includes(n);
-  });
-  if (parcial.length === 1) return { encontrado: parcial[0], candidatos: [] };
-  if (parcial.length > 1) return { encontrado: null, candidatos: parcial.slice(0,4) };
+  if(!scored.length)return{encontrado:null,candidatos:[]};
+  if(scored[0].score>0.85)return{encontrado:scored[0].c,candidatos:[]};
+  return{encontrado:null,candidatos:scored.slice(0,4).map(x=>x.c)};
+};
 
-  // Nivel 4 — Palabras clave (palabras de más de 3 letras del texto buscado)
-  const palabrasBusqueda = t.split(/\s+/).filter(p => p.length > 3);
-  if (palabrasBusqueda.length) {
-    const porPalabra = clis.filter(c => {
-      const n = _vNorm(c.nombre);
-      return palabrasBusqueda.some(p => n.includes(p));
-    });
-    if (porPalabra.length === 1) return { encontrado: porPalabra[0], candidatos: [] };
-    if (porPalabra.length > 1 && porPalabra.length <= 4) return { encontrado: null, candidatos: porPalabra };
+// ─── Detectar tipo de documento ─────────────────────────
+const _avDetectarTipo = txt => {
+  const t=_avNorm(txt);
+  const mInten=t.match(/(?:crea[r]?|nueva?|nuevo?|abrir?|registra[r]?|apunta[r]?|a[ñn]ade[r]?|hace[r]?|generar?|dar\s+de\s+alta)\s+(?:una?\s+)?(\w+)/);
+  if(mInten){
+    const d=mInten[1];
+    if(/^aver[ií]a/.test(d))return'averia';
+    if(/^parte/.test(d))return'parte';
+    if(/^mant/.test(d))return'mantenimiento';
+    if(/^presupu/.test(d))return'presupuesto';
+    if(/^cliente/.test(d))return'cliente';
   }
-
-  // Nivel 5 — Similitud fonética y fuzzy
-  const conScore = clis.map(c => {
-    const n = _vNorm(c.nombre);
-    const sim = _vSimilitud(t, n);
-    const fon = _vSimilitud(_vFonetico(t), _vFonetico(n));
-    // También buscar en dirección y edificio
-    const dirScore = _vSimilitud(t, _vNorm(c.direccion||'')) * 0.6;
-    const edifScore = _vSimilitud(t, _vNorm(c.edificio||'')) * 0.65;
-    return { cli: c, score: Math.max(sim, fon, dirScore, edifScore) };
-  }).filter(x => x.score > 0.5).sort((a,b) => b.score - a.score);
-
-  if (!conScore.length) return { encontrado: null, candidatos: [] };
-  if (conScore[0].score > 0.85) return { encontrado: conScore[0].cli, candidatos: [] };
-
-  // Devolver hasta 4 candidatos para que el técnico elija
-  return { encontrado: null, candidatos: conScore.slice(0,4).map(x => x.cli) };
+  if(/\b(averia|averiada?|estropead[ao]|fallo\s+en|urgente|emergencia|problema\s+en|rotura|fuga|no\s+funciona|sin\s+agua|no\s+arranca)\b/.test(t)&&!/\b(parte|presupuesto|mantenimiento)\b/.test(t))return'averia';
+  if(/\b(presupuesto|cotizacion|precio\s+para|cuanto\s+costaria)\b/.test(t))return'presupuesto';
+  if(/\b(mantenimiento|revision\s+periodica|revision\s+anual|revision\s+mensual|cada\s+\w+\s+mes|semestral|trimestral|mensual|anual|semanal|quincenal)\b/.test(t))return'mantenimiento';
+  if(/\b(cliente\s+nuevo|nuevo\s+cliente|dar\s+de\s+alta|registrar\s+cliente|a[ñn]adir\s+cliente)\b/.test(t))return'cliente';
+  if(/\b(parte|trabajo\s+realizado?|visita\s+realizada?)\b/.test(t))return'parte';
+  if(/\b\d+\s*(?:euros?|€)\b/.test(t)||/\b\d+\s*hora[s]?\b/.test(t))return'parte';
+  return'parte';
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// FILTRO DE RUIDO — elimina muletillas y frases personales
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _RUIDO_DURO = [
-  // Muletillas
-  /\b(eh|um+|mm+|ah+|oh+|uh+)\b/gi,
-  /\bo sea\b/gi, /\bes que\b/gi, /\bpues\b/gi, /\bbueno\b/gi,
-  /\bvenga\b/gi, /\bhombre\b/gi, /\btio\b/gi, /\bmacho\b/gi,
-  /\bya sabes\b/gi, /\bya me entiendes?\b/gi, /\bme entiendes?\b/gi,
-  /\b[¿?]?sabes[?]?\b/gi, /\b[¿?]?no[?]?\s*$/gi, /\b[¿?]?verdad[?]?\b/gi,
-  /\betcetera\b/gi, /\by tal\b/gi, /\by eso\b/gi, /\btal\s*y\s*como\b/gi,
-  /\ba ver\b/gi, /\bvamos\b/gi, /\bclaro\b/gi, /\bpor\s*supuesto\b/gi,
-  /\bef+ectivamente\b/gi, /\boxala\b/gi, /\bespera\b/gi,
-  // Contexto personal irrelevante
-  /\bque\s+tengo\s+prisa\b/gi, /\bque\s+llego\s+tarde\b/gi,
-  /\bque\s+me\s+espera\b[^.]+/gi, /\bque\s+es\s+para\s+hoy\b/gi,
-  /\bque\s+me\s+han\s+llamado\b/gi, /\bno\s+se\s+si\b/gi,
-  /\bcreo\s+que\b/gi, /\bme\s+parece\s+que\b/gi,
-  /\ba\s+ver\s+si\b/gi, /\bno\s+me\s+acuerdo\s+bien\b/gi,
-  /\bque\s+tengo\s+que\s+ir\b[^.]+/gi, /\bque\s+me\s+voy\b[^.]+/gi,
-  // Comandos meta al asistente
-  /\b(apunta|escribe|pon\s+ah[ií]|anota|que\s+conste|para\s+que\s+quede)\b[^,.]*/gi,
-  // Expresiones de baja confianza (el dato queda pero se marca)
-];
-
-const _RUIDO_CONTEXTUAL = [
-  /\botra\s+vez\b/gi,
-  /\bcomo\s+siempre\b/gi,
-  /\bde\s+siempre\b/gi,
-  /\bcomo\s+de\s+costumbre\b/gi,
-  /\bel\s+de\s+siempre\b/gi,
-  /\bla\s+de\s+siempre\b/gi,
-  /\blo\s+de\s+siempre\b/gi,
-  /\bese\b/gi, /\besa\b/gi, /\besos\b/gi, /\besas\b/gi,
-];
-
-const _vFiltrarRuido = (txt) => {
-  let r = txt;
-  for (const re of _RUIDO_DURO) r = r.replace(re, ' ');
-  for (const re of _RUIDO_CONTEXTUAL) r = r.replace(re, ' ');
-  return r.replace(/\s{2,}/g, ' ').trim();
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// DICCIONARIO COLOQUIAL → PROFESIONAL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _DICT_PROFESIONAL = [
-  // Estado de equipo
-  [/\b(cascada?|petada?|muerta?|fundida?|escacharrada?|reventada?|inservible)\b/gi, 'fuera de servicio'],
-  [/\b(no\s+tira|no\s+sale\s+agua?|sin\s+agua|no\s+da\s+agua)\b/gi, 'sin caudal'],
-  [/\b(hace?\s+ruido\s+raro|pita|chiri[a|á]|hace?\s+ruidos?)\b/gi, 'funcionamiento anómalo'],
-  [/\b(se\s+calienta\s+mucho|muy\s+caliente|quema|sobrecalentada?)\b/gi, 'sobrecalentamiento'],
-  [/\b(pierde\s+agua?|gotea|chorrea|tiene\s+fuga|tiene\s+una\s+fuga)\b/gi, 'fuga'],
-  [/\b(no\s+arranca|no\s+enciende|no\s+da\s+se[ñn]al|sin\s+arranque)\b/gi, 'sin arranque'],
-  [/\b(atascada?|bloqueada?|trabada?|enganchada?)\b/gi, 'bloqueo mecánico'],
-  [/\b(se\s+va\s+la\s+luz|salta\s+el\s+diferencial|salta\s+el\s+plomo|fallo\s+el[eé]ctrico)\b/gi, 'fallo eléctrico'],
-  [/\b(rota?|partida?|rajada?)\b/gi, 'rotura'],
-  [/\b(vieja|muy\s+usada?|para\s+cambiar|ya\s+no\s+sirve)\b/gi, 'fin de vida útil'],
-  [/\b(oxidada?|llena\s+de\s+[oó]xido|muy\s+oxidada?)\b/gi, 'corrosión avanzada'],
-  [/\b(sin\s+presi[oó]n|baja\s+presi[oó]n)\b/gi, 'presión insuficiente'],
-  [/\b(mucha\s+presi[oó]n|presi[oó]n\s+alta)\b/gi, 'sobrepresión'],
-  // Acciones del técnico
-  [/\b(lo\s+arregl[eé]|lo\s+repar[eé]|lo\s+fix[eé]|quedo?\s+arreglad[ao])\b/gi, 'reparación realizada'],
-  [/\b(cambi[eé]|puse\s+una?\s+nueva?|sustitu[ií])\b/gi, 'sustitución de'],
-  [/\b(revis[eé]\s+todo|lo\s+mir[eé]\s+todo|inspeccion[eé])\b/gi, 'inspección general realizada'],
-  [/\b(dej[eé]\s+todo\s+bien|qued[oó]\s+perfecto|todo\s+correcto)\b/gi, 'instalación verificada y correcta'],
-  [/\b(hice?\s+el\s+mantenimiento\s+de\s+siempre|hice?\s+el\s+mantenimiento)\b/gi, 'mantenimiento periódico realizado'],
-  [/\b(puse|coloc[eé]|instal[eé])\b/gi, 'instalación de'],
-  [/\b(quit[eé]|retir[eé]|sac[eé])\b/gi, 'retirada de'],
-  [/\b(lav[eé]|limp[ií][eé]|desatranqu[eé])\b/gi, 'limpieza de'],
-  [/\b(conect[eé]|enganch[eé])\b/gi, 'conexión de'],
-  [/\b(desconect[eé]|desengach[eé])\b/gi, 'desconexión de'],
-  [/\b(apriet[eé]|ajust[eé])\b/gi, 'ajuste de'],
-  [/\b(fui\s+a\s+ver|pas[eé]\s+a\s+ver|fui\s+a\s+revisar)\b/gi, 'visita de inspección'],
-  // Materiales informales
-  [/\bchufleta\b/gi, 'racor'],
-  [/\bmanguito\s+viejo\b/gi, 'manguito deteriorado'],
-  [/\bjunta\s+de\s+goma\b/gi, 'junta tórica'],
-  [/\btapon\b/gi, 'tapón'],
-];
-
-// Diccionario del grupo (Firestore) — se carga asíncrono
-let _vDictGrupo = [];
-const _vCargarDictGrupo = async () => {
-  if (!CGID) return;
-  try {
-    const snap = await getDocs(collection(db, 'grupos', CGID, 'diccionario_voz'));
-    _vDictGrupo = snap.docs.map(d => d.data()).filter(d => d.original && d.profesional);
-  } catch(e) {}
-};
-
-const _vAplicarDiccionario = (txt) => {
-  let r = txt;
-  // Diccionario del grupo primero (tiene prioridad)
-  for (const entry of _vDictGrupo) {
-    try {
-      const re = new RegExp('\\b' + entry.original.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b', 'gi');
-      r = r.replace(re, entry.profesional);
-    } catch(e) {}
-  }
-  // Diccionario base
-  for (const [re, rep] of _DICT_PROFESIONAL) r = r.replace(re, rep);
-  return r;
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// REFORMULACIÓN ESTRUCTURAL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vReformular = (txt) => {
-  if (!txt) return '';
-  let r = txt.trim();
-
-  // 1. Eliminar ruido
-  r = _vFiltrarRuido(r);
-
-  // 2. Aplicar diccionario coloquial→profesional
-  r = _vAplicarDiccionario(r);
-
-  // 3. Eliminar primera persona de verbos comunes
-  r = r.replace(/\b(yo\s+)?(he\s+)?(realiz[eé]|efectu[eé]|hic[ei]ste?|hiz[eo])\b/gi, 'realización de');
-  r = r.replace(/\b(fui|fue)\s+a\b/gi, 'visita a');
-
-  // 4. Capitalizar primera letra, punto final
-  r = r.charAt(0).toUpperCase() + r.slice(1);
-  if (r && !r.match(/[.!?]$/)) r += '.';
-
-  // 5. Limpiar espacios dobles
-  r = r.replace(/\s{2,}/g, ' ').replace(/\s+\./g, '.').trim();
-
-  return r;
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PARSER DE DURACIÓN ROBUSTO
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vParseDuracion = (txt) => {
-  const t = _vNorm(txt||'');
-  // Números en texto → dígitos
-  const numText = {
-    'cero':0,'un':1,'una':1,'uno':1,'dos':2,'tres':3,'cuatro':4,'cinco':5,
-    'seis':6,'siete':7,'ocho':8,'nueve':9,'diez':10,'once':11,'doce':12,
-    'media':0.5,'cuarto':0.25,'quince':15,'veinte':20,'treinta':30,
-    'cuarenta':40,'cincuenta':50,'sesenta':60,
-  };
-  const toN = (s) => { const n=parseFloat(s); return isNaN(n)?numText[s]??null:n; };
-
-  // Patrón "X horas Y minutos"
-  const mHM = t.match(/(\w+(?:\.\d+)?)\s+hora[s]?\s+(?:y\s+)?(\w+(?:\.\d+)?)\s+min/);
-  if (mHM) { const h=toN(mHM[1]), m=toN(mHM[2]); if(h!==null&&m!==null) return `${h}h ${m}min`; }
-
-  // Patrón "X horas y media"
-  const mHmed = t.match(/(\w+(?:\.\d+)?)\s+hora[s]?\s+(?:y\s+)?media/);
-  if (mHmed) { const h=toN(mHmed[1]); if(h!==null) return `${h+0.5}h`; }
-
-  // Patrón "X horas"
-  const mH = t.match(/(\w+(?:\.\d+)?)\s+hora[s]?/);
-  if (mH) { const h=toN(mH[1]); if(h!==null) return `${h}h`; }
-
-  // Patrón "X minutos"
-  const mM = t.match(/(\w+(?:\.\d+)?)\s+min(?:utos?)?/);
-  if (mM) { const m=toN(mM[1]); if(m!==null) return `${m}min`; }
-
-  // Expresiones coloquiales
-  if (/hora(?:cita|lla)\b/.test(t)) return '1h';
-  if (/media\s+hora/.test(t)) return '30min';
-  if (/\bun\s+momento\b|\bun\s+rato\b|\bnada\b/.test(t)) return '30min';
-  if (/todo\s+el\s+d[ií]a|d[ií]a\s+entero/.test(t)) return '8h';
-  if (/toda\s+la\s+ma[ñn]ana/.test(t)) return '4h';
-  if (/toda\s+la\s+tarde/.test(t)) return '4h';
-  if (/rato\s+largo/.test(t)) return '2h';
-  if (/\bpoco\s+tiempo\b/.test(t)) return '1h';
-
-  // Rango de horas "de X a Y"
-  const mRango = t.match(/de\s+(\w+)\s+a\s+(\w+)/);
-  if (mRango) {
-    const h1 = toN(mRango[1]), h2 = toN(mRango[2]);
-    if (h1!==null && h2!==null && h2>h1) return `${h2-h1}h`;
-  }
-
+// ─── Parser de duración ─────────────────────────────────
+const _avParseDur = txt => {
+  const t=_avNorm(txt||'');
+  const nMap={cero:0,un:1,una:1,uno:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,media:.5,cuarto:.25,quince:15,veinte:20,treinta:30,cuarenta:40,cincuenta:50,sesenta:60};
+  const toN=s=>{const n=parseFloat(s);return isNaN(n)?(nMap[s]??null):n};
+  const mHM=t.match(/(\w+(?:\.\d+)?)\s+hora[s]?\s+(?:y\s+)?(\w+(?:\.\d+)?)\s+min/);
+  if(mHM){const h=toN(mHM[1]),m=toN(mHM[2]);if(h!==null&&m!==null)return`${h}h ${m}min`}
+  const mHmed=t.match(/(\w+(?:\.\d+)?)\s+hora[s]?\s+(?:y\s+)?media/);
+  if(mHmed){const h=toN(mHmed[1]);if(h!==null)return`${h+.5}h`}
+  const mH=t.match(/(\w+(?:\.\d+)?)\s+hora[s]?/);
+  if(mH){const h=toN(mH[1]);if(h!==null)return`${h}h`}
+  const mM=t.match(/(\w+(?:\.\d+)?)\s+min(?:utos?)?/);
+  if(mM){const m=toN(mM[1]);if(m!==null)return`${m}min`}
+  if(/media\s+hora/.test(t))return'30min';
+  if(/todo\s+el\s+d[ií]a|d[ií]a\s+entero/.test(t))return'8h';
+  if(/toda\s+la\s+ma[ñn]ana/.test(t))return'4h';
+  if(/toda\s+la\s+tarde/.test(t))return'4h';
   return null;
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PARSER DE IMPORTES ROBUSTO
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vParseImportes = (txt) => {
-  const t = _vNorm(txt||'');
-  const res = { manoObra:0, materiales:0, desplazamiento:0, iva:false, gratuito:false };
-
-  // Gratuito
-  if (/\b(gratis|gratuito|sin\s+cobr|de\s+regalo|sin\s+coste|sin\s+cargo|cortesia|cero\s+euros|no\s+cobr|invitado)\b/.test(t)) {
-    res.gratuito = true; return res;
+// ─── Parser de importes ─────────────────────────────────
+const _avParseImportes = txt => {
+  const t=_avNorm(txt||'');
+  const res={manoObra:0,materiales:0,desplazamiento:0,iva:false,gratuito:false};
+  if(/\b(gratis|gratuito|sin\s+cobr|de\s+regalo|sin\s+coste|cero\s+euros|no\s+cobr)\b/.test(t)){res.gratuito=true;return res}
+  if(/\b(con\s+iva|mas\s+iva|\+\s*iva)\b/.test(t))res.iva=true;
+  const nMap2={cero:0,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,veinte:20,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90,cien:100,ciento:100,doscientos:200,trescientos:300,cuatrocientos:400,quinientos:500,seiscientos:600,setecientos:700,ochocientos:800,novecientos:900,mil:1000};
+  const normN=s=>{if(!isNaN(parseFloat(s)))return parseFloat(s);return nMap2[s]??null};
+  const exN=re=>{const m=t.match(re);if(!m)return 0;const r=m[1]?.replace(',','.');return normN(r)??parseFloat(r)??0};
+  const moP=[/(\d+[\d,.]*)\s*(?:euros?|€)\s+(?:de\s+)?(?:mano\s+de\s+obra|m\.?o\.?)/,/(?:mano\s+de\s+obra|m\.?o\.?)[:\s]+(\d+[\d,.]*)/,/cobr[ao][r]?\s+(\d+[\d,.]*)/,/(\d+[\d,.]*)\s*€?\s+(?:de\s+)?trabajo/];
+  for(const p of moP){const v=exN(p);if(v){res.manoObra=v;break}}
+  const matP=[/(\d+[\d,.]*)\s*(?:euros?|€)\s+(?:de\s+)?(?:material|materiales|piezas?|recambios?)/,/(?:material|materiales|piezas?)[:\s]+(\d+[\d,.]*)/];
+  for(const p of matP){const v=exN(p);if(v){res.materiales=v;break}}
+  const dP=[/(\d+[\d,.]*)\s*(?:euros?|€)\s+(?:de\s+)?(?:desplazamiento|viaje|km)/,/(?:desplazamiento|viaje)[:\s]+(\d+[\d,.]*)/];
+  for(const p of dP){const v=exN(p);if(v){res.desplazamiento=v;break}}
+  if(!res.manoObra&&!res.materiales&&!res.desplazamiento){
+    const mG=t.match(/(\d+[\d,.]*)\s*(?:euros?|€)/);
+    if(mG)res.manoObra=parseFloat(mG[1].replace(',','.'))||0;
+    const mC=t.match(/(?:cobrarle?|le\s+cobro|son)\s+(\d+[\d,.]*)/);
+    if(mC&&!res.manoObra)res.manoObra=parseFloat(mC[1].replace(',','.'))||0;
   }
-
-  // IVA
-  if (/\b(con\s+iva|mas\s+iva|\+\s*iva|incluye\s+iva)\b/.test(t)) res.iva = true;
-
-  // Número genérico → palabras numéricas
-  const normNum = (s) => {
-    const map = {
-      'cero':0,'diez':10,'once':11,'doce':12,'trece':13,'catorce':14,'quince':15,
-      'veinte':20,'treinta':30,'cuarenta':40,'cincuenta':50,'sesenta':60,
-      'setenta':70,'ochenta':80,'noventa':90,'cien':100,'ciento':100,
-      'doscientos':200,'trescientos':300,'cuatrocientos':400,'quinientos':500,
-      'seiscientos':600,'setecientos':700,'ochocientos':800,'novecientos':900,
-      'mil':1000,
-    };
-    if (!isNaN(parseFloat(s))) return parseFloat(s);
-    return map[s] ?? null;
-  };
-
-  // Extraer número de una expresión con contexto
-  const extractNum = (regex) => {
-    const m = t.match(regex);
-    if (!m) return 0;
-    const raw = m[1]?.replace(',','.');
-    const n = normNum(raw);
-    return n ?? parseFloat(raw) ?? 0;
-  };
-
-  // Mano de obra explícita
-  const moPatterns = [
-    /(\d+[\d,.]*)\s*(?:euros?|€)\s+(?:de\s+)?(?:mano\s+de\s+obra|m\.?o\.?)/,
-    /(?:mano\s+de\s+obra|m\.?o\.?)[:\s]+(\d+[\d,.]*)/,
-    /cobr[ao][r]?\s+(\d+[\d,.]*)/,
-    /(\d+[\d,.]*)\s*€?\s+(?:de\s+)?trabajo/,
-  ];
-  for (const p of moPatterns) { const v = extractNum(p); if (v) { res.manoObra = v; break; } }
-
-  // Materiales explícitos
-  const matPatterns = [
-    /(\d+[\d,.]*)\s*(?:euros?|€)\s+(?:de\s+)?(?:material|materiales|piezas?|recambios?)/,
-    /(?:material|materiales|piezas?)[:\s]+(\d+[\d,.]*)/,
-  ];
-  for (const p of matPatterns) { const v = extractNum(p); if (v) { res.materiales = v; break; } }
-
-  // Desplazamiento explícito
-  const despPatterns = [
-    /(\d+[\d,.]*)\s*(?:euros?|€)\s+(?:de\s+)?(?:desplazamiento|deplazamiento|viaje|km|kilometros?)/,
-    /(?:desplazamiento|deplazamiento|viaje)[:\s]+(\d+[\d,.]*)/,
-  ];
-  for (const p of despPatterns) { const v = extractNum(p); if (v) { res.desplazamiento = v; break; } }
-
-  // Si solo hay un importe genérico sin contexto específico → mano de obra
-  if (!res.manoObra && !res.materiales && !res.desplazamiento) {
-    const mGen = t.match(/(\d+[\d,.]*)\s*(?:euros?|€)/);
-    if (mGen) res.manoObra = parseFloat(mGen[1].replace(',','.')) || 0;
-    // "cobrarle X" / "le cobro X"
-    const mCob = t.match(/(?:cobrarle?|le\s+cobro|son)\s+(\d+[\d,.]*)/);
-    if (mCob && !res.manoObra) res.manoObra = parseFloat(mCob[1].replace(',','.')) || 0;
-  }
-
-  // Importe histórico "lo de siempre" / "como el último" → marcar para buscar después
-  if (/\b(lo\s+de\s+siempre|como\s+siempre|igual\s+que\s+siempre|el\s+precio\s+de\s+siempre)\b/.test(t))
-    res._usarHistorico = true;
-
+  if(/\b(lo\s+de\s+siempre|como\s+siempre|igual\s+que\s+siempre)\b/.test(t))res._usarHistorico=true;
   return res;
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// DETECTOR DE TIPO DE REGISTRO
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vDetectarTipo = (txt) => {
-  const t = _vNorm(txt||'');
-
-  // ── Patrón explícito de intención primero ──
-  // "quiero crear una avería / parte / mantenimiento / presupuesto / cliente para X"
-  // "crear avería en X", "nueva avería para X", "apunta una avería", etc.
-  const mIntencion = t.match(/(?:quiero\s+crear|crear|nueva?|nuevo?|abrir|registrar|apunta[r]?|a[ñn]ade?[r]?|hace[r]?|generar?)\s+(?:una?\s+)?(\w+)/);
-  if (mIntencion) {
-    const doc = mIntencion[1];
-    if (/^aver[ií]a/.test(doc)) return 'averia';
-    if (/^parte/.test(doc)) return 'parte';
-    if (/^mant/.test(doc)) return 'mantenimiento';
-    if (/^presupu/.test(doc)) return 'presupuesto';
-    if (/^cliente/.test(doc)) return 'cliente';
-  }
-
-  // ── Detección por contenido ──
-  if (/\b(averia|averiada?|averiado?|estropead[ao]|fallo\s+en|urgente|emergencia|problema\s+en|rotura|fuga|no\s+funciona|sin\s+agua|no\s+arranca)\b/.test(t)
-    && !/\b(parte|presupuesto|mantenimiento)\b/.test(t))
-    return 'averia';
-  if (/\b(presupuesto|cotizacion|precio\s+para|cuanto\s+costaria|precio\s+aproximado)\b/.test(t))
-    return 'presupuesto';
-  if (/\b(mantenimiento|revision\s+periodica|revision\s+anual|revision\s+mensual|inspeccion\s+periodica|cada\s+\w+\s+mes|semestral|trimestral|mensual|anual|semanal|quincenal|revision\s+de\s+instalacion)\b/.test(t))
-    return 'mantenimiento';
-  if (/\b(cliente\s+nuevo|nuevo\s+cliente|dar\s+de\s+alta|alta\s+de\s+cliente|registrar\s+cliente|a[ñn]adir\s+cliente)\b/.test(t))
-    return 'cliente';
-  if (/\b(parte|trabajo\s+realizado?|visita\s+realizada?)\b/.test(t))
-    return 'parte';
-  // Inferencia por contenido: importe + duración → parte
-  const tieneImporte = /\b\d+\s*(?:euros?|€)\b/.test(t);
-  const tieneDuracion = /\b\d+\s*hora[s]?\b|\bminutos?\b/.test(t);
-  if (tieneImporte || tieneDuracion) return 'parte';
-  // Por defecto parte
-  return 'parte';
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// EXTRACTOR DE MATERIALES
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _VOCAB_MATERIALES = [
+// ─── Extractor de materiales ────────────────────────────
+const _AV_VOC_MAT=[
   'valvula','electrovalvula','presostato','manometro','filtro','prefiltro',
-  'tuberia','tubo','manguito','codo','te','racor','junta','sello','reten',
+  'tuberia','tubo','manguito','codo','racor','junta','sello','reten',
   'bomba','motor','rodete','impulsor','rotor','estator','variador',
-  'deposito','acumulador','caldera','vaso\s+de\s+expansion',
-  'flotador','cisterna','inodoro','ducha','grifo','llave\s+de\s+paso',
-  'contador','medidor','cable','interruptor','fusible','contactor',
+  'deposito','acumulador','caldera','vaso\\s+de\\s+expansion',
+  'flotador','cisterna','inodoro','ducha','grifo','llave\\s+de\\s+paso',
+  'contador','cable','interruptor','fusible','contactor',
   'correa','rodamiento','cojinete','eje','acoplamiento',
 ];
-
-const _vExtraerMateriales = (txt) => {
-  const t = _vNorm(txt||'');
-  const encontrados = [];
-  // Patrón "puse/instalé/coloqué [cantidad] [material]"
-  const mAccion = t.match(/(?:puse|instale|coloque|cambie|sustituye?|pongo)\s+([\w\s]+?)(?:\s+y\s+|,|\.|$)/g);
-  if (mAccion) {
-    for (const m of mAccion) {
-      for (const voc of _VOCAB_MATERIALES) {
-        if (new RegExp('\\b'+voc+'\\b').test(m)) {
-          const cap = m.replace(/^(puse|instale|coloque|cambie|sustituye?|pongo)\s+/i,'').trim();
-          if (cap) encontrados.push(cap);
-          break;
-        }
-      }
+const _avExtraerMat = txt => {
+  const t=_avNorm(txt||'');
+  const enc=[];
+  const mAc=t.match(/(?:puse|instale|coloque|cambie|sustituye?|pongo)\s+([\w\s]+?)(?:\s+y\s+|,|\.|$)/g);
+  if(mAc)for(const m of mAc)for(const v of _AV_VOC_MAT){if(new RegExp('\\b'+v+'\\b').test(m)){const cap=m.replace(/^(puse|instale|coloque|cambie|sustituye?|pongo)\s+/i,'').trim();if(cap)enc.push(cap);break}}
+  for(const v of _AV_VOC_MAT){
+    const re=new RegExp('\\b'+v+'(?:s|es)?\\b','i');
+    if(re.test(t)&&!enc.some(e=>_avNorm(e).includes(v.split('\\')[0]))){
+      const match=t.match(new RegExp('(?:\\d+\\s+)?'+v+'(?:s|es)?','i'));
+      if(match)enc.push(match[0]);
     }
   }
-  // Búsqueda directa de vocabulario
-  for (const voc of _VOCAB_MATERIALES) {
-    const re = new RegExp('\\b'+voc+'(?:s|es)?\\b','i');
-    if (re.test(t) && !encontrados.some(e => _vNorm(e).includes(voc.split('\\')[0]))) {
-      const match = t.match(new RegExp('(?:\\d+\\s+)?'+voc+'(?:s|es)?','i'));
-      if (match) encontrados.push(match[0]);
-    }
-  }
-  return [...new Set(encontrados)].join(', ');
+  return[...new Set(enc)].join(', ');
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// DETECTOR DE FECHA Y URGENCIA
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vFechaRelativa = (txt) => {
-  const t = _vNorm(txt||'');
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const add = (d) => { const r = new Date(hoy); r.setDate(r.getDate()+d); return r.toISOString().split('T')[0]; };
-  if (/\b(hoy|hecho\s+hoy|realizado\s+hoy)\b/.test(t)) return add(0);
-  if (/\bayer\b/.test(t)) return add(-1);
-  if (/\bma[ñn]ana\b/.test(t)) return add(1);
-  if (/\bpasado\s+ma[ñn]ana\b/.test(t)) return add(2);
-  const dias = {lunes:1,martes:2,miercoles:3,jueves:4,viernes:5,sabado:6,domingo:0};
-  for (const [nom, idx] of Object.entries(dias)) {
-    if (new RegExp('\\b'+nom+'\\b').test(t)) {
-      let diff = idx - hoy.getDay();
-      if (diff <= 0) diff += 7;
-      return add(diff);
+// ─── Fecha relativa ─────────────────────────────────────
+const _avFechaRel = txt => {
+  const t=_avNorm(txt||'');
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const add=d=>{const r=new Date(hoy);r.setDate(r.getDate()+d);return r.toISOString().split('T')[0]};
+  if(/\b(hoy|hecho\s+hoy|realizado\s+hoy)\b/.test(t))return add(0);
+  if(/\bayer\b/.test(t))return add(-1);
+  if(/\bma[ñn]ana\b/.test(t))return add(1);
+  const dias={lunes:1,martes:2,miercoles:3,jueves:4,viernes:5,sabado:6,domingo:0};
+  for(const[nom,idx]of Object.entries(dias)){
+    if(new RegExp('\\b'+nom+'\\b').test(t)){
+      let diff=idx-hoy.getDay();if(diff<=0)diff+=7;return add(diff);
     }
   }
-  const mFecha = txt.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/);
-  if (mFecha) {
-    const y = mFecha[3] ? (mFecha[3].length===2?'20'+mFecha[3]:mFecha[3]) : hoy.getFullYear();
-    return `${y}-${String(mFecha[2]).padStart(2,'0')}-${String(mFecha[1]).padStart(2,'0')}`;
-  }
+  const mF=txt.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/);
+  if(mF){const y=mF[3]?(mF[3].length===2?'20'+mF[3]:mF[3]):hoy.getFullYear();return`${y}-${String(mF[2]).padStart(2,'0')}-${String(mF[1]).padStart(2,'0')}`}
   return null;
 };
 
-const _vDetectarUrgencia = (txt) => /\b(urgente|urgencia|emergencia|cuanto\s+antes|ahora\s+mismo|inmediatamente)\b/i.test(txt);
+// ─── Extractor maestro ───────────────────────────────────
+const _avExtraerTodo = async txt => {
+  const t=txt.trim();
+  const tN=_avNorm(t);
+  const tipo=_avDetectarTipo(t);
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// EXTRACTOR MAESTRO — analiza toda la frase de golpe
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vExtraerTodo = async (txt) => {
-  const t = txt.trim();
-  const tNorm = _vNorm(t);
-
-  // ── Detectar tipo de registro ──
-  const tipo = _vDetectarTipo(t);
-
-  // ── Buscar cliente ──
-  // Estrategia: buscar cada fragmento de la frase contra la lista de clientes
-  // El fragmento más largo que coincida gana
-  let clienteEncontrado = null;
-  let candidatos = [];
-  let textoParaDesc = t;
-
-  const clis = (typeof allClientes !== 'undefined') ? allClientes.filter(c=>!c.archivado) : [];
-
-  // Primero buscar nombres directos de clientes en el texto
-  // Ordenar de más largo a más corto para priorizar nombres completos
-  const clisOrdenados = [...clis].sort((a,b) => b.nombre.length - a.nombre.length);
-  for (const cli of clisOrdenados) {
-    if (tNorm.includes(_vNorm(cli.nombre))) {
-      clienteEncontrado = cli;
-      textoParaDesc = t.replace(new RegExp(cli.nombre.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'').trim();
+  // Buscar cliente: de mayor a menor por longitud de nombre
+  let cliente=null,candidatos=[],textoSinCli=t;
+  const clis=typeof allClientes!=='undefined'?allClientes.filter(c=>!c.archivado):[];
+  const clisOrd=[...clis].sort((a,b)=>b.nombre.length-a.nombre.length);
+  for(const c of clisOrd){
+    if(tN.includes(_avNorm(c.nombre))){
+      cliente=c;
+      textoSinCli=t.replace(new RegExp(c.nombre.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'').trim();
       break;
     }
   }
+  if(!cliente){
+    const pals=t.split(/\s+/);
+    let mejorScore=0,mejorMatch=null;
+    for(let len=5;len>=1;len--){
+      for(let i=0;i<=pals.length-len;i++){
+        const frag=pals.slice(i,i+len).join(' ');
+        const res=_avBuscarCliente(frag);
+        if(res.encontrado){
+          const score=len*10+_avSim(frag,res.encontrado.nombre)*10;
+          if(score>mejorScore){mejorScore=score;mejorMatch={c:res.encontrado,frag}}
+        }
+        if(res.candidatos.length&&!mejorMatch)candidatos=res.candidatos;
+      }
+      if(mejorMatch)break;
+    }
+    if(mejorMatch){
+      cliente=mejorMatch.c;
+      textoSinCli=t.replace(new RegExp(mejorMatch.frag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'').trim();
+    }
+  }
 
-  // Si no encontró por nombre directo, intentar buscar cada subcadena 3-5 palabras
-  if (!clienteEncontrado) {
-    const palabras = t.split(/\s+/);
-    let mejorMatch = null;
-    let mejorScore = 0;
-    // Ventanas de 1 a 5 palabras
-    for (let len=5; len>=1; len--) {
-      for (let i=0; i<=palabras.length-len; i++) {
-        const frag = palabras.slice(i, i+len).join(' ');
-        const res = _vBuscarCliente(frag);
-        if (res.encontrado) {
-          const score = len * 10 + _vSimilitud(frag, res.encontrado.nombre) * 10;
-          if (score > mejorScore) {
-            mejorScore = score;
-            mejorMatch = { cli: res.encontrado, frag };
+  // Importes
+  const importes=_avParseImportes(t);
+
+  // Usar histórico si pide "lo de siempre"
+  if(importes._usarHistorico&&cliente&&typeof allPartes!=='undefined'){
+    const last=allPartes.filter(p=>p.clienteId===cliente.id&&p.importeManoObra).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0))[0];
+    if(last){importes.manoObra=last.importeManoObra||0;importes.materiales=last.importeMateriales||0;importes.desplazamiento=last.importeDesplazamiento||0}
+  }
+
+  // Detección "como el de X" / "igual que el último" → clonar parte reciente
+  const esClonParte=/\b(como\s+el\s+(?:[uú]ltimo|de\s+ayer|anterior)|igual\s+que\s+el\s+(?:[uú]ltimo|anterior)|el\s+mismo\s+que\s+el\s+[uú]ltimo|copia\s+del\s+[uú]ltimo)\b/.test(tN);
+  if(esClonParte&&cliente&&typeof allPartes!=='undefined'){
+    const base=allPartes.filter(p=>p.clienteId===cliente.id&&!p.archivado&&!p.esPlantilla).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0))[0];
+    if(base)return{tipo:'parte',cliente,candidatos:[],_clon:base};
+  }
+
+  // Duración, materiales, fecha, urgencia
+  const duracion=_avParseDur(textoSinCli);
+  const materiales=_avExtraerMat(textoSinCli);
+  const fecha=_avFechaRel(t);
+  const urgente=/\b(urgente|urgencia|emergencia|cuanto\s+antes|ahora\s+mismo)\b/i.test(t);
+
+  // Frecuencia de mantenimiento
+  const freqMap={semanal:'semanal',quincenal:'quincenal',mensual:'mensual',bimestral:'bimestral',trimestral:'trimestral',semestral:'semestral',anual:'anual'};
+  let frecuencia='';
+  for(const[k,v]of Object.entries(freqMap)){if(new RegExp('\\b'+k+'\\b').test(tN)){frecuencia=v;break}}
+
+  // Título: quitar palabras clave de tipo + nombre cliente + conectores
+  const STOPWORDS=/\b(parte|averia|mantenimiento|presupuesto|cliente|nuevo|nueva|crear|crea|para|de|del|la|el|los|las|un|una|con|y)\b/gi;
+  let titulo=textoSinCli
+    .replace(STOPWORDS,'').replace(/\s+/g,' ').trim();
+  if(!titulo&&cliente)titulo='';
+
+  // Descripción = texto limpio completo (sin nombre cliente ni tipo)
+  const desc=textoSinCli.replace(STOPWORDS,'').replace(/\s+/g,' ').trim();
+
+  // Nombre cliente nuevo
+  const mCliNuevo=tN.match(/(?:cliente\s+nuevo|nuevo\s+cliente|dar\s+de\s+alta)\s+(?:a\s+|:?\s*)(.+)/);
+  const nombreClienteNuevo=mCliNuevo?mCliNuevo[1].trim():(tipo==='cliente'?titulo:'');
+
+  return{
+    tipo,cliente,candidatos,titulo,descripcion:desc,materiales,duracion,
+    fecha,urgente,frecuencia,nombreClienteNuevo,
+    importeManoObra:importes.gratuito?0:(importes.manoObra||0),
+    importeMateriales:importes.gratuito?0:(importes.materiales||0),
+    importeDesplazamiento:importes.gratuito?0:(importes.desplazamiento||0),
+    aplicarIVA:importes.iva,
+    gratuito:importes.gratuito,
+  };
+};
+
+// ─── Detectar si es consulta ─────────────────────────────
+const _avEsConsulta = t => /\b(cu[aá]ntos?|cu[aá]les?|qu[eé]\s+(?:partes?|aver[ií]as?|mantenimientos?)|busca[r]?|encuentra[r]?|dame|mu[eé]strame|lista\s+de|hay\s+(?:alguna?|partes?)|pendientes?|[uú]ltim[ao]|siguiente|pr[oó]xim[ao]|esta\s+semana|este\s+mes|hoy|ayer|hice\s+hoy|tengo\s+pendiente|abiertas?|sin\s+resolver|historial|cu[aá]ndo\s+(?:es|fue|ser[aá]|toca)|cuando\s+(?:es|fue|ser[aá]|toca)|ficha\s+de|datos\s+de|info(?:rmaci[oó]n)?\s+de|presupuestos?\s+de|partes?\s+de|aver[ií]as?\s+de|mantenimientos?\s+de|archivos?\s+de|documentos?\s+de|historial\s+de|equipo)\b/.test(_avNorm(t));
+const _avEsLlamada   = t => /\b(llama[r]?\s+a|llamar\s+a|tel[eé]fono\s+de|llam[ao]\s+a|marca[r]?\s+a|marc[ao]\s+a|pon(?:me)?\s+con|contacta[r]?\s+(?:con|a)|le\s+llamo\s+a|quiero\s+llamar\s+a)\b/i.test(t);
+const _avEsNaveg     = t => /\b(ir\s+a|lleva?me\s+a|ubicaci[oó]n\s+de|maps\s+de|c[oó]mo\s+llegar|navegar\s+(?:a|hasta)|ruta\s+(?:a|hasta|para)|casa\s+de|direcci[oó]n\s+de|d[oó]nde\s+(?:vive|est[aá]|queda)|vamos\s+a|ve\s+(?:a|hacia)|mapa\s+de|abre?\s+maps\s+(?:de|para)|google\s+maps\s+(?:de|para))\b/i.test(t);
+const _avEsCrear     = t => /\b(crea[r]?|crear?|nuevo?|nueva?|abrir?|registra[r]?|apunta[r]?|a[ñn]ade[r]?|hace[r]?|quiero\s+(?:crear|hacer)|generar?|dar\s+de\s+alta|parte\s+para|aver[ií]a\s+(?:en|para|de)|mantenimiento\s+(?:para|de)|presupuesto\s+(?:para|de)|cliente\s+nuevo|nuevo\s+cliente)\b/i.test(t);
+
+// ─── Re-procesar consulta temporal con cliente ya conocido ──
+const _avProcConsultaConCli = (txt,cli) => {
+  // Inject the client name into the text so the normal flow resolves it
+  _avProcConsulta(txt+' '+cli.nombre);
+};
+
+// ─── Helper: buscar cliente en texto ────────────────────
+const _avExtraerCliente = txt => {
+  const pals=txt.split(/\s+/);
+  for(let len=6;len>=1;len--){
+    for(let i=0;i<=pals.length-len;i++){
+      const frag=pals.slice(i,i+len).join(' ');
+      const res=_avBuscarCliente(frag);
+      if(res.encontrado)return{cli:res.encontrado,candidatos:[]};
+      if(res.candidatos.length)return{cli:null,candidatos:res.candidatos};
+    }
+  }
+  return{cli:null,candidatos:[]};
+};
+
+// ─── Helper: fecha legible ───────────────────────────────
+const _avFechaLeg = v => {
+  if(!v)return'Sin fecha';
+  if(v?.seconds)return new Date(v.seconds*1000).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
+  if(typeof v==='string'&&v.match(/^\d{4}-\d{2}-\d{2}$/)){
+    const[y,m,d]=v.split('-');return new Date(y,m-1,d).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
+  }
+  return String(v);
+};
+
+// ─── Procesador de consultas ─────────────────────────────
+const _avProcConsulta = async txt => {
+  const t=_avNorm(txt);
+
+  // ── LLAMADA ──────────────────────────────────────────────
+  if(_avEsLlamada(txt)){
+    // Extraer el nombre tras la palabra clave de llamada
+    const mL=txt.match(/(?:llama[r]?\s+a|llamar\s+a|llam[ao]\s+a|marca[r]?\s+a|marc[ao]\s+a|pon(?:me)?\s+con|contacta[r]?\s+(?:con|a)|le\s+llamo\s+a|quiero\s+llamar\s+a)\s+(.+)/i);
+    const term=(mL?.[1]||txt).trim();
+    const{cli,candidatos}=_avExtraerCliente(term);
+    if(!cli){
+      if(candidatos.length){_avEstadoCandidatos(candidatos,null,txt,'llamada');return}
+      _avMostrarError(`No encontré ningún cliente con ese nombre`);return;
+    }
+    const tel=(cli.telefono||'').replace(/\s/g,'');
+    if(!tel){_avMostrarError(`${cli.nombre} no tiene teléfono registrado`);return}
+    cerrarAsistenteVoz();
+    setTimeout(()=>window.location.href='tel:'+tel,300);
+    return;
+  }
+
+  // ── NAVEGACIÓN ───────────────────────────────────────────
+  if(_avEsNaveg(txt)){
+    const mN=txt.match(/(?:ir\s+a\s+casa\s+de|lleva?me\s+a\s+casa\s+de|ir\s+a|lleva?me\s+a|ubicaci[oó]n\s+de|maps\s+de|c[oó]mo\s+llegar\s+(?:a|hasta)|navegar\s+(?:a|hasta)|ruta\s+(?:a|hasta|para)\s+(?:casa\s+de\s+)?|casa\s+de|direcci[oó]n\s+de|d[oó]nde\s+(?:vive|est[aá]|queda)\s+|vamos\s+a\s+(?:casa\s+de\s+)?|ve\s+(?:a|hacia)\s+(?:casa\s+de\s+)?|mapa\s+de|abre?\s+maps\s+(?:de|para)\s+|google\s+maps\s+(?:de|para)\s+)\s*(.+)/i);
+    const term=(mN?.[2]||mN?.[1]||txt).trim();
+    const{cli,candidatos}=_avExtraerCliente(term);
+    if(!cli){
+      if(candidatos.length){_avEstadoCandidatos(candidatos,null,txt,'naveg');return}
+      _avMostrarError(`No encontré ningún cliente con ese nombre`);return;
+    }
+    const dir=cli.direccion||'';
+    if(!dir){_avMostrarError(`${cli.nombre} no tiene dirección registrada`);return}
+    cerrarAsistenteVoz();
+    setTimeout(()=>window.open('https://maps.google.com/?daddr='+encodeURIComponent(dir),'_blank'),300);
+    return;
+  }
+
+  // ── PARTES PENDIENTES ────────────────────────────────────
+  if(/\b(partes?\s+pendientes?|pendientes?\s+de\s+parte|qu[eé]\s+partes?\s+tengo\s+pendientes?)\b/.test(t)){
+    const pend=typeof allPartes!=='undefined'?allPartes.filter(p=>p.estado!=='completado'):[];
+    _avMostrarResultados(pend.slice(0,8),'parte',`${pend.length} parte${pend.length!==1?'s':''} pendiente${pend.length!==1?'s':''}`);
+    return;
+  }
+
+  // ── AVERÍAS ABIERTAS (global) ─────────────────────────────
+  if(/\b(aver[ií]as?\s+abiertas?|aver[ií]as?\s+pendientes?|aver[ií]as?\s+sin\s+resolver)\b/.test(t)&&!_avExtraerCliente(txt).cli){
+    const avs=typeof _averiasPend!=='undefined'?_averiasPend:[];
+    _avMostrarResultados(avs.slice(0,8),'averia',`${avs.length} avería${avs.length!==1?'s':''} abierta${avs.length!==1?'s':''}`);
+    return;
+  }
+
+  // ── MANTENIMIENTOS ESTA SEMANA / PRÓXIMOS (global) ────────
+  if(/\b(mantenimientos?\s+esta\s+semana|pr[oó]ximos?\s+mantenimientos?|mantenimientos?\s+pendientes?|siguiente\s+mantenimiento)\b/.test(t)&&!_avExtraerCliente(txt).cli){
+    const hoy=new Date();hoy.setHours(0,0,0,0);
+    const en7=new Date(hoy);en7.setDate(hoy.getDate()+7);
+    const mants=typeof allMantenimientos!=='undefined'?allMantenimientos.filter(m=>{
+      if(m.estado==='completado')return false;
+      const fp=m.fechaProxima||m.fechaInicio;if(!fp)return false;
+      const d=new Date(fp+'T00:00:00');return d>=hoy&&d<=en7;
+    }).sort((a,b)=>(a.fechaProxima||'').localeCompare(b.fechaProxima||'')):[];
+    _avMostrarResultados(mants.slice(0,8),'mantenimiento',`${mants.length} mantenimiento${mants.length!==1?'s':''} esta semana`);
+    return;
+  }
+
+  // ── PARTES DE HOY ─────────────────────────────────────────
+  if(/\b(hice\s+hoy|trabaj[eé]\s+hoy|partes?\s+de\s+hoy|qu[eé]\s+hice\s+hoy)\b/.test(t)){
+    const hoy=new Date().toISOString().split('T')[0];
+    const p=typeof allPartes!=='undefined'?allPartes.filter(p=>{
+      const f=p.creado?.seconds?new Date(p.creado.seconds*1000).toISOString().split('T')[0]:'';
+      return f===hoy;
+    }):[];
+    _avMostrarResultados(p.slice(0,8),'parte',`${p.length} parte${p.length!==1?'s':''} hoy`);
+    return;
+  }
+
+  // ── FACTURACIÓN ESTE MES ──────────────────────────────────
+  if(/\b(cobr[eé]\s+este\s+mes|factur[eé]\s+este\s+mes|total\s+del\s+mes|cuanto\s+he\s+cobrado)\b/.test(t)){
+    const ahora=new Date();
+    const mesInicio=new Date(ahora.getFullYear(),ahora.getMonth(),1);
+    const partesMes=typeof allPartes!=='undefined'?allPartes.filter(p=>{
+      if(p.estado!=='completado')return false;
+      const f=p.creado?.seconds?new Date(p.creado.seconds*1000):null;
+      return f&&f>=mesInicio;
+    }):[];
+    const total=partesMes.reduce((s,p)=>{
+      const iva=p.aplicarIVAMateriales?(parseFloat(p.importeMateriales)||0)*.21:0;
+      return s+(parseFloat(p.importeManoObra)||0)+(parseFloat(p.importeMateriales)||0)+iva+(parseFloat(p.importeDesplazamiento)||0);
+    },0);
+    _avMostrarResultados(partesMes.slice(0,8),'parte',`Este mes: ${fmtM(total)} (${partesMes.length} partes)`);
+    return;
+  }
+
+  // ── CONSULTAS TEMPORALES POR CLIENTE ─────────────────────
+  // Detectar patrones temporales: "cuándo es/fue/será X de CLIENTE"
+  // "último/próximo/siguiente TIPO de CLIENTE"
+  // "cuándo toca X de CLIENTE"
+  const esUltimo    = /\b([uú]ltim[ao]|la\s+[uú]ltima|el\s+[uú]ltimo|reciente)\b/.test(t);
+  const esSiguiente = /\b(siguiente|pr[oó]xim[ao]|la\s+pr[oó]xima|el\s+pr[oó]ximo|cu[aá]ndo\s+(?:es|ser[aá]|toca)|cuando\s+(?:es|ser[aá]|toca))\b/.test(t);
+  const esMantTxt   = /\b(mantenimiento|mantenimientos?|revisi[oó]n|revisi[oó]n\s+anual|revisi[oó]n\s+peri[oó]dica)\b/.test(t);
+  const esAvTxt     = /\b(aver[ií]a|aver[ií]as?|fallo|incidencia|problema)\b/.test(t);
+  const esParteTxt  = /\b(parte|partes?|trabajo|trabajos?|reparaci[oó]n)\b/.test(t);
+  const esPresuTxt  = /\b(presupuesto|presupuestos?)\b/.test(t);
+  // Equipo / instalación mencionada
+  const mEquipo = txt.match(/\b(?:en\s+(?:el\s+|la\s+|su\s+)?|del?\s+(?:equipo\s+|la\s+)?)(bomba|motor|caldera|dep[oó]sito|instalaci[oó]n|equipo|planta|variador|cuadro|manguito|electrobomba|grupo\s+de\s+presion)\b/i);
+  const equipo = mEquipo?.[1]?.trim()||null;
+
+  if((esUltimo||esSiguiente)&&(esMantTxt||esAvTxt||esParteTxt||esPresuTxt)){
+    const{cli,candidatos}=_avExtraerCliente(txt);
+    if(!cli){
+      if(candidatos.length){_avEstadoCandidatos(candidatos,null,txt,'consulta_temporal');return}
+      // Sin cliente → mostrar resultado global
+      if(esMantTxt&&esSiguiente){
+        const hoy2=new Date();hoy2.setHours(0,0,0,0);
+        const proxMants=typeof allMantenimientos!=='undefined'?allMantenimientos
+          .filter(m=>m.estado!=='completado'&&(m.fechaProxima||m.fechaInicio))
+          .sort((a,b)=>(a.fechaProxima||a.fechaInicio||'').localeCompare(b.fechaProxima||b.fechaInicio||'')):[];
+        _avMostrarResultados(proxMants.slice(0,6),'mantenimiento','Próximos mantenimientos');
+        return;
+      }
+    }
+    if(cli){
+      // ─ Siguiente/Próximo mantenimiento de CLIENTE ─
+      if(esMantTxt&&esSiguiente){
+        const hoy2=new Date();hoy2.setHours(0,0,0,0);
+        const mants2=typeof allMantenimientos!=='undefined'?allMantenimientos
+          .filter(m=>m.clienteId===cli.id&&m.estado!=='completado')
+          .sort((a,b)=>(a.fechaProxima||a.fechaInicio||'').localeCompare(b.fechaProxima||b.fechaInicio||'')):[];
+        if(!mants2.length){
+          toast(`${cli.nombre} no tiene mantenimientos programados`,'i');cerrarAsistenteVoz();return;
+        }
+        const prox=mants2[0];
+        const fecha=_avFechaLeg(prox.fechaProxima||prox.fechaInicio);
+        const nombre=prox.nombreTrabajo||prox.titulo||'Mantenimiento';
+        cerrarAsistenteVoz();
+        setTimeout(()=>{
+          let proxHtml='';
+          if(mants2.length>1){
+            proxHtml='<div style="margin-top:16px;font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase">PRÓXIMOS ('+( mants2.length-1)+' más)</div>';
+            proxHtml+=mants2.slice(1,4).map(function(m){
+              return'<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--tx)">'+(m.nombreTrabajo||m.titulo||'Mantenimiento')+'</div><div style="font-size:11px;color:var(--tx2)">'+_avFechaLeg(m.fechaProxima||m.fechaInicio)+'</div></div></div>';
+            }).join('');
           }
+          const html='<div style="padding:8px 0">'
+            +'<div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">SIGUIENTE MANTENIMIENTO</div>'
+            +'<div style="font-size:22px;font-weight:900;color:var(--tx);margin-bottom:4px">'+nombre+'</div>'
+            +'<div style="font-size:15px;font-weight:700;color:var(--r);margin-bottom:12px">📅 '+fecha+'</div>'
+            +'<div style="font-size:13px;color:var(--tx2)">'+cli.nombre+(prox.frecuencia?' · '+prox.frecuencia:'')+'</div>'
+            +proxHtml
+            +'</div>';
+          abrirSB('Próximo mantenimiento · '+cli.nombre, html);
+        },200);
+        return;
+      }
+      // ─ Último mantenimiento de CLIENTE ─
+      if(esMantTxt&&esUltimo){
+        const mants3=typeof allMantenimientos!=='undefined'?allMantenimientos
+          .filter(m=>m.clienteId===cli.id&&m.estado==='completado')
+          .sort((a,b)=>(b.fechaRealizada||b.fechaInicio||'').localeCompare(a.fechaRealizada||a.fechaInicio||'')):[];
+        if(!mants3.length){
+          toast(`${cli.nombre} no tiene mantenimientos completados`,'i');cerrarAsistenteVoz();return;
         }
-        if (res.candidatos.length && !mejorMatch) {
-          candidatos = res.candidatos;
+        const ult=mants3[0];
+        const fecha=_avFechaLeg(ult.fechaRealizada||ult.creado);
+        const nombre=ult.nombreTrabajo||ult.titulo||'Mantenimiento';
+        cerrarAsistenteVoz();
+        setTimeout(()=>abrirSB(`Último mantenimiento · ${cli.nombre}`,`
+          <div style="padding:8px 0">
+            <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">ÚLTIMO MANTENIMIENTO REALIZADO</div>
+            <div style="font-size:22px;font-weight:900;color:var(--tx);margin-bottom:4px">${nombre}</div>
+            <div style="font-size:15px;font-weight:700;color:var(--r);margin-bottom:12px">📅 ${fecha}</div>
+            <div style="font-size:13px;color:var(--tx2)">${cli.nombre}${ult.notas?'<br><em>'+ult.notas+'</em>':''}</div>
+          </div>
+        `),200);
+        return;
+      }
+      // ─ Última avería de CLIENTE (con o sin equipo) ─
+      if(esAvTxt&&esUltimo){
+        let avs2=typeof allPartes!=='undefined'?allPartes.filter(p=>p.clienteId===cli.id&&(p.tipo==='averia'||p.esAveria||/aver[ií]/i.test(p.titulo||''))):[];
+        if(!avs2.length)avs2=typeof _averiasPend!=='undefined'?[..._averiasPend].filter(a=>a.clienteId===cli.id):[];
+        if(equipo)avs2=avs2.filter(a=>new RegExp(equipo,'i').test((a.titulo||'')+(a.descripcion||'')+(a.tipo||'')));
+        avs2.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+        if(!avs2.length){
+          toast(`No hay averías registradas para ${cli.nombre}${equipo?' ('+equipo+')':''}`,'i');cerrarAsistenteVoz();return;
         }
+        const ult=avs2[0];
+        const fecha=_avFechaLeg(ult.creado);
+        const nombre=ult.titulo||ult.tipo||'Avería';
+        cerrarAsistenteVoz();
+        setTimeout(()=>abrirSB(`Última avería · ${cli.nombre}`,`
+          <div style="padding:8px 0">
+            <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">ÚLTIMA AVERÍA${equipo?' EN '+equipo.toUpperCase():''}</div>
+            <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:4px">⚠️ ${nombre}</div>
+            <div style="font-size:15px;font-weight:700;color:var(--r);margin-bottom:8px">📅 ${fecha}</div>
+            ${ult.descripcion?`<div style="font-size:13px;color:var(--tx2);margin-bottom:8px">${ult.descripcion}</div>`:''}
+            <div style="font-size:12px;color:var(--tx2)">${cli.nombre}</div>
+          </div>
+        `),200);
+        return;
       }
-      if (mejorMatch) break;
-    }
-    if (mejorMatch) {
-      clienteEncontrado = mejorMatch.cli;
-      textoParaDesc = t.replace(new RegExp(mejorMatch.frag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'').trim();
-    }
-  }
-
-  // ── Extraer frecuencia de mantenimiento ──
-  let frecuencia = '';
-  if (tipo === 'mantenimiento') {
-    const tNormFrec = _vNorm(t);
-    if (/\b(diario|cada\s+dia|todos\s+los\s+dias)\b/.test(tNormFrec)) frecuencia = 'Diario';
-    else if (/\b(semanal|cada\s+semana|todas\s+las\s+semanas|una\s+vez\s+a\s+la\s+semana)\b/.test(tNormFrec)) frecuencia = 'Semanal';
-    else if (/\b(quincenal|cada\s+quince\s+dias|cada\s+dos\s+semanas)\b/.test(tNormFrec)) frecuencia = 'Quincenal';
-    else if (/\b(mensual|cada\s+mes|todos\s+los\s+meses|una\s+vez\s+al\s+mes)\b/.test(tNormFrec)) frecuencia = 'Mensual';
-    else if (/\b(bimestral|cada\s+dos\s+meses)\b/.test(tNormFrec)) frecuencia = 'Bimestral';
-    else if (/\b(trimestral|cada\s+tres\s+meses|cada\s+trimestre)\b/.test(tNormFrec)) frecuencia = 'Trimestral';
-    else if (/\b(semestral|cada\s+seis\s+meses|dos\s+veces\s+al\s+a[ñn]o)\b/.test(tNormFrec)) frecuencia = 'Semestral';
-    else if (/\b(anual|cada\s+a[ñn]o|todos\s+los\s+a[ñn]os|una\s+vez\s+al\s+a[ñn]o)\b/.test(tNormFrec)) frecuencia = 'Anual';
-  }
-
-  // ── Extraer tareas del mantenimiento ──
-  let tareasMantenimiento = '';
-  if (tipo === 'mantenimiento') {
-    const tareasPatterns = [
-      /(?:a[ñn]ade?|a[ñn]adir|incluye?|incluir|con|y)\s+(revisi[oó]n\s+de\s+[\w\s]+)/gi,
-      /(?:revision|revisión|cambio|limpieza|inspeccion|inspección|comprobacion|comprobación|ajuste|sustitución|sustitucion)\s+(?:de\s+)?[\w\s,y]+/gi,
-    ];
-    const tareasEncontradas = [];
-    for (const pat of tareasPatterns) {
-      const matches = t.matchAll ? [...t.matchAll(pat)] : [];
-      for (const m of matches) tareasEncontradas.push(m[0].trim());
-    }
-    if (tareasEncontradas.length) {
-      tareasMantenimiento = tareasEncontradas.map(ta => _vReformular(ta)).join('. ');
-    }
-  }
-
-  // ── Detectar si el cliente no existe y hay nombre nuevo explícito ──
-  let nombreClienteNuevo = '';
-  if (!clienteEncontrado && candidatos.length === 0) {
-    // Buscar patrón "para [nombre]" o "cliente [nombre]" o "de [nombre]"
-    const mNuevoCli = t.match(/(?:para|cliente|de)\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){0,3})/);
-    if (mNuevoCli) nombreClienteNuevo = mNuevoCli[1].trim();
-  }
-
-  const duracion = _vParseDuracion(t) || '';
-
-  // ── Extraer importes ──
-  const importes = _vParseImportes(t);
-
-  // ── Extraer fecha ──
-  const fecha = _vFechaRelativa(t) || '';
-
-  // ── Urgencia ──
-  const urgente = _vDetectarUrgencia(t);
-
-  // ── Extraer estado ──
-  let estado = 'pendiente';
-  if (/\b(completado|terminado|hecho|realizado|ya\s+lo\s+hice|ya\s+est[aá]|acabado|finalizado)\b/i.test(t)) estado = 'completado';
-
-  // ── Extraer materiales ──
-  const materiales = _vExtraerMateriales(t);
-
-  // ── Construir descripción limpia ──
-  // Quitar del texto para desc: cliente, duración, importes, materiales ya extraídos
-  let descBruta = textoParaDesc;
-  // Quitar expresiones de duración
-  descBruta = descBruta.replace(/\b[\w]+(?:\.\d+)?\s+hora[s]?(?:\s+y\s+\w+)?\b/gi,'');
-  descBruta = descBruta.replace(/\b[\w]+\s+min(?:utos?)?\b/gi,'');
-  // Quitar expresiones de importe
-  descBruta = descBruta.replace(/\b\d+[\d,.]*\s*(?:euros?|€)\b/gi,'');
-  descBruta = descBruta.replace(/\b(?:cobrarle?|le\s+cobro|son)\s+\d+\b/gi,'');
-  // Quitar palabras de tipo de registro
-  descBruta = descBruta.replace(/\b(parte|averia|mantenimiento|presupuesto|nuevo|nueva|crear|hacer|apuntar|registrar)\b/gi,'');
-  // Quitar nombre de cliente si quedó
-  if (clienteEncontrado) descBruta = descBruta.replace(new RegExp(_vNorm(clienteEncontrado.nombre).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'');
-  // Quitar conectores iniciales
-  descBruta = descBruta.replace(/^[\s,.\-–—para de en con por]+/,'').trim();
-
-  const descripcion = _vReformular(descBruta);
-
-  // ── Título auto ──
-  // Construir título inteligente a partir de lo extraído
-  let titulo = '';
-  if (descripcion && descripcion.length > 3) {
-    // Usar las primeras palabras de la descripción como título
-    const primerFrase = descripcion.split(/[.,]/)[0].trim();
-    titulo = primerFrase.length > 60 ? primerFrase.slice(0,60)+'…' : primerFrase;
-  } else if (tipo === 'averia') {
-    titulo = clienteEncontrado ? `Avería — ${clienteEncontrado.nombre}` : 'Avería';
-  } else if (tipo === 'mantenimiento') {
-    titulo = clienteEncontrado ? `Mantenimiento — ${clienteEncontrado.nombre}` : 'Mantenimiento';
-  } else if (tipo === 'presupuesto') {
-    titulo = clienteEncontrado ? `Presupuesto — ${clienteEncontrado.nombre}` : 'Presupuesto';
-  } else {
-    titulo = clienteEncontrado ? `Parte — ${clienteEncontrado.nombre}` : 'Parte de trabajo';
-  }
-
-  // ── Importes históricos ──
-  if (importes._usarHistorico && clienteEncontrado && typeof allPartes !== 'undefined') {
-    const ultimoParte = allPartes
-      .filter(p => p.clienteId === clienteEncontrado.id && p.importeManoObra)
-      .sort((a,b) => (b.creado?.seconds||0) - (a.creado?.seconds||0))[0];
-    if (ultimoParte) {
-      importes.manoObra = ultimoParte.importeManoObra || 0;
-      importes.materiales = ultimoParte.importeMateriales || 0;
-      importes.desplazamiento = ultimoParte.importeDesplazamiento || 0;
-    }
-  }
-
-  // ── Auto-enriquecer datos del cliente encontrado ──
-  // Vuelca teléfono, edificio y dirección automáticamente del cliente
-  // El técnico no necesita dictarlos — se sacan de la ficha
-  if (clienteEncontrado) {
-    clienteEncontrado = {
-      ...clienteEncontrado,
-      // Asegurar que los campos están disponibles en el objeto cliente
-      telefono: clienteEncontrado.telefono || '',
-      edificio: clienteEncontrado.edificio || '',
-      direccion: clienteEncontrado.direccion || '',
-      email: clienteEncontrado.email || '',
-    };
-  }
-
-  return {
-    tipo,
-    cliente: clienteEncontrado,
-    candidatos,
-    titulo,
-    descripcion,
-    materiales,
-    duracion,
-    fecha,
-    urgente,
-    estado,
-    frecuencia,
-    tareasMantenimiento,
-    nombreClienteNuevo,
-    importeManoObra: importes.gratuito ? 0 : (importes.manoObra || 0),
-    importeMateriales: importes.gratuito ? 0 : (importes.materiales || 0),
-    importeDesplazamiento: importes.gratuito ? 0 : (importes.desplazamiento || 0),
-    aplicarIVA: importes.iva,
-    gratuito: importes.gratuito,
-  };
-};
-
-// ─────────────────────────────────────────────────────
-// EXTRACTOR POR TIPO — limpia y adapta los datos según
-// qué documento se va a crear. Solo extrae campos relevantes.
-// ─────────────────────────────────────────────────────
-const _vAdaptarPorTipo = (datos) => {
-  const d = {...datos};
-
-  switch (d.tipo) {
-
-    case 'averia': {
-      // Avería: tipo de avería como título, descripción del problema, urgencia
-      if (!d.titulo || d.titulo.startsWith('Avería —') || d.titulo === 'Avería') {
-        const mTipo = (datos.descripcion||'').match(/^(.{5,60}?)[.,]/);
-        if (mTipo) d.titulo = mTipo[1].trim();
-        else if (d.cliente) d.titulo = 'Avería — ' + d.cliente.nombre;
+      // ─ Último parte de CLIENTE ─
+      if(esParteTxt&&esUltimo){
+        const partes2=typeof allPartes!=='undefined'?[...allPartes]
+          .filter(p=>p.clienteId===cli.id)
+          .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)):[];
+        if(!partes2.length){toast(`${cli.nombre} no tiene partes registrados`,'i');cerrarAsistenteVoz();return}
+        _avMostrarResultados(partes2.slice(0,6),'parte',`Últimos partes · ${cli.nombre}`);
+        return;
       }
-      d.importeManoObra = 0; d.importeMateriales = 0; d.importeDesplazamiento = 0;
-      d.frecuencia = ''; d.tareasMantenimiento = '';
-      break;
-    }
-
-    case 'mantenimiento': {
-      // Mantenimiento: nombre trabajo, frecuencia, fecha, tareas/notas
-      if (!d.titulo || d.titulo.startsWith('Mantenimiento —') || d.titulo === 'Mantenimiento') {
-        const mTrabajo = (datos.descripcion||'').match(/^(.{5,60}?)[.,]/);
-        if (mTrabajo) d.titulo = mTrabajo[1].trim();
-        else if (d.tareasMantenimiento) d.titulo = d.tareasMantenimiento.split('.')[0].trim().slice(0,60);
-        else if (d.cliente) d.titulo = 'Mantenimiento — ' + d.cliente.nombre;
-      }
-      if (!d.tareasMantenimiento && d.descripcion) d.tareasMantenimiento = d.descripcion;
-      d.importeManoObra = 0; d.importeMateriales = 0; d.importeDesplazamiento = 0;
-      break;
-    }
-
-    case 'presupuesto': {
-      // Presupuesto: título, descripción trabajos, importes
-      if (!d.titulo || d.titulo.startsWith('Presupuesto —') || d.titulo === 'Presupuesto') {
-        const mTrab = (datos.descripcion||'').match(/^(.{5,60}?)[.,]/);
-        if (mTrab) d.titulo = mTrab[1].trim();
-        else if (d.cliente) d.titulo = 'Presupuesto — ' + d.cliente.nombre;
-      }
-      d.frecuencia = ''; d.tareasMantenimiento = '';
-      break;
-    }
-
-    case 'parte': {
-      // Parte: título trabajo, descripción, materiales, duración, importes, estado
-      if (!d.titulo || d.titulo === 'Parte de trabajo' || d.titulo.startsWith('Parte —')) {
-        const mTrab = (datos.descripcion||'').match(/^(.{5,60}?)[.,]/);
-        if (mTrab) d.titulo = mTrab[1].trim();
-        else if (d.cliente) d.titulo = 'Parte — ' + d.cliente.nombre;
-      }
-      d.frecuencia = ''; d.tareasMantenimiento = '';
-      break;
-    }
-
-    case 'cliente': {
-      // Cliente nuevo: solo nombre
-      d.descripcion = ''; d.materiales = ''; d.duracion = '';
-      d.importeManoObra = 0; d.importeMateriales = 0; d.importeDesplazamiento = 0;
-      d.frecuencia = ''; d.tareasMantenimiento = '';
-      break;
-    }
-  }
-  return d;
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// FORMULARIO FLASH — abre el formulario NATIVO de la app
-// pre-rellenado con todos los datos extraídos por voz.
-// El técnico solo tiene que revisar y pulsar Guardar.
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vAbrirFormularioFlash = (datos) => {
-  // Adaptar y limpiar los datos extraídos según el tipo de documento
-  datos = _vAdaptarPorTipo(datos);
-  switch (datos.tipo) {
-    case 'averia':      _vAbrirFormAveria(datos);       break;
-    case 'mantenimiento': _vAbrirFormMantenimiento(datos); break;
-    case 'presupuesto': _vAbrirFormPresupuesto(datos);  break;
-    case 'cliente':     _vAbrirFormCliente(datos);      break;
-    default:            _vAbrirFormParte(datos);
-  }
-};
-
-// ── Inyectar datos en campos ya visibles del formulario (tras abrir) ──
-const _vInyectar = (mapa) => {
-  setTimeout(() => {
-    for (const [id, val] of Object.entries(mapa)) {
-      if (val === undefined || val === null || val === '') continue;
-      const el = document.getElementById(id);
-      if (!el) continue;
-      if (el.tagName === 'SELECT') {
-        // Buscar option por value exacto o por texto insensible
-        const valNorm = String(val).toLowerCase();
-        const opt = [...el.options].find(o =>
-          o.value.toLowerCase() === valNorm || o.text.toLowerCase() === valNorm
-        );
-        if (opt) el.value = opt.value;
-      } else if (el.type === 'checkbox') {
-        el.checked = !!val;
-      } else {
-        el.value = val;
+      // ─ Presupuestos de CLIENTE ─
+      if(esPresuTxt){
+        const presu2=typeof allPresupuestos!=='undefined'?allPresupuestos.filter(p=>p.clienteId===cli.id):[];
+        if(!presu2.length){toast(`${cli.nombre} no tiene presupuestos`,'i');cerrarAsistenteVoz();return}
+        cerrarAsistenteVoz();
+        const html=`
+          <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">PRESUPUESTOS · ${cli.nombre.toUpperCase()}</div>
+          ${presu2.slice(0,6).map(p=>{
+            const fecha=_avFechaLeg(p.creado);
+            const total=(parseFloat(p.importeManoObra||0)+parseFloat(p.importeMateriales||0)+parseFloat(p.importeDesplazamiento||0));
+            return`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div style="font-size:20px;flex-shrink:0">💶</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:800;color:var(--tx)">${p.titulo||'Presupuesto'}</div>
+                <div style="font-size:11px;color:var(--tx2)">${fecha} · ${fmtM(total)}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        `;
+        setTimeout(()=>abrirSB(`Presupuestos · ${cli.nombre}`,html),200);
+        return;
       }
     }
-  }, 320);
-};
+  }
 
-// ━━━━ PARTE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const _vAbrirFormParte = (datos) => {
-  const cli = datos.cliente;
-  const cliId = cli?.id || '';
-  const clis = (typeof allClientes !== 'undefined') ? allClientes.filter(c=>!c.archivado) : [];
-  const cliOpts = clis.map(c =>
-    `<option value="${c.id}" data-edif="${(c.edificio||'').replace(/"/g,'&quot;')}" data-dir="${(c.direccion||'').replace(/"/g,'&quot;')}" data-tel="${(c.telefono||'').replace(/"/g,'&quot;')}" ${c.id===cliId?'selected':''}>${c.nombre}</option>`
-  ).join('');
-  const plantillas = (typeof window.plantillas !== 'undefined') ? window.plantillas : [];
-  const chipsTpl = plantillas.map(t => `<div class="pchip" onclick="document.getElementById('pTit').value='${t}'">${t}</div>`).join('');
-
-  cerrarAsistenteVoz();
-
-  // Abrir formulario nativo con indicador de voz
-  abrirSB('Nuevo parte', `
-    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-      Creado por asistente de voz — revisa y guarda
-    </div>
-    <div class="fsec"><div class="fsec-title">Información general</div>
-      <div class="fgrp"><label>Título *</label><input id="pTit" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Reparación bomba sumergible"></div>
-      ${chipsTpl?`<div class="plantilla-chips">${chipsTpl}</div>`:''}
-      <div class="fgrp"><label>Cliente</label><select id="pCli" onchange="autoEdificio(this)"><option value="">Sin cliente</option>${cliOpts}</select></div>
-      <div class="fgrp"><label>Edificio / Comunidad</label><input id="pEdif" value="${(cli?.edificio||'').replace(/"/g,'&quot;')}" placeholder="Se rellena automáticamente si el cliente lo tiene"></div>
-      <div class="fgrp"><label>Dirección</label><input id="pDir" value="${(cli?.direccion||'').replace(/"/g,'&quot;')}" placeholder="Se rellena automáticamente desde la ficha del cliente"></div>
-      <div class="fgrp"><label>Teléfono</label><input id="pTel" value="${(cli?.telefono||'').replace(/"/g,'&quot;')}" placeholder="Se rellena automáticamente desde la ficha del cliente" type="tel"></div>
-      <div class="fgrp"><label>Operario</label><input id="pOpe" value="${(typeof CUD!=='undefined'?CUD?.nombre||'':'')}" placeholder="Nombre operario"></div>
-      <div class="fgrp"><label>Descripción</label><textarea id="pDesc" placeholder="Descripción del trabajo...">${datos.descripcion||''}</textarea></div>
-    </div>
-    <div class="fsec"><div class="fsec-title">Trabajo</div>
-      <div class="fgrp"><label>Materiales usados</label><textarea id="pMat" placeholder="Lista de materiales...">${datos.materiales||''}</textarea></div>
-      <div class="fgrp"><label>Duración</label><input id="pDur" value="${datos.duracion||''}" placeholder="Ej: 2 horas"></div>
-    </div>
-    <div class="fsec"><div class="fsec-title">Importes</div>
-      <div class="fgrp"><label>Mano de obra (€)</label><input type="number" id="pMO" value="${datos.importeManoObra||''}" placeholder="0.00" step="0.01" min="0"></div>
-      <div class="fgrp"><label>Materiales (€)</label><input type="number" id="pMatE" value="${datos.importeMateriales||''}" placeholder="0.00" step="0.01" min="0"></div>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:12px;cursor:pointer">
-        <input type="checkbox" id="pIVA" ${datos.aplicarIVA?'checked':''}> Aplicar IVA 21% a materiales
-      </label>
-      <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="pDesp" value="${datos.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0"></div>
-    </div>
-    <div class="fsec"><div class="fsec-title">Estado</div>
-      <div class="fgrp"><select id="pEst">
-        <option value="pendiente" ${datos.estado==='pendiente'?'selected':''}>Pendiente</option>
-        <option value="completado" ${datos.estado==='completado'?'selected':''}>Completado</option>
-      </select></div>
-    </div>
-    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
-      <input type="checkbox" id="pPlant"> Guardar título como plantilla
-    </label>
-    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:6px;cursor:pointer">
-      <input type="checkbox" id="pPlantFull" onchange="document.getElementById('pPlantFullNom').style.display=this.checked?'block':'none'"> Guardar como plantilla completa
-    </label>
-    <div id="pPlantFullNom" style="display:none;margin-bottom:16px">
-      <input id="pPlantFullNomVal" class="sbox" placeholder="Nombre de la plantilla completa…" style="margin:0">
-    </div>
-    <button class="btn btn-p" onclick="guardarParte('')">💾 Guardar parte</button>
-  `);
-};
-
-// ━━━━ AVERÍA ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const _vAbrirFormAveria = (datos) => {
-  const cli = datos.cliente;
-  const cliId = cli?.id || '';
-  const clis = (typeof allClientes !== 'undefined') ? allClientes.filter(c=>!c.archivado) : [];
-  const cliOpts = clis.map(c =>
-    `<option value="${c.id}" data-dir="${(c.direccion||'').replace(/"/g,'&quot;')}" data-edif="${(c.edificio||'').replace(/"/g,'&quot;')}" data-tel="${(c.telefono||'').replace(/"/g,'&quot;')}" ${c.id===cliId?'selected':''}>${c.nombre}</option>`
-  ).join('');
-
-  cerrarAsistenteVoz();
-
-  abrirSB('Nueva avería', `
-    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-      Creado por asistente de voz — revisa y guarda
-    </div>
-    <div class="fsec">
-      <div class="fgrp"><label>Cliente</label>
-        <select id="avCli" onchange="(function(){var sel=document.getElementById('avCli');var opt=sel.options[sel.selectedIndex];var d=document.getElementById('avDir');var e=document.getElementById('avEdif');var t=document.getElementById('avTel');if(opt&&opt.dataset.dir&&d)d.value=opt.dataset.dir;if(opt&&opt.dataset.edif&&e)e.value=opt.dataset.edif;if(opt&&opt.dataset.tel&&t)t.value=opt.dataset.tel;})()">
-          <option value="">— Seleccionar —</option>${cliOpts}
-        </select>
-      </div>
-      <div class="fgrp"><label>Dirección</label><input id="avDir" value="${(cli?.direccion||'').replace(/"/g,'&quot;')}" placeholder="Dirección del cliente"></div>
-      <div class="fgrp"><label>Edificio / Comunidad</label><input id="avEdif" value="${(cli?.edificio||'').replace(/"/g,'&quot;')}" placeholder="Edificio o comunidad"></div>
-      <div class="fgrp"><label>Teléfono</label><input id="avTel" value="${(cli?.telefono||'').replace(/"/g,'&quot;')}" placeholder="Teléfono de contacto" type="tel"></div>
-      <div class="fgrp"><label>Tipo de avería / problema</label><input id="avTipo" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Bomba sin caudal, fuga en tubería..."></div>
-      <div class="fgrp"><label>Descripción</label><textarea id="avDesc" rows="3" placeholder="Detalla el problema...">${datos.descripcion||''}</textarea></div>
-      ${datos.urgente?`<div style="background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.3);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--r);font-weight:700;margin-bottom:10px">⚡ Marcada como urgente</div>`:''}
-      <button class="btn btn-p" style="width:100%" onclick="guardarAveria()">⚡ Guardar avería</button>
-    </div>
-  `);
-};
-
-// ━━━━ MANTENIMIENTO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const _vAbrirFormMantenimiento = (datos) => {
-  const cli = datos.cliente;
-  const cliId = cli?.id || '';
-  const cliNom = cli?.nombre || '';
-  const cliDir = cli?.direccion || '';
-  const cliTel = cli?.telefono || '';
-  const cliEdif = cli?.edificio || '';
-
-  // Mapear la frecuencia al valor real del select nativo
-  const _frecMap = {
-    'diario':'', 'semanal':'semanal', 'quincenal':'quincenal',
-    'mensual':'mensual', 'bimestral':'bimestral', 'trimestral':'trimestral',
-    'semestral':'semestral', 'anual':''
-  };
-  const frecVal = datos.frecuencia ? (_frecMap[datos.frecuencia.toLowerCase()] ?? '') : '';
-  const notas = datos.tareasMantenimiento || datos.descripcion || '';
-  const hoy = new Date().toISOString().split('T')[0];
-
-  cerrarAsistenteVoz();
-
-  // Usar la función nativa _abrirFormMantSB que es el formulario real de la app
-  if (typeof window._abrirFormMantSB === 'function') {
-    window._abrirFormMantSB(cliId, cliNom || 'Sin cliente', {});
-    // Inyectar todos los datos en los campos del formulario nativo
-    _vInyectar({
-      mNomSB: datos.titulo || '',
-      mCliSB: cliId,
-      mDirSB: cliDir,
-      mTelSB: cliTel,
-      mEdifSB: cliEdif,
-      mFrecSB: frecVal,
-      mFechaSB: datos.fecha || hoy,
-      mNotasSB: notas,
-    });
+  // ── FICHA / DATOS DE CLIENTE ──────────────────────────────
+  if(/\b(ficha\s+de|datos\s+de|info(?:rmaci[oó]n)?\s+de|archivos?\s+de|documentos?\s+de|historial\s+de|todo\s+(?:lo\s+de|sobre))\b/.test(t)){
+    const{cli,candidatos}=_avExtraerCliente(txt);
+    if(!cli){
+      if(candidatos.length){_avEstadoCandidatos(candidatos,null,txt,'ficha');return}
+      _avMostrarError('¿De qué cliente quieres ver la ficha?');return;
+    }
+    cerrarAsistenteVoz();
+    setTimeout(()=>{
+      if(typeof verFichaCli==='function')verFichaCli(cli.id);
+      else if(typeof abrirFichaCli==='function')abrirFichaCli(cli.id);
+      else toast(`Abriendo ficha de ${cli.nombre}`,'i');
+    },200);
     return;
   }
 
-  // Fallback: formulario de respaldo si _abrirFormMantSB no existe
-  const cliOpts = (typeof allClientes !== 'undefined' ? allClientes.filter(c=>!c.archivado) : []).map(c =>
-    `<option value="${c.id}" ${c.id===cliId?'selected':''}>${c.nombre}</option>`
-  ).join('');
-  const frecOpts = [
-    ['','Sin recurrencia'],['semanal','Semanal (7 días)'],['quincenal','Quincenal (14 días)'],
-    ['mensual','Mensual (30 días)'],['bimestral','Bimestral (60 días)'],
-    ['trimestral','Trimestral (90 días)'],['semestral','Semestral (180 días)']
-  ].map(([v,l]) => `<option value="${v}" ${frecVal===v?'selected':''}>${l}</option>`).join('');
+  // ── CONSULTA GENERAL POR CLIENTE (todos sus archivos) ─────
+  const{cli:cliConsulta,candidatos:cands2}=_avExtraerCliente(txt);
+  if(cliConsulta){
+    const esMant=/\b(mantenimiento|mantenimientos?|revisi[oó]n)\b/.test(t);
+    const esAv=/\b(aver[ií]a|aver[ií]as?|fallo|incidencia)\b/.test(t);
+    const esPresu=/\b(presupuesto|presupuestos?)\b/.test(t);
+    const esParte=/\b(parte|partes?|trabajo|reparaci[oó]n)\b/.test(t);
 
-  abrirSB('Nuevo mantenimiento', `
-    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-      Creado por asistente de voz — revisa y guarda
-    </div>
-    <div class="fsec">
-      <div class="fgrp"><label>Cliente</label>
-        <select id="mCliSB" onchange="(function(){var c=window.allClientes&&window.allClientes.find(x=>x.id===document.getElementById('mCliSB').value);if(c){var d=document.getElementById('mDirSB');var t=document.getElementById('mTelSB');var e=document.getElementById('mEdifSB');if(d&&c.direccion)d.value=c.direccion;if(t&&c.telefono)t.value=c.telefono;if(e&&c.edificio)e.value=c.edificio;}})()">
-          <option value="">Sin cliente</option>${cliOpts}
-        </select>
-      </div>
-      <div class="fgrp"><label>Dirección</label><input id="mDirSB" value="${cliDir.replace(/"/g,'&quot;')}" placeholder="Dirección del cliente"></div>
-      <div class="fgrp"><label>Teléfono</label><input id="mTelSB" value="${cliTel.replace(/"/g,'&quot;')}" placeholder="Teléfono de contacto" type="tel"></div>
-      <div class="fgrp"><label>Edificio / Comunidad</label><input id="mEdifSB" value="${cliEdif.replace(/"/g,'&quot;')}" placeholder="Edificio o comunidad"></div>
-      <div class="fgrp"><label>Nombre del trabajo *</label><input id="mNomSB" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Revisión mensual bomba"></div>
-      <div class="fgrp"><label>Frecuencia</label><select id="mFrecSB">${frecOpts}</select></div>
-      <div class="fgrp"><label>Fecha inicio</label><input type="date" id="mFechaSB" value="${datos.fecha||hoy}"></div>
-      <div class="fgrp"><label>Notas</label><textarea id="mNotasSB" placeholder="Observaciones…">${notas}</textarea></div>
-      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:16px">
-        <div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Guardar como plantilla</div>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
-          <input type="checkbox" id="mPlantSB" style="width:16px;height:16px;accent-color:var(--r)"> Guardar nombre como plantilla
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
-          <input type="checkbox" id="mPlantFullSB" style="width:16px;height:16px;accent-color:var(--r)" onchange="document.getElementById('mPlantFullNameSB').style.display=this.checked?'block':'none'"> Guardar como plantilla completa
-        </label>
-        <div id="mPlantFullNameSB" style="display:none;margin-top:6px">
-          <input id="mPlantFullNomSB" class="sbox" placeholder="Nombre de la plantilla…" style="margin:0">
-        </div>
-      </div>
-      <button class="btn btn-p" onclick="guardarMantDesdeSB()">💾 Programar mantenimiento</button>
-    </div>
-  `);
-};
-
-// ━━━━ PRESUPUESTO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const _vAbrirFormPresupuesto = (datos) => {
-  const cli = datos.cliente;
-  const cliId = cli?.id || '';
-  const clis = (typeof allClientes !== 'undefined') ? allClientes.filter(c=>!c.archivado) : [];
-  const cliOpts = clis.map(c =>
-    `<option value="${c.id}" ${c.id===cliId?'selected':''}>${c.nombre}</option>`
-  ).join('');
-
-  cerrarAsistenteVoz();
-
-  // Usar función nativa si existe, inyectando datos después
-  if (typeof abrirNuevoPresupuesto === 'function') {
-    try {
-      abrirNuevoPresupuesto(cliId);
-      _vInyectar({
-        presuTit: datos.titulo,
-        presTitulo: datos.titulo,
-        presuNotas: datos.descripcion,
-        presDesc: datos.descripcion,
-        presuDesc: datos.descripcion,
-        presuMO: datos.importeManoObra || '',
-        presManoObra: datos.importeManoObra || '',
-        presuMat: datos.importeMateriales || '',
-        presMateriales: datos.importeMateriales || '',
-        presuDesp: datos.importeDesplazamiento || '',
-      });
-      return;
-    } catch(e) {}
-  }
-
-  // Fallback presupuesto
-  abrirSB('Nuevo presupuesto', `
-    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-      Creado por asistente de voz — revisa y guarda
-    </div>
-    <div class="fsec">
-      <div class="fgrp"><label>Título *</label><input id="presuTit" value="${(datos.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Sustitución bomba principal"></div>
-      <div class="fgrp"><label>Cliente</label><select id="presuCli"><option value="">— Seleccionar —</option>${cliOpts}</select></div>
-      <div class="fgrp"><label>Descripción / Trabajos</label><textarea id="presuNotas" style="min-height:90px" placeholder="Descripción del trabajo...">${datos.descripcion||''}</textarea></div>
-      <div class="fgrp"><label>Materiales</label><textarea id="presuMat" style="min-height:60px" placeholder="Lista de materiales...">${datos.materiales||''}</textarea></div>
-    </div>
-    <div class="fsec"><div class="fsec-title">Importes</div>
-      <div class="fgrp"><label>Mano de obra (€)</label><input type="number" id="presuMO" value="${datos.importeManoObra||''}" placeholder="0.00" step="0.01" min="0"></div>
-      <div class="fgrp"><label>Materiales (€)</label><input type="number" id="presuMatE" value="${datos.importeMateriales||''}" placeholder="0.00" step="0.01" min="0"></div>
-      <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="presuDesp" value="${datos.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0"></div>
-    </div>
-    <button class="btn btn-p" onclick="guardarPresupuesto()">💾 Guardar presupuesto</button>
-  `);
-};
-
-// ━━━━ CLIENTE NUEVO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const _vAbrirFormCliente = (datos) => {
-  const preData = {
-    nombre: datos.nombreClienteNuevo || datos.titulo || '',
-    notas: datos.descripcion || '',
-  };
-
-  cerrarAsistenteVoz();
-
-  // Usar el formulario nativo abrirFCli que ya existe en la app
-  if (typeof abrirFCli === 'function') {
-    abrirFCli('', preData);
+    if(esMant){
+      const docs=(typeof allMantenimientos!=='undefined'?allMantenimientos:[] ).filter(m=>m.clienteId===cliConsulta.id)
+        .sort((a,b)=>(a.fechaProxima||'').localeCompare(b.fechaProxima||''));
+      _avMostrarResultados(docs.slice(0,8),'mantenimiento',`Mantenimientos · ${cliConsulta.nombre}`);
+    }else if(esAv){
+      const docsAv=[
+        ...(typeof _averiasPend!=='undefined'?_averiasPend:[]),
+        ...(typeof allPartes!=='undefined'?allPartes.filter(p=>p.tipo==='averia'||p.esAveria||/aver[ií]/i.test(p.titulo||'')):[] )
+      ].filter(a=>a.clienteId===cliConsulta.id);
+      const uniq=[...new Map(docsAv.map(d=>[d.id,d])).values()].sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+      _avMostrarResultados(uniq.slice(0,8),'averia',`Averías · ${cliConsulta.nombre}`);
+    }else if(esPresu){
+      const docsP=typeof allPresupuestos!=='undefined'?allPresupuestos.filter(p=>p.clienteId===cliConsulta.id):[];
+      if(!docsP.length){toast(`${cliConsulta.nombre} no tiene presupuestos`,'i');cerrarAsistenteVoz();return}
+      cerrarAsistenteVoz();
+      const html=`
+        <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">PRESUPUESTOS · ${cliConsulta.nombre.toUpperCase()}</div>
+        ${docsP.slice(0,8).map(p=>{
+          const total=(parseFloat(p.importeManoObra||0)+parseFloat(p.importeMateriales||0)+parseFloat(p.importeDesplazamiento||0));
+          return`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="font-size:20px;flex-shrink:0">💶</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:800;color:var(--tx)">${p.titulo||'Presupuesto'}</div>
+              <div style="font-size:11px;color:var(--tx2)">${_avFechaLeg(p.creado)} · ${fmtM(total)}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      `;
+      setTimeout(()=>abrirSB(`Presupuestos · ${cliConsulta.nombre}`,html),200);
+    }else{
+      // Sin tipo explícito → mostrar partes (más frecuente)
+      const docsPte=typeof allPartes!=='undefined'?[...allPartes].filter(p=>p.clienteId===cliConsulta.id)
+        .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)):[];
+      _avMostrarResultados(docsPte.slice(0,8),'parte',`Partes · ${cliConsulta.nombre}`);
+    }
     return;
   }
 
-  // Fallback cliente
-  abrirSB('Nuevo cliente', `
-    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--r);font-weight:800;display:flex;align-items:center;gap:8px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-      Creado por asistente de voz — revisa y guarda
-    </div>
-    <div class="fsec"><div class="fsec-title">Datos personales</div>
-      <div class="fgrp"><label>Nombre *</label><input id="cNom" value="${(preData.nombre||'').replace(/"/g,'&quot;')}" placeholder="Nombre del cliente"></div>
-      <div class="fgrp"><label>Nombre del edificio / comunidad</label><input id="cEdif" value="" placeholder="Ej: Comunidad Las Flores"></div>
-      <div class="fgrp"><label>Teléfono</label><input type="tel" id="cTel" value="" placeholder="600 000 000"></div>
-      <div class="fgrp"><label>Dirección</label><input id="cDir" value="" placeholder="Calle, número, ciudad"></div>
-      <div class="fgrp"><label>Email</label><input type="email" id="cEmail" value="" placeholder="cliente@email.com"></div>
-      <div class="fgrp"><label>Notas</label><textarea id="cNotas" placeholder="Observaciones...">${preData.notas||''}</textarea></div>
-    </div>
-    <div class="fsec"><div class="fsec-title">Indicador de color</div>
-      <div class="ind-opts">
-        <div class="ind-opt ind-r" onclick="selInd('rojo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e53935;margin-right:5px;vertical-align:middle"></span>Rojo</div>
-        <div class="ind-opt ind-y" onclick="selInd('amarillo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc107;margin-right:5px;vertical-align:middle"></span>Amarillo</div>
-        <div class="ind-opt ind-g sel" onclick="selInd('verde')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4caf50;margin-right:5px;vertical-align:middle"></span>Verde</div>
-      </div>
-      <input type="hidden" id="cColor" value="verde">
-    </div>
-    <button class="btn btn-p" onclick="guardarCli('')">💾 Guardar cliente</button>
-  `);
+  if(cands2.length){_avEstadoCandidatos(cands2,null,txt,'consulta');return}
+
+  _avMostrarError('No entendí. Prueba: "último mantenimiento de García", "siguiente revisión de Pérez", "última avería de López", "llama a Martínez" o "llévame a casa de Ruiz".');
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SELECTOR DE CANDIDATOS (cuando hay ambigüedad de cliente)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ─── Apertura de formularios ─────────────────────────────
+const _avAbrirFormulario = datos => {
+  cerrarAsistenteVoz();
+  const cli=datos.cliente;
+  const cliId=cli?.id||'';
 
-const _vMostrarCandidatos = (candidatos, datos, textoOriginal) => {
-  V.fase = 'candidatos';
-  _vActualizarUI();
-  _vSetMsg(`No reconocí el cliente. ¿Es alguno de estos?`);
+  setTimeout(()=>{
+    switch(datos.tipo){
 
-  const botonesHTML = candidatos.map((cli, i) => `
-    <button onclick="window._vElegirCliente('${cli.id}','${(textoOriginal||'').replace(/'/g,"\\'")}',${i})"
-      style="display:flex;align-items:center;gap:10px;width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:14px;padding:11px 14px;cursor:pointer;margin-bottom:8px;font-family:var(--font);text-align:left;transition:.15s"
-      onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.5)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="width:36px;height:36px;border-radius:50%;background:rgba(var(--theme-rgb),.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;font-weight:900;color:var(--r)">
-        ${cli.nombre.charAt(0).toUpperCase()}
+      case 'averia':{
+        const preD={
+          clienteId:cliId,
+          tipo:datos.titulo||datos.descripcion||'',
+          descripcion:datos.descripcion||'',
+        };
+        // Usar función nativa si existe
+        if(typeof renderAverias==='function'){
+          goScreen('averias');
+          setTimeout(()=>{
+            const selCli=document.getElementById('avCli');
+            if(selCli&&cliId){selCli.value=cliId;selCli.dispatchEvent(new Event('change'))}
+            const tipEl=document.getElementById('avTipo');
+            if(tipEl&&preD.tipo)tipEl.value=preD.tipo;
+            const descEl=document.getElementById('avDesc');
+            if(descEl&&preD.descripcion)descEl.value=preD.descripcion;
+          },400);
+        }
+        break;
+      }
+
+      case 'mantenimiento':{
+        const preD={
+          clienteId:cliId,
+          nombreTrabajo:datos.titulo||'',
+          frecuencia:datos.frecuencia||'',
+          notas:datos.descripcion||'',
+          fecha:datos.fecha||new Date().toISOString().split('T')[0],
+        };
+        if(typeof window._abrirFormMantSB==='function'&&cliId){
+          window._abrirFormMantSB(cliId,cli?.nombre||'',preD);
+        }else if(typeof window._abrirMantSBFormNuevo==='function'){
+          window._abrirMantSBFormNuevo(preD);
+        }
+        break;
+      }
+
+      case 'presupuesto':{
+        if(typeof renderPresupuestos==='function'){
+          goScreen('presupuestos');
+          setTimeout(()=>{
+            const selCli=document.getElementById('prCli');
+            if(selCli&&cliId){selCli.value=cliId}
+            const titEl=document.getElementById('prTitulo');
+            if(titEl&&datos.titulo)titEl.value=datos.titulo;
+            const moEl=document.getElementById('prMO');
+            if(moEl&&datos.importeManoObra)moEl.value=datos.importeManoObra;
+            const matEl=document.getElementById('prMat');
+            if(matEl&&datos.importeMateriales)matEl.value=datos.importeMateriales;
+            const dEl=document.getElementById('prDesp');
+            if(dEl&&datos.importeDesplazamiento)dEl.value=datos.importeDesplazamiento;
+          },400);
+        }
+        break;
+      }
+
+      case 'cliente':{
+        const preD={nombre:datos.nombreClienteNuevo||datos.titulo||'',notas:datos.descripcion||''};
+        if(typeof abrirFCli==='function')abrirFCli('',preD);
+        break;
+      }
+
+      default:{
+        // parte (incluye clonado)
+        const preD=datos._clon?{
+          titulo:datos._clon.titulo,
+          edificio:datos._clon.edificio||'',
+          operario:datos._clon.operario||'',
+          descripcion:datos._clon.descripcion||'',
+          materiales:datos._clon.materiales||'',
+          duracion:datos._clon.duracion||'',
+          importeManoObra:datos._clon.importeManoObra||0,
+          importeMateriales:datos._clon.importeMateriales||0,
+          importeDesplazamiento:datos._clon.importeDesplazamiento||0,
+          aplicarIVAMateriales:datos._clon.aplicarIVAMateriales||false,
+        }:{
+          titulo:datos.titulo||'',
+          descripcion:datos.descripcion||'',
+          materiales:datos.materiales||'',
+          duracion:datos.duracion||'',
+          operario:typeof CUD!=='undefined'?CUD?.nombre||'':'',
+          importeManoObra:datos.importeManoObra||0,
+          importeMateriales:datos.importeMateriales||0,
+          importeDesplazamiento:datos.importeDesplazamiento||0,
+          aplicarIVAMateriales:datos.aplicarIVA||false,
+        };
+        if(typeof abrirFParte==='function')abrirFParte(null,cliId,preD);
+      }
+    }
+  },150);
+};
+
+// ─── Estados de la UI ────────────────────────────────────
+const _avSetEstado = est => {
+  AV.fase=est;
+  const ids=['vozEstIdle','vozEstEscucha','vozEstProc','vozEstCand','vozEstError'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display='none';
+  });
+  const mapa={idle:'vozEstIdle',escuchando:'vozEstEscucha',procesando:'vozEstProc',candidatos:'vozEstCand',error:'vozEstError'};
+  const visible=document.getElementById(mapa[est]||'vozEstIdle');
+  if(visible)visible.style.display='flex';
+
+  // Restaurar hint por defecto al entrar en escucha limpia (no en turno de pregunta)
+  if(est==='escuchando'&&!AV._datosTemp?.faltantes){
+    const hint=document.getElementById('vozHint');
+    if(hint)hint.innerHTML='Habla ahora · Di <em>"listo"</em> para terminar<br><small style="font-size:10px;opacity:.6">Crea partes, consulta archivos, llama o navega por voz</small>';
+  }
+
+  const btnV=document.getElementById('btnVozTopbar');
+  if(btnV)btnV.classList.toggle('activo',est==='escuchando');
+  const dot=document.getElementById('vozActivoDot');
+  if(dot)dot.style.display=est==='escuchando'?'block':'none';
+};
+
+const _avMostrarError = msg => {
+  _avSetEstado('error');
+  const el=document.getElementById('vozErrorMsg');
+  if(el)el.textContent=msg||'No entendí eso. Inténtalo de nuevo.';
+};
+
+const _avEstadoCandidatos = (cands,datos,textoOrig,modo) => {
+  _avSetEstado('candidatos');
+  AV._datosTemp={datos,textoOrig,modo};
+  const lista=document.getElementById('vozCandLista');
+  if(!lista)return;
+  lista.innerHTML=cands.map((c,i)=>`
+    <button class="voz-cand-item" onclick="window._avElegirCandidato('${c.id}',${i})">
+      <div class="voz-cand-ava">${(c.nombre||'?').charAt(0).toUpperCase()}</div>
+      <div class="voz-cand-info">
+        <div class="voz-cand-nom">${c.nombre}</div>
+        ${c.edificio||c.direccion?`<div class="voz-cand-sub">${c.edificio||c.direccion}</div>`:''}
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:800;color:var(--tx)">${cli.nombre}</div>
-        ${cli.direccion||cli.edificio?`<div style="font-size:11px;color:var(--tx2);margin-top:1px">${cli.edificio||cli.direccion||''}</div>`:''}
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
   `).join('');
-
-  const contenido = document.getElementById('vozMsg');
-  const sheet = document.getElementById('vozSheet');
-  if (!sheet) return;
-
-  // Mostrar selector dentro del panel de voz
-  const extra = document.getElementById('vozCandidatos');
-  if (extra) extra.remove();
-  const div = document.createElement('div');
-  div.id = 'vozCandidatos';
-  div.style.cssText = 'padding:0 16px 14px;max-height:320px;overflow-y:auto';
-  div.innerHTML = `
-    <div style="font-size:12px;color:var(--tx2);margin-bottom:10px;font-weight:600">Texto detectado: <em>"${textoOriginal}"</em></div>
-    ${botonesHTML}
-    <button onclick="window._vElegirCliente('','',null)"
-      style="width:100%;background:transparent;border:1.5px solid var(--border);border-radius:12px;padding:10px;font-family:var(--font);font-size:13px;color:var(--tx2);cursor:pointer;font-weight:700">
-      Sin cliente / Continuar sin cliente
-    </button>
-  `;
-  sheet.appendChild(div);
-  V._pendienteAccion = datos;
-  V._pendienteTexto = textoOriginal;
-  _vHablar(`No reconocí el cliente. ¿Ves el cliente correcto en pantalla?`);
 };
 
-window._vElegirCliente = (clienteId, textoOriginal, idx) => {
-  const extra = document.getElementById('vozCandidatos');
-  if (extra) extra.remove();
-  const datos = V._pendienteAccion;
-  if (!datos) return;
-
-  if (clienteId) {
-    const cli = allClientes.find(c => c.id === clienteId);
-    if (cli) {
-      // Aprender el alias
-      if (textoOriginal) _vGuardarAlias(textoOriginal, clienteId);
-      datos.cliente = cli;
-    }
-  } else {
-    datos.cliente = null;
-  }
-
-  V._pendienteAccion = null;
-  V.fase = 'idle';
-  _vAbrirFormularioFlash(datos);
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SISTEMA DE CONSULTAS — búsqueda por fragmentos
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-// Respuesta irónica para preguntas del futuro
-const _vEsFuturoImposible = (t) =>
-  /\b(cuando\s+va\s+a|cuando\s+fallara?|crees\s+que|va\s+a\s+volver|cuando\s+habra?|proxima\s+averia|cuando\s+se\s+romper[aá]|predice|prediccion|futuro|adivin)\b/i.test(t);
-
-const _vRespuestaIronica = () =>
-  'Soy un asistente de voz diseñado por Jesús, un fontanero aprendiz, no adivino el futuro, de momento.';
-
-// Detectar si es una consulta
-const _vEsConsulta = (t) => {
-  const tn = _vNorm(t);
-  return /\b(cu[aá]ntos?|cu[aá]les?|qu[eé]\s+(?:partes?|aver[ií]as?|mantenimientos?|presupuestos?)|busca[r]?|encuentra[r]?|dame|mu[eé]strame|lista\s+de|hay\s+(?:alguna?|partes?|aver)|tiene\s+(?:alguna?|partes?|aver)|pendientes?|[uú]ltimo|pasado[s]?|esta\s+semana|este\s+mes|hoy|ayer|hice\s+hoy|hice\s+ayer|tengo\s+pendiente|abiertas?|sin\s+resolver|historial|ver\s+(?:partes?|aver))\b/.test(tn);
-};
-
-// Detectar si es una llamada a cliente
-const _vEsLlamada = (t) => /\b(llama[r]?\s+a|llamar\s+a|tel[eé]fono\s+de|llam[ao]\s+a)\b/i.test(t);
-
-// Detectar si es navegación a cliente
-const _vEsNavegacion = (t) => /\b(ir\s+a|lleva?me\s+a|naveg[ao][r]?\s+a|dir[ií]geme\s+a|abre\s+la?\s+ubicaci[oó]n|abre\s+ubicaci[oó]n|ubic[ao]ci[oó]n\s+de|maps\s+de|c[oó]mo\s+llegar)\b/i.test(t);
-
-const _vProcessarConsulta = async (txt) => {
-  const t = _vNorm(txt);
-
-  // ── Futuro imposible ──
-  if (_vEsFuturoImposible(txt)) {
-    _vHablar(_vRespuestaIronica());
-    _vSetMsg(_vRespuestaIronica());
+window._avElegirCandidato = (cliId,idx) => {
+  const cli=allClientes.find(c=>c.id===cliId);
+  if(!cli)return;
+  const {datos,textoOrig,modo}=AV._datosTemp||{};
+  // Guardar alias
+  if(textoOrig)_avAliasSave(textoOrig,cliId);
+  if(modo==='llamada'){
+    const tel=(cli.telefono||'').replace(/\s/g,'');
+    if(!tel){_avMostrarError(`${cli.nombre} no tiene teléfono`);return}
+    cerrarAsistenteVoz();setTimeout(()=>window.location.href='tel:'+tel,300);
     return;
   }
-
-  // ── Llamada ──
-  if (_vEsLlamada(txt)) {
-    const clis = allClientes.filter(c=>!c.archivado);
-    const mLlama = txt.match(/(?:llama[r]?\s+a|llamar\s+a|llam[ao]\s+a)\s+(.+)/i);
-    const termino = mLlama?.[1]?.trim() || '';
-    if (!termino) { _vHablar('¿A qué cliente quieres llamar?'); return; }
-    const res = _vBuscarCliente(termino);
-    const cli = res.encontrado;
-    if (!cli) {
-      if (res.candidatos.length) {
-        _vMostrarCandidatos(res.candidatos, {tipo:'llamada'}, termino);
-      } else {
-        _vHablar(`No encontré el cliente "${termino}".`);
-      }
-      return;
-    }
-    const tel = cli.telefono || '';
-    if (!tel) { _vHablar(`${cli.nombre} no tiene teléfono registrado.`); return; }
-    _vHablar(`Llamando a ${cli.nombre}.`, () => { window.location.href = 'tel:'+tel.replace(/\s/g,''); });
+  if(modo==='naveg'){
+    const dir=cli.direccion||'';
+    if(!dir){_avMostrarError(`${cli.nombre} no tiene dirección registrada`);return}
+    cerrarAsistenteVoz();setTimeout(()=>window.open('https://maps.google.com/?daddr='+encodeURIComponent(dir),'_blank'),300);
     return;
   }
-
-  // ── Navegación ──
-  if (_vEsNavegacion(txt)) {
-    const mNav = txt.match(/(?:ir\s+a|lleva?me\s+a|naveg\w+\s+a|dir\w+\s+a|ubicaci[oó]n\s+de|maps\s+de|c[oó]mo\s+llegar\s+a)\s+(.+)/i);
-    const termino = mNav?.[1]?.trim() || '';
-    if (!termino) { _vHablar('¿A qué cliente quieres ir?'); return; }
-    const res = _vBuscarCliente(termino);
-    const cli = res.encontrado;
-    if (!cli) {
-      _vHablar(`No encontré el cliente "${termino}".`);
-      return;
-    }
-    const dir = cli.direccion || '';
-    if (!dir) { _vHablar(`${cli.nombre} no tiene dirección registrada.`); return; }
-    _vHablar(`Abriendo Maps hacia ${cli.nombre}.`, () => {
-      window.open('https://maps.google.com/?q='+encodeURIComponent(dir), '_blank');
-    });
-    return;
-  }
-
-  // ── Consultas de estado general ──
-  if (/\b(partes?\s+pendientes?|pendientes?\s+de\s+parte|qu[eé]\s+partes?\s+tengo\s+pendientes?)\b/.test(t)) {
-    const pend = (typeof allPartes !== 'undefined') ? allPartes.filter(p=>p.estado!=='completado') : [];
-    if (!pend.length) { _vHablar('No hay partes pendientes.'); _vSetMsg('No hay partes pendientes.'); return; }
-    _vHablar(`Hay ${pend.length} parte${pend.length>1?'s':''} pendiente${pend.length>1?'s':''}.`);
-    _vMostrarResultados(pend.slice(0,5), 'parte', 'Partes pendientes');
-    return;
-  }
-
-  if (/\b(aver[ií]as?\s+abiertas?|aver[ií]as?\s+pendientes?|aver[ií]as?\s+sin\s+resolver)\b/.test(t)) {
-    const avs = (typeof _averiasPend !== 'undefined') ? _averiasPend : [];
-    if (!avs.length) { _vHablar('No hay averías abiertas.'); _vSetMsg('No hay averías abiertas.'); return; }
-    _vHablar(`Hay ${avs.length} avería${avs.length>1?'s':''} abierta${avs.length>1?'s':''}.`);
-    _vMostrarResultados(avs.slice(0,5), 'averia', 'Averías abiertas');
-    return;
-  }
-
-  if (/\b(mantenimientos?\s+esta\s+semana|pr[oó]ximos?\s+mantenimientos?|mantenimientos?\s+pendientes?)\b/.test(t)) {
-    const hoy = new Date(); hoy.setHours(0,0,0,0);
-    const en7 = new Date(hoy); en7.setDate(hoy.getDate()+7);
-    const mants = (typeof allMantenimientos !== 'undefined') ? allMantenimientos.filter(m => {
-      if (m.estado==='completado') return false;
-      const fp = m.fechaProxima||m.fechaInicio; if(!fp) return false;
-      const d = new Date(fp+'T00:00:00');
-      return d >= hoy && d <= en7;
-    }).sort((a,b) => (a.fechaProxima||'').localeCompare(b.fechaProxima||'')) : [];
-    if (!mants.length) { _vHablar('No hay mantenimientos esta semana.'); _vSetMsg('No hay mantenimientos esta semana.'); return; }
-    _vHablar(`${mants.length} mantenimiento${mants.length>1?'s':''} esta semana.`);
-    _vMostrarResultados(mants.slice(0,5), 'mantenimiento', 'Mantenimientos esta semana');
-    return;
-  }
-
-  if (/\b(hice\s+hoy|trabaj[eé]\s+hoy|partes?\s+de\s+hoy|qu[eé]\s+hice\s+hoy)\b/.test(t)) {
-    const hoy = new Date().toISOString().split('T')[0];
-    const hoyPartes = (typeof allPartes !== 'undefined') ? allPartes.filter(p => {
-      const f = p.creado?.seconds ? new Date(p.creado.seconds*1000).toISOString().split('T')[0] : '';
-      return f === hoy;
-    }) : [];
-    if (!hoyPartes.length) { _vHablar('No hay partes registrados hoy.'); _vSetMsg('No hay partes registrados hoy.'); return; }
-    _vHablar(`${hoyPartes.length} parte${hoyPartes.length>1?'s':''} hoy.`);
-    _vMostrarResultados(hoyPartes, 'parte', 'Partes de hoy');
-    return;
-  }
-
-  // ── Búsqueda por cliente + tipo + fecha ──
-  // Extraer cliente del texto de la consulta
-  const palabras = txt.split(/\s+/);
-  let cliConsulta = null;
-  for (let len=5; len>=1; len--) {
-    for (let i=0; i<=palabras.length-len; i++) {
-      const frag = palabras.slice(i, i+len).join(' ');
-      const res = _vBuscarCliente(frag);
-      if (res.encontrado) { cliConsulta = res.encontrado; break; }
-    }
-    if (cliConsulta) break;
-  }
-
-  if (cliConsulta) {
-    await _vConsultarCliente(cliConsulta, t, txt);
-    return;
-  }
-
-  // ── Búsqueda genérica por palabras clave en título/descripción ──
-  const palabrasClave = _vNorm(txt).split(/\s+/).filter(p => p.length > 3 &&
-    !['para','como','todo','cuando','donde','tiene','tengo','hecho','parte','averia','busca','dame','muestra','lista'].includes(p));
-
-  if (palabrasClave.length) {
-    const resultados = [];
-    if (typeof allPartes !== 'undefined') {
-      for (const p of allPartes) {
-        const haystack = _vNorm((p.titulo||'')+(p.descripcion||'')+(p.clienteNombre||''));
-        if (palabrasClave.some(k => haystack.includes(k))) resultados.push({...p, _tipo:'parte'});
-      }
-    }
-    if (resultados.length) {
-      resultados.sort((a,b) => (b.creado?.seconds||0)-(a.creado?.seconds||0));
-      _vHablar(`Encontré ${resultados.length} resultado${resultados.length>1?'s':''}.`);
-      _vMostrarResultados(resultados.slice(0,5), 'parte', 'Resultados encontrados');
-      return;
-    }
-  }
-
-  _vHablar('No encontré resultados. Intenta ser más específico, como "partes de García" o "averías pendientes".');
-  _vSetMsg('No encontré resultados. Prueba con el nombre del cliente, tipo de documento o fecha.');
-};
-
-const _vConsultarCliente = async (cli, tNorm, txtOrig) => {
-  // Tipo de documento que busca
-  const esParte = /\b(parte|partes?|trabajos?)\b/.test(tNorm);
-  const esAveria = /\b(aver[ií]a|aver[ií]as?|fallo|problema)\b/.test(tNorm);
-  const esMant = /\b(mantenimiento|mantenimientos?|revisi[oó]n)\b/.test(tNorm);
-  const esPresu = /\b(presupuesto|presupuestos?|precio)\b/.test(tNorm);
-  const esUltimo = /\b([uú]ltimo|[uú]ltima|m[aá]s\s+reciente|[uú]ltimamente)\b/.test(tNorm);
-
-  if (esMant || (!esParte && !esAveria && !esPresu)) {
-    // Mostrar mantenimientos del cliente
-    const mants = (typeof allMantenimientos !== 'undefined') ? allMantenimientos.filter(m => m.clienteId === cli.id) : [];
-    const activos = mants.filter(m => m.estado !== 'completado');
-    if (!mants.length) {
-      _vHablar(`${cli.nombre} no tiene mantenimientos registrados.`);
-      _vSetMsg(`${cli.nombre} — sin mantenimientos.`);
-      return;
-    }
-    if (activos.length) {
-      const prox = activos.sort((a,b) => (a.fechaProxima||'').localeCompare(b.fechaProxima||''))[0];
-      _vHablar(`${cli.nombre} tiene ${activos.length} mantenimiento${activos.length>1?'s':''} activo${activos.length>1?'s':''}. El próximo: ${prox.nombreTrabajo}${prox.fechaProxima?' el '+prox.fechaProxima:''}.`);
-      _vMostrarResultados(activos.slice(0,5), 'mantenimiento', `Mantenimientos — ${cli.nombre}`);
-    } else {
-      _vHablar(`${cli.nombre} no tiene mantenimientos activos pendientes.`);
-    }
-    if (esMant) return;
-  }
-
-  if (esAveria) {
-    const avs = (typeof _averiasPend !== 'undefined' && typeof _averiasRes !== 'undefined')
-      ? [..._averiasPend, ..._averiasRes].filter(a => a.clienteId === cli.id)
-      : [];
-    if (!avs.length) { _vHablar(`${cli.nombre} no tiene averías registradas.`); return; }
-    const pend = avs.filter(a => a.estado === 'pendiente');
-    if (pend.length) {
-      _vHablar(`${cli.nombre} tiene ${pend.length} avería${pend.length>1?'s':''} pendiente${pend.length>1?'s':''}.`);
-      _vMostrarResultados(pend.slice(0,5), 'averia', `Averías — ${cli.nombre}`);
-    } else {
-      _vHablar(`${cli.nombre} no tiene averías pendientes. ${avs.length} resueltas en historial.`);
-      _vMostrarResultados(avs.slice(0,5), 'averia', `Averías — ${cli.nombre}`);
-    }
-    return;
-  }
-
-  if (esPresu) {
-    try {
-      const snap = await getDocs(query(collection(db,'grupos',CGID,'presupuestos'), where('clienteId','==',cli.id)));
-      const pres = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
-      if (!pres.length) { _vHablar(`${cli.nombre} no tiene presupuestos.`); return; }
-      const ult = pres[0];
-      const estado = ult.estado==='aceptado'?'aceptado':'pendiente';
-      _vHablar(`${cli.nombre} tiene ${pres.length} presupuesto${pres.length>1?'s':''}. El último: ${ult.titulo||'Sin título'}, ${estado}.`);
-      _vMostrarResultados(pres.slice(0,5), 'presupuesto', `Presupuestos — ${cli.nombre}`);
-    } catch(e) { _vHablar(`Error al buscar presupuestos de ${cli.nombre}.`); }
-    return;
-  }
-
-  // Partes del cliente (por defecto)
-  const partesCli = (typeof allPartes !== 'undefined') ? allPartes
-    .filter(p => p.clienteId === cli.id)
-    .sort((a,b) => (b.creado?.seconds||0)-(a.creado?.seconds||0)) : [];
-
-  if (!partesCli.length) { _vHablar(`${cli.nombre} no tiene partes registrados.`); _vSetMsg(`${cli.nombre} — sin partes.`); return; }
-
-  if (esUltimo) {
-    const ult = partesCli[0];
-    const fecha = ult.creado?.seconds ? new Date(ult.creado.seconds*1000).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : 'fecha desconocida';
-    _vHablar(`El último parte de ${cli.nombre} fue "${ult.titulo||'Sin título'}" el ${fecha}.`);
-    _vMostrarResultados([ult], 'parte', `Último parte — ${cli.nombre}`);
-  } else {
-    _vHablar(`${cli.nombre} tiene ${partesCli.length} parte${partesCli.length>1?'s':''}.`);
-    _vMostrarResultados(partesCli.slice(0,5), 'parte', `Partes — ${cli.nombre}`);
-  }
-};
-
-// ── Mostrar resultados como tarjetas visuales en el panel ──
-const _vMostrarResultados = (items, tipo, titulo) => {
-  const sheet = document.getElementById('vozSheet');
-  if (!sheet) return;
-  const prev = document.getElementById('vozResultados');
-  if (prev) prev.remove();
-
-  const fmtFecha = (ts) => {
-    if (!ts?.seconds) return '';
-    return new Date(ts.seconds*1000).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-  };
-
-  const cardHTML = (item) => {
-    if (tipo==='parte') return `
-      <div onclick="verParte('${item.id}');cerrarAsistenteVoz()"
-        style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;cursor:pointer">
-        <div style="font-size:16px">${item.estado==='completado'?'✅':'🔧'}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.titulo||'Sin título'}</div>
-          <div style="font-size:11px;color:var(--tx2);margin-top:1px">${item.clienteNombre||''} · ${fmtFecha(item.creado)}</div>
-        </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>`;
-    if (tipo==='averia') return `
-      <div onclick="verAveria('${item.id}');cerrarAsistenteVoz()"
-        style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid rgba(255,112,67,.25);border-radius:12px;margin-bottom:6px;cursor:pointer">
-        <div style="font-size:16px">⚡</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.tipo||'Avería'}</div>
-          <div style="font-size:11px;color:var(--tx2);margin-top:1px">${item.clienteNombre||''} · ${fmtFecha(item.creado)}</div>
-        </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>`;
-    if (tipo==='mantenimiento') return `
-      <div onclick="verMant('${item.id}');cerrarAsistenteVoz()"
-        style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid rgba(76,175,80,.25);border-radius:12px;margin-bottom:6px;cursor:pointer">
-        <div style="font-size:16px">🔩</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.nombreTrabajo||'Mantenimiento'}</div>
-          <div style="font-size:11px;color:var(--tx2);margin-top:1px">${item.clienteNombre||''} · ${item.fechaProxima||fmtFecha(item.creado)}</div>
-        </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>`;
-    return `
-      <div style="padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:6px">
-        <div style="font-size:13px;font-weight:800;color:var(--tx)">${item.titulo||'Sin título'}</div>
-        <div style="font-size:11px;color:var(--tx2)">${item.clienteNombre||''} · ${fmtFecha(item.creado)}</div>
-      </div>`;
-  };
-
-  const div = document.createElement('div');
-  div.id = 'vozResultados';
-  div.style.cssText = 'padding:0 16px 14px;max-height:340px;overflow-y:auto';
-  div.innerHTML = `
-    <div style="font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">${titulo} (${items.length})</div>
-    ${items.map(cardHTML).join('')}
-    <button onclick="document.getElementById('vozResultados').remove()"
-      style="width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;padding:8px;font-family:var(--font);font-size:12px;color:var(--tx2);cursor:pointer;margin-top:2px">
-      Cerrar resultados
-    </button>
-  `;
-  sheet.appendChild(div);
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MOTOR DE RECONOCIMIENTO DE VOZ — ESCUCHA CONTINUA
-// Sin timer de silencio. Solo cierra con palabra de cierre
-// o botón manual. El mic se reactiva solo si el motor STT
-// se para por timeout interno del sistema (~10-15s).
-// El mic NUNCA se abre mientras el asistente está hablando.
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-// Abrir micrófono — SOLO llamar cuando TTS ya ha terminado
-const _vAbrirMic = () => {
-  // Guardia: no abrir si el asistente está hablando
-  if (V._hablando) return;
-  // Guardia: no abrir si ya estamos procesando o en candidatos
-  if (V.fase === 'procesando' || V.fase === 'candidatos') return;
-
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { toast('Tu dispositivo no soporta reconocimiento de voz','e'); return; }
-
-  // Abortar instancia anterior si existe
-  if (V.rec) { try { V.rec.abort(); } catch(e){} V.rec = null; }
-
-  const rec = new SR();
-  rec.lang = 'es-ES';
-  rec.continuous = true;
-  rec.interimResults = true;
-  rec.maxAlternatives = 1;
-  V.rec = rec;
-  // NUNCA resetear _transcripcionFinal aquí
-  // Se resetea solo en abrirAsistenteVoz() y vozCancelar()
-  V._transcripcionParcial = '';
-
-  rec.onstart = () => {
-    V._recActivo = true;
-    V.fase = 'escuchando';
-    _vActualizarUI();
-    const heardEl = document.getElementById('vozHeard');
-    if (heardEl && !V._transcripcionFinal) {
-      _vSetMsg('🎙️ Escuchando… habla todo lo que quieras.<br><span style="font-size:11px;opacity:.65">Di <em>"listo"</em> o <em>"ya está"</em> cuando termines</span>');
-    }
-  };
-
-  rec.onresult = (ev) => {
-    // Ignorar si el asistente está hablando ahora mismo
-    if (V._hablando) return;
-
-    let interim = '';
-    let finalNuevo = '';
-    for (let i = ev.resultIndex; i < ev.results.length; i++) {
-      const r = ev.results[i];
-      if (r.isFinal) finalNuevo += r[0].transcript + ' ';
-      else interim = r[0].transcript;
-    }
-
-    // Añadir texto final nuevo — anti-duplicados entre reinicios
-    if (finalNuevo.trim()) {
-      const nn = finalNuevo.trim().toLowerCase();
-      const an = V._transcripcionFinal.trim().toLowerCase();
-      if (!an.endsWith(nn) && !an.includes(nn)) {
-        V._transcripcionFinal += finalNuevo;
-      } else if (!an) {
-        V._transcripcionFinal += finalNuevo;
-      }
-    }
-    V._transcripcionParcial = interim;
-
-    // Mostrar en tiempo real
-    const heardEl = document.getElementById('vozHeard');
-    if (heardEl) {
-      heardEl.innerHTML = V._transcripcionFinal
-        ? '🗣️ <b>' + V._transcripcionFinal + (interim ? '<em style="opacity:.5">' + interim + '</em>' : '') + '</b>'
-        : (interim ? '<em style="opacity:.5">🎙️ ' + interim + '</em>' : '');
-    }
-
-    // Detectar palabras de cierre — SOLO al final de la frase
-    const todo = (V._transcripcionFinal + interim).trim().toLowerCase();
-    const CIERRE = /\b(listo|ya\s+est[aá]|fin\b|eso\s+es\s+todo|ya\s+termin[eé]|he\s+terminado|ya\s+est[aá]\s+listo|con\s+eso\s+basta|eso\s+ser[ií]a\s+todo|nada\s+m[aá]s|ya\s+vale|termino|ya\s+acab[eé])\s*\.?\s*$/;
-    if (CIERRE.test(todo)) {
-      // Quitar la palabra de cierre antes de procesar
-      V._transcripcionFinal = V._transcripcionFinal
-        .replace(/\b(listo|ya\s+est[aá]|fin\b|eso\s+es\s+todo|ya\s+termin[eé]|he\s+terminado|ya\s+est[aá]\s+listo|con\s+eso\s+basta|eso\s+ser[ií]a\s+todo|nada\s+m[aá]s|ya\s+vale|termino|ya\s+acab[eé])\s*\.?\s*$/gi, '')
-        .trim();
-      clearTimeout(V._silenceTimer);
-      setTimeout(_vProcesarFinal, 200);
-    }
-  };
-
-  rec.onerror = (ev) => {
-    V._recActivo = false;
-    if (ev.error === 'no-speech') {
-      // El motor se paró porque no oyó nada — reiniciar solo si seguimos en fase escuchando
-      if (V.fase === 'escuchando' && !V._hablando) {
-        V.rec = null;
-        setTimeout(() => { if (V.fase === 'escuchando' && !V._hablando) _vAbrirMic(); }, 300);
-      }
-    } else if (ev.error === 'aborted') {
-      // Aborto intencionado — no hacer nada
-    } else {
-      // Error real
-      if (V.fase === 'escuchando') {
-        V.fase = 'idle';
-        _vActualizarUI();
-        _vSetMsg('Error de micrófono. Pulsa el botón para volver a hablar.');
-      }
-    }
-  };
-
-  rec.onend = () => {
-    V._recActivo = false;
-    V.rec = null;
-    // Reiniciar SOLO si seguimos escuchando y el asistente no está hablando
-    if (V.fase === 'escuchando' && !V._hablando) {
-      setTimeout(() => {
-        if (V.fase === 'escuchando' && !V._hablando) _vAbrirMic();
-      }, 300);
-    }
-  };
-
-  try {
-    rec.start();
-  } catch(e) {
-    V.rec = null;
-    toast('Error al abrir el micrófono','e');
-  }
-};
-
-const _vProcesarFinal = async () => {
-  clearTimeout(V._silenceTimer);
-  if (V.rec) { try { V.rec.stop(); } catch(e){} }
-  V._recActivo = false;
-  const texto = V._transcripcionFinal.trim();
-  if (!texto) { V.fase='idle'; _vActualizarUI(); return; }
-
-  V.fase = 'procesando';
-  _vActualizarUI();
-  _vSetMsg(`<div class="voz-think"><div class="voz-dot"></div><div class="voz-dot"></div><div class="voz-dot"></div></div>`);
-
-  // ── Cancelar ──
-  if (/^(cancelar|salir|cerrar|no\s+nada|olvida|adios|hasta\s+luego)\s*$/i.test(texto.trim())) {
+  if(modo==='ficha'){
     cerrarAsistenteVoz();
+    setTimeout(()=>{if(typeof verFichaCli==='function')verFichaCli(cli.id);else if(typeof abrirFichaCli==='function')abrirFichaCli(cli.id);else toast('Abriendo ficha de '+cli.nombre,'i');},200);
     return;
   }
-
-  // ── Prioridad: intención de CREACIÓN detectada → siempre crear documento ──
-  // Si la frase contiene una intención explícita de crear, no va a consulta
-  const _tieneIntencionCrear = /\b(crea[r]?|crear?|nuevo?|nueva?|abrir?|registra[r]?|apunta[r]?|añade?[r]?|hace[r]?|quiero\s+crear?|quiero\s+hace[r]?|genera[r]?|dar\s+de\s+alta|parte\s+para|aver[ií]a\s+(?:en|para|de)|mantenimiento\s+(?:para|de)|presupuesto\s+(?:para|de)|cliente\s+nuevo|nuevo\s+cliente)\b/i.test(texto);
-
-  // ── Es consulta o acción de sistema (solo si NO es intención de crear) ──
-  if (!_tieneIntencionCrear && (_vEsConsulta(texto) || _vEsLlamada(texto) || _vEsNavegacion(texto) || _vEsFuturoImposible(texto))) {
-    V.fase = 'consulta';
-    _vActualizarUI();
-    await _vProcessarConsulta(texto);
-    V.fase = 'idle';
-    _vActualizarUI();
+  if(modo==='consulta_temporal'||modo==='consulta'){
+    // Re-procesar la consulta con el cliente ya resuelto
+    if(textoOrig){AV._datosTemp=null;_avProcConsultaConCli(textoOrig,cli);}
     return;
   }
+  if(datos){
+    const datosConCli={...datos,cliente:cli,candidatos:[]};
+    _avAbrirFormulario(datosConCli);
+  }
+};
 
-  // ── CREACIÓN: extraer todo y abrir formulario ──
-  try {
-    const datos = await _vExtraerTodo(texto);
+// ─── Mostrar resultados de consulta ──────────────────────
+const _avMostrarResultados = (docs,tipo,titulo) => {
+  cerrarAsistenteVoz();
+  if(!docs.length){toast('No hay resultados','i');return}
+  const iconos={parte:'🔧',mantenimiento:'⚙️',averia:'⚠️',presupuesto:'💶'};
+  const html=`
+    <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">${titulo}</div>
+    ${docs.map(d=>{
+      const nom=d.clienteNombre||(allClientes?.find(c=>c.id===d.clienteId)?.nombre||'Sin cliente');
+      const fecha=d.creado?.seconds?new Date(d.creado.seconds*1000).toLocaleDateString('es-ES'):(d.fechaProxima||'');
+      const tit=d.titulo||d.tipo||d.nombreTrabajo||'Sin título';
+      return`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer"
+        onclick="${tipo==='parte'?`verParte('${d.id}')`:tipo==='averia'?`verAveria('${d.id}')`:tipo==='mantenimiento'?`verMant('${d.id}')`:''};cerrarSB()">
+        <div style="font-size:20px;flex-shrink:0">${iconos[tipo]||'📄'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${tit}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${nom}${fecha?' · '+fecha:''}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+  setTimeout(()=>abrirSB(titulo,html),200);
+};
 
-    // Si es creación de cliente nuevo, abrir directamente sin buscar cliente
-    if (datos.tipo === 'cliente') {
-      V.fase = 'idle';
-      _vActualizarUI();
-      _vAbrirFormularioFlash(datos);
-      return;
-    }
+// ─── Profesionalizar texto dictado ──────────────────────
+// Capitaliza primera letra, limpia muletillas, pone puntos
+const _avProfesionalizar = txt => {
+  if(!txt)return'';
+  let s=txt.trim();
+  // Quitar muletillas y palabras de relleno al inicio
+  s=s.replace(/^(pues\s+|bueno\s+|entonces\s+|o\s+sea\s+|eeh+\s*|mmm+\s*|este\s+)/i,'');
+  // Eliminar repeticiones de palabras seguidas ("la la bomba" → "la bomba")
+  s=s.replace(/\b(\w+)\s+\1\b/gi,'$1');
+  // Capitalizar primera letra
+  s=s.charAt(0).toUpperCase()+s.slice(1);
+  // Añadir punto final si no tiene puntuación
+  if(s&&!/[.!?]$/.test(s))s+='.';
+  return s;
+};
 
-    // Si hay candidatos de cliente sin resolver → mostrar selector
-    if (!datos.cliente && datos.candidatos.length > 0) {
-      V.fase = 'candidatos';
-      _vActualizarUI();
-      _vMostrarCandidatos(datos.candidatos, datos, texto);
-      return;
-    }
+// Profesionalizar un título (sin punto final, conciso)
+const _avProfTitulo = txt => {
+  if(!txt)return'';
+  let s=txt.trim();
+  s=s.replace(/^(pues\s+|bueno\s+|entonces\s+|eeh+\s*|mmm+\s*)/i,'');
+  s=s.replace(/\b(\w+)\s+\1\b/gi,'$1');
+  // Quitar verbos de acción al inicio si quedan sueltos ("Crear ", "Hacer ")
+  s=s.replace(/^(crear?\s+|hacer?\s+|abrir?\s+|registrar?\s+|apuntar?\s+)/i,'');
+  s=s.charAt(0).toUpperCase()+s.slice(1);
+  // Eliminar punto final en títulos
+  s=s.replace(/[.]+$/,'').trim();
+  return s;
+};
 
-    // Si no encontró cliente pero tampoco hay candidatos → abrir formulario sin cliente
-    V.fase = 'idle';
-    _vActualizarUI();
-    _vAbrirFormularioFlash(datos);
+// ─── Calcular campos faltantes según tipo ───────────────
+const _avCamposFaltantes = datos => {
+  const faltantes=[];
+  switch(datos.tipo){
+    case 'parte':
+      if(!datos.titulo&&!datos.descripcion)faltantes.push({campo:'titulo',pregunta:'¿Cuál es el título o trabajo realizado?'});
+      if(!datos.cliente)faltantes.push({campo:'cliente',pregunta:'¿Para qué cliente es?'});
+      break;
+    case 'averia':
+      if(!datos.cliente)faltantes.push({campo:'cliente',pregunta:'¿Para qué cliente es la avería?'});
+      if(!datos.titulo&&!datos.descripcion)faltantes.push({campo:'titulo',pregunta:'¿Qué tipo de avería o problema es?'});
+      break;
+    case 'mantenimiento':
+      if(!datos.cliente)faltantes.push({campo:'cliente',pregunta:'¿Para qué cliente es el mantenimiento?'});
+      if(!datos.titulo)faltantes.push({campo:'titulo',pregunta:'¿Cómo se llama el trabajo de mantenimiento?'});
+      break;
+    case 'presupuesto':
+      if(!datos.cliente)faltantes.push({campo:'cliente',pregunta:'¿Para qué cliente es el presupuesto?'});
+      if(!datos.titulo)faltantes.push({campo:'titulo',pregunta:'¿Cuál es el título del presupuesto?'});
+      break;
+    case 'cliente':
+      if(!datos.nombreClienteNuevo&&!datos.titulo)faltantes.push({campo:'nombre',pregunta:'¿Cómo se llama el cliente?'});
+      break;
+  }
+  return faltantes;
+};
 
-  } catch(e) {
-    console.error('Error extrayendo datos:', e);
-    V.fase = 'idle';
-    _vActualizarUI();
-    _vSetMsg('<span style="color:var(--r)">No pude procesar eso. Intenta de nuevo con <em>"parte para [cliente], [descripción]"</em></span>');
-    // Ofrecer reintentar — abrir mic de nuevo para que pueda repetir
-    setTimeout(() => {
-      if (V.fase === 'idle') {
-        V._transcripcionFinal = '';
-        V._transcripcionParcial = '';
-        const h = document.getElementById('vozHeard');
-        if (h) h.innerHTML = '';
-        _vAbrirMic();
+// ─── Mostrar estado "abriendo documento" ────────────────
+const _avMostrarAbriendo = (tipo,nombreCli) => {
+  const nombres={parte:'parte',averia:'avería',mantenimiento:'mantenimiento',presupuesto:'presupuesto',cliente:'cliente'};
+  const emojis={parte:'📋',averia:'⚠️',mantenimiento:'⚙️',presupuesto:'💶',cliente:'👤'};
+  const nom=nombres[tipo]||'documento';
+  const emo=emojis[tipo]||'📄';
+  const el=document.getElementById('vozEstProc');
+  if(el){
+    el.innerHTML=`
+      <div class="voz-spinner"></div>
+      <div class="voz-hint" style="font-size:15px;font-weight:900;color:var(--tx)">${emo} Abriendo ${nom}${nombreCli?' para '+nombreCli:''}</div>
+    `;
+  }
+  _avSetEstado('procesando');
+};
+
+// ─── Mostrar estado "preguntando datos faltantes" ────────
+const _avMostrarPregunta = (preguntas,datos) => {
+  const txt=preguntas.length===1
+    ?preguntas[0].pregunta
+    :'Faltan algunos datos: '+preguntas.map(p=>p.pregunta.replace(/^¿/,'').replace(/\?$/,'')).join(', ')+'';
+
+  AV._datosTemp={...(AV._datosTemp||{}),datos,faltantes:preguntas,intentos:(AV._datosTemp?.intentos||0)+1};
+
+  // Resetear sesiones para el nuevo turno (sin mezclar con dictado anterior)
+  AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';AV._hasInterim=false;
+  const transcript=document.getElementById('vozTranscript');
+  if(transcript)transcript.innerHTML='';
+
+  // Cambiar el hint al texto de la pregunta
+  const hint=document.getElementById('vozHint');
+  if(hint)hint.textContent=txt;
+
+  _avSetEstado('escuchando');
+  setTimeout(_avAbrirMic,80);
+};
+
+// ─── Completar datos con segundo dictado ────────────────
+const _avCompletarDatos = (textAdicional,datosBase) => {
+  const t=textAdicional.trim();
+  const tN=_avNorm(t);
+  const datos={...datosBase};
+
+  // Intentar rellenar cliente si faltaba
+  if(!datos.cliente){
+    const pals=t.split(/\s+/);
+    for(let len=5;len>=1;len--){
+      for(let i=0;i<=pals.length-len;i++){
+        const frag=pals.slice(i,i+len).join(' ');
+        const res=_avBuscarCliente(frag);
+        if(res.encontrado){datos.cliente=res.encontrado;break}
+        if(res.candidatos.length){datos.candidatos=res.candidatos;break}
       }
-    }, 2500);
+      if(datos.cliente||datos.candidatos?.length)break;
+    }
   }
+  // Título si faltaba
+  if(!datos.titulo){
+    const sinStop=_avNorm(t).replace(/\b(para|de|del|la|el|los|las|un|una|con|y|es|son)\b/g,'').trim();
+    if(sinStop)datos.titulo=_avProfTitulo(t);
+  }
+  // Descripción si faltaba
+  if(!datos.descripcion&&t.length>10)datos.descripcion=_avProfesionalizar(t);
+  // Importes adicionales
+  const imp=_avParseImportes(t);
+  if(imp.manoObra&&!datos.importeManoObra)datos.importeManoObra=imp.manoObra;
+  if(imp.materiales&&!datos.importeMateriales)datos.importeMateriales=imp.materiales;
+  if(imp.desplazamiento&&!datos.importeDesplazamiento)datos.importeDesplazamiento=imp.desplazamiento;
+  // Duración adicional
+  if(!datos.duracion){const d=_avParseDur(t);if(d)datos.duracion=d}
+  // Frecuencia para mantenimiento
+  if(!datos.frecuencia){
+    const freqMap={semanal:'semanal',quincenal:'quincenal',mensual:'mensual',bimestral:'bimestral',trimestral:'trimestral',semestral:'semestral',anual:'anual'};
+    for(const[k,v]of Object.entries(freqMap)){if(new RegExp('\\b'+k+'\\b').test(tN)){datos.frecuencia=v;break}}
+  }
+  return datos;
 };
 
-// ── Botón manual del micrófono ──
-window.vozEscuchar = () => {
-  if (V.fase === 'escuchando') {
-    // El técnico pulsa el botón para terminar — equivale a decir "listo"
-    clearTimeout(V._silenceTimer);
-    if (V.rec) { try { V.rec.stop(); } catch(e){} V.rec = null; }
-    if (V._transcripcionFinal.trim().length > 1) {
-      _vProcesarFinal();
-    } else {
-      V.fase = 'idle';
-      _vActualizarUI();
-      _vSetMsg('No escuché nada. Pulsa el micrófono y habla.');
+// ─── Motor de captura ────────────────────────────────────
+// ARQUITECTURA ANTI-ECO ANDROID:
+// Chrome Android reinicia el SpeechRecognition cada ~60s o cuando pierde conexión.
+// Cada reinicio lanza onresult desde resultIndex=0 con TODOS los resultados de nuevo.
+// Solución: al arrancar cada sesión del rec se guarda lo que ya teníamos (sesionBase)
+// y solo se acumulan los resultados NUEVOS de esta sesión (sesionActual).
+// Al reiniciar: sesionBase += sesionActual_confirmada, sesionActual = ''.
+const _avAbrirMic = () => {
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){_avMostrarError('Tu dispositivo no soporta reconocimiento de voz');return}
+  if(AV.rec){try{AV.rec.abort()}catch(e){}AV.rec=null}
+
+  const rec=new SR();
+  rec.lang='es-ES';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  AV.rec=rec;AV.transcParcial='';
+  AV._lastResultAt=Date.now();
+  AV._hasInterim=false;
+  // Al arrancar esta sesión, lo que había antes queda congelado en sesionBase
+  // sesionActual empieza vacío — solo añadiremos lo nuevo de esta sesión
+  AV.sesionActual='';
+
+  rec.onstart=()=>{
+    AV.fase='escuchando';
+    if(!AV._datosTemp?.faltantes){
+      _avSetEstado('escuchando');
+    }else{
+      document.getElementById('vozEstEscucha').style.display='flex';
+      ['vozEstIdle','vozEstProc','vozEstCand','vozEstError'].forEach(id=>{
+        const el=document.getElementById(id);if(el)el.style.display='none';
+      });
+    }
+  };
+
+  rec.onresult=ev=>{
+    // ANTI-ECO: solo procesar desde resultIndex para no acumular lo que ya teníamos
+    // ev.resultIndex = índice del primer resultado NUEVO en este evento
+    // ev.results es la lista completa (acumulativa), por eso solo leemos desde resultIndex
+    let interim='';
+    let finalDeEsteEvento='';
+
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const r=ev.results[i];
+      if(r.isFinal){
+        finalDeEsteEvento+=r[0].transcript+' ';
+        AV._hasInterim=false;
+      }else{
+        // El interim siempre es el texto parcial del último resultado no confirmado
+        interim=r[0].transcript;
+        AV._hasInterim=true;
+      }
+    }
+
+    AV._lastResultAt=Date.now();
+
+    // Acumular solo en sesionActual (no en el texto base de sesiones previas)
+    if(finalDeEsteEvento.trim()){
+      AV.sesionActual+=finalDeEsteEvento;
+    }
+    AV.transcParcial=interim;
+
+    // Mostrar transcripción en tiempo real: base + actual + interim parcial
+    const textoVisible=(AV.sesionBase+AV.sesionActual).trimStart();
+    const el=document.getElementById('vozTranscript');
+    if(el){
+      el.innerHTML=textoVisible
+        ?(textoVisible+(interim?` <em>${interim}</em>`:''))
+        :(interim?`<em>${interim}</em>`:'');
+    }
+
+    // ── Timer de silencio INTELIGENTE ──
+    clearTimeout(AV.silenceTimer);
+    const delay=AV._hasInterim?600:3500;
+    AV.silenceTimer=setTimeout(()=>{
+      const elapsed=Date.now()-AV._lastResultAt;
+      if(elapsed>=delay-100){
+        _avProcesarFinal();
+      }
+    },delay);
+
+    // Palabras de cierre explícitas
+    const todoNorm=(AV.sesionBase+AV.sesionActual+interim).trim().toLowerCase();
+    const CIERRE=/\b(listo|ya\s+est[aá]|fin\b|eso\s+es\s+todo|ya\s+termin[eé]|he\s+terminado|nada\s+m[aá]s|ya\s+vale|termino|ya\s+acab[eé])\s*\.?\s*$/;
+    if(CIERRE.test(todoNorm)){
+      // Quitar la palabra de cierre del texto final
+      AV.sesionActual=AV.sesionActual.replace(CIERRE,'').trim();
+      if(AV.sesionActual.endsWith(' '))AV.sesionActual=AV.sesionActual.trim();
+      clearTimeout(AV.silenceTimer);
+      setTimeout(_avProcesarFinal,200);
+    }
+  };
+
+  rec.onerror=ev=>{
+    if(ev.error==='no-speech'){
+      if(AV.fase==='escuchando'){
+        // Guardar sesionActual confirmada antes de reiniciar
+        if(AV.sesionActual.trim())AV.sesionBase+=AV.sesionActual;
+        AV.rec=null;
+        setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},300);
+      }
+    }else if(ev.error==='aborted'){
+      // intencional — no hacer nada
+    }else{
+      _avMostrarError('Error de micrófono. Pulsa reintentar.');
+    }
+  };
+
+  rec.onend=()=>{
+    AV._hasInterim=false;
+    // Guardar lo confirmado de esta sesión antes de reiniciar
+    if(AV.sesionActual.trim())AV.sesionBase+=AV.sesionActual;
+    AV.sesionActual='';
+    AV.rec=null;
+    if(AV.fase==='escuchando')setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},300);
+  };
+
+  try{rec.start()}catch(e){AV.rec=null;_avMostrarError('No se pudo abrir el micrófono')}
+};
+
+// ─── Procesar cuando termina el dictado ─────────────────
+const _avProcesarFinal = async () => {
+  clearTimeout(AV.silenceTimer);
+  if(AV.rec){try{AV.rec.stop()}catch(e){}}
+  AV.rec=null;AV._hasInterim=false;
+  const texto=AV.transcFinal.trim();
+  if(!texto){
+    // Sin texto: si estábamos en modo pregunta y no hay nada → abrir sin ese dato
+    if(AV._datosTemp?.faltantes&&AV._datosTemp?.datos){
+      _avMostrarAbriendo(AV._datosTemp.datos.tipo,AV._datosTemp.datos.cliente?.nombre||'');
+      setTimeout(()=>_avAbrirFormulario(AV._datosTemp.datos),600);
+    }else{
+      AV.fase='idle';_avSetEstado('idle');
     }
     return;
   }
-  if (V.fase === 'procesando' || V.fase === 'candidatos') return;
-  // Nueva sesión de dictado — resetear transcripción
-  V._transcripcionFinal = '';
-  V._transcripcionParcial = '';
-  const heardEl = document.getElementById('vozHeard');
-  if (heardEl) heardEl.innerHTML = '';
-  _vAbrirMic();
-};
 
-window.vozCancelar = () => {
-  window.speechSynthesis.cancel();
-  V._hablando = false;
-  clearTimeout(V._silenceTimer);
-  if (V.rec) { try { V.rec.abort(); } catch(e){} V.rec = null; }
-  const extra = document.getElementById('vozCandidatos');
-  if (extra) extra.remove();
-  const extra2 = document.getElementById('vozResultados');
-  if (extra2) extra2.remove();
-  V.fase = 'idle';
-  V._transcripcionFinal = '';   // reset al cancelar
-  V._transcripcionParcial = '';
-  V._pendienteAccion = null;
-  _vActualizarUI();
-  _vSetMsg('Di algo como <em>"parte para García, bomba sin caudal"</em> o <em>"mantenimiento para Casa del Pago"</em>');
-  const heardEl = document.getElementById('vozHeard');
-  if (heardEl) heardEl.innerHTML = '';
-};
+  // Cancelar
+  if(/^(cancelar|salir|cerrar|no\s+nada|olvida|adios)\s*$/i.test(texto)){cerrarAsistenteVoz();return}
 
-window.vozSaltar = () => {}; // ya no se usa, se mantiene por compatibilidad HTML
+  // ── TURNO 2: completar datos faltantes ──
+  if(AV._datosTemp?.faltantes&&AV._datosTemp?.datos){
+    _avSetEstado('procesando');
+    const datosActualizados=_avCompletarDatos(texto,AV._datosTemp.datos);
 
-// ── Aprendizaje global de alias guardados (no-op compatible) ──
-window._aprenderGuardado = (tipo, datos) => {
-  // Compatible con llamadas externas de guardarParte, guardarAveria, etc.
-  // No hace nada crítico en el nuevo sistema — el aprendizaje de alias es por selección explícita
-};
+    // Si el cliente sigue siendo ambiguo tras el segundo dictado
+    if(!datosActualizados.cliente&&datosActualizados.candidatos?.length){
+      _avEstadoCandidatos(datosActualizados.candidatos,{...datosActualizados,candidatos:[]},texto,'crear');
+      return;
+    }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SELECTOR DE VOCES (reutilizado del sistema anterior)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-const _vNombreLimpio = (name) => name
-  .replace(/Microsoft\s*/i,'').replace(/Google\s*/i,'').replace(/\s*-\s*Spanish.*/i,'')
-  .replace(/\(.*?\)/g,'').replace(/es[-_][A-Z]{2}/g,'').trim();
-
-const _vProveedorVoz = (name) => {
-  if (/microsoft/i.test(name)) return 'Microsoft';
-  if (/google/i.test(name)) return 'Google';
-  if (/apple|siri/i.test(name)) return 'Apple';
-  return 'Sistema';
-};
-
-const _vGeneroVoz = (name) => {
-  const n = name.toLowerCase();
-  if (/female|mujer|woman|lucia|maria|elena|sofia|isabella|paulina|monica|ana\b|rosa\b|carmen|pilar|alba\b|nuria|isabel|conchita|jorge|pablo|miguel|diego|carlos|juan|antonio|manuel|juan|victor|angel|gonzalo|alvaro/.test(n)) {
-    return /female|mujer|woman|lucia|maria|elena|sofia|isabella|paulina|monica/.test(n) ? '👩' : '👨';
-  }
-  return '🎙️';
-};
-
-const _vRenderSelectorVoces = () => {
-  const lista = document.getElementById('vozSelectorList');
-  if (!lista) return;
-  const esAndroid = /android/i.test(navigator.userAgent);
-  const btnHTML = `
-    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      ${esAndroid ? `<button onclick="_vAbrirAjustesVoz()" style="flex:1;min-width:140px;padding:9px 12px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-        Instalar voces Google
-      </button>` : ''}
-      <button onclick="_vRecargarVoces()" style="flex:1;min-width:120px;padding:9px 12px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--tx2);font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        Actualizar voces
-      </button>
-    </div>`;
-  const voces = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
-  if (!voces.length) {
-    lista.innerHTML = btnHTML + `<div style="font-size:12px;color:var(--tx2);padding:8px 0">${esAndroid?'Pulsa "Instalar voces Google" y descarga voces en español.':'No hay voces en español disponibles.'}</div>`;
+    // Siempre abrir en el segundo turno — no preguntar más
+    _avMostrarAbriendo(datosActualizados.tipo,datosActualizados.cliente?.nombre||'');
+    // Profesionalizar campos antes de abrir
+    if(datosActualizados.titulo)datosActualizados.titulo=_avProfTitulo(datosActualizados.titulo);
+    if(datosActualizados.descripcion)datosActualizados.descripcion=_avProfesionalizar(datosActualizados.descripcion);
+    AV._datosTemp=null;
+    setTimeout(()=>_avAbrirFormulario(datosActualizados),700);
     return;
   }
-  const guardada = localStorage.getItem('joyvi_voz') || (V._vozVoice?.name||'');
-  lista.innerHTML = btnHTML + voces.map((v, i) => {
-    const nombre = _vNombreLimpio(v.name);
-    const prov = _vProveedorVoz(v.name);
-    const ico = _vGeneroVoz(v.name);
-    const sel = v.name === guardada;
-    return `<div class="voz-sel-item ${sel?'sel':''}" onclick="_vSeleccionarVoz(${i})">
-      <div class="voz-sel-ico">${ico}</div>
-      <div class="voz-sel-info">
-        <div class="voz-sel-name">${nombre}</div>
-        <div class="voz-sel-meta">${v.lang}</div>
-      </div>
-      <span class="voz-sel-badge">${prov}</span>
-      <span class="voz-sel-check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-    </div>`;
-  }).join('');
-};
 
-window._vSeleccionarVoz = (idx) => {
-  const voces = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
-  if (!voces[idx]) return;
-  V._vozVoice = voces[idx];
-  localStorage.setItem('joyvi_voz', voces[idx].name);
-  _vRenderSelectorVoces();
-  _vHablar('Voz seleccionada. Así sueno.');
-};
+  _avSetEstado('procesando');
 
-window._vAbrirAjustesVoz = () => {
-  const t = setTimeout(() => window.open('https://play.google.com/store/apps/details?id=com.google.android.tts','_blank'), 1200);
-  try { window.location.href = 'intent:#Intent;action=com.android.settings.TTS_SETTINGS;end'; setTimeout(()=>clearTimeout(t),800); } catch(e) { clearTimeout(t); window.open('https://play.google.com/store/apps/details?id=com.google.android.tts','_blank'); }
-};
+  const tieneCrear=_avEsCrear(texto);
 
-window._vRecargarVoces = () => {
-  window.speechSynthesis.cancel();
-  _vCargarVozGuardada();
-  _vRenderSelectorVoces();
-  if (!window.speechSynthesis.getVoices().length) {
-    window.speechSynthesis.onvoiceschanged = () => { _vCargarVozGuardada(); _vCargarVoz(); _vRenderSelectorVoces(); };
+  // Modo consulta
+  if(!tieneCrear&&(_avEsConsulta(texto)||_avEsLlamada(texto)||_avEsNaveg(texto))){
+    await _avProcConsulta(texto);
+    return;
   }
-};
 
-const _vCargarVozGuardada = () => {
-  const guardada = localStorage.getItem('joyvi_voz');
-  if (!guardada) return;
-  const voz = window.speechSynthesis.getVoices().find(v => v.name === guardada);
-  if (voz) V._vozVoice = voz;
-};
+  // Modo creación — TURNO 1
+  try{
+    const datos=await _avExtraerTodo(texto);
 
-window.speechSynthesis.onvoiceschanged = () => { _vCargarVozGuardada(); _vCargarVoz(); };
+    // Profesionalizar título y descripción
+    if(datos.titulo)datos.titulo=_avProfTitulo(datos.titulo);
+    if(datos.descripcion)datos.descripcion=_avProfesionalizar(datos.descripcion);
 
-// Hook para re-renderizar selector al abrir perfil
-const _origRenderPerfil = window.renderPerfil;
-const _vozAfterRenderPerfil = () => {
-  setTimeout(() => {
-    _vRenderSelectorVoces();
-    if (!window.speechSynthesis.getVoices().length) {
-      window.speechSynthesis.onvoiceschanged = () => { _vCargarVozGuardada(); _vCargarVoz(); _vRenderSelectorVoces(); };
+    // Cliente nuevo → abrir directo
+    if(datos.tipo==='cliente'){
+      _avMostrarAbriendo('cliente','');
+      AV._datosTemp=null;
+      setTimeout(()=>_avAbrirFormulario(datos),700);
+      return;
     }
-  }, 200);
+
+    // Ambigüedad de cliente
+    if(!datos.cliente&&datos.candidatos.length>0){
+      _avEstadoCandidatos(datos.candidatos,datos,texto,'crear');
+      return;
+    }
+
+    // Calcular campos faltantes
+    const faltantes=_avCamposFaltantes(datos);
+
+    if(faltantes.length>0){
+      // Primer turno sin todos los datos → preguntar UNA vez
+      AV._datosTemp={datos,faltantes,intentos:1};
+      _avMostrarPregunta(faltantes,datos);
+      return;
+    }
+
+    // Todo completo → mostrar "Abriendo..." y abrir
+    _avMostrarAbriendo(datos.tipo,datos.cliente?.nombre||'');
+    AV._datosTemp=null;
+    setTimeout(()=>_avAbrirFormulario(datos),700);
+
+  }catch(e){
+    console.error('AV error:',e);
+    _avMostrarError('No pude entender eso. Intenta de nuevo o sé más específico.');
+  }
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// GRÁFICA DE APRENDIZAJE (simplificada — muestra alias aprendidos)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ─── API pública ─────────────────────────────────────────
+window.abrirAsistenteVoz=()=>{
+  if(typeof CGID==='undefined'||!CGID){toast('Abre un grupo primero','e');return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('Tu dispositivo no soporta reconocimiento de voz','e');return}
 
-const _vRenderGraficaAprendizaje = async () => {
-  const el = document.getElementById('inicioContent');
-  if (!el) return;
-  const aliases = _vCargarAliases();
-  const numAliases = Object.keys(aliases).length;
+  // Reset completo
+  clearTimeout(AV.silenceTimer);
+  if(AV.rec){try{AV.rec.abort()}catch(e){}}
+  AV.rec=null;
+  AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';
+  AV._datosTemp=null;AV._hasInterim=false;AV._lastResultAt=Date.now();
 
-  const container = document.createElement('div');
-  container.id = 'vozGraficaAprendizaje';
-  container.innerHTML = `
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px 18px;margin-top:18px">
-    <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">🧠 Asistente de voz</div>
-    <div style="font-size:13px;color:var(--tx2);margin-bottom:12px">${numAliases} alias de clientes aprendidos</div>
-    <div style="font-size:12px;color:var(--tx2);line-height:1.6">
-      Di una frase completa y el asistente extrae todos los datos automáticamente.<br>
-      <span style="color:var(--r);font-weight:700">Sin preguntas. Sin turnos. Solo habla.</span>
-    </div>
-    ${numAliases > 0 ? `<div style="margin-top:10px;font-size:11px;color:var(--tx3)">Alias aprendidos: ${Object.keys(aliases).slice(0,5).join(', ')}${numAliases>5?'…':''}</div>` : ''}
-  </div>`;
-
-  const prev = document.getElementById('vozGraficaAprendizaje');
-  if (prev) prev.remove();
-  const carousel = el.querySelector('.func-carousel') || el.querySelector('#funcCarousel');
-  if (carousel && carousel.parentNode === el) carousel.after(container);
-  else el.appendChild(container);
-};
-
-window._vRenderGraficaAprendizaje = _vRenderGraficaAprendizaje;
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// API PÚBLICA
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-window.abrirAsistenteVoz = () => {
-  if (typeof CGID === 'undefined' || !CGID) {
-    if (typeof toast==='function') toast('Abre un grupo primero','e'); return;
-  }
-  if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
-    if (typeof toast==='function') toast('Tu dispositivo no soporta reconocimiento de voz','e'); return;
-  }
-
-  // ── Reset completo de estado ──
-  window.speechSynthesis.cancel();
-  V._hablando = false;
-  V.fase = 'idle';
-  V._transcripcionFinal = '';   // reset AQUÍ (no en _vAbrirMic)
-  V._transcripcionParcial = '';
-  V._pendienteAccion = null;
-  V._candidatosCliente = [];
-  clearTimeout(V._silenceTimer);
-  if (V.rec) { try { V.rec.abort(); } catch(e){} V.rec = null; }
-
-  // Limpiar paneles y DOM
-  const c1 = document.getElementById('vozCandidatos'); if (c1) c1.remove();
-  const c2 = document.getElementById('vozResultados'); if (c2) c2.remove();
-
-  _vCargarDictGrupo();
-  _vCargarVozGuardada();
-  _vCargarVoz();
-
+  // Abrir panel
   document.getElementById('vozOverlay').classList.add('open');
   document.getElementById('vozSheet').classList.add('open');
-  const heardEl = document.getElementById('vozHeard');
-  if (heardEl) heardEl.innerHTML = '';
-  document.getElementById('vozProg').style.display = 'none';
-  document.getElementById('vozBtnSkip').style.display = 'none';
-  document.getElementById('vozBtnCancel').style.display = 'inline-flex';
+  _avSetEstado('idle');
 
-  const nombre = (typeof CUD !== 'undefined' && CUD?.nombre) ? CUD.nombre.split(/\s+/)[0] : '';
-  const saludos = nombre ? [
-    `¿Qué creamos, ${nombre}? Dime el tipo de documento y el cliente.`,
-    `Listo ${nombre}. Dime qué documento crear y para qué cliente.`,
-    `Adelante, ${nombre}. Parte, avería, mantenimiento o presupuesto.`,
-  ] : [
-    '¿Qué documento creamos? Dime el tipo y el cliente.',
-    'Adelante. Dime qué crear y para qué cliente.',
-    '¿Qué creamos? Parte, avería, mantenimiento, presupuesto o cliente nuevo.',
-  ];
-  const saludo = saludos[Math.floor(Math.random()*saludos.length)];
-
-  _vSetMsg('<span style="font-size:13px;font-weight:700">' + saludo + '</span><br><span style="font-size:11px;opacity:.6;font-weight:600">Habla todo lo que quieras. Di <em>"listo"</em> cuando termines.</span>');
-  _vActualizarUI();
-
-  // ── El mic se abre SOLO DESPUÉS de que el asistente termina de hablar ──
-  // Esto evita que STT capture la voz del propio asistente
-  _vHablar(saludo, () => {
-    // Pausa extra tras el eco del altavoz antes de abrir el mic
-    setTimeout(() => {
-      if (V.fase !== 'escuchando') _vAbrirMic();
-    }, 500);
-  });
+  // Abrir mic INMEDIATAMENTE sin esperas
+  setTimeout(_avAbrirMic,100);
 };
 
-window.cerrarAsistenteVoz = () => {
-  window.speechSynthesis.cancel();
-  clearTimeout(V._timer);
-  clearTimeout(V._silenceTimer);
-  if (V.rec) { try { V.rec.abort(); } catch(e){} V.rec = null; }
-  V.fase = 'idle';
-  V._hablando = false;
-  V._recActivo = false;
-  V._transcripcionFinal = '';
-  V._pendienteAccion = null;
-  const c1 = document.getElementById('vozCandidatos'); if (c1) c1.remove();
-  const c2 = document.getElementById('vozResultados'); if (c2) c2.remove();
+window.cerrarAsistenteVoz=()=>{
+  clearTimeout(AV.silenceTimer);
+  if(AV.rec){try{AV.rec.abort()}catch(e){}}
+  AV.rec=null;AV.fase='idle';
+  AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';
+  AV._datosTemp=null;AV._hasInterim=false;
   document.getElementById('vozOverlay').classList.remove('open');
   document.getElementById('vozSheet').classList.remove('open');
-  _vActualizarUI();
+  const btnV=document.getElementById('btnVozTopbar');
+  if(btnV)btnV.classList.remove('activo');
+  const dot=document.getElementById('vozActivoDot');
+  if(dot)dot.style.display='none';
 };
 
+window.vozPararManual=()=>{
+  clearTimeout(AV.silenceTimer);
+  if(AV.rec){try{AV.rec.stop()}catch(e){}}
+  if(AV.transcFinal.trim().length>1)_avProcesarFinal();
+  else{AV.fase='idle';_avSetEstado('error');const el=document.getElementById('vozErrorMsg');if(el)el.textContent='No escuché nada. Pulsa reintentar.'}
+};
 
+window.vozReintentar=()=>{
+  AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';AV._hasInterim=false;
+  const el=document.getElementById('vozTranscript');if(el)el.innerHTML='';
+  _avAbrirMic();
+};
+
+window.vozSinCliente=()=>{
+  const{datos}=AV._datosTemp||{};
+  if(datos)_avAbrirFormulario({...datos,cliente:null,candidatos:[]});
+  else cerrarAsistenteVoz();
+};
 </script>
 </body>
 </html>
