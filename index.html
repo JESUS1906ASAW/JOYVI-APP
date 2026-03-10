@@ -9219,19 +9219,21 @@ const _avCompletarDatos = (textAdicional,datosBase) => {
 };
 
 // ─── Motor de captura ────────────────────────────────────
-// ARQUITECTURA ANTI-ECO V2:
-// Chrome Android reinicia SpeechRecognition cada ~60s. Al reiniciar, onresult
-// vuelve a entregar TODOS los resultados desde índice 0.
-// Solución DEFINITIVA: en lugar de acumular texto, rastreamos el ÍNDICE del
-// último resultado final procesado (_sesionOffset). Al reiniciar, el nuevo
-// rec empieza con offset = número de resultados finales ya conocidos.
-// Así nunca procesamos el mismo resultado dos veces.
+// ARQUITECTURA ANTI-ECO V3 — ACUMULADOR LOCAL POR INSTANCIA:
 //
-// DETECCIÓN FIN DE FRASE:
-// - isFinal = Chrome confirma que la persona terminó de decir esa frase
-// - Tras un isFinal + 1200ms de silencio real → procesar (frase corta y clara)
-// - Si había interims activos y se quedan 1800ms quietos → procesar
-// - Nunca disparar durante pausas reflexivas (< 1200ms tras isFinal)
+// El problema raíz del eco en Chrome Android:
+//   Cada vez que Chrome reinicia el SpeechRecognition (cada ~60s),
+//   crea un rec NUEVO con índices empezando en 0. Ese rec nuevo vuelve
+//   a entregar los resultados previos "como si fueran nuevos".
+//   Cualquier sistema basado en offset global falla porque los índices
+//   del rec nuevo son independientes del rec anterior.
+//
+// Solución correcta:
+//   Cada instancia de rec acumula su texto en una variable LOCAL (textoEstaInstancia).
+//   Cuando esa instancia muere (onend/onerror), vuelca su texto a AV.sesionBase.
+//   AV.sesionBase NUNCA se vuelve a leer por onresult — solo se muestra.
+//   Así es imposible duplicar: cada instancia solo lee sus propios resultados,
+//   y al morir los entrega a la base una sola vez.
 
 const _avAbrirMic = () => {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -9244,14 +9246,24 @@ const _avAbrirMic = () => {
   rec.interimResults=true;
   rec.maxAlternatives=1;
 
-  // _sesionOffset: cuántos resultados FINALES ya teníamos ANTES de este rec.
-  // Si Chrome reinicia, el nuevo rec entrega desde 0 pero nosotros saltamos los ya procesados.
-  AV._sesionOffset = AV._sesionOffset || 0;
   AV.rec=rec;
   AV._hasInterim=false;
-  AV._lastFinalAt=0;      // timestamp del último isFinal recibido
-  AV._lastInterimAt=0;    // timestamp del último interim recibido
-  AV._hasFinal=false;     // ¿hemos recibido al menos un isFinal en este ciclo?
+  AV._lastFinalAt=0;
+  AV._lastInterimAt=0;
+  AV._hasFinal=false;
+
+  // ── CLAVE ANTI-ECO: acumulador LOCAL a esta instancia ──
+  // Solo contiene el texto confirmado (isFinal) de ESTE rec concreto.
+  // Cuando el rec muere, se vuelca a AV.sesionBase y esta var desaparece.
+  let textoEstaInstancia='';
+  let muerto=false; // flag para que onend no procese si ya procesamos
+
+  const _volcarYReiniciar = () => {
+    if(textoEstaInstancia.trim()){
+      AV.sesionBase+=textoEstaInstancia;
+      textoEstaInstancia='';
+    }
+  };
 
   rec.onstart=()=>{
     AV.fase='escuchando';
@@ -9266,40 +9278,29 @@ const _avAbrirMic = () => {
   };
 
   rec.onresult=ev=>{
+    // ev.resultIndex = primer resultado NUEVO en este evento para ESTA instancia
+    // ev.results = lista completa de ESTA instancia (empieza en 0 con cada rec nuevo)
+    // Solo acumulamos en textoEstaInstancia — nunca tocamos AV.sesionBase aquí
     let interim='';
-    let nuevoFinal='';
-    let finalesEsteEvento=0;
 
     for(let i=ev.resultIndex;i<ev.results.length;i++){
       const r=ev.results[i];
       if(r.isFinal){
-        // Solo procesar si este índice está por encima del offset (no fue procesado ya)
-        if(i >= AV._sesionOffset){
-          nuevoFinal+=r[0].transcript+' ';
-          finalesEsteEvento++;
-        }
+        textoEstaInstancia+=r[0].transcript+' ';
         AV._hasInterim=false;
+        AV._hasFinal=true;
+        AV._lastFinalAt=Date.now();
       }else{
         interim=r[0].transcript;
         AV._hasInterim=true;
+        AV._lastInterimAt=Date.now();
       }
     }
 
-    const ahora=Date.now();
-
-    // Acumular texto nuevo confirmado
-    if(nuevoFinal.trim()){
-      AV.sesionBase+=nuevoFinal;
-      AV._sesionOffset=ev.results.length; // actualizar offset al total actual
-      AV._lastFinalAt=ahora;
-      AV._hasFinal=true;
-    }
-    if(interim) AV._lastInterimAt=ahora;
-
     AV.transcParcial=interim;
 
-    // Mostrar transcripción
-    const textoVisible=AV.sesionBase.trimStart();
+    // Mostrar: base ya confirmada + lo de esta instancia + interim actual
+    const textoVisible=(AV.sesionBase+textoEstaInstancia).trimStart();
     const el=document.getElementById('vozTranscript');
     if(el){
       el.innerHTML=textoVisible
@@ -9308,33 +9309,34 @@ const _avAbrirMic = () => {
     }
 
     // ── DETECCIÓN FIN DE FRASE ──────────────────────────────────────────
-    // Lógica: solo procesar cuando hay texto real Y la voz claramente terminó.
-    // NO disparar por pausas reflexivas (silencio corto entre frases).
+    // Solo procesar cuando la frase está claramente terminada:
+    // isFinal recibido + sin interim activo + 1200ms de silencio real.
+    // Pausas reflexivas (< 1200ms) no disparan el procesado.
     clearTimeout(AV.silenceTimer);
 
     if(AV._hasFinal && !AV._hasInterim){
-      // Hay resultado final confirmado y no hay interim activo → la persona terminó una frase
-      // Esperar 1200ms de silencio antes de procesar (evita cortar tras pausa reflexiva)
       AV.silenceTimer=setTimeout(()=>{
         if(!AV._hasInterim && AV.fase==='escuchando'){
+          _volcarYReiniciar();
           _avProcesarFinal();
         }
       },1200);
     }else if(AV._hasInterim){
-      // Hay interim (está hablando) → timer largo de seguridad anti-bloqueo
+      // Seguridad: si hay interim que lleva quieto 2s, procesar
       AV.silenceTimer=setTimeout(()=>{
-        const silencioInterim=Date.now()-AV._lastInterimAt;
-        if(silencioInterim>=1800 && !AV._hasInterim && AV.fase==='escuchando'){
+        if(Date.now()-AV._lastInterimAt>=1800 && !AV._hasInterim && AV.fase==='escuchando'){
+          _volcarYReiniciar();
           _avProcesarFinal();
         }
-      },2000);
+      },2100);
     }
   };
 
   rec.onerror=ev=>{
     if(ev.error==='no-speech'){
-      if(AV.fase==='escuchando'){
-        // no-speech = Chrome reinicia. Guardar offset actual para el próximo rec.
+      if(AV.fase==='escuchando'&&!muerto){
+        muerto=true;
+        _volcarYReiniciar(); // guardar lo acumulado antes de morir
         AV.rec=null;
         setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},200);
       }
@@ -9347,8 +9349,11 @@ const _avAbrirMic = () => {
 
   rec.onend=()=>{
     AV._hasInterim=false;
+    if(!muerto){
+      muerto=true;
+      _volcarYReiniciar(); // guardar lo acumulado antes de morir
+    }
     AV.rec=null;
-    // Reiniciar rec sin resetear offset ni sesionBase
     if(AV.fase==='escuchando')setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},200);
   };
 
@@ -9360,7 +9365,9 @@ const _avProcesarFinal = async () => {
   clearTimeout(AV.silenceTimer);
   if(AV.rec){try{AV.rec.stop()}catch(e){}}
   AV.rec=null;AV._hasInterim=false;
-  const texto=(AV.sesionBase+(AV.transcParcial||'')).trim();
+  // sesionBase ya contiene todo el texto volcado por _volcarYReiniciar
+  // transcParcial puede tener un interim no confirmado — lo añadimos si hay algo útil
+  const texto=(AV.sesionBase+(AV.transcParcial?AV.transcParcial:'')).trim();
   if(!texto){
     // Sin texto: si estábamos en modo pregunta y no hay nada → abrir sin ese dato
     if(AV._datosTemp?.faltantes&&AV._datosTemp?.datos){
