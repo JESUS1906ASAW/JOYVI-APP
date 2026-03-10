@@ -7483,8 +7483,19 @@ const renderNotificaciones=async()=>{
     ));
     const notifs=snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+    // Eliminar en background las notificaciones ya leidas que no tienen timer activo
+    // (leidas en sesiones anteriores que quedaron sin borrar)
+    const leidasSinTimer=snap.docs.filter(d=>{
+      const data=d.data();
+      return data.leida===true && !(window._notifDeleteTimers && window._notifDeleteTimers.has(d.id));
+    });
+    if(leidasSinTimer.length){
+      leidasSinTimer.forEach(d=>{
+        deleteDoc(doc(db,'notificaciones',d.id)).catch(()=>{});
+      });
+    }
     const noLeidas=notifs.filter(n=>!n.leida);
-    const leidas=notifs.filter(n=>n.leida).slice(0,15);
+    const leidas=notifs.filter(n=>n.leida && (window._notifDeleteTimers && window._notifDeleteTimers.has(n.id))).slice(0,15);
 
     if(!notifs.length){
       html+=`<div class="empty"><div class="empty-ico" style="font-size:36px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>Sin notificaciones</p></div>`;
@@ -8681,44 +8692,37 @@ const _vAbrirMic = () => {
   r.onresult = e => {
     if (V._hablando || _procesado) { clearTimeout(_pausaTimer); return; }
     const res = Array.from(e.results);
-
-    // Recoger todas las alternativas de los bloques FINALES nuevos
-    let nuevaFinal = '';
-    for (let i = 0; i < res.length; i++) {
+    let nuevaFinalBloque = '';
+    let interimBloque = '';
+    for (let i = e.resultIndex; i < res.length; i++) {
       if (res[i].isFinal) {
         const altsBloque = Array.from({length: res[i].length}, (_, k) => res[i][k].transcript);
-        // Acumular todas las alternativas globales para scoring cruzado
         _todasAlts = [..._todasAlts, ...altsBloque];
-        nuevaFinal += _elegirMejor(altsBloque) + ' ';
+        nuevaFinalBloque += _elegirMejor(altsBloque) + ' ';
+      } else {
+        interimBloque = res[i][0].transcript.trim();
       }
     }
-    nuevaFinal = nuevaFinal.trim();
-    if (nuevaFinal) _mejorFinal = nuevaFinal;
-
-    // Interim: primera alternativa del último bloque no-final
-    const interimBloques = res.filter(x => !x.isFinal);
-    const interim = interimBloques.length
-      ? interimBloques[interimBloques.length - 1][0].transcript.trim()
-      : '';
-    _ultimoInterim = interim;
-
-    // Mostrar en tiempo real — texto en verde si final, gris si interim
+    nuevaFinalBloque = nuevaFinalBloque.trim();
+    if (nuevaFinalBloque) {
+      _mejorFinal = (_mejorFinal ? _mejorFinal + ' ' + nuevaFinalBloque : nuevaFinalBloque).trim();
+    }
+    if (interimBloque) _ultimoInterim = interimBloque;
     const heardEl = document.getElementById('vozHeard');
     if (heardEl) {
-      const mostrar = (_mejorFinal || interim).trim();
+      const mostrar = (_mejorFinal || interimBloque).trim();
       if (mostrar) {
         const color = _mejorFinal ? '#4ade80' : '#aaa';
-        heardEl.innerHTML = `🗣️ <b style="color:${color}">${mostrar}</b>`;
+        heardEl.innerHTML = '🗣️ <b style="color:' + color + '">' + mostrar + '</b>';
       } else {
         heardEl.innerHTML = '';
       }
     }
-
     if (_mejorFinal) {
       const tipo = _mejorFinal.trim().split(/\s+/).length <= 1 ? 'corto' : 'final';
       _procesarConPausa(_mejorFinal, tipo);
-    } else if (interim) {
-      _procesarConPausa(interim, 'interim');
+    } else if (interimBloque) {
+      _procesarConPausa(interimBloque, 'interim');
     }
   };
 
