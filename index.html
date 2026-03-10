@@ -8992,7 +8992,7 @@ const _avSetEstado = est => {
   // Restaurar hint por defecto al entrar en escucha limpia (no en turno de pregunta)
   if(est==='escuchando'&&!AV._datosTemp?.faltantes){
     const hint=document.getElementById('vozHint');
-    if(hint)hint.innerHTML='Habla ahora · Di <em>"listo"</em> para terminar<br><small style="font-size:10px;opacity:.6">Crea partes, consulta archivos, llama o navega por voz</small>';
+    if(hint)hint.innerHTML='Habla con naturalidad · Para automáticamente<br><small style="font-size:10px;opacity:.6">Crea partes, consulta archivos, llama o navega por voz</small>';
   }
 
   const btnV=document.getElementById('btnVozTopbar');
@@ -9164,7 +9164,8 @@ const _avMostrarPregunta = (preguntas,datos) => {
   AV._datosTemp={...(AV._datosTemp||{}),datos,faltantes:preguntas,intentos:(AV._datosTemp?.intentos||0)+1};
 
   // Resetear sesiones para el nuevo turno (sin mezclar con dictado anterior)
-  AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';AV._hasInterim=false;
+  AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';
+  AV._sesionOffset=0;AV._hasFinal=false;AV._hasInterim=false;
   const transcript=document.getElementById('vozTranscript');
   if(transcript)transcript.innerHTML='';
 
@@ -9218,25 +9219,39 @@ const _avCompletarDatos = (textAdicional,datosBase) => {
 };
 
 // ─── Motor de captura ────────────────────────────────────
-// ARQUITECTURA ANTI-ECO ANDROID:
-// Chrome Android reinicia el SpeechRecognition cada ~60s o cuando pierde conexión.
-// Cada reinicio lanza onresult desde resultIndex=0 con TODOS los resultados de nuevo.
-// Solución: al arrancar cada sesión del rec se guarda lo que ya teníamos (sesionBase)
-// y solo se acumulan los resultados NUEVOS de esta sesión (sesionActual).
-// Al reiniciar: sesionBase += sesionActual_confirmada, sesionActual = ''.
+// ARQUITECTURA ANTI-ECO V2:
+// Chrome Android reinicia SpeechRecognition cada ~60s. Al reiniciar, onresult
+// vuelve a entregar TODOS los resultados desde índice 0.
+// Solución DEFINITIVA: en lugar de acumular texto, rastreamos el ÍNDICE del
+// último resultado final procesado (_sesionOffset). Al reiniciar, el nuevo
+// rec empieza con offset = número de resultados finales ya conocidos.
+// Así nunca procesamos el mismo resultado dos veces.
+//
+// DETECCIÓN FIN DE FRASE:
+// - isFinal = Chrome confirma que la persona terminó de decir esa frase
+// - Tras un isFinal + 1200ms de silencio real → procesar (frase corta y clara)
+// - Si había interims activos y se quedan 1800ms quietos → procesar
+// - Nunca disparar durante pausas reflexivas (< 1200ms tras isFinal)
+
 const _avAbrirMic = () => {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){_avMostrarError('Tu dispositivo no soporta reconocimiento de voz');return}
   if(AV.rec){try{AV.rec.abort()}catch(e){}AV.rec=null}
 
   const rec=new SR();
-  rec.lang='es-ES';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
-  AV.rec=rec;AV.transcParcial='';
-  AV._lastResultAt=Date.now();
+  rec.lang='es-ES';
+  rec.continuous=true;
+  rec.interimResults=true;
+  rec.maxAlternatives=1;
+
+  // _sesionOffset: cuántos resultados FINALES ya teníamos ANTES de este rec.
+  // Si Chrome reinicia, el nuevo rec entrega desde 0 pero nosotros saltamos los ya procesados.
+  AV._sesionOffset = AV._sesionOffset || 0;
+  AV.rec=rec;
   AV._hasInterim=false;
-  // Al arrancar esta sesión, lo que había antes queda congelado en sesionBase
-  // sesionActual empieza vacío — solo añadiremos lo nuevo de esta sesión
-  AV.sesionActual='';
+  AV._lastFinalAt=0;      // timestamp del último isFinal recibido
+  AV._lastInterimAt=0;    // timestamp del último interim recibido
+  AV._hasFinal=false;     // ¿hemos recibido al menos un isFinal en este ciclo?
 
   rec.onstart=()=>{
     AV.fase='escuchando';
@@ -9251,70 +9266,77 @@ const _avAbrirMic = () => {
   };
 
   rec.onresult=ev=>{
-    // ANTI-ECO: solo procesar desde resultIndex para no acumular lo que ya teníamos
-    // ev.resultIndex = índice del primer resultado NUEVO en este evento
-    // ev.results es la lista completa (acumulativa), por eso solo leemos desde resultIndex
     let interim='';
-    let finalDeEsteEvento='';
+    let nuevoFinal='';
+    let finalesEsteEvento=0;
 
     for(let i=ev.resultIndex;i<ev.results.length;i++){
       const r=ev.results[i];
       if(r.isFinal){
-        finalDeEsteEvento+=r[0].transcript+' ';
+        // Solo procesar si este índice está por encima del offset (no fue procesado ya)
+        if(i >= AV._sesionOffset){
+          nuevoFinal+=r[0].transcript+' ';
+          finalesEsteEvento++;
+        }
         AV._hasInterim=false;
       }else{
-        // El interim siempre es el texto parcial del último resultado no confirmado
         interim=r[0].transcript;
         AV._hasInterim=true;
       }
     }
 
-    AV._lastResultAt=Date.now();
+    const ahora=Date.now();
 
-    // Acumular solo en sesionActual (no en el texto base de sesiones previas)
-    if(finalDeEsteEvento.trim()){
-      AV.sesionActual+=finalDeEsteEvento;
+    // Acumular texto nuevo confirmado
+    if(nuevoFinal.trim()){
+      AV.sesionBase+=nuevoFinal;
+      AV._sesionOffset=ev.results.length; // actualizar offset al total actual
+      AV._lastFinalAt=ahora;
+      AV._hasFinal=true;
     }
+    if(interim) AV._lastInterimAt=ahora;
+
     AV.transcParcial=interim;
 
-    // Mostrar transcripción en tiempo real: base + actual + interim parcial
-    const textoVisible=(AV.sesionBase+AV.sesionActual).trimStart();
+    // Mostrar transcripción
+    const textoVisible=AV.sesionBase.trimStart();
     const el=document.getElementById('vozTranscript');
     if(el){
       el.innerHTML=textoVisible
-        ?(textoVisible+(interim?` <em>${interim}</em>`:''))
-        :(interim?`<em>${interim}</em>`:'');
+        ?(textoVisible+(interim?' <em>'+interim+'</em>':''))
+        :(interim?'<em>'+interim+'</em>':'');
     }
 
-    // ── Timer de silencio INTELIGENTE ──
+    // ── DETECCIÓN FIN DE FRASE ──────────────────────────────────────────
+    // Lógica: solo procesar cuando hay texto real Y la voz claramente terminó.
+    // NO disparar por pausas reflexivas (silencio corto entre frases).
     clearTimeout(AV.silenceTimer);
-    const delay=AV._hasInterim?600:3500;
-    AV.silenceTimer=setTimeout(()=>{
-      const elapsed=Date.now()-AV._lastResultAt;
-      if(elapsed>=delay-100){
-        _avProcesarFinal();
-      }
-    },delay);
 
-    // Palabras de cierre explícitas
-    const todoNorm=(AV.sesionBase+AV.sesionActual+interim).trim().toLowerCase();
-    const CIERRE=/\b(listo|ya\s+est[aá]|fin\b|eso\s+es\s+todo|ya\s+termin[eé]|he\s+terminado|nada\s+m[aá]s|ya\s+vale|termino|ya\s+acab[eé])\s*\.?\s*$/;
-    if(CIERRE.test(todoNorm)){
-      // Quitar la palabra de cierre del texto final
-      AV.sesionActual=AV.sesionActual.replace(CIERRE,'').trim();
-      if(AV.sesionActual.endsWith(' '))AV.sesionActual=AV.sesionActual.trim();
-      clearTimeout(AV.silenceTimer);
-      setTimeout(_avProcesarFinal,200);
+    if(AV._hasFinal && !AV._hasInterim){
+      // Hay resultado final confirmado y no hay interim activo → la persona terminó una frase
+      // Esperar 1200ms de silencio antes de procesar (evita cortar tras pausa reflexiva)
+      AV.silenceTimer=setTimeout(()=>{
+        if(!AV._hasInterim && AV.fase==='escuchando'){
+          _avProcesarFinal();
+        }
+      },1200);
+    }else if(AV._hasInterim){
+      // Hay interim (está hablando) → timer largo de seguridad anti-bloqueo
+      AV.silenceTimer=setTimeout(()=>{
+        const silencioInterim=Date.now()-AV._lastInterimAt;
+        if(silencioInterim>=1800 && !AV._hasInterim && AV.fase==='escuchando'){
+          _avProcesarFinal();
+        }
+      },2000);
     }
   };
 
   rec.onerror=ev=>{
     if(ev.error==='no-speech'){
       if(AV.fase==='escuchando'){
-        // Guardar sesionActual confirmada antes de reiniciar
-        if(AV.sesionActual.trim())AV.sesionBase+=AV.sesionActual;
+        // no-speech = Chrome reinicia. Guardar offset actual para el próximo rec.
         AV.rec=null;
-        setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},300);
+        setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},200);
       }
     }else if(ev.error==='aborted'){
       // intencional — no hacer nada
@@ -9325,11 +9347,9 @@ const _avAbrirMic = () => {
 
   rec.onend=()=>{
     AV._hasInterim=false;
-    // Guardar lo confirmado de esta sesión antes de reiniciar
-    if(AV.sesionActual.trim())AV.sesionBase+=AV.sesionActual;
-    AV.sesionActual='';
     AV.rec=null;
-    if(AV.fase==='escuchando')setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},300);
+    // Reiniciar rec sin resetear offset ni sesionBase
+    if(AV.fase==='escuchando')setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},200);
   };
 
   try{rec.start()}catch(e){AV.rec=null;_avMostrarError('No se pudo abrir el micrófono')}
@@ -9340,7 +9360,7 @@ const _avProcesarFinal = async () => {
   clearTimeout(AV.silenceTimer);
   if(AV.rec){try{AV.rec.stop()}catch(e){}}
   AV.rec=null;AV._hasInterim=false;
-  const texto=AV.transcFinal.trim();
+  const texto=(AV.sesionBase+(AV.transcParcial||'')).trim();
   if(!texto){
     // Sin texto: si estábamos en modo pregunta y no hay nada → abrir sin ese dato
     if(AV._datosTemp?.faltantes&&AV._datosTemp?.datos){
@@ -9440,7 +9460,8 @@ window.abrirAsistenteVoz=()=>{
   if(AV.rec){try{AV.rec.abort()}catch(e){}}
   AV.rec=null;
   AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';
-  AV._datosTemp=null;AV._hasInterim=false;AV._lastResultAt=Date.now();
+  AV._sesionOffset=0;AV._hasFinal=false;AV._lastFinalAt=0;AV._lastInterimAt=0;
+  AV._datosTemp=null;AV._hasInterim=false;
 
   // Abrir panel
   document.getElementById('vozOverlay').classList.add('open');
@@ -9456,6 +9477,7 @@ window.cerrarAsistenteVoz=()=>{
   if(AV.rec){try{AV.rec.abort()}catch(e){}}
   AV.rec=null;AV.fase='idle';
   AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';
+  AV._sesionOffset=0;AV._hasFinal=false;AV._lastFinalAt=0;AV._lastInterimAt=0;
   AV._datosTemp=null;AV._hasInterim=false;
   document.getElementById('vozOverlay').classList.remove('open');
   document.getElementById('vozSheet').classList.remove('open');
@@ -9473,7 +9495,8 @@ window.vozPararManual=()=>{
 };
 
 window.vozReintentar=()=>{
-  AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';AV._hasInterim=false;
+  AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';
+  AV._sesionOffset=0;AV._hasFinal=false;AV._hasInterim=false;
   const el=document.getElementById('vozTranscript');if(el)el.innerHTML='';
   _avAbrirMic();
 };
