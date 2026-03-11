@@ -121,7 +121,6 @@ body.modo-claro .grupo-title{color:#fff}
 body.modo-claro .func-label{color:var(--r)}
 body.modo-claro #topbar .logo{color:var(--r)}
 
-body.modo-claro 
 body.modo-claro .tl-card{background:#ffffff;border-color:rgba(0,0,0,.09)}
 body.modo-claro .dash-item{background:#ffffff}
 body.modo-claro .chart-wrap{background:#ffffff}
@@ -1767,7 +1766,7 @@ const iniciarFCMForeground=()=>{
 };
 
 // NAVEGACIÓN — History API (botón atrás nativo del navegador/móvil)
-const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',estadisticas:'screenEstadisticas',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',horas:'screenHoras',log:'screenLog',kiosk:'screenKiosk',kioskCli:'screenKioskCli',kioskPartes:'screenKioskPartes',kioskAverias:'screenKioskAverias',kioskMant:'screenKioskMant',kioskPresu:'screenKioskPresu'};
+const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',estadisticas:'screenEstadisticas',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',horas:'screenHoras',log:'screenLog',kiosk:'screenKiosk',kioskCli:'screenKioskCli',kioskPartes:'screenKioskPartes',kioskAverias:'screenKioskAverias',kioskMant:'screenKioskMant',kioskPresu:'screenKioskPresu',aprendizaje:'screenAprendizaje'};
 
 // Flag para evitar bucles al manejar popstate
 let _navFromPop=false;
@@ -1798,6 +1797,7 @@ const _renderScreen=id=>{
   else if(id==='perfil')renderPerfil();
   else if(id==='horas')renderHoras();
   else if(id==='log')renderLog();
+  else if(id==='aprendizaje')renderAprendizajeIA();
 };
 
 window.goScreen=id=>{
@@ -1958,6 +1958,7 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
 
     <div class="d-item" onclick="goScreen('archivos');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Archivos clasificados</div>
     <div class="d-item" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Administración</div>
+    <div class="d-item" onclick="goScreen('aprendizaje');cerrarDrawer()" style="color:rgba(var(--theme-rgb),1)"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Aprendizaje IA <span style="font-size:9px;font-weight:900;background:rgba(var(--theme-rgb),.2);color:rgba(var(--theme-rgb),1);padding:2px 6px;border-radius:20px;margin-left:4px">NUEVO</span></div>
     ${sep}
     ${kioskBtn}
     ${sep}
@@ -11014,6 +11015,537 @@ window._avInterceptarGuiado = (texto) => {
   _avIniciarModoGuiado(tipo, {});
   return true;
 };
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// APRENDIZAJE IA — Sistema de retroalimentación
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// APRENDIZAJE IA — Sistema de retroalimentación y aprendizaje
+// Colección Firestore: grupos/{CGID}/aprendizajeIA/{docId}
+// Cada documento = 1 entrada pendiente de revisión
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ── Niveles de confianza del asistente ──────────────
+const _AI_CONF = { BAJA: 'baja', MEDIA: 'media', ALTA: 'alta' };
+
+// ── Categorías de entrada de aprendizaje ────────────
+const _AI_CATS = {
+  vocab_tecnico:   { label: 'Vocabulario técnico',  ico: '🔧', color: '#1e88e5' },
+  cliente_alias:   { label: 'Alias de cliente',     ico: '👤', color: '#8e24aa' },
+  campo_incorrecto:{ label: 'Campo incorrecto',      ico: '⚠️', color: '#f57c00' },
+  expresion_voz:   { label: 'Expresión oral',       ico: '🎙️', color: '#e53935' },
+  tipo_doc:        { label: 'Tipo de documento',    ico: '📄', color: '#43a047' },
+  importe:         { label: 'Importe / precio',     ico: '💶', color: '#00897b' },
+  otro:            { label: 'Otro',                  ico: '💡', color: '#546e7a' },
+};
+
+// ── Guardar entrada de aprendizaje en Firestore ──────
+window._aiGuardarEntrada = async (entrada) => {
+  if(!CGID || !CU) return null;
+  try {
+    const ref = await addDoc(collection(db,'grupos',CGID,'aprendizajeIA'), {
+      texto_original: entrada.textoOriginal || '',
+      interpretacion_ia: entrada.interpretacionIA || '',
+      campo_destino: entrada.campoDestino || '',
+      confianza: entrada.confianza || _AI_CONF.BAJA,
+      categoria: entrada.categoria || 'otro',
+      tipo_doc: entrada.tipoDoc || '',
+      estado: 'pendiente', // pendiente | confirmado | corregido | ignorado
+      uid: CU.uid,
+      nombre_trabajador: (typeof CUD !== 'undefined' ? CUD?.nombre : '') || CU.email || '',
+      creado: serverTimestamp(),
+      // Aprendizaje acumulado
+      correccion_trabajador: null,
+      confirmado_por: null,
+      veces_visto: 0,
+      veces_correcto: 0,
+      // Para futuras detecciones
+      patron_aprendido: null,
+    });
+    return ref.id;
+  } catch(e) { console.warn('_aiGuardarEntrada error:', e); return null; }
+};
+
+// ── Obtener entradas del grupo ────────────────────────
+window._aiCargarEntradas = async (filtro = 'pendiente') => {
+  if(!CGID) return [];
+  try {
+    const snap = await getDocs(
+      filtro === 'todas'
+        ? query(collection(db,'grupos',CGID,'aprendizajeIA'), orderBy('creado','desc'), limit(120))
+        : query(collection(db,'grupos',CGID,'aprendizajeIA'), where('estado','==',filtro), orderBy('creado','desc'), limit(80))
+    );
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { return []; }
+};
+
+// ── Confirmar / Corregir una entrada ─────────────────
+window._aiConfirmar = async (id, confirmado, correccion) => {
+  if(!CGID || !id) return;
+  try {
+    const estado = confirmado ? 'confirmado' : (correccion ? 'corregido' : 'ignorado');
+    await updateDoc(doc(db,'grupos',CGID,'aprendizajeIA',id), {
+      estado,
+      correccion_trabajador: correccion || null,
+      confirmado_por: (typeof CUD !== 'undefined' ? CUD?.nombre : '') || CU?.email || '',
+      revisado_en: serverTimestamp(),
+      patron_aprendido: confirmado ? 'confirmado' : (correccion ? correccion : null),
+    });
+    // Actualizar diccionario interno de voz
+    _aiActualizarDiccionario(id, confirmado, correccion);
+    renderAprendizajeIA();
+  } catch(e) { toast('Error al guardar revisión','e'); }
+};
+
+// ── Ignorar / descartar entrada ───────────────────────
+window._aiIgnorar = async (id) => {
+  if(!CGID || !id) return;
+  try {
+    await updateDoc(doc(db,'grupos',CGID,'aprendizajeIA',id), {
+      estado: 'ignorado',
+      revisado_en: serverTimestamp(),
+    });
+    renderAprendizajeIA();
+  } catch(e) { toast('Error','e'); }
+};
+
+// ── Borrar entrada definitivamente ───────────────────
+window._aiBorrar = async (id) => {
+  if(!CGID || !id) return;
+  if(!confirm('¿Eliminar esta entrada de aprendizaje?')) return;
+  try {
+    await deleteDoc(doc(db,'grupos',CGID,'aprendizajeIA',id));
+    renderAprendizajeIA();
+  } catch(e) { toast('Error al borrar','e'); }
+};
+
+// ── Diccionario en memoria (persiste mientras la app está abierta) ──
+let _aiDiccionario = {}; // { textoNorm -> { correccion, campo, tipoDoc, confirmaciones } }
+
+const _aiActualizarDiccionario = (id, confirmado, correccion) => {
+  // Se hace en loadAprendizajes también al inicio
+};
+
+// ── Cargar diccionario de aprendizajes confirmados ────
+window._aiCargarDiccionario = async () => {
+  if(!CGID) return;
+  try {
+    const snap = await getDocs(
+      query(collection(db,'grupos',CGID,'aprendizajeIA'),
+        where('estado','in',['confirmado','corregido']),
+        limit(500))
+    );
+    _aiDiccionario = {};
+    snap.docs.forEach(d => {
+      const data = d.data();
+      const key = (data.texto_original||'').toLowerCase().trim();
+      if(!key) return;
+      _aiDiccionario[key] = {
+        interpretacion: data.patron_aprendido || data.interpretacion_ia,
+        campo: data.campo_destino,
+        tipoDoc: data.tipo_doc,
+        categoria: data.categoria,
+        confirmaciones: (data.veces_correcto||0) + 1,
+      };
+    });
+  } catch(e) {}
+};
+
+// ── Consultar diccionario para un texto ──────────────
+window._aiBuscarEnDiccionario = (texto) => {
+  const key = (texto||'').toLowerCase().trim();
+  if(_aiDiccionario[key]) return _aiDiccionario[key];
+  // Búsqueda parcial
+  for(const [k, v] of Object.entries(_aiDiccionario)){
+    if(key.includes(k) || k.includes(key)) return v;
+  }
+  return null;
+};
+
+// ── Registrar una duda del asistente automáticamente ─
+window._aiRegistrarDuda = async (opts) => {
+  // opts: { textoOriginal, interpretacionIA, campoDestino, confianza, categoria, tipoDoc }
+  if(!CGID || !CU) return;
+  // No registrar duplicados recientes (mismo texto en 10 min)
+  const KEY = `ai_duda_${CGID}_${(opts.textoOriginal||'').slice(0,30)}`;
+  if(sessionStorage.getItem(KEY)) return;
+  sessionStorage.setItem(KEY, '1');
+  await _aiGuardarEntrada(opts);
+  // Toast discreto para que el trabajador sepa que se registró
+  toast('🧠 Nueva duda registrada en Aprendizaje IA','i');
+};
+
+// ── Renderizar la pantalla de Aprendizaje IA ─────────
+let _aiTabActual = 'pendiente';
+
+window.renderAprendizajeIA = async () => {
+  const el = document.getElementById('aprendizajeContent');
+  if(!el) return;
+
+  el.innerHTML = `<div class="empty"><div class="empty-ico" style="font-size:36px;animation:none">🧠</div><p style="font-size:12px">Cargando entradas…</p></div>`;
+
+  const entradas = await _aiCargarEntradas(_aiTabActual);
+
+  const pendCount = _aiTabActual !== 'pendiente' ? '' : '';
+  const tabs = [
+    { id:'pendiente', label:'Pendientes', ico:'⏳' },
+    { id:'confirmado', label:'Confirmados', ico:'✅' },
+    { id:'corregido', label:'Corregidos', ico:'✏️' },
+    { id:'todas', label:'Todos', ico:'📋' },
+  ];
+
+  const tabsHTML = tabs.map(t => `
+    <button onclick="_aiTabActual='${t.id}';renderAprendizajeIA()"
+      style="flex:1;padding:9px 4px;border:none;border-radius:10px;font-size:11px;font-weight:800;font-family:var(--font);cursor:pointer;transition:.15s;
+        background:${_aiTabActual===t.id?'linear-gradient(135deg,var(--r2),var(--r))':'rgba(255,255,255,.06)'};
+        color:${_aiTabActual===t.id?'#fff':'var(--tx2)'};
+        box-shadow:${_aiTabActual===t.id?'0 2px 8px rgba(var(--theme-rgb),.3)':'none'}">
+      ${t.ico} ${t.label}
+    </button>`).join('');
+
+  const empty = `
+    <div class="empty" style="padding:48px 20px">
+      <div class="empty-ico" style="font-size:48px">🧠</div>
+      <p style="font-size:14px;font-weight:700;color:var(--tx);margin-bottom:8px">
+        ${_aiTabActual==='pendiente' ? 'Sin dudas pendientes' : 'Sin entradas aquí'}
+      </p>
+      <p style="font-size:12px;color:var(--tx2)">
+        ${_aiTabActual==='pendiente'
+          ? 'Cuando el asistente de voz no esté seguro de algo, lo anotará aquí para que lo revises.'
+          : 'Las entradas revisadas aparecerán en esta pestaña.'}
+      </p>
+    </div>`;
+
+  const cardsHTML = entradas.length === 0 ? empty : entradas.map(e => _aiRenderCard(e)).join('');
+
+  el.innerHTML = `
+    <!-- Header hero -->
+    <div style="background:linear-gradient(135deg,rgba(var(--theme-rgb),.12),rgba(var(--theme-rgb),.06));border:1px solid rgba(var(--theme-rgb),.2);border-radius:20px;padding:18px 18px 16px;margin-bottom:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(var(--theme-rgb),.15),transparent 70%);pointer-events:none"></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="width:46px;height:46px;border-radius:14px;background:rgba(var(--theme-rgb),.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🧠</div>
+        <div>
+          <div style="font-size:17px;font-weight:900;color:var(--tx)">Aprendizaje IA</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">El asistente aprende de tus correcciones</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--tx2);line-height:1.5">
+        Cuando el asistente de voz no esté seguro de cómo interpretar algo, lo anotará aquí. 
+        <strong style="color:var(--tx)">Tú decides si estaba correcto o lo corriges</strong>, y el asistente aprende para el futuro.
+      </div>
+      <button onclick="_aiAnadirManual()" style="margin-top:12px;display:flex;align-items:center;gap:6px;background:rgba(var(--theme-rgb),.15);border:1px solid rgba(var(--theme-rgb),.3);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;color:var(--r);font-family:var(--font);cursor:pointer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Añadir duda manualmente
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:5px">
+      ${tabsHTML}
+    </div>
+
+    <!-- Cards -->
+    <div id="aiCardsContainer">${cardsHTML}</div>
+
+    <!-- Info pie -->
+    ${entradas.length > 0 ? `<div style="text-align:center;padding:16px 0 8px;font-size:11px;color:var(--tx3)">${entradas.length} entrada${entradas.length!==1?'s':''} · El asistente mejora con cada revisión</div>` : ''}
+  `;
+};
+
+// ── Renderizar una tarjeta de entrada ─────────────────
+const _aiRenderCard = (e) => {
+  const cat = _AI_CATS[e.categoria] || _AI_CATS.otro;
+  const fecha = e.creado?.seconds ? new Date(e.creado.seconds*1000).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '–';
+  const isPending = e.estado === 'pendiente';
+  const confColor = e.confianza===_AI_CONF.ALTA?'#4caf50':e.confianza===_AI_CONF.MEDIA?'#ff9800':'#ef5350';
+
+  const acciones = isPending ? `
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="_aiAbrirRevision('${e.id}')"
+        style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:5px">
+        ✏️ Revisar
+      </button>
+      <button onclick="_aiIgnorar('${e.id}')"
+        style="padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)">
+        Ignorar
+      </button>
+    </div>` : `
+    <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:6px">
+        ${e.estado==='confirmado'
+          ? `<span style="font-size:11px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.25);border-radius:6px;padding:3px 8px">✅ Confirmado</span>`
+          : e.estado==='corregido'
+          ? `<span style="font-size:11px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border:1px solid rgba(255,152,0,.25);border-radius:6px;padding:3px 8px">✏️ Corregido</span>`
+          : `<span style="font-size:11px;font-weight:800;color:var(--tx3);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:3px 8px">⏭ Ignorado</span>`}
+        ${e.confirmado_por ? `<span style="font-size:10px;color:var(--tx3)">por ${e.confirmado_por}</span>` : ''}
+      </div>
+      <button onclick="_aiBorrar('${e.id}')" style="background:none;border:none;color:var(--tx3);font-size:14px;cursor:pointer;padding:4px 8px">🗑</button>
+    </div>
+    ${e.correccion_trabajador ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(255,152,0,.08);border:1px solid rgba(255,152,0,.2);border-radius:8px;font-size:12px;color:var(--tx)">💡 Corrección: <strong>${e.correccion_trabajador}</strong></div>` : ''}
+  `;
+
+  return `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;transition:.2s"
+         onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.3)'" onmouseout="this.style.borderColor='var(--border)'">
+      <!-- Cabecera -->
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+        <div style="width:38px;height:38px;border-radius:11px;background:rgba(${_hexToRgba(cat.color)});display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${cat.ico}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-size:10px;font-weight:800;color:${cat.color};background:rgba(${_hexToRgba(cat.color)},.15);border-radius:5px;padding:2px 7px">${cat.label}</span>
+            <span style="font-size:10px;font-weight:700;color:${confColor};background:rgba(${confColor==='#4caf50'?'76,175,80':confColor==='#ff9800'?'255,152,0':'239,83,80'},.1);border-radius:5px;padding:2px 7px">confianza ${e.confianza||'baja'}</span>
+            ${e.tipo_doc ? `<span style="font-size:10px;font-weight:700;color:var(--tx2);background:rgba(255,255,255,.07);border-radius:5px;padding:2px 7px">${e.tipo_doc}</span>` : ''}
+          </div>
+          <div style="font-size:10px;color:var(--tx3);margin-top:4px">${fecha} · ${e.nombre_trabajador||'–'}</div>
+        </div>
+      </div>
+
+      <!-- Texto original -->
+      <div style="margin-bottom:8px">
+        <div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Escuchado</div>
+        <div style="font-size:13px;font-weight:700;color:var(--tx);background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px;border-left:3px solid rgba(var(--theme-rgb),.5)">"${e.texto_original||'–'}"</div>
+      </div>
+
+      <!-- Interpretación IA -->
+      ${e.interpretacion_ia ? `
+      <div style="margin-bottom:8px">
+        <div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">El asistente interpretó</div>
+        <div style="font-size:12px;color:var(--tx2);background:rgba(255,255,255,.03);border-radius:8px;padding:7px 10px">${e.interpretacion_ia}</div>
+      </div>` : ''}
+
+      <!-- Campo destino -->
+      ${e.campo_destino ? `
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase">Campo</span>
+        <span style="font-size:11px;font-weight:700;color:var(--tx);background:rgba(255,255,255,.07);border-radius:5px;padding:2px 8px">${e.campo_destino}</span>
+      </div>` : ''}
+
+      ${acciones}
+    </div>`;
+};
+
+// ── Helper color hex a rgb para inline ───────────────
+const _hexToRgba = hex => {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+};
+
+// ── Abrir panel de revisión (SB) ─────────────────────
+window._aiAbrirRevision = async (id) => {
+  const snap = await getDocs(query(collection(db,'grupos',CGID,'aprendizajeIA')));
+  const docData = snap.docs.find(d=>d.id===id)?.data();
+  if(!docData) return;
+
+  const cat = _AI_CATS[docData.categoria] || _AI_CATS.otro;
+  const catsHTML = Object.entries(_AI_CATS).map(([k,v]) =>
+    `<option value="${k}" ${docData.categoria===k?'selected':''}>${v.ico} ${v.label}</option>`).join('');
+
+  abrirSB('Revisar entrada IA', `
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:800;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Lo que escuchó el asistente</div>
+      <div style="font-size:15px;font-weight:900;color:var(--tx);background:rgba(var(--theme-rgb),.06);border:1px solid rgba(var(--theme-rgb),.2);border-radius:12px;padding:12px 14px;border-left:4px solid var(--r)">"${docData.texto_original||'–'}"</div>
+    </div>
+
+    ${docData.interpretacion_ia ? `
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Cómo lo interpretó</div>
+      <div style="font-size:13px;color:var(--tx2);padding:10px 12px;background:rgba(255,255,255,.04);border-radius:10px">${docData.interpretacion_ia}</div>
+    </div>` : ''}
+
+    <div style="background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.2);border-radius:14px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:800;color:#4caf50;margin-bottom:10px">✅ ¿El asistente estaba en lo correcto?</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="_aiConfirmar('${id}', true, null)"
+          style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font)">
+          ✅ Sí, correcto
+        </button>
+        <button onclick="document.getElementById('aiCorreccionForm').style.display='block';this.closest('.btn-confirmar-wrap').style.display='none'"
+          class="btn-confirmar-wrap"
+          style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,152,0,.4);background:rgba(255,152,0,.08);color:#ff9800;font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font)">
+          ✏️ No, corregir
+        </button>
+      </div>
+    </div>
+
+    <!-- Formulario corrección -->
+    <div id="aiCorreccionForm" style="display:none;background:rgba(255,152,0,.06);border:1px solid rgba(255,152,0,.2);border-radius:14px;padding:14px">
+      <div style="font-size:12px;font-weight:800;color:#ff9800;margin-bottom:10px">✏️ ¿Cómo debería haberlo interpretado?</div>
+      <div class="fgrp">
+        <label>Corrección o aclaración</label>
+        <textarea id="aiCorreccionTexto" placeholder="Ej: Esto significa 'cambio de junta tórica', va en materiales, es para la sección de partes…" style="min-height:80px;resize:vertical"></textarea>
+      </div>
+      <div class="fgrp">
+        <label>Categoría correcta</label>
+        <select id="aiCorreccionCat">${catsHTML}</select>
+      </div>
+      <div class="fgrp">
+        <label>Campo destino correcto (opcional)</label>
+        <input id="aiCorreccionCampo" value="${docData.campo_destino||''}" placeholder="Ej: materiales, descripcion, titulo…">
+      </div>
+      <button onclick="
+        const txt=document.getElementById('aiCorreccionTexto').value.trim();
+        if(!txt){toast('Escribe la corrección primero','e');return;}
+        _aiConfirmar('${id}', false, txt);
+        cerrarSB();
+      " style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#e65100,#ff9800);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);margin-top:4px">
+        💾 Guardar corrección
+      </button>
+    </div>
+
+    <button onclick="cerrarSB()" style="width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:10px">
+      Cancelar
+    </button>
+  `);
+};
+
+// ── Añadir duda manualmente ───────────────────────────
+window._aiAnadirManual = () => {
+  const catsHTML = Object.entries(_AI_CATS).map(([k,v]) =>
+    `<option value="${k}">${v.ico} ${v.label}</option>`).join('');
+
+  abrirSB('➕ Añadir duda manualmente', `
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;line-height:1.5">
+      Añade aquí cualquier frase, expresión o término que el asistente debería aprender, incluso si no lo ha preguntado él.
+    </div>
+    <div class="fgrp">
+      <label>Frase o expresión escuchada / dictada</label>
+      <textarea id="aiManualTexto" placeholder="Ej: 'junta plana', 'el de la Residencia Pinar', '50 de mano más 30 de material'…" style="min-height:70px;resize:vertical"></textarea>
+    </div>
+    <div class="fgrp">
+      <label>¿Cómo debería interpretarlo el asistente?</label>
+      <textarea id="aiManualInterp" placeholder="Ej: Es un tipo de junta, campo materiales. Es el cliente García de la Residencia Pinar. Mano de obra 50€, materiales 30€." style="min-height:70px;resize:vertical"></textarea>
+    </div>
+    <div class="fgrp">
+      <label>Categoría</label>
+      <select id="aiManualCat">${catsHTML}</select>
+    </div>
+    <div class="fgrp">
+      <label>Campo destino (opcional)</label>
+      <input id="aiManualCampo" placeholder="Ej: materiales, titulo, cliente, descripcion…">
+    </div>
+    <div class="fgrp">
+      <label>Tipo de documento (opcional)</label>
+      <select id="aiManualTipoDoc">
+        <option value="">Sin especificar</option>
+        <option value="parte">Parte de trabajo</option>
+        <option value="averia">Avería</option>
+        <option value="presupuesto">Presupuesto</option>
+        <option value="mantenimiento">Mantenimiento</option>
+        <option value="cliente">Cliente</option>
+      </select>
+    </div>
+    <button onclick="
+      const txt = document.getElementById('aiManualTexto').value.trim();
+      const interp = document.getElementById('aiManualInterp').value.trim();
+      if(!txt){toast('Escribe la frase primero','e');return;}
+      _aiGuardarEntrada({
+        textoOriginal: txt,
+        interpretacionIA: interp,
+        campoDestino: document.getElementById('aiManualCampo').value.trim(),
+        confianza: 'baja',
+        categoria: document.getElementById('aiManualCat').value,
+        tipoDoc: document.getElementById('aiManualTipoDoc').value,
+      }).then(()=>{
+        toast('Duda guardada — revísala en Aprendizaje IA','o');
+        cerrarSB();
+        renderAprendizajeIA();
+      });
+    " class="btn btn-p" style="margin-top:4px">💾 Guardar duda</button>
+    <button onclick="cerrarSB()" style="width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:8px">Cancelar</button>
+  `);
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// INTEGRACIÓN CON EL ASISTENTE DE VOZ
+// Detectar palabras/frases con baja confianza y registrarlas
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ── Parchear _avProcesarFinalConTexto para intercepción ──
+const _avPFCT_orig = _avProcesarFinalConTexto;
+window._avProcesarFinalConTexto = async (texto) => {
+  // Consultar diccionario aprendido antes de procesar
+  if(texto && typeof _aiBuscarEnDiccionario === 'function'){
+    const aprendido = _aiBuscarEnDiccionario(texto.toLowerCase().trim());
+    if(aprendido){
+      console.log('[AI Learn] Texto reconocido del diccionario:', aprendido);
+    }
+  }
+  return _avPFCT_orig(texto);
+};
+
+// ── Hook al guardar partes — registrar términos desconocidos ──
+const _avLearnSave_orig = window._avLearnSave;
+window._avLearnSave = async (data) => {
+  if(typeof _avLearnSave_orig === 'function') _avLearnSave_orig(data);
+  // Analizar si hay campos vacíos o con valores por defecto sospechosos
+  if(!data) return;
+  const campos = data.campos || {};
+  Object.entries(campos).forEach(([campo, valor]) => {
+    if(valor === null || valor === undefined || valor === '') {
+      // El asistente no supo rellenar este campo — registrar
+      if(data.patron){
+        _aiRegistrarDuda({
+          textoOriginal: data.patron,
+          interpretacionIA: `No pude extraer el campo "${campo}" del dictado`,
+          campoDestino: campo,
+          confianza: _AI_CONF.BAJA,
+          categoria: campo === 'nombreTrabajo' || campo === 'titulo' ? 'vocab_tecnico' : 'campo_incorrecto',
+          tipoDoc: data.tipo || '',
+        });
+      }
+    }
+  });
+};
+
+// ── Hook: registrar alias de cliente no reconocido ───────
+if(typeof _avBuscarCliente === 'function'){
+  const _avBuscarCliente_orig = _avBuscarCliente;
+  window._avBuscarCliente = (texto) => {
+  const res = _avBuscarCliente_orig(texto);
+  if(!res.encontrado && !res.candidatos.length && texto && texto.trim().length > 2){
+    // No encontró cliente — puede ser un alias
+    _aiRegistrarDuda({
+      textoOriginal: texto,
+      interpretacionIA: 'No encontré ningún cliente con este nombre/alias',
+      campoDestino: 'cliente',
+      confianza: _AI_CONF.BAJA,
+      categoria: 'cliente_alias',
+      tipoDoc: '',
+    });
+  }
+  return res;
+  };
+}
+
+// ── Cargar diccionario al inicio de sesión ────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if(typeof CGID !== 'undefined' && CGID && typeof _aiCargarDiccionario === 'function'){
+      _aiCargarDiccionario();
+    }
+  }, 3000);
+});
+
+// También al abrir un grupo
+const _abrirGrupo_orig2 = window.abrirGrupo;
+if(typeof window.abrirGrupo === 'function'){
+  window.abrirGrupo = async (...args) => {
+    const res = await _abrirGrupo_orig2(...args);
+    setTimeout(() => _aiCargarDiccionario(), 2000);
+    return res;
+  };
+}
 </script>
+
+<!-- ══════════ APRENDIZAJE IA — PANTALLA ══════════ -->
+<div class="screen" id="screenAprendizaje">
+  <div class="scroll-pad" id="aprendizajeScrollPad">
+    <div id="aprendizajeContent"><div class="empty"><div class="empty-ico">🧠</div><p>Cargando...</p></div></div>
+  </div>
+</div>
+
 </body>
 </html>
