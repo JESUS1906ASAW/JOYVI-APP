@@ -4107,7 +4107,7 @@ window.abrirFParte=async(id,preCliId,preData)=>{
       <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="pDesp" value="${vd.importeDesplazamiento||p?.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0"></div>
     </div>
     <div class="fsec"><div class="fsec-title">Estado</div>
-      <div class="fgrp"><label>Estado</label><select id="pEst"><option value="pendiente" ${(p?.estado||'pendiente')==='pendiente'?'selected':''}>Pendiente</option><option value="completado" ${p?.estado==='completado'?'selected':''}>Completado</option></select></div>
+      <div class="fgrp"><label>Estado</label><select id="pEst"><option value="pendiente" ${p?.estado==='pendiente'?'selected':''}>Pendiente</option><option value="completado" ${(!p||p?.estado==='completado')?'selected':''}>Completado</option></select></div>
     </div>
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
       <input type="checkbox" id="pPlant" ${p?.esPlantilla?'checked':''}> Guardar título como plantilla
@@ -4274,7 +4274,7 @@ window._abrirFParteConPlantilla=(pl,preCliId)=>{
       <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="pDesp" value="${pl.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0"></div>
     </div>
     <div class="fsec"><div class="fsec-title">Estado</div>
-      <div class="fgrp"><label>Estado</label><select id="pEst"><option value="pendiente" ${(pl.estado||'pendiente')==='pendiente'?'selected':''}>Pendiente</option><option value="completado" ${pl.estado==='completado'?'selected':''}>Completado</option></select></div>
+      <div class="fgrp"><label>Estado</label><select id="pEst"><option value="pendiente" ${pl.estado==='pendiente'?'selected':''}>Pendiente</option><option value="completado" ${(!pl.estado||pl.estado==='completado')?'selected':''}>Completado</option></select></div>
     </div>
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
       <input type="checkbox" id="pPlant"> Guardar título como plantilla
@@ -9897,17 +9897,8 @@ const _avEsGuiado = t => {
 // Definición de campos por tipo de documento
 const _avCamposGuiados = {
   parte: [
-    {id:'pTit',   label:'Título',            tipo:'input',    pregunta:'Título del parte',                obligatorio:true},
-    {id:'pCli',   label:'Cliente',            tipo:'cliente',  pregunta:'Cliente'},
-    {id:'pOpe',   label:'Operario',           tipo:'input',    pregunta:'Operario'},
-    {id:'pDesc',  label:'Descripción',        tipo:'textarea', pregunta:'Descripción del trabajo'},
-    {id:'pMat',   label:'Materiales',         tipo:'textarea', pregunta:'Materiales usados'},
-    {id:'pDur',   label:'Duración',           tipo:'input',    pregunta:'Duración del trabajo'},
-    {id:'pMO',    label:'Mano de obra (€)',   tipo:'number',   pregunta:'Importe de mano de obra en euros'},
-    {id:'pMatE',  label:'Materiales (€)',     tipo:'number',   pregunta:'Importe de materiales en euros'},
-    {id:'pDesp',  label:'Desplazamiento (€)', tipo:'number',   pregunta:'Importe de desplazamiento en euros'},
-    {id:'pEst',   label:'Estado',             tipo:'select',   pregunta:'Estado del parte, di pendiente o completado',
-      opciones:{'pendiente':'pendiente','completado':'completado','complet':'completado'}},
+    {id:'pTit', label:'Título',  tipo:'input',   pregunta:'Título del parte', obligatorio:true},
+    {id:'pCli', label:'Cliente', tipo:'cliente', pregunta:'Cliente'},
   ],
   averia: [
     {id:'avCli',  label:'Cliente',            tipo:'cliente',  pregunta:'Cliente', obligatorio:true},
