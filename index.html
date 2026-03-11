@@ -9634,21 +9634,26 @@ const _avAbrirMic = () => {
   };
 
   rec.onresult=ev=>{
-    textoFinal='';
-    textoInterim='';
-    for(let i=0;i<ev.results.length;i++){
+    // BUGFIX: usar ev.resultIndex para no re-leer resultados de eventos anteriores
+    // (Chrome Android re-entrega todo ev.results desde índice 0 en cada evento)
+    let nuevoFinal='';
+    let nuevoInterim='';
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
       if(ev.results[i].isFinal){
-        textoFinal+=ev.results[i][0].transcript+' ';
+        nuevoFinal+=ev.results[i][0].transcript+' ';
       }else{
-        textoInterim=ev.results[i][0].transcript;
+        nuevoInterim=ev.results[i][0].transcript;
       }
     }
-    textoFinal=textoFinal.trimEnd();
-    AV._hasFinal=!!textoFinal;
+    // Acumular solo lo nuevo, no sobreescribir
+    if(nuevoFinal) textoFinal+=nuevoFinal;
+    textoInterim=nuevoInterim;
+    const tfTrimmed=textoFinal.trimEnd();
+    AV._hasFinal=!!tfTrimmed;
     AV._hasInterim=!!textoInterim;
 
     // Mostrar en UI
-    const textoVisible=(AV.sesionBase+textoFinal).trimStart();
+    const textoVisible=(AV.sesionBase+tfTrimmed).trimStart();
     const el=document.getElementById('vozTranscript');
     if(el){
       el.innerHTML=textoVisible
@@ -9658,7 +9663,7 @@ const _avAbrirMic = () => {
 
     // Con continuous:false, cuando llega isFinal el rec ya va a morir solo.
     // Ponemos un timer de seguridad corto por si onend tarda.
-    if(textoFinal){
+    if(tfTrimmed){
       clearTimeout(AV.silenceTimer);
       AV.silenceTimer=setTimeout(()=>{
         if(!procesado && AV.fase==='escuchando') _procesarAhora();
@@ -10243,16 +10248,18 @@ const _agEscucharCampo = () => {
     };
 
     rec.onresult = ev => {
-      textoFinal=''; textoInterim='';
-      for(let i=0;i<ev.results.length;i++){
-        if(ev.results[i].isFinal) textoFinal+=ev.results[i][0].transcript+' ';
-        else textoInterim=ev.results[i][0].transcript;
+      // BUGFIX: ev.resultIndex evita re-leer resultados anteriores (Chrome Android)
+      let nuevoFinal=''; let nuevoInterim='';
+      for(let i=ev.resultIndex;i<ev.results.length;i++){
+        if(ev.results[i].isFinal) nuevoFinal+=ev.results[i][0].transcript+' ';
+        else nuevoInterim=ev.results[i][0].transcript;
       }
-      textoFinal=textoFinal.trimEnd();
+      if(nuevoFinal) textoFinal+=nuevoFinal;
+      textoInterim=nuevoInterim;
       // Mostrar en live transcript del overlay
       const tLive=document.getElementById('agTranscriptLive');
       if(tLive) tLive.textContent=(textoFinal||textoInterim).trim();
-      if(textoFinal){ clearTimeout(AV.silenceTimer); AV.silenceTimer=setTimeout(()=>{ if(!procesado&&AG.activo)_procesar(); },700); }
+      if(textoFinal.trim()){ clearTimeout(AV.silenceTimer); AV.silenceTimer=setTimeout(()=>{ if(!procesado&&AG.activo)_procesar(); },700); }
     };
     rec.onerror = ev => {
       if(ev.error==='aborted') return;
@@ -10350,13 +10357,13 @@ const _agEscucharDecision = () => {
   };
 
   rec.onresult=ev=>{
-    textoFinal='';
-    for(let i=0;i<ev.results.length;i++){
+    // BUGFIX: ev.resultIndex evita re-leer resultados anteriores (Chrome Android)
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
       if(ev.results[i].isFinal) textoFinal+=ev.results[i][0].transcript+' ';
     }
     const el=document.getElementById('agDecisionTranscript');
     if(el) el.textContent=textoFinal.trim();
-    if(textoFinal){ clearTimeout(AV.silenceTimer); AV.silenceTimer=setTimeout(()=>{ if(!procesado)_procesarDecision(); },700); }
+    if(textoFinal.trim()){ clearTimeout(AV.silenceTimer); AV.silenceTimer=setTimeout(()=>{ if(!procesado)_procesarDecision(); },700); }
   };
   rec.onerror=ev=>{if(ev.error==='aborted')return;};
   rec.onend=()=>{ AV.rec=null; if(!procesado&&textoFinal) _procesarDecision(); };
