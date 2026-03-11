@@ -258,6 +258,24 @@ body.modo-claro #topbar{background:#ffffff}
 .fgrp select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='rgba(255,255,255,.3)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
 .fgrp input:focus,.fgrp select:focus,.fgrp textarea:focus{border-color:var(--r);box-shadow:0 0 0 3px rgba(var(--theme-rgb),.15)}
 .fgrp textarea{resize:vertical;min-height:80px}
+
+/* ── Selector custom de cliente con dot de color ── */
+.cli-sel-wrap{position:relative;width:100%}
+.cli-sel-trigger{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:10px 36px 10px 12px;color:var(--tx);font-size:14px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s;min-height:44px;box-sizing:border-box;user-select:none}
+.cli-sel-trigger:focus,.cli-sel-trigger.open{border-color:var(--r);box-shadow:0 0 0 3px rgba(var(--theme-rgb),.15);outline:none}
+body.modo-claro .cli-sel-trigger{background:#f7f7f7;border-color:rgba(0,0,0,.14);color:#111}
+.cli-sel-trigger::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-50%);width:12px;height:8px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='rgba(255,255,255,.3)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;pointer-events:none}
+body.modo-claro .cli-sel-trigger::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='rgba(0,0,0,.4)'/%3E%3C/svg%3E")}
+.cli-sel-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block}
+.cli-sel-txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cli-sel-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:2000;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);max-height:220px;overflow-y:auto;display:none}
+.cli-sel-dropdown.open{display:block;animation:vozFadeIn .15s ease}
+.cli-sel-opt{display:flex;align-items:center;gap:9px;padding:10px 14px;cursor:pointer;transition:.12s;font-size:14px;color:var(--tx)}
+.cli-sel-opt:hover{background:rgba(var(--theme-rgb),.1)}
+.cli-sel-opt.selected{background:rgba(var(--theme-rgb),.15);font-weight:700}
+body.modo-claro .cli-sel-dropdown{background:#fff;border-color:rgba(0,0,0,.12);box-shadow:0 8px 32px rgba(0,0,0,.15)}
+body.modo-claro .cli-sel-opt{color:#111}
+body.modo-claro .cli-sel-opt:hover{background:rgba(0,0,0,.05)}
 .fsec{background:var(--card);border:1px solid var(--border);border-radius:var(--rd);padding:18px;margin-bottom:14px}
 .fsec-title{font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
 
@@ -713,14 +731,69 @@ body.modo-claro .voz-btn-x{background:rgba(0,0,0,.06)}
 .voz-cand-info{flex:1;min-width:0}
 .voz-cand-nom{font-size:14px;font-weight:800;color:var(--tx)}
 .voz-cand-sub{font-size:11px;color:var(--tx2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.voz-btn-stop{height:44px;padding:0 22px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s;box-shadow:0 3px 14px rgba(var(--theme-rgb),.35)}
-.voz-btn-stop:active{transform:scale(.97)}
 .voz-btn-sec{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--tx2);font-size:12px;font-weight:700;font-family:var(--font);padding:8px 16px;border-radius:10px;cursor:pointer;transition:.15s}
 .voz-btn-sec:hover{border-color:var(--r);color:var(--r)}
 body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
 .voz-error-ico{font-size:28px}
 .voz-error-msg{font-size:13px;font-weight:700;color:var(--tx2);text-align:center;max-width:280px}
 #btnVozTopbar.activo svg{stroke:var(--r)}
+
+/* ── Botón de estado del micrófono ── */
+.voz-mic-btn{
+  position:relative;width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,box-shadow .2s;
+  outline:none;
+}
+.voz-mic-btn:active{transform:scale(.94)}
+
+/* Estado: escuchando (mic abierto, verde pulso) */
+.voz-mic-btn.estado-escuchando{
+  background:radial-gradient(circle at 40% 35%,#2ecc71,#1a9e55);
+  box-shadow:0 0 0 0 rgba(46,204,113,.5);
+  animation:vozMicPulse 1.6s ease-out infinite;
+}
+/* Estado: hablando asistente (bloqueado, rojo apagado) */
+.voz-mic-btn.estado-hablando{
+  background:radial-gradient(circle at 40% 35%,rgba(229,57,53,.45),rgba(140,20,20,.55));
+  box-shadow:none;
+  cursor:not-allowed;
+  animation:none;
+}
+/* Estado: procesando (gris neutro) */
+.voz-mic-btn.estado-procesando{
+  background:rgba(255,255,255,.07);
+  box-shadow:none;
+  cursor:default;
+  animation:none;
+}
+
+.voz-mic-ico{width:30px;height:30px;color:#fff;opacity:.95}
+.voz-mic-ico-muted{width:28px;height:28px;color:rgba(255,255,255,.45)}
+
+.voz-mic-label{
+  font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--tx2);text-align:center;margin-top:2px;
+}
+.voz-mic-label.label-escuchando{color:#2ecc71}
+.voz-mic-label.label-hablando{color:rgba(229,57,53,.7)}
+
+/* Ondas del asistente hablando */
+.voz-speak-waves{display:flex;align-items:center;gap:3px;height:22px}
+.voz-speak-bar{width:3px;border-radius:2px;background:var(--r);opacity:.7;animation:vozBar .55s ease-in-out infinite}
+.voz-speak-bar:nth-child(1){height:8px;animation-delay:.0s}
+.voz-speak-bar:nth-child(2){height:16px;animation-delay:.1s}
+.voz-speak-bar:nth-child(3){height:22px;animation-delay:.2s}
+.voz-speak-bar:nth-child(4){height:14px;animation-delay:.3s}
+.voz-speak-bar:nth-child(5){height:10px;animation-delay:.4s}
+
+@keyframes vozMicPulse{
+  0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}
+  70%{box-shadow:0 0 0 18px rgba(46,204,113,0)}
+  100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}
+}
+.voz-btn-stop{height:44px;padding:0 22px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s;box-shadow:0 3px 14px rgba(var(--theme-rgb),.35)}
+.voz-btn-stop:active{transform:scale(.97)}
 </style>
 </head>
 <body>
@@ -805,41 +878,81 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
   <div id="vozSheet">
     <div class="voz-handle"></div>
     <div class="voz-body">
-      <!-- Estado: escuchando (también usado para preguntar datos faltantes) -->
+
+      <!-- Estado: escuchando -->
       <div id="vozEstEscucha" class="voz-est" style="display:none">
-        <div class="voz-waves">
-          <div class="voz-wbar"></div><div class="voz-wbar"></div><div class="voz-wbar"></div>
-          <div class="voz-wbar"></div><div class="voz-wbar"></div><div class="voz-wbar"></div>
-          <div class="voz-wbar"></div>
-        </div>
-        <div class="voz-hint" id="vozHint">Habla ahora · Di <em>"listo"</em> para terminar</div>
-        <div class="voz-transcript" id="vozTranscript"></div>
-        <button class="voz-btn-stop" onclick="vozPararManual()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-          Parar
+        <button class="voz-mic-btn estado-escuchando" id="vozMicBtn" onclick="vozPararManual()" title="Toca para enviar">
+          <!-- icono micrófono -->
+          <svg class="voz-mic-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
         </button>
+        <div class="voz-mic-label label-escuchando" id="vozMicLabel">Te escucho</div>
+        <div class="voz-hint" id="vozHint">Habla con naturalidad · Para automáticamente</div>
+        <div class="voz-transcript" id="vozTranscript"></div>
       </div>
-      <!-- Estado: procesando -->
+
+      <!-- Estado: asistente hablando (TTS) -->
+      <div id="vozEstHablando" class="voz-est" style="display:none">
+        <button class="voz-mic-btn estado-hablando" disabled title="El asistente está hablando">
+          <!-- icono altavoz -->
+          <svg class="voz-mic-ico-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+        </button>
+        <div class="voz-mic-label label-hablando">Asistente hablando…</div>
+        <div class="voz-speak-waves">
+          <div class="voz-speak-bar"></div><div class="voz-speak-bar"></div>
+          <div class="voz-speak-bar"></div><div class="voz-speak-bar"></div>
+          <div class="voz-speak-bar"></div>
+        </div>
+      </div>
+
+      <!-- Estado: procesando / abriendo -->
       <div id="vozEstProc" class="voz-est" style="display:none">
-        <div class="voz-spinner"></div>
+        <button class="voz-mic-btn estado-procesando" disabled>
+          <div class="voz-spinner" style="width:28px;height:28px;border-width:2.5px"></div>
+        </button>
         <div class="voz-hint">Analizando…</div>
       </div>
+
       <!-- Estado: candidatos (ambigüedad de cliente) -->
       <div id="vozEstCand" class="voz-est" style="display:none">
         <div class="voz-cand-title">¿Qué cliente es?</div>
         <div id="vozCandLista"></div>
         <button class="voz-btn-sec" onclick="vozSinCliente()">Ninguno de estos</button>
       </div>
+
       <!-- Estado: error -->
       <div id="vozEstError" class="voz-est" style="display:none">
         <div class="voz-error-ico">⚠️</div>
         <div class="voz-error-msg" id="vozErrorMsg">No entendí eso. Inténtalo de nuevo.</div>
         <button class="voz-btn-stop" onclick="vozReintentar()">🎙️ Reintentar</button>
       </div>
-      <!-- Estado: idle (inicial, antes de abrir mic) -->
+
+      <!-- Estado: idle (inicial) -->
       <div id="vozEstIdle" class="voz-est">
+        <button class="voz-mic-btn estado-procesando" disabled>
+          <svg class="voz-mic-ico-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          </svg>
+        </button>
         <div class="voz-hint" style="opacity:.5">Abriendo micrófono…</div>
+        <!-- Acceso rápido al modo guiado -->
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
+          <button onclick="cerrarAsistenteVoz();setTimeout(()=>_avIniciarModoGuiado('parte',{}),200)" style="padding:6px 12px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.4);background:rgba(var(--theme-rgb),.1);color:var(--tx);font-size:11px;font-weight:700;cursor:pointer">🧭 Parte guiado</button>
+          <button onclick="cerrarAsistenteVoz();setTimeout(()=>_avIniciarModoGuiado('averia',{}),200)" style="padding:6px 12px;border-radius:20px;border:1px solid rgba(255,112,67,.4);background:rgba(255,112,67,.1);color:var(--tx);font-size:11px;font-weight:700;cursor:pointer">🧭 Avería guiada</button>
+          <button onclick="cerrarAsistenteVoz();setTimeout(()=>_avIniciarModoGuiado('presupuesto',{}),200)" style="padding:6px 12px;border-radius:20px;border:1px solid rgba(76,175,80,.4);background:rgba(76,175,80,.1);color:var(--tx);font-size:11px;font-weight:700;cursor:pointer">🧭 Presupuesto guiado</button>
+          <button onclick="cerrarAsistenteVoz();setTimeout(()=>_avIniciarModoGuiado('mantenimiento',{}),200)" style="padding:6px 12px;border-radius:20px;border:1px solid rgba(156,39,176,.4);background:rgba(156,39,176,.1);color:var(--tx);font-size:11px;font-weight:700;cursor:pointer">🧭 Mantenimiento guiado</button>
+        </div>
       </div>
+
     </div>
     <button class="voz-btn-x" onclick="cerrarAsistenteVoz()">✕</button>
   </div>
@@ -1272,6 +1385,82 @@ const fmtM=n=>isNaN(n)||n==null?'0,00 €':parseFloat(n).toLocaleString('es-ES',
 const fmtF=ts=>{if(!ts)return'–';try{const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('es-ES')}catch{return'–'}};
 const ini=s=>{if(!s)return'?';const p=s.trim().split(' ');return p.length>1?(p[0][0]+p[1][0]).toUpperCase():s.slice(0,2).toUpperCase()};
 const colorInd=c=>c==='rojo'?'#e53935':c==='amarillo'?'#ff9800':'#1e88e5';
+
+// ─── Selector custom de cliente con dot de color ─────────────────────────────
+// Uso: en lugar de <select id="pCli">…</select> se pone <div id="pCli-wrap"></div>
+// y se llama _buildCliSelect('pCli', preCliId, onchangeFn)
+const _colorDot = col => {
+  const c = col==='rojo'?'#e53935':col==='amarillo'?'#ff9800':col==='verde'?'#43a047':'#1e88e5';
+  return `<span class="cli-sel-dot" style="background:${c}"></span>`;
+};
+window._buildCliSelect = (hiddenId, preCliId, onchangeCb) => {
+  const wrap = document.getElementById(hiddenId+'-wrap');
+  if(!wrap) return;
+  const clis = (typeof allClientes!=='undefined' ? allClientes : []).filter(c=>!c.archivado);
+  const sel = clis.find(c=>c.id===preCliId) || null;
+
+  const renderTrigger = s => {
+    const dot = s ? _colorDot(s.color||'azul') : '';
+    const txt = s ? s.nombre : '<span style="color:var(--tx2)">Sin cliente</span>';
+    return `${dot}<span class="cli-sel-txt">${txt}</span>`;
+  };
+
+  wrap.innerHTML = `
+    <input type="hidden" id="${hiddenId}" value="${preCliId||''}">
+    <div class="cli-sel-wrap" id="${hiddenId}-cswrap">
+      <div class="cli-sel-trigger" id="${hiddenId}-trigger" tabindex="0">
+        ${renderTrigger(sel)}
+      </div>
+      <div class="cli-sel-dropdown" id="${hiddenId}-dropdown">
+        <div class="cli-sel-opt${!preCliId?' selected':''}" data-id="" data-color="">
+          <span class="cli-sel-dot" style="background:rgba(255,255,255,.15)"></span>
+          <span>Sin cliente</span>
+        </div>
+        ${clis.map(c=>`
+          <div class="cli-sel-opt${c.id===preCliId?' selected':''}" data-id="${c.id}" data-color="${c.color||''}">
+            ${_colorDot(c.color||'azul')}
+            <span>${c.nombre}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  const trigger = document.getElementById(hiddenId+'-trigger');
+  const dropdown = document.getElementById(hiddenId+'-dropdown');
+  const hidden = document.getElementById(hiddenId);
+
+  const close = () => { dropdown.classList.remove('open'); trigger.classList.remove('open'); };
+  const open  = () => { dropdown.classList.add('open');  trigger.classList.add('open'); };
+  const toggle = () => dropdown.classList.contains('open') ? close() : open();
+
+  trigger.addEventListener('click', e=>{ e.stopPropagation(); toggle(); });
+  trigger.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();} });
+
+  dropdown.querySelectorAll('.cli-sel-opt').forEach(opt => {
+    opt.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = opt.dataset.id;
+      const col = opt.dataset.color;
+      hidden.value = id;
+      trigger.innerHTML = id
+        ? `${_colorDot(col||'azul')}<span class="cli-sel-txt">${opt.querySelector('span:last-child').textContent}</span>`
+        : `<span class="cli-sel-txt" style="color:var(--tx2)">Sin cliente</span>`;
+      dropdown.querySelectorAll('.cli-sel-opt').forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+      close();
+      if(onchangeCb) onchangeCb(id);
+    });
+  });
+
+  // Cerrar al hacer clic fuera
+  document.addEventListener('click', close, {once:false});
+  // Parche: evitar que el listener se acumule
+  wrap._csClose = close;
+};
+// Leer valor del selector custom (igual interfaz que .value de un select)
+window._getCliSelectVal = hiddenId => {
+  const el = document.getElementById(hiddenId);
+  return el ? el.value : '';
+};
 const normDir=s=>s?s.replace(/\b\w/g,(c,i,t)=>/^(de|del|la|las|los|el|en|y|a|al)$/i.test(t.slice(i).split(' ')[0])?c.toLowerCase():c.toUpperCase()):s;
 const calcTotal=p=>{
   const mo=parseFloat(p.importeManoObra)||0;
@@ -2932,7 +3121,7 @@ window._renderGMantProgramarForm=(plantillaJson)=>{
     <button onclick="_renderGMantProgramarSelector()" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;color:var(--tx2);font-family:var(--font);cursor:pointer;margin-bottom:14px">‹ Volver a plantillas</button>
     ${p.nombre?`<div style="display:flex;align-items:center;gap:8px;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.2);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Plantilla: ${p.nombre}</div>`:''}
     <div class="fsec">
-      <div class="fgrp"><label>Cliente</label><select id="gMCli" onchange="(function(){var sel=document.getElementById('gMCli');var opt=sel.options[sel.selectedIndex];var d=document.getElementById('gMDir');var e=document.getElementById('gMEdif');var t=document.getElementById('gMTel');if(opt&&opt.dataset.dir&&d)d.value=opt.dataset.dir;if(opt&&opt.dataset.edif&&e)e.value=opt.dataset.edif;if(opt&&opt.dataset.tel&&t)t.value=opt.dataset.tel;})()"><option value="">Sin cliente</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente</label><div id="gMCli-wrap"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="gMDir" value="${p.clienteDireccion||''}" placeholder="Dirección del cliente"></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="gMEdif" value="${p.clienteEdificio||''}" placeholder="Edificio o comunidad"></div>
       <div class="fgrp"><label>Teléfono</label><input id="gMTel" value="${p.clienteTelefono||''}" placeholder="Teléfono de contacto" type="tel"></div>
@@ -2954,6 +3143,10 @@ window._renderGMantProgramarForm=(plantillaJson)=>{
       <button class="btn btn-p" onclick="guardarMantInline()">💾 Programar mantenimiento</button>
     </div>
   `;
+  setTimeout(()=>_buildCliSelect('gMCli',p.clienteId||'',id=>{
+    const c=allClientes.find(x=>x.id===id);
+    if(c){const d=$('gMDir'),e=$('gMEdif'),t=$('gMTel');if(d&&c.direccion)d.value=c.direccion;if(e&&c.edificio)e.value=c.edificio;if(t&&c.telefono)t.value=c.telefono;}
+  }),0);
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3033,9 +3226,7 @@ window._abrirMantSBFormNuevo = (plantilla) => {
     ${p.nombre?`<div style="display:flex;align-items:center;gap:8px;background:rgba(46,125,50,.08);border:1px solid rgba(46,125,50,.2);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:#2e7d32;font-weight:700">📋 Plantilla: ${p.nombre}</div>`:''}
     <div class="fsec">
       <div class="fgrp"><label>Cliente</label>
-        <select id="_mantSBCli" onchange="(function(){var sel=document.getElementById('_mantSBCli');var opt=sel.options[sel.selectedIndex];if(opt&&opt.dataset.dir)document.getElementById('_mantSBDir').value=opt.dataset.dir;if(opt&&opt.dataset.edif)document.getElementById('_mantSBEdif').value=opt.dataset.edif;if(opt&&opt.dataset.tel)document.getElementById('_mantSBTel').value=opt.dataset.tel;})()">
-          <option value="">Sin cliente</option>${cliOpts}
-        </select>
+        <div id="_mantSBCli-wrap"></div>
       </div>
       <div class="fgrp"><label>Dirección</label><input id="_mantSBDir" value="${p.clienteDireccion||''}" placeholder="Dirección del cliente"></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="_mantSBEdif" value="${p.clienteEdificio||''}" placeholder="Edificio o comunidad"></div>
@@ -3059,13 +3250,12 @@ window._abrirMantSBFormNuevo = (plantilla) => {
     </div>
   `;
   abrirSB('Nuevo mantenimiento', html, undefined);
-  // Si hay cliente preseleccionado, rellenar campos tras render
-  if (p.clienteId) {
-    setTimeout(()=>{
-      const sel=document.getElementById('_mantSBCli');
-      if(sel){sel.value=p.clienteId;}
-    },60);
-  }
+  setTimeout(()=>{
+    _buildCliSelect('_mantSBCli',p.clienteId||'',id=>{
+      const c=allClientes.find(x=>x.id===id);
+      if(c){const d=document.getElementById('_mantSBDir'),e=document.getElementById('_mantSBEdif'),t=document.getElementById('_mantSBTel');if(d&&c.direccion)d.value=c.direccion;if(e&&c.edificio)e.value=c.edificio;if(t&&c.telefono)t.value=c.telefono;}
+    });
+  },0);
 };
 
 window.guardarMantSBNuevo = async () => {
@@ -3088,7 +3278,9 @@ window.guardarMantSBNuevo = async () => {
     toast('Mantenimiento programado','o');
     cerrarSB();
     _renderGTabMantenimientos();
-  }catch(e){toast('Error','e')}
+    // Aprendizaje
+    _avLearnSave({tipo:'mantenimiento',clienteId:cliId,patron:nom,campos:{nombreTrabajo:nom,frecuencia:frec||null,notas:notas||null}});
+  }catch(e){toast('Error al programar','e')}
 };
 
 window.guardarMantInline=async()=>{
@@ -3102,13 +3294,13 @@ window.guardarMantInline=async()=>{
   const gMDir=$('gMDir')?.value.trim()||cli?.direccion||'';
   const gMEdif=$('gMEdif')?.value.trim()||cli?.edificio||'';
   const gMTel=$('gMTel')?.value.trim()||cli?.telefono||'';
-  // Aprender
   try{
     await addDoc(collection(db,'grupos',CGID,'mantenimientos'),{
       clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:gMDir,clienteEdificio:gMEdif,clienteTelefono:gMTel,
       nombreTrabajo:nom,frecuencia:frec,fechaInicio:fecha,fechaProxima:fecha,
       estado:'pendiente',notas,creado:serverTimestamp()
     });
+    _avLearnSave({tipo:'mantenimiento',clienteId:cliId,patron:nom,campos:{nombreTrabajo:nom,frecuencia:frec||null,notas:notas||null}});
     toast('Mantenimiento programado','o');
     window._gMantTabInline=0;
     _renderGTabMantenimientos();
@@ -3895,7 +4087,7 @@ window.abrirFParte=async(id,preCliId,preData)=>{
         <div class="fsec"><div class="fsec-title">Información general</div>
       <div class="fgrp"><label>Título *</label><input id="pTit" value="${vd.titulo||p?.titulo||''}" placeholder="Ej: Reparación bomba sumergible"></div>
       ${chipsTpl?`<div class="plantilla-chips">${chipsTpl}</div>`:''}
-      <div class="fgrp"><label>Cliente</label><select id="pCli" onchange="autoEdificio(this)"><option value="">Sin cliente</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente</label><div id="pCli-wrap"></div></div>
       <div class="fgrp"><label>Edificio / Comunidad <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="pEdif" value="${edificioInicial}" placeholder="Se rellena automáticamente si el cliente lo tiene"></div>
       <div class="fgrp"><label>Dirección <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="pDir" value="${direccionInicial}" placeholder="Se rellena automáticamente desde la ficha del cliente"></div>
       <div class="fgrp"><label>Teléfono <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="pTel" value="${telefonoInicial}" placeholder="Se rellena automáticamente desde la ficha del cliente" type="tel"></div>
@@ -3928,6 +4120,20 @@ window.abrirFParte=async(id,preCliId,preData)=>{
     </div>
     <button class="btn btn-p" onclick="guardarParte('${id||''}')">💾 Guardar parte</button>
   `);
+  // Iniciar selector custom de cliente (se ejecuta en el siguiente tick para que el DOM exista)
+  setTimeout(()=>{
+    const preId = preCliId||p?.clienteId||'';
+    _buildCliSelect('pCli', preId, cliId=>{
+      // Auto-rellenar edificio/dirección/tel al elegir cliente
+      const c = allClientes.find(x=>x.id===cliId);
+      const ef=$('pEdif'), df=$('pDir'), tf=$('pTel');
+      if(c){
+        if(ef&&c.edificio)ef.value=c.edificio;
+        if(df&&c.direccion)df.value=c.direccion;
+        if(tf&&c.telefono)tf.value=c.telefono;
+      }
+    });
+  },0);
 };
 
 // Autorellenar edificio y dirección al cambiar cliente
@@ -3986,6 +4192,23 @@ window.guardarParte=async(id)=>{
       toast('Plantilla completa guardada','o');
     }
     cerrarSB();toast(id?'Parte actualizado':'Parte creado','o');
+    // Aprendizaje: registrar patrón de creación manual
+    if(!id) _avLearnSave({
+      tipo:'parte',
+      clienteId:cliId,
+      patron:tit,
+      campos:{
+        titulo:tit,
+        operario:data.operario||null,
+        descripcion:data.descripcion||null,
+        materiales:data.materiales||null,
+        duracion:data.duracion||null,
+        importeManoObra:data.importeManoObra||null,
+        importeMateriales:data.importeMateriales||null,
+        importeDesplazamiento:data.importeDesplazamiento||null,
+        estado:data.estado||null,
+      }
+    });
   }catch(e){toast('Error al guardar','e')}
 };
 
@@ -4033,7 +4256,7 @@ window._abrirFParteConPlantilla=(pl,preCliId)=>{
     <div class="fsec"><div class="fsec-title">Información general</div>
       <div class="fgrp"><label>Título *</label><input id="pTit" value="${pl.titulo||''}" placeholder="Ej: Reparación bomba sumergible"></div>
       ${chipsTpl?`<div class="plantilla-chips">${chipsTpl}</div>`:''}
-      <div class="fgrp"><label>Cliente</label><select id="pCli" onchange="autoEdificio(this)"><option value="">Sin cliente</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente</label><div id="pCli-wrap"></div></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="pEdif" value="${edificioInicial}" placeholder="Se rellena automáticamente si el cliente lo tiene"></div>
       <div class="fgrp"><label>Operario</label><input id="pOpe" value="${pl.operario||CUD?.nombre||''}" placeholder="Nombre operario"></div>
       <div class="fgrp"><label>Descripción</label><textarea id="pDesc" placeholder="Descripción del trabajo...">${pl.descripcion||''}</textarea></div>
@@ -4064,6 +4287,10 @@ window._abrirFParteConPlantilla=(pl,preCliId)=>{
     </div>
     <button class="btn btn-p" onclick="guardarParte('')">💾 Guardar parte</button>
   `);
+  setTimeout(()=>_buildCliSelect('pCli',cliId,id=>{
+    const c=allClientes.find(x=>x.id===id);
+    const ef=$('pEdif');if(ef&&c?.edificio)ef.value=c.edificio;
+  }),0);
 };
 
 window.guardarParteComoPlantilla=async(id)=>{
@@ -5127,7 +5354,7 @@ window.renderMantProgramarForm=(plantillaJson)=>{
     <button onclick="renderMantProgramarSelector()" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;color:var(--tx2);font-family:var(--font);cursor:pointer;margin-bottom:14px">‹ Volver a plantillas</button>
     ${p.nombre?`<div style="display:flex;align-items:center;gap:8px;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.2);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Plantilla: ${p.nombre}</div>`:''}
     <div class="fsec">
-      <div class="fgrp"><label>Cliente</label><select id="mCli" onchange="(function(){var sel=document.getElementById('mCli');var opt=sel.options[sel.selectedIndex];var d=document.getElementById('mDir');var e=document.getElementById('mEdif');var t=document.getElementById('mTel');if(opt&&opt.dataset.dir&&d)d.value=opt.dataset.dir;if(opt&&opt.dataset.edif&&e)e.value=opt.dataset.edif;if(opt&&opt.dataset.tel&&t)t.value=opt.dataset.tel;})()"><option value="">Sin cliente</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente</label><div id="mCli-wrap"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="mDir" value="${p.clienteDireccion||''}" placeholder="Dirección del cliente"></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="mEdif" value="${p.clienteEdificio||''}" placeholder="Edificio o comunidad"></div>
       <div class="fgrp"><label>Teléfono</label><input id="mTel" value="${p.clienteTelefono||''}" placeholder="Teléfono de contacto" type="tel"></div>
@@ -5162,6 +5389,10 @@ window.renderMantProgramarForm=(plantillaJson)=>{
       <p style="font-size:12px;color:var(--tx2);margin-top:10px;text-align:center">Aparecerá automáticamente en el Calendario</p>
     </div>
   `;
+  setTimeout(()=>_buildCliSelect('mCli',p.clienteId||'',id=>{
+    const c=allClientes.find(x=>x.id===id);
+    if(c){const d=$('mDir'),e=$('mEdif'),t=$('mTel');if(d&&c.direccion)d.value=c.direccion;if(e&&c.edificio)e.value=c.edificio;if(t&&c.telefono)t.value=c.telefono;}
+  }),0);
 };
 
 window.usarMantenimiento=(id)=>{
@@ -5906,9 +6137,7 @@ window.abrirParteDesdeMantenimiento=(m,cli,fechaCompletado)=>{
       </div>
       ${chipsTpl?`<div class="plantilla-chips">${chipsTpl}</div>`:''}
       <div class="fgrp"><label>Cliente</label>
-        <select id="pCli" onchange="autoEdificio(this)">
-          <option value="">Sin cliente</option>${cliOpts}
-        </select>
+        <div id="pCli-wrap"></div>
       </div>
       <div class="fgrp"><label>Edificio / Comunidad</label>
         <input id="pEdif" value="${edificio}" placeholder="Se rellena automáticamente si el cliente lo tiene">
@@ -5962,6 +6191,10 @@ window.abrirParteDesdeMantenimiento=(m,cli,fechaCompletado)=>{
     </div>
     <button class="btn btn-p" onclick="guardarParte('')">💾 Guardar parte</button>
   `);
+  setTimeout(()=>_buildCliSelect('pCli',cliId,id=>{
+    const c=allClientes.find(x=>x.id===id);
+    if(c){const ef=$('pEdif'),df=$('pDir'),tf=$('pTel');if(ef&&c.edificio)ef.value=c.edificio;if(df&&c.direccion)df.value=c.direccion;if(tf&&c.telefono)tf.value=c.telefono;}
+  }),0);
 };
 
 window.desmarcarMantCal=async(id,fecha,btn)=>{
@@ -6582,7 +6815,7 @@ window.abrirNuevaAveriaPrerellenada=(cliId,tipo,desc,contacto)=>{
   const cliOpts=allClientes.filter(c=>!c.archivado).map(c=>`<option value="${c.id}" data-dir="${(c.direccion||'').replace(/"/g,'&quot;')}" data-edif="${(c.edificio||'').replace(/"/g,'&quot;')}" data-tel="${(c.telefono||'').replace(/"/g,'&quot;')}" ${c.id===cliId?'selected':''}>${c.nombre}</option>`).join('');
   abrirSB('Nueva avería',`
     <div class="fsec">
-      <div class="fgrp"><label>Cliente</label><select id="avCli" onchange="(function(){var sel=document.getElementById('avCli');var opt=sel.options[sel.selectedIndex];var d=document.getElementById('avDir');var e=document.getElementById('avEdif');var t=document.getElementById('avTel');if(opt&&opt.dataset.dir&&d)d.value=opt.dataset.dir;if(opt&&opt.dataset.edif&&e)e.value=opt.dataset.edif;if(opt&&opt.dataset.tel&&t)t.value=opt.dataset.tel;})()"><option value="">— Seleccionar —</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente</label><div id="avCli-wrap"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="avDir" value="${_avDir}" placeholder="Dirección del cliente"></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="avEdif" value="${_avEdif}" placeholder="Edificio o comunidad"></div>
       <div class="fgrp"><label>Teléfono</label><input id="avTel" value="${_avTel}" placeholder="Teléfono de contacto" type="tel"></div>
@@ -6591,6 +6824,10 @@ window.abrirNuevaAveriaPrerellenada=(cliId,tipo,desc,contacto)=>{
       <button class="btn btn-p" style="width:100%" onclick="guardarAveria()">Guardar avería</button>
     </div>
   `);
+  setTimeout(()=>_buildCliSelect('avCli',cliId,id=>{
+    const c=allClientes.find(x=>x.id===id);
+    if(c){const d=$('avDir'),e=$('avEdif'),t=$('avTel');if(d&&c.direccion)d.value=c.direccion;if(e&&c.edificio)e.value=c.edificio;if(t&&c.telefono)t.value=c.telefono;}
+  }),0);
 };
 
 window.abrirNuevaAveria=()=>{
@@ -6616,7 +6853,7 @@ window.abrirAveriaDesdeMantenimiento=(mantId)=>{
       <div style="font-size:12px;color:var(--tx2)">${cli?.nombre||m.clienteNombre||''}${m.frecuencia?' · '+m.frecuencia:''}</div>
     </div>
     <div class="fsec">
-      <div class="fgrp"><label>Cliente</label><select id="avCli" onchange="(function(){var sel=document.getElementById('avCli');var opt=sel.options[sel.selectedIndex];var d=document.getElementById('avDir');var e=document.getElementById('avEdif');var t=document.getElementById('avTel');if(opt&&opt.dataset.dir&&d)d.value=opt.dataset.dir;if(opt&&opt.dataset.edif&&e)e.value=opt.dataset.edif;if(opt&&opt.dataset.tel&&t)t.value=opt.dataset.tel;})()"><option value="">— Seleccionar —</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente</label><div id="avCli-wrap"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="avDir" value="${cliDir}" placeholder="Dirección del cliente"></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="avEdif" value="${cliEdif}" placeholder="Edificio o comunidad"></div>
       <div class="fgrp"><label>Teléfono</label><input id="avTel" value="${cliTel}" placeholder="Teléfono de contacto" type="tel"></div>
@@ -6625,6 +6862,10 @@ window.abrirAveriaDesdeMantenimiento=(mantId)=>{
       <button class="btn btn-p" style="width:100%;background:linear-gradient(135deg,#ff7043,#e64a19)" onclick="guardarAveria()">⚡ Guardar avería</button>
     </div>
   `);
+  setTimeout(()=>_buildCliSelect('avCli',cliId,id=>{
+    const c=allClientes.find(x=>x.id===id);
+    if(c){const d=$('avDir'),e=$('avEdif'),t=$('avTel');if(d&&c.direccion)d.value=c.direccion;if(e&&c.edificio)e.value=c.edificio;if(t&&c.telefono)t.value=c.telefono;}
+  }),0);
 };
 
 window.guardarAveria=async()=>{
@@ -6647,6 +6888,8 @@ window.guardarAveria=async()=>{
     });
     cerrarSB();
     toast('Avería registrada','o');
+    // Aprendizaje: registrar patrón de avería manual
+    _avLearnSave({tipo:'averia',clienteId:cliId,patron:tipo,campos:{tipo,descripcion:$('avDesc')?.value.trim()||null}});
     // onSnapshot actualiza automáticamente la lista
   }catch(e){toast('Error','e')}
 };
@@ -6778,7 +7021,7 @@ window.crearPresupuestoDesdeParteId=async(parteId)=>{
       Datos importados del parte: <strong>${p.titulo||'sin título'}</strong>
     </div>
     <div class="fsec">
-      <div class="fgrp"><label>Cliente</label><select id="prCli"><option value="">— Seleccionar —</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente</label><div id="prCli-wrap"></div></div>
       <div class="fgrp"><label>Título / descripción del trabajo</label><input id="prTitulo" value="${p.titulo||''}" placeholder="Ej: Reparación bomba piso 3"></div>
       ${p.descripcion?`<div class="fgrp"><label>Notas del parte</label><textarea id="prNotas" rows="2" style="min-height:60px">${p.descripcion}</textarea></div>`:''}
     </div>
@@ -6809,6 +7052,7 @@ window.crearPresupuestoDesdeParteId=async(parteId)=>{
   `);
   _prIVA = p.aplicarIVAMateriales||false;
   calcPresuTotal();
+  setTimeout(()=>_buildCliSelect('prCli',p.clienteId||'',()=>{}),0);
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -6893,7 +7137,7 @@ window.usarPresupuesto = (id) => {
   abrirSB('Nuevo presupuesto (copiado)',`
     <div style="background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Copiado de: <strong>${p.titulo||'Presupuesto'}</strong> — selecciona el cliente</div>
     <div class="fsec">
-      <div class="fgrp"><label>Cliente *</label><select id="prCli"><option value="">— Seleccionar —</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente *</label><div id="prCli-wrap"></div></div>
       <div class="fgrp"><label>Título</label><input id="prTitulo" value="${(p.titulo||'').replace(/"/g,'&quot;')}"></div>
     </div>
     <div class="card" style="margin-bottom:12px;padding:14px">
@@ -6907,6 +7151,7 @@ window.usarPresupuesto = (id) => {
   `);
   _prIVA = p.aplicarIVA||false;
   calcPresuTotal();
+  setTimeout(()=>_buildCliSelect('prCli',p.clienteId||'',()=>{}),0);
 };
 
 const _renderPresuTab = (containerId) => {
@@ -6992,7 +7237,7 @@ window.abrirNuevoPresupuesto=(presuId)=>{
   };
   _openPresuModal(`
     <div class="fsec">
-      <div class="fgrp"><label>Cliente</label><select id="prCli" onchange="(function(){var sel=document.getElementById('prCli');var opt=sel.options[sel.selectedIndex];var d=document.getElementById('prDir');var e=document.getElementById('prEdif');var t=document.getElementById('prTel');if(opt&&opt.dataset.dir&&d)d.value=opt.dataset.dir;if(opt&&opt.dataset.edif&&e)e.value=opt.dataset.edif;if(opt&&opt.dataset.tel&&t)t.value=opt.dataset.tel;})()"><option value="">— Seleccionar —</option>${cliOpts}</select></div>
+      <div class="fgrp"><label>Cliente</label><div id="prCli-wrap"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="prDir" placeholder="Dirección del cliente"></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="prEdif" placeholder="Edificio o comunidad"></div>
       <div class="fgrp"><label>Teléfono</label><input id="prTel" placeholder="Teléfono de contacto" type="tel"></div>
@@ -7022,6 +7267,10 @@ window.abrirNuevoPresupuesto=(presuId)=>{
       <button class="btn btn-p" style="flex:1" onclick="guardarPresupuesto()">💾 Guardar</button>
     </div>
   `);
+  setTimeout(()=>_buildCliSelect('prCli','',id=>{
+    const c=allClientes.find(x=>x.id===id);
+    if(c){const d=$('prDir'),e=$('prEdif'),t=$('prTel');if(d&&c.direccion)d.value=c.direccion;if(e&&c.edificio)e.value=c.edificio;if(t&&c.telefono)t.value=c.telefono;}
+  }),0);
 };
 
 let _prIVA=false;
@@ -7084,6 +7333,8 @@ window.guardarPresupuesto=async()=>{
       creado:serverTimestamp()
     });
     cerrarPresuModal();toast('Presupuesto guardado','o');
+    // Aprendizaje: registrar patrón de presupuesto manual
+    _avLearnSave({tipo:'presupuesto',clienteId:cliId,patron:titulo,campos:{titulo,importeManoObra:mo||null,importeMateriales:mat||null,importeDesplazamiento:desp||null}});
     // onSnapshot actualiza automáticamente
   }catch(e){toast('Error','e')}
 };
@@ -8299,6 +8550,73 @@ const _AV_ALIAS_KEY = 'joyvi_av_aliases_v4';
 const _avAliasLoad  = ()=>{ try{return JSON.parse(localStorage.getItem(_AV_ALIAS_KEY)||'{}')}catch{return{}} };
 const _avAliasSave  = (texto,cliId)=>{ const a=_avAliasLoad(); a[_avNorm(texto)]=cliId; try{localStorage.setItem(_AV_ALIAS_KEY,JSON.stringify(a))}catch{} };
 
+// ─── Sistema de aprendizaje (documentos creados manualmente) ──────────────
+// Cuando el usuario crea un documento sin el asistente de voz, lo aprendemos:
+// guardamos el patrón completo (tipo, campos usados, cliente, estructura)
+// para que el asistente mejore la extracción y el autocompletado.
+const _AV_LEARN_KEY = 'joyvi_av_learn_v1';
+
+const _avLearnLoad = () => {
+  try{return JSON.parse(localStorage.getItem(_AV_LEARN_KEY)||'{}')}catch{return{}}
+};
+
+const _avLearnSave = datos => {
+  // datos = {tipo, clienteId, campos, patron}
+  try{
+    const store = _avLearnLoad();
+    const tipo = datos.tipo||'parte';
+    if(!store[tipo]) store[tipo] = {count:0, campos:{}, clientes:[], patrones:[]};
+    const s = store[tipo];
+    s.count = (s.count||0) + 1;
+
+    // Registrar qué campos se usaron y sus valores promedio
+    Object.entries(datos.campos||{}).forEach(([k,v])=>{
+      if(v===null||v===undefined||v==='')return;
+      if(!s.campos[k]) s.campos[k]={veces:0,ejemplos:[]};
+      s.campos[k].veces++;
+      if(typeof v==='string'&&v.length>0&&s.campos[k].ejemplos.length<5){
+        s.campos[k].ejemplos.push(v.slice(0,60));
+      }
+    });
+
+    // Registrar cliente más frecuente
+    if(datos.clienteId){
+      const idx=s.clientes.findIndex(c=>c.id===datos.clienteId);
+      if(idx>=0) s.clientes[idx].n++;
+      else s.clientes.push({id:datos.clienteId,n:1});
+      s.clientes.sort((a,b)=>b.n-a.n);
+      if(s.clientes.length>10) s.clientes=s.clientes.slice(0,10);
+    }
+
+    // Registrar patrón de título (longitud, palabras clave)
+    if(datos.patron){
+      s.patrones.unshift(datos.patron.slice(0,80));
+      if(s.patrones.length>20) s.patrones=s.patrones.slice(0,20);
+    }
+
+    localStorage.setItem(_AV_LEARN_KEY, JSON.stringify(store));
+  }catch(e){}
+};
+
+// Recuperar contexto de aprendizaje para inyectar en el prompt del asistente
+const _avLearnContext = () => {
+  try{
+    const store = _avLearnLoad();
+    const lineas=[];
+    for(const [tipo, s] of Object.entries(store)){
+      if(!s.count) continue;
+      const campos=Object.entries(s.campos)
+        .filter(([,v])=>v.veces>0)
+        .sort((a,b)=>b[1].veces-a[1].veces)
+        .map(([k,v])=>`${k}(${v.veces}x${v.ejemplos.length?': "'+v.ejemplos[0]+'"':''})`)
+        .join(', ');
+      const patrones=s.patrones.slice(0,3).map(p=>`"${p}"`).join(', ');
+      lineas.push(`${tipo}: ${s.count} creados. Campos más usados: ${campos}. Ejemplos de títulos: ${patrones||'—'}`);
+    }
+    return lineas.length ? 'CONTEXTO DE USO REAL DEL USUARIO:\n'+lineas.join('\n') : '';
+  }catch{return''}
+};
+
 // ─── Buscador de cliente (5 niveles) ────────────────────
 const _avBuscarCliente = texto => {
   if(!texto||typeof allClientes==='undefined')return{encontrado:null,candidatos:[]};
@@ -8980,19 +9298,26 @@ const _avAbrirFormulario = datos => {
 // ─── Estados de la UI ────────────────────────────────────
 const _avSetEstado = est => {
   AV.fase=est;
-  const ids=['vozEstIdle','vozEstEscucha','vozEstProc','vozEstCand','vozEstError'];
+  const ids=['vozEstIdle','vozEstEscucha','vozEstHablando','vozEstProc','vozEstCand','vozEstError'];
   ids.forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.style.display='none';
   });
-  const mapa={idle:'vozEstIdle',escuchando:'vozEstEscucha',procesando:'vozEstProc',candidatos:'vozEstCand',error:'vozEstError'};
+  const mapa={idle:'vozEstIdle',escuchando:'vozEstEscucha',hablando:'vozEstHablando',procesando:'vozEstProc',candidatos:'vozEstCand',error:'vozEstError'};
   const visible=document.getElementById(mapa[est]||'vozEstIdle');
   if(visible)visible.style.display='flex';
 
-  // Restaurar hint por defecto al entrar en escucha limpia (no en turno de pregunta)
+  // Restaurar hint por defecto al entrar en escucha limpia
   if(est==='escuchando'&&!AV._datosTemp?.faltantes){
     const hint=document.getElementById('vozHint');
     if(hint)hint.innerHTML='Habla con naturalidad · Para automáticamente<br><small style="font-size:10px;opacity:.6">Crea partes, consulta archivos, llama o navega por voz</small>';
+    // Label del botón mic — frases variadas
+    const lbl=document.getElementById('vozMicLabel');
+    if(lbl){
+      const frases=['Te escucho','Dime','Sí, adelante','Te escucho…','Habla cuando quieras'];
+      if(!AV._labelFrase)AV._labelFrase=frases[Math.floor(Math.random()*frases.length)];
+      lbl.textContent=AV._labelFrase;
+    }
   }
 
   const btnV=document.getElementById('btnVozTopbar');
@@ -9218,51 +9543,82 @@ const _avCompletarDatos = (textAdicional,datosBase) => {
   return datos;
 };
 
+// ─── TTS de confirmación ────────────────────────────────
+const _avHablar = (texto, onDone) => {
+  if(!window.speechSynthesis){if(onDone)onDone();return}
+  window.speechSynthesis.cancel();
+  _avSetEstado('hablando');
+  const u=new SpeechSynthesisUtterance(texto);
+  u.lang='es-ES';u.rate=1.05;u.pitch=1;u.volume=1;
+  u.onend=()=>{if(onDone)onDone()};
+  u.onerror=()=>{if(onDone)onDone()};
+  // Elegir voz española si hay
+  const voces=window.speechSynthesis.getVoices();
+  const vEs=voces.find(v=>v.lang.startsWith('es')&&v.localService)||voces.find(v=>v.lang.startsWith('es'));
+  if(vEs)u.voice=vEs;
+  window.speechSynthesis.speak(u);
+};
+const _avFrasesListo=[
+  'Listo, te abro el documento.',
+  'Perfecto, abro el formulario ahora.',
+  'Entendido, abriendo el documento.',
+  'De acuerdo, te lo abro ahora.',
+  'Listo, abriendo.'
+];
+const _avFrasesBienvenida=[
+  'Dime.',
+  'Te escucho.',
+  '¿Sí?',
+  'Adelante.',
+  'Dime qué necesitas.'
+];
+const _avFraseAleatoria=arr=>arr[Math.floor(Math.random()*arr.length)];
+
 // ─── Motor de captura ────────────────────────────────────
-// ARQUITECTURA ANTI-ECO V3 — ACUMULADOR LOCAL POR INSTANCIA:
+// ARQUITECTURA V4 — continuous:false + restart manual:
 //
-// El problema raíz del eco en Chrome Android:
-//   Cada vez que Chrome reinicia el SpeechRecognition (cada ~60s),
-//   crea un rec NUEVO con índices empezando en 0. Ese rec nuevo vuelve
-//   a entregar los resultados previos "como si fueran nuevos".
-//   Cualquier sistema basado en offset global falla porque los índices
-//   del rec nuevo son independientes del rec anterior.
+// Chrome Android con continuous:true re-entrega resultados anteriores
+// cada vez que reinicia el rec internamente, causando duplicados infinitos.
 //
-// Solución correcta:
-//   Cada instancia de rec acumula su texto en una variable LOCAL (textoEstaInstancia).
-//   Cuando esa instancia muere (onend/onerror), vuelca su texto a AV.sesionBase.
-//   AV.sesionBase NUNCA se vuelve a leer por onresult — solo se muestra.
-//   Así es imposible duplicar: cada instancia solo lee sus propios resultados,
-//   y al morir los entrega a la base una sola vez.
+// Solución: continuous:false. El rec captura UNA frase, emite isFinal,
+// y muere solo. Nosotros lo reiniciamos manualmente solo si el usuario
+// sigue en modo escuchando y no ha dicho nada aún (no hay texto acumulado).
+// Cuando hay texto (isFinal recibido), esperamos silencio y procesamos.
+// Nunca reiniciamos si ya tenemos texto — eso elimina los ecos.
 
 const _avAbrirMic = () => {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){_avMostrarError('Tu dispositivo no soporta reconocimiento de voz');return}
+  // Matar instancia anterior limpiamente
   if(AV.rec){try{AV.rec.abort()}catch(e){}AV.rec=null}
 
   const rec=new SR();
   rec.lang='es-ES';
-  rec.continuous=true;
+  rec.continuous=false;      // ← CLAVE: sin continuous, sin ecos
   rec.interimResults=true;
   rec.maxAlternatives=1;
 
   AV.rec=rec;
-  AV._hasInterim=false;
-  AV._lastFinalAt=0;
-  AV._lastInterimAt=0;
-  AV._hasFinal=false;
 
-  // ── CLAVE ANTI-ECO: acumulador LOCAL a esta instancia ──
-  // Solo contiene el texto confirmado (isFinal) de ESTE rec concreto.
-  // Cuando el rec muere, se vuelca a AV.sesionBase y esta var desaparece.
-  let textoEstaInstancia='';
-  let muerto=false; // flag para que onend no procese si ya procesamos
+  // texto de ESTA sola instancia — nunca se mezcla con sesiones anteriores
+  let textoFinal='';       // solo resultados isFinal de esta instancia
+  let textoInterim='';     // interim actual (volátil)
+  let procesado=false;     // evita doble procesado onend+silenceTimer
 
-  const _volcarYReiniciar = () => {
-    if(textoEstaInstancia.trim()){
-      AV.sesionBase+=textoEstaInstancia;
-      textoEstaInstancia='';
-    }
+  const _procesarAhora = () => {
+    if(procesado)return;
+    procesado=true;
+    clearTimeout(AV.silenceTimer);
+    if(AV.rec){try{AV.rec.abort()}catch(e){}AV.rec=null}
+    // Combinar con sesión acumulada de turnos anteriores
+    const textoTotal=(AV.sesionBase+textoFinal+(textoInterim?' '+textoInterim:'')).trim();
+    // Resetear para próxima vez
+    AV.sesionBase='';
+    AV.transcParcial='';
+    AV._hasFinal=false;
+    AV._hasInterim=false;
+    // Llamar procesado con el texto completo
+    _avProcesarFinalConTexto(textoTotal);
   };
 
   rec.onstart=()=>{
@@ -9278,105 +9634,79 @@ const _avAbrirMic = () => {
   };
 
   rec.onresult=ev=>{
-    // ev.resultIndex = primer resultado NUEVO en este evento para ESTA instancia
-    // ev.results = lista completa de ESTA instancia (empieza en 0 con cada rec nuevo)
-    // Solo acumulamos en textoEstaInstancia — nunca tocamos AV.sesionBase aquí
-    let interim='';
-
-    for(let i=ev.resultIndex;i<ev.results.length;i++){
-      const r=ev.results[i];
-      if(r.isFinal){
-        textoEstaInstancia+=r[0].transcript+' ';
-        AV._hasInterim=false;
-        AV._hasFinal=true;
-        AV._lastFinalAt=Date.now();
+    textoFinal='';
+    textoInterim='';
+    for(let i=0;i<ev.results.length;i++){
+      if(ev.results[i].isFinal){
+        textoFinal+=ev.results[i][0].transcript+' ';
       }else{
-        interim=r[0].transcript;
-        AV._hasInterim=true;
-        AV._lastInterimAt=Date.now();
+        textoInterim=ev.results[i][0].transcript;
       }
     }
+    textoFinal=textoFinal.trimEnd();
+    AV._hasFinal=!!textoFinal;
+    AV._hasInterim=!!textoInterim;
 
-    AV.transcParcial=interim;
-
-    // Mostrar: base ya confirmada + lo de esta instancia + interim actual
-    const textoVisible=(AV.sesionBase+textoEstaInstancia).trimStart();
+    // Mostrar en UI
+    const textoVisible=(AV.sesionBase+textoFinal).trimStart();
     const el=document.getElementById('vozTranscript');
     if(el){
       el.innerHTML=textoVisible
-        ?(textoVisible+(interim?' <em>'+interim+'</em>':''))
-        :(interim?'<em>'+interim+'</em>':'');
+        ?(textoVisible+(textoInterim?' <em>'+textoInterim+'</em>':''))
+        :(textoInterim?'<em>'+textoInterim+'</em>':'');
     }
 
-    // ── DETECCIÓN FIN DE FRASE ──────────────────────────────────────────
-    // Solo procesar cuando la frase está claramente terminada:
-    // isFinal recibido + sin interim activo + 1200ms de silencio real.
-    // Pausas reflexivas (< 1200ms) no disparan el procesado.
-    clearTimeout(AV.silenceTimer);
-
-    if(AV._hasFinal && !AV._hasInterim){
+    // Con continuous:false, cuando llega isFinal el rec ya va a morir solo.
+    // Ponemos un timer de seguridad corto por si onend tarda.
+    if(textoFinal){
+      clearTimeout(AV.silenceTimer);
       AV.silenceTimer=setTimeout(()=>{
-        if(!AV._hasInterim && AV.fase==='escuchando'){
-          muerto=true; // prevenir que onend vuelque de nuevo
-          _volcarYReiniciar();
-          _avProcesarFinal();
-        }
-      },1200);
-    }else if(AV._hasInterim){
-      // Seguridad: si hay interim que lleva quieto 2s, procesar
-      AV.silenceTimer=setTimeout(()=>{
-        if(Date.now()-AV._lastInterimAt>=1800 && !AV._hasInterim && AV.fase==='escuchando'){
-          muerto=true; // prevenir que onend vuelque de nuevo
-          _volcarYReiniciar();
-          _avProcesarFinal();
-        }
-      },2100);
+        if(!procesado && AV.fase==='escuchando') _procesarAhora();
+      },800);
     }
   };
 
   rec.onerror=ev=>{
+    if(ev.error==='aborted')return; // intencional
     if(ev.error==='no-speech'){
-      if(AV.fase==='escuchando'&&!muerto){
-        muerto=true;
-        clearTimeout(AV.silenceTimer); // cancelar timer pendiente
-        _volcarYReiniciar(); // guardar lo acumulado antes de morir
+      if(AV.fase==='escuchando'&&!procesado){
         AV.rec=null;
-        setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},200);
+        // Solo reiniciar si no tenemos texto acumulado aún
+        if(!AV.sesionBase.trim()){
+          setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},150);
+        }
       }
-    }else if(ev.error==='aborted'){
-      // intencional — no hacer nada
     }else{
       _avMostrarError('Error de micrófono. Pulsa reintentar.');
     }
   };
 
   rec.onend=()=>{
-    AV._hasInterim=false;
-    clearTimeout(AV.silenceTimer); // cancelar timer pendiente para evitar doble volcado
-    if(!muerto){
-      muerto=true;
-      _volcarYReiniciar(); // guardar lo acumulado antes de morir
-    }
     AV.rec=null;
-    if(AV.fase==='escuchando')setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},200);
+    if(procesado)return;
+    if(textoFinal&&AV.fase==='escuchando'){
+      // Tenemos texto — procesar
+      _procesarAhora();
+    }else if(!textoFinal&&AV.fase==='escuchando'&&!AV.sesionBase.trim()){
+      // Sin texto y sin sesión previa — reiniciar mic (usuario aún no ha hablado)
+      setTimeout(()=>{if(AV.fase==='escuchando')_avAbrirMic()},150);
+    }
   };
 
   try{rec.start()}catch(e){AV.rec=null;_avMostrarError('No se pudo abrir el micrófono')}
 };
 
 // ─── Procesar cuando termina el dictado ─────────────────
-const _avProcesarFinal = async () => {
+const _avProcesarFinalConTexto = async (texto) => {
   clearTimeout(AV.silenceTimer);
-  if(AV.rec){try{AV.rec.stop()}catch(e){}}
-  AV.rec=null;AV._hasInterim=false;
-  // sesionBase ya contiene todo el texto volcado por _volcarYReiniciar
-  // transcParcial puede tener un interim no confirmado — lo añadimos si hay algo útil
-  const texto=(AV.sesionBase+(AV.transcParcial?AV.transcParcial:'')).trim();
+  texto=(texto||'').trim();
+
   if(!texto){
-    // Sin texto: si estábamos en modo pregunta y no hay nada → abrir sin ese dato
     if(AV._datosTemp?.faltantes&&AV._datosTemp?.datos){
-      _avMostrarAbriendo(AV._datosTemp.datos.tipo,AV._datosTemp.datos.cliente?.nombre||'');
-      setTimeout(()=>_avAbrirFormulario(AV._datosTemp.datos),600);
+      _avHablar(_avFraseAleatoria(_avFrasesListo),()=>{
+        _avMostrarAbriendo(AV._datosTemp.datos.tipo,AV._datosTemp.datos.cliente?.nombre||'');
+        setTimeout(()=>_avAbrirFormulario(AV._datosTemp.datos),600);
+      });
     }else{
       AV.fase='idle';_avSetEstado('idle');
     }
@@ -9386,24 +9716,26 @@ const _avProcesarFinal = async () => {
   // Cancelar
   if(/^(cancelar|salir|cerrar|no\s+nada|olvida|adios)\s*$/i.test(texto)){cerrarAsistenteVoz();return}
 
+  // ── Modo guiado ──
+  if(window._avInterceptarGuiado && window._avInterceptarGuiado(texto)) return;
+
   // ── TURNO 2: completar datos faltantes ──
   if(AV._datosTemp?.faltantes&&AV._datosTemp?.datos){
     _avSetEstado('procesando');
     const datosActualizados=_avCompletarDatos(texto,AV._datosTemp.datos);
 
-    // Si el cliente sigue siendo ambiguo tras el segundo dictado
     if(!datosActualizados.cliente&&datosActualizados.candidatos?.length){
       _avEstadoCandidatos(datosActualizados.candidatos,{...datosActualizados,candidatos:[]},texto,'crear');
       return;
     }
 
-    // Siempre abrir en el segundo turno — no preguntar más
-    _avMostrarAbriendo(datosActualizados.tipo,datosActualizados.cliente?.nombre||'');
-    // Profesionalizar campos antes de abrir
     if(datosActualizados.titulo)datosActualizados.titulo=_avProfTitulo(datosActualizados.titulo);
     if(datosActualizados.descripcion)datosActualizados.descripcion=_avProfesionalizar(datosActualizados.descripcion);
     AV._datosTemp=null;
-    setTimeout(()=>_avAbrirFormulario(datosActualizados),700);
+    _avHablar(_avFraseAleatoria(_avFrasesListo),()=>{
+      _avMostrarAbriendo(datosActualizados.tipo,datosActualizados.cliente?.nombre||'');
+      setTimeout(()=>_avAbrirFormulario(datosActualizados),700);
+    });
     return;
   }
 
@@ -9421,43 +9753,49 @@ const _avProcesarFinal = async () => {
   try{
     const datos=await _avExtraerTodo(texto);
 
-    // Profesionalizar título y descripción
     if(datos.titulo)datos.titulo=_avProfTitulo(datos.titulo);
     if(datos.descripcion)datos.descripcion=_avProfesionalizar(datos.descripcion);
 
-    // Cliente nuevo → abrir directo
     if(datos.tipo==='cliente'){
-      _avMostrarAbriendo('cliente','');
-      AV._datosTemp=null;
-      setTimeout(()=>_avAbrirFormulario(datos),700);
+      _avHablar(_avFraseAleatoria(_avFrasesListo),()=>{
+        _avMostrarAbriendo('cliente','');
+        AV._datosTemp=null;
+        setTimeout(()=>_avAbrirFormulario(datos),700);
+      });
       return;
     }
 
-    // Ambigüedad de cliente
     if(!datos.cliente&&datos.candidatos.length>0){
       _avEstadoCandidatos(datos.candidatos,datos,texto,'crear');
       return;
     }
 
-    // Calcular campos faltantes
     const faltantes=_avCamposFaltantes(datos);
 
     if(faltantes.length>0){
-      // Primer turno sin todos los datos → preguntar UNA vez
       AV._datosTemp={datos,faltantes,intentos:1};
       _avMostrarPregunta(faltantes,datos);
       return;
     }
 
-    // Todo completo → mostrar "Abriendo..." y abrir
-    _avMostrarAbriendo(datos.tipo,datos.cliente?.nombre||'');
-    AV._datosTemp=null;
-    setTimeout(()=>_avAbrirFormulario(datos),700);
+    // Todo completo — TTS y abrir
+    _avHablar(_avFraseAleatoria(_avFrasesListo),()=>{
+      _avMostrarAbriendo(datos.tipo,datos.cliente?.nombre||'');
+      AV._datosTemp=null;
+      setTimeout(()=>_avAbrirFormulario(datos),700);
+    });
 
   }catch(e){
     console.error('AV error:',e);
     _avMostrarError('No pude entender eso. Intenta de nuevo o sé más específico.');
   }
+};
+
+// Alias legacy por si algo lo llama directamente
+const _avProcesarFinal = () => {
+  const texto=(AV.sesionBase+(AV.transcParcial||'')).trim();
+  AV.sesionBase='';AV.transcParcial='';
+  _avProcesarFinalConTexto(texto);
 };
 
 // ─── API pública ─────────────────────────────────────────
@@ -9466,6 +9804,9 @@ window.abrirAsistenteVoz=()=>{
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){toast('Tu dispositivo no soporta reconocimiento de voz','e');return}
 
+  // Cancelar TTS si estaba hablando
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
+
   // Reset completo
   clearTimeout(AV.silenceTimer);
   if(AV.rec){try{AV.rec.abort()}catch(e){}}
@@ -9473,17 +9814,22 @@ window.abrirAsistenteVoz=()=>{
   AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';
   AV._sesionOffset=0;AV._hasFinal=false;AV._lastFinalAt=0;AV._lastInterimAt=0;
   AV._datosTemp=null;AV._hasInterim=false;
+  AV._labelFrase=null; // resetear label para nueva frase aleatoria
 
   // Abrir panel
   document.getElementById('vozOverlay').classList.add('open');
   document.getElementById('vozSheet').classList.add('open');
   _avSetEstado('idle');
 
-  // Abrir mic INMEDIATAMENTE sin esperas
-  setTimeout(_avAbrirMic,100);
+  // Frase de bienvenida por TTS, luego abrir mic
+  const fraseBienvenida=_avFraseAleatoria(_avFrasesBienvenida);
+  _avHablar(fraseBienvenida, ()=>{
+    if(AV.fase==='hablando'||AV.fase==='idle') _avAbrirMic();
+  });
 };
 
 window.cerrarAsistenteVoz=()=>{
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
   clearTimeout(AV.silenceTimer);
   if(AV.rec){try{AV.rec.abort()}catch(e){}}
   AV.rec=null;AV.fase='idle';
@@ -9500,13 +9846,23 @@ window.cerrarAsistenteVoz=()=>{
 
 window.vozPararManual=()=>{
   clearTimeout(AV.silenceTimer);
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
   if(AV.rec){try{AV.rec.stop()}catch(e){}}
+  AV.rec=null;
   const textoAcumulado=(AV.sesionBase+(AV.transcParcial||'')).trim();
-  if(textoAcumulado.length>1)_avProcesarFinal();
-  else{AV.fase='idle';_avSetEstado('error');const el=document.getElementById('vozErrorMsg');if(el)el.textContent='No escuché nada. Pulsa reintentar.'}
+  AV.sesionBase='';AV.transcParcial='';
+  if(textoAcumulado.length>1){
+    _avProcesarFinalConTexto(textoAcumulado);
+  }else{
+    AV.fase='idle';
+    _avSetEstado('error');
+    const el=document.getElementById('vozErrorMsg');
+    if(el)el.textContent='No escuché nada. Pulsa reintentar.';
+  }
 };
 
 window.vozReintentar=()=>{
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
   AV.sesionBase='';AV.sesionActual='';AV.transcParcial='';
   AV._sesionOffset=0;AV._hasFinal=false;AV._hasInterim=false;
   const el=document.getElementById('vozTranscript');if(el)el.innerHTML='';
@@ -9517,6 +9873,609 @@ window.vozSinCliente=()=>{
   const{datos}=AV._datosTemp||{};
   if(datos)_avAbrirFormulario({...datos,cliente:null,candidatos:[]});
   else cerrarAsistenteVoz();
+};
+
+// ═══════════════════════════════════════════════════════
+// MODO GUIADO — Creación campo a campo con voz
+// ═══════════════════════════════════════════════════════
+
+// Detectar si el usuario pide modo guiado
+const _avEsGuiado = t => {
+  const n = _avNorm(t);
+  // Palabras clave de modo guiado explícito
+  if(/\b(guiad[ao]|paso\s+a\s+paso|campo\s+a\s+campo|uno\s+a\s+uno|dictando|dictar|asistid[ao])\b/i.test(n)) return true;
+  // Frases naturales de ayuda para crear un documento
+  if(/\b(ay[uú]dame|ay[uú]dame\s+a|gu[ií]ame|h[eé]chame\s+una\s+mano|necesito\s+ayuda|con\s+ayuda)\b/i.test(n) &&
+     /\b(crear?|hacer?|abrir?|nuevo|nueva|poner?|rellenar?|completar?|hacer?\s+un)\b/i.test(n)) return true;
+  // "quiero crear un parte / avería / presupuesto / mantenimiento con ayuda"
+  if(/\b(quiero|voy\s+a|vamos\s+a)\s+(crear?|hacer?)\b/i.test(n) &&
+     /\b(parte|averi|presupuest|manten)\b/i.test(n) &&
+     /\b(ayuda|asistido|guiado|juntos?|conmigo)\b/i.test(n)) return true;
+  return false;
+};
+
+// Definición de campos por tipo de documento
+const _avCamposGuiados = {
+  parte: [
+    {id:'pTit',   label:'Título',            tipo:'input',    pregunta:'Título del parte',                obligatorio:true},
+    {id:'pCli',   label:'Cliente',            tipo:'cliente',  pregunta:'Cliente'},
+    {id:'pOpe',   label:'Operario',           tipo:'input',    pregunta:'Operario'},
+    {id:'pDesc',  label:'Descripción',        tipo:'textarea', pregunta:'Descripción del trabajo'},
+    {id:'pMat',   label:'Materiales',         tipo:'textarea', pregunta:'Materiales usados'},
+    {id:'pDur',   label:'Duración',           tipo:'input',    pregunta:'Duración del trabajo'},
+    {id:'pMO',    label:'Mano de obra (€)',   tipo:'number',   pregunta:'Importe de mano de obra en euros'},
+    {id:'pMatE',  label:'Materiales (€)',     tipo:'number',   pregunta:'Importe de materiales en euros'},
+    {id:'pDesp',  label:'Desplazamiento (€)', tipo:'number',   pregunta:'Importe de desplazamiento en euros'},
+    {id:'pEst',   label:'Estado',             tipo:'select',   pregunta:'Estado del parte, di pendiente o completado',
+      opciones:{'pendiente':'pendiente','completado':'completado','complet':'completado'}},
+  ],
+  averia: [
+    {id:'avCli',  label:'Cliente',            tipo:'cliente',  pregunta:'Cliente', obligatorio:true},
+    {id:'avTipo', label:'Tipo de avería',     tipo:'input',    pregunta:'Tipo de avería o problema', obligatorio:true},
+    {id:'avDesc', label:'Descripción',        tipo:'textarea', pregunta:'Descripción detallada de la avería'},
+    {id:'avDir',  label:'Dirección',          tipo:'input',    pregunta:'Dirección'},
+    {id:'avTel',  label:'Teléfono',           tipo:'input',    pregunta:'Teléfono de contacto'},
+  ],
+  presupuesto: [
+    {id:'prCli',    label:'Cliente',           tipo:'cliente', pregunta:'Cliente', obligatorio:true},
+    {id:'prTitulo', label:'Título del trabajo',tipo:'input',   pregunta:'Título o descripción del trabajo', obligatorio:true},
+    {id:'prMO',     label:'Mano de obra (€)',  tipo:'number',  pregunta:'Importe de mano de obra en euros'},
+    {id:'prMat',    label:'Materiales (€)',    tipo:'number',  pregunta:'Importe de materiales en euros'},
+    {id:'prDesp',   label:'Desplazamiento (€)',tipo:'number',  pregunta:'Importe de desplazamiento en euros'},
+    {id:'prNotas',  label:'Notas adicionales', tipo:'textarea',pregunta:'Notas adicionales para el cliente'},
+  ],
+  mantenimiento: [
+    {id:'_mantSBCli',  label:'Cliente',        tipo:'cliente', pregunta:'Cliente'},
+    {id:'_mantSBNom',  label:'Nombre del trabajo',tipo:'input',pregunta:'Nombre del trabajo de mantenimiento', obligatorio:true},
+    {id:'_mantSBFrec', label:'Frecuencia',     tipo:'select',  pregunta:'Frecuencia, di semanal, mensual, trimestral o semestral',
+      opciones:{'semana':'semanal','mensual':'mensual','bimest':'bimestral','trimes':'trimestral','semest':'semestral','quince':'quincenal'}},
+    {id:'_mantSBNotas',label:'Notas',          tipo:'textarea',pregunta:'Notas u observaciones'},
+  ],
+};
+
+// Estado del modo guiado
+const AG = {
+  activo: false,
+  tipo: null,
+  campos: [],
+  indice: 0,
+  guardarFn: null,
+};
+
+// ── Beep de apertura de micrófono (tono suave descendente) ──
+const _agBeepAbre = () => {
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sine';
+    o.frequency.setValueAtTime(660,ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(880,ctx.currentTime+0.12);
+    g.gain.setValueAtTime(0,ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0.25,ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.22);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+0.25);
+  }catch(e){}
+};
+
+// ── Beep de confirmación (doble tono ascendente) ─────────
+const _agBeep = () => {
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[880,0],[1046,0.15]].forEach(([freq,t])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=freq;
+      g.gain.setValueAtTime(0,ctx.currentTime+t);
+      g.gain.linearRampToValueAtTime(0.25,ctx.currentTime+t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.18);
+      o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+0.2);
+    });
+  }catch(e){}
+};
+
+// ── Resaltar campo actual en el formulario ───────────────
+const _agHighlight = idx => {
+  const campos = AG.campos;
+  campos.forEach((c,i) => {
+    const el = document.getElementById(c.id) || document.getElementById(c.id+'-wrap');
+    if(!el) return;
+    const wrap = el.closest('.fgrp') || el.parentElement;
+    if(!wrap) return;
+    wrap.style.transition = 'all .3s';
+    if(i === idx){
+      wrap.style.background = 'rgba(var(--theme-rgb),.13)';
+      wrap.style.borderRadius = '10px';
+      wrap.style.padding = '8px';
+      wrap.style.margin = '-8px';
+      wrap.style.boxShadow = '0 0 0 2px rgba(var(--theme-rgb),.6)';
+      const lbl = wrap.querySelector('label');
+      if(lbl) lbl.style.color = 'var(--r)';
+      wrap.scrollIntoView({behavior:'smooth',block:'center'});
+    } else {
+      wrap.style.background = '';wrap.style.borderRadius = '';
+      wrap.style.padding = '';wrap.style.margin = '';wrap.style.boxShadow = '';
+      const lbl = wrap.querySelector('label');if(lbl) lbl.style.color = '';
+    }
+  });
+  _agActualizarOverlay(idx);
+};
+
+// ── Overlay flotante — muestra TODOS los campos como lista ──
+const _agMostrarOverlay = () => {
+  let ov = document.getElementById('agOverlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'agOverlay';
+    ov.style.cssText = `
+      position:fixed;bottom:0;left:0;right:0;z-index:3000;
+      background:linear-gradient(180deg,rgba(18,18,22,.97),rgba(18,18,22,1));
+      border-top:2px solid rgba(var(--theme-rgb),.4);
+      padding:14px 16px 22px;
+      backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+      transition:transform .3s cubic-bezier(.4,0,.2,1);
+    `;
+    document.body.appendChild(ov);
+  }
+  _agActualizarOverlay(AG.indice);
+};
+
+const _agActualizarOverlay = idx => {
+  const ov = document.getElementById('agOverlay');
+  if(!ov) return;
+  const total = AG.campos.length;
+  const pct = total>0 ? Math.round((idx/total)*100) : 0;
+
+  // Lista de todos los campos
+  const listaHTML = AG.campos.map((c,i)=>{
+    const done = i < idx;
+    const activo = i === idx;
+    // Leer valor actual del campo para mostrarlo
+    let valorActual = '';
+    if(done){
+      const el = document.getElementById(c.id);
+      if(el && el.value) valorActual = el.value.length > 28 ? el.value.slice(0,28)+'…' : el.value;
+      // Para el custom select de cliente leer nombre del trigger
+      const trigger = document.getElementById(c.id+'-trigger');
+      if(trigger){const txt=trigger.querySelector('.cli-sel-txt');if(txt&&txt.textContent&&txt.textContent!=='Sin cliente')valorActual=txt.textContent.slice(0,28);}
+    }
+    return `<div style="
+      display:flex;align-items:center;gap:9px;
+      padding:7px 10px;border-radius:9px;margin-bottom:3px;
+      background:${activo?'rgba(var(--theme-rgb),.15)':done?'rgba(255,255,255,.04)':'transparent'};
+      border:1px solid ${activo?'rgba(var(--theme-rgb),.5)':'transparent'};
+      transition:all .25s;
+    ">
+      <div style="
+        width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;
+        background:${activo?'rgba(var(--theme-rgb),1)':done?'rgba(76,175,80,.3)':'rgba(255,255,255,.07)'};
+        color:${activo?'#fff':done?'#a5d6a7':'var(--tx3)'};
+      ">${done?'✓':i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:${activo?'13':'12'}px;font-weight:${activo?'900':'600'};color:${activo?'var(--tx)':done?'var(--tx2)':'var(--tx3)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          ${c.label}${activo?` <span style="font-size:10px;color:rgba(var(--theme-rgb),1);font-weight:800">← AHORA</span>`:''}
+        </div>
+        ${valorActual?`<div style="font-size:11px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${valorActual}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  ov.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:10px;font-weight:900;color:rgba(var(--theme-rgb),1);letter-spacing:2px;text-transform:uppercase">🎙️ MODO GUIADO</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:11px;color:var(--tx2);font-weight:700">${idx+1}/${total}</div>
+        <button onclick="_agDetener()" style="padding:4px 10px;border-radius:20px;border:1px solid rgba(255,80,80,.3);background:rgba(255,80,80,.08);color:#ff5252;font-size:11px;font-weight:700;cursor:pointer">✕ Cancelar</button>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.07);border-radius:6px;height:3px;margin-bottom:10px;overflow:hidden">
+      <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,rgba(var(--theme-rgb),1),var(--r));border-radius:6px;transition:width .4s ease"></div>
+    </div>
+    <div style="max-height:180px;overflow-y:auto;margin-bottom:8px" id="agCamposList">${listaHTML}</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="agTranscriptLive" style="flex:1;font-size:12px;color:var(--tx2);font-style:italic;padding:5px 10px;background:rgba(255,255,255,.05);border-radius:8px;min-height:24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+      <button onclick="_agOmitir()" style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--tx2);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">⏭ Omitir</button>
+    </div>
+  `;
+};
+
+const _agQuitarOverlay = () => {
+  const ov = document.getElementById('agOverlay');
+  if(ov){ ov.style.transform='translateY(100%)'; setTimeout(()=>ov.remove(),350); }
+  // Quitar todos los highlights
+  AG.campos.forEach(c=>{
+    const el = document.getElementById(c.id) || document.getElementById(c.id+'-wrap');
+    if(!el)return;
+    const wrap = el.closest('.fgrp') || el.parentElement;
+    if(!wrap)return;
+    wrap.style.background='';wrap.style.borderRadius='';
+    wrap.style.padding='';wrap.style.margin='';wrap.style.boxShadow='';
+    const lbl=wrap.querySelector('label');if(lbl)lbl.style.color='';
+  });
+};
+
+// ── Aplicar valor a un campo ─────────────────────────────
+const _agAplicarValor = (campo, texto) => {
+  const t = texto.trim();
+  const tN = _avNorm(t);
+  if(!t) return false;
+
+  // Saltar / omitir
+  if(/^(omitir|saltar|siguiente|paso|skip|omite|salta|adelante|pasar|no\s+s[eé]|no\s+hay|ninguno|nada)\b/i.test(tN)) return 'omitir';
+
+  if(campo.tipo === 'cliente'){
+    const res = _avBuscarCliente(t);
+    if(res.encontrado){
+      const c = res.encontrado;
+      // Rellenar el hidden input del custom select
+      const hidden = document.getElementById(campo.id);
+      if(hidden) hidden.value = c.id;
+      // Actualizar el trigger visual
+      const trigger = document.getElementById(campo.id+'-trigger');
+      if(trigger) trigger.innerHTML = `${_colorDot(c.color||'azul')}<span class="cli-sel-txt">${c.nombre}</span>`;
+      // Marcar selected en dropdown
+      const dropdown = document.getElementById(campo.id+'-dropdown');
+      if(dropdown){
+        dropdown.querySelectorAll('.cli-sel-opt').forEach(o=>{
+          o.classList.toggle('selected', o.dataset.id===c.id);
+        });
+      }
+      // Autorellenar dir/edificio/tel
+      const mapCli = {avCli:['avDir','avEdif','avTel'], pCli:['pDir','pEdif','pTel'], prCli:['prDir','prEdif','prTel']};
+      const campos3 = mapCli[campo.id]||[];
+      if(c.direccion && campos3[0]){const e=$( campos3[0]);if(e&&!e.value)e.value=c.direccion;}
+      if(c.edificio  && campos3[1]){const e=$(campos3[1]);if(e&&!e.value)e.value=c.edificio;}
+      if(c.telefono  && campos3[2]){const e=$(campos3[2]);if(e&&!e.value)e.value=c.telefono;}
+      return true;
+    }
+    if(res.candidatos.length){
+      // Mostrar candidatos brevemente
+      _agActualizarOverlay(AG.indice);
+      _avHablar(`Hay varios clientes parecidos: ${res.candidatos.slice(0,3).map(c=>c.nombre).join(', ')}. ¿Cuál es exactamente?`, ()=>{
+        _agEscucharCampo();
+      });
+      return 'pendiente';
+    }
+    return false;
+  }
+
+  if(campo.tipo === 'number'){
+    const v = parseFloat(t.replace(/[^\d,.]/g,'').replace(',','.'))||null;
+    if(v !== null){
+      const el=document.getElementById(campo.id);
+      if(el){el.value=v;el.dispatchEvent(new Event('input'));}
+      return true;
+    }
+    // Intentar extraer número con parser de importes
+    const imp=_avParseImportes(t);
+    const vals=[imp.manoObra,imp.materiales,imp.desplazamiento].filter(x=>x>0);
+    if(vals.length){
+      const el=document.getElementById(campo.id);
+      if(el){el.value=vals[0];el.dispatchEvent(new Event('input'));}
+      return true;
+    }
+    return false;
+  }
+
+  if(campo.tipo === 'select' && campo.opciones){
+    const match = Object.entries(campo.opciones).find(([k])=>tN.includes(k));
+    if(match){
+      const el=document.getElementById(campo.id);
+      if(el)el.value=match[1];
+      return true;
+    }
+    return false;
+  }
+
+  // input / textarea
+  const el = document.getElementById(campo.id);
+  if(!el) return false;
+
+  if(campo.id==='pDur'){
+    const dur=_avParseDur(t);
+    if(dur){el.value=dur;return true;}
+  }
+  if(campo.tipo==='textarea' && t.length > 5){
+    el.value = _avProfesionalizar(t);
+    return true;
+  }
+  if(campo.tipo==='input' && t.length > 0){
+    el.value = /titulo|tit|nombre/.test(campo.id.toLowerCase()) ? _avProfTitulo(t) : t;
+    return true;
+  }
+  return false;
+};
+
+// ── Escuchar un campo ────────────────────────────────────
+const _agEscucharCampo = () => {
+  if(!AG.activo) return;
+  const idx = AG.indice;
+  const campo = AG.campos[idx];
+  if(!campo){ _agFinalizarTodos(); return; }
+
+  _agHighlight(idx);
+
+  // Pequeño delay para dejar que el TTS anterior termine
+  setTimeout(()=>{
+    if(!AG.activo) return;
+    const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR) return;
+    if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+
+    // Beep de apertura de mic antes de escuchar
+    _agBeepAbre();
+
+    const rec = new SR();
+    rec.lang='es-ES'; rec.continuous=false; rec.interimResults=true; rec.maxAlternatives=1;
+    AV.rec = rec;
+
+    let textoFinal='', textoInterim='', procesado=false;
+
+    const _procesar = () => {
+      if(procesado) return;
+      procesado=true;
+      if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+      if(!AG.activo) return;
+      const t=(textoFinal+(textoInterim?' '+textoInterim:'')).trim();
+
+      const resultado = _agAplicarValor(campo, t);
+      if(resultado === 'pendiente') return;
+      if(resultado === 'omitir'){
+        _agBeep();
+        AG.indice++;
+        _agActualizarOverlay(AG.indice);
+        setTimeout(()=>{ if(AG.activo) _agSiguienteCampo(); }, 150);
+      } else if(resultado){
+        _agBeep();
+        AG.indice++;
+        _agActualizarOverlay(AG.indice);
+        setTimeout(()=>{ if(AG.activo) _agSiguienteCampo(); }, 150);
+      } else {
+        // No entendido: beep de error (tono bajo) y vuelve a escuchar sin hablar
+        try{
+          const ctx=new(window.AudioContext||window.webkitAudioContext)();
+          const o=ctx.createOscillator(),g=ctx.createGain();
+          o.connect(g);g.connect(ctx.destination);
+          o.type='sine';o.frequency.value=280;
+          g.gain.setValueAtTime(0,ctx.currentTime);
+          g.gain.linearRampToValueAtTime(0.2,ctx.currentTime+0.02);
+          g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+          o.start(ctx.currentTime);o.stop(ctx.currentTime+0.35);
+        }catch(e){}
+        const tLive=document.getElementById('agTranscriptLive');
+        if(tLive){tLive.textContent='⚠ No entendido, repite';tLive.style.color='#ff5252';}
+        setTimeout(()=>{
+          if(tLive){tLive.textContent='';tLive.style.color='';}
+          if(AG.activo) _agEscucharCampo();
+        }, 800);
+      }
+    };
+
+    rec.onresult = ev => {
+      textoFinal=''; textoInterim='';
+      for(let i=0;i<ev.results.length;i++){
+        if(ev.results[i].isFinal) textoFinal+=ev.results[i][0].transcript+' ';
+        else textoInterim=ev.results[i][0].transcript;
+      }
+      textoFinal=textoFinal.trimEnd();
+      // Mostrar en live transcript del overlay
+      const tLive=document.getElementById('agTranscriptLive');
+      if(tLive) tLive.textContent=(textoFinal||textoInterim).trim();
+      if(textoFinal){ clearTimeout(AV.silenceTimer); AV.silenceTimer=setTimeout(()=>{ if(!procesado&&AG.activo)_procesar(); },700); }
+    };
+    rec.onerror = ev => {
+      if(ev.error==='aborted') return;
+      if(ev.error==='no-speech'){ if(AG.activo&&!procesado){ AV.rec=null; setTimeout(()=>{ if(AG.activo)_agEscucharCampo(); },200); } }
+    };
+    rec.onend = () => {
+      AV.rec=null;
+      if(procesado) return;
+      if(textoFinal&&AG.activo) _procesar();
+      else if(!textoFinal&&AG.activo) setTimeout(()=>{ if(AG.activo)_agEscucharCampo(); },200);
+    };
+    try{ rec.start(); }catch(e){ AV.rec=null; }
+  }, 200);
+};
+
+// ── Siguiente campo (SIN TTS — solo beep + highlight visual) ──
+const _agSiguienteCampo = () => {
+  if(!AG.activo) return;
+  const idx = AG.indice;
+  if(idx >= AG.campos.length){ _agFinalizarTodos(); return; }
+  _agHighlight(idx);
+  _agEscucharCampo();
+};
+
+// ── Omitir campo manualmente (botón) ────────────────────
+window._agOmitir = () => {
+  if(!AG.activo) return;
+  clearTimeout(AV.silenceTimer);
+  if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+  _agBeep();
+  AG.indice++;
+  _agSiguienteCampo();
+};
+
+// ── Detener modo guiado ──────────────────────────────────
+window._agDetener = () => {
+  AG.activo=false;
+  clearTimeout(AV.silenceTimer);
+  if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  _agQuitarOverlay();
+};
+
+// ── Finalizar todos los campos → preguntar guardar/editar ─
+const _agFinalizarTodos = () => {
+  AG.activo=false;
+  if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+  _agQuitarOverlay();
+
+  setTimeout(()=>{
+    _avHablar('He rellenado todos los campos. ¿Quieres que lo guarde, o prefieres editarlo tú?', ()=>{
+      _agEscucharDecision();
+    });
+  }, 400);
+};
+
+// ── Escuchar decisión guardar/editar ────────────────────
+const _agEscucharDecision = () => {
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ _avHablar('Puedes guardar o seguir editando.'); return; }
+  if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+
+  // Mostrar un mini overlay de decisión
+  const ov=document.createElement('div');
+  ov.id='agDecisionOv';
+  ov.style.cssText=`
+    position:fixed;bottom:0;left:0;right:0;z-index:3000;
+    background:var(--card);border-top:2px solid rgba(var(--theme-rgb),.4);
+    padding:18px 16px 24px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    animation:vozFadeIn .25s ease;
+  `;
+  ov.innerHTML=`
+    <div style="font-size:11px;font-weight:800;color:rgba(var(--theme-rgb),1);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">¿Qué hacemos?</div>
+    <div style="font-size:14px;color:var(--tx);margin-bottom:14px">He rellenado todos los campos. ¿Guardo el documento o prefieres revisarlo?</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="_agGuardarAhora()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--r);color:#fff;font-size:14px;font-weight:800;cursor:pointer">💾 Guardar</button>
+      <button onclick="_agSeguirEditando()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--tx);font-size:14px;font-weight:700;cursor:pointer">✏️ Editar</button>
+    </div>
+    <div id="agDecisionTranscript" style="text-align:center;font-size:12px;color:var(--tx2);margin-top:8px;font-style:italic;min-height:16px"></div>
+  `;
+  document.body.appendChild(ov);
+
+  const rec=new SR();
+  rec.lang='es-ES'; rec.continuous=false; rec.interimResults=true; rec.maxAlternatives=1;
+  AV.rec=rec;
+  let textoFinal='', procesado=false;
+
+  const _procesarDecision = () => {
+    if(procesado) return; procesado=true;
+    if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+    const t=_avNorm(textoFinal.trim());
+    if(/\b(guard[ae]|guarda|s[ií]|guardar|si|yes|graba|guárdalo|confir)\b/.test(t)) _agGuardarAhora();
+    else if(/\b(edit[ao]|editar|no|revis[ao]|revisar|prefiero|manten|quiero\s+ver|ver|modif)\b/.test(t)) _agSeguirEditando();
+    else _avHablar('Di "guardar" para guardar, o "editar" para seguir editando.', ()=>_agEscucharDecision());
+  };
+
+  rec.onresult=ev=>{
+    textoFinal='';
+    for(let i=0;i<ev.results.length;i++){
+      if(ev.results[i].isFinal) textoFinal+=ev.results[i][0].transcript+' ';
+    }
+    const el=document.getElementById('agDecisionTranscript');
+    if(el) el.textContent=textoFinal.trim();
+    if(textoFinal){ clearTimeout(AV.silenceTimer); AV.silenceTimer=setTimeout(()=>{ if(!procesado)_procesarDecision(); },700); }
+  };
+  rec.onerror=ev=>{if(ev.error==='aborted')return;};
+  rec.onend=()=>{ AV.rec=null; if(!procesado&&textoFinal) _procesarDecision(); };
+  try{ rec.start(); }catch(e){ AV.rec=null; }
+};
+
+window._agGuardarAhora = () => {
+  const ov=document.getElementById('agDecisionOv');
+  if(ov) ov.remove();
+  if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  // Llamar a la función de guardado del tipo correspondiente
+  if(typeof AG.guardarFn === 'function'){
+    setTimeout(AG.guardarFn, 200);
+  }
+};
+
+window._agSeguirEditando = () => {
+  const ov=document.getElementById('agDecisionOv');
+  if(ov) ov.remove();
+  if(AV.rec){try{AV.rec.abort()}catch(e){} AV.rec=null;}
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  // El formulario queda abierto sin guardar
+  toast('Revisa y edita el documento a tu gusto 👆','i');
+};
+
+// ── Iniciar modo guiado ──────────────────────────────────
+window._avIniciarModoGuiado = (tipo, preData) => {
+  cerrarAsistenteVoz();
+  AG.activo = true;
+  AG.tipo = tipo;
+  AG.indice = 0;
+  AG.campos = _avCamposGuiados[tipo] || _avCamposGuiados.parte;
+
+  // Función de guardado según tipo
+  const guardadoMap = {
+    parte: ()=>guardarParte(''),
+    averia: ()=>guardarAveria(),
+    presupuesto: ()=>guardarPresupuesto(),
+    mantenimiento: ()=>guardarMantSBNuevo(),
+  };
+  AG.guardarFn = guardadoMap[tipo] || guardadoMap.parte;
+
+  // Abrir el formulario según tipo — el usuario lo ve en pantalla
+  const abrirForm = () => {
+    if(tipo==='averia'){
+      if(typeof goScreen==='function') goScreen('averias');
+      setTimeout(()=>{
+        if(typeof abrirNuevaAveriaPrerellenada==='function') abrirNuevaAveriaPrerellenada('','','');
+        else if(typeof abrirNuevaAveria==='function') abrirNuevaAveria();
+        setTimeout(_agIniciarSecuencia, 600);
+      }, 300);
+    } else if(tipo==='presupuesto'){
+      if(typeof goScreen==='function') goScreen('presupuestos');
+      setTimeout(()=>{
+        if(typeof abrirNuevoPresupuesto==='function') abrirNuevoPresupuesto();
+        setTimeout(_agIniciarSecuencia, 600);
+      }, 300);
+    } else if(tipo==='mantenimiento'){
+      // Abrir formulario de mantenimiento SB
+      if(typeof abrirProgramarMantSB==='function'){
+        abrirProgramarMantSB().then(()=>{
+          setTimeout(()=>{
+            // Navegar directamente al formulario (saltando el selector de plantillas)
+            if(typeof window._abrirMantSBFormNuevo==='function') window._abrirMantSBFormNuevo({});
+            setTimeout(_agIniciarSecuencia, 600);
+          }, 400);
+        }).catch(()=>{
+          if(typeof window._abrirMantSBFormNuevo==='function') window._abrirMantSBFormNuevo({});
+          setTimeout(_agIniciarSecuencia, 600);
+        });
+      } else {
+        setTimeout(_agIniciarSecuencia, 600);
+      }
+    } else {
+      // parte (default)
+      if(typeof abrirFParte==='function') abrirFParte('',preData||{});
+      setTimeout(_agIniciarSecuencia, 600);
+    }
+  };
+
+  setTimeout(abrirForm, 300);
+};
+
+// ── Iniciar secuencia — UNA frase inicial, luego silencio total ──
+const _agIniciarSecuencia = () => {
+  if(!AG.activo) return;
+  _agMostrarOverlay();
+  // Una sola frase de inicio, luego el asistente no vuelve a hablar entre campos
+  _avHablar('Empezamos. Di el valor de cada campo resaltado.', ()=>{
+    if(AG.activo){
+      _agHighlight(0);
+      _agEscucharCampo();
+    }
+  });
+};
+
+// ── Detectar modo guiado en _avProcesarFinalConTexto ─────
+const _avProcesarFinalConTextoOriginal = _avProcesarFinalConTexto;
+window._avInterceptarGuiado = (texto) => {
+  const tN = _avNorm(texto);
+  if(!_avEsGuiado(texto)) return false;
+  // Determinar tipo por palabras clave naturales
+  let tipo = 'parte';
+  if(/\b(aver[ií]|fallo|incidencia|urgencia)\b/i.test(tN))         tipo = 'averia';
+  else if(/\b(presupu|presup|oferta|cotizac|valorac)\b/i.test(tN)) tipo = 'presupuesto';
+  else if(/\b(manten|revisi[oó]n|inspecci[oó]n|programado)\b/i.test(tN)) tipo = 'mantenimiento';
+  // "parte de trabajo" / "parte" / "trabajo" → parte (default)
+  _avIniciarModoGuiado(tipo, {});
+  return true;
 };
 </script>
 </body>
