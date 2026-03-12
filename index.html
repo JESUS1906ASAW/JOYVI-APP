@@ -2268,6 +2268,11 @@ const iniciarApp=async()=>{
 
   // ── 5. Renderizar pantalla restaurada ──
   _renderScreen(pantallaInicial);
+  // Si la pantalla restaurada es 'grupo', aplicar la pestaña guardada
+  if(pantallaInicial==='grupo'){
+    const savedTab=sessionStorage.getItem('joyvi_gtab')||'cli';
+    setTimeout(()=>switchGTab(savedTab),50);
+  }
 
   // ── 5b. Si venimos de QR con cliente, abrir la ficha ──
   if(_qrCLI){
