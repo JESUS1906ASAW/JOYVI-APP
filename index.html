@@ -2268,7 +2268,6 @@ const iniciarApp=async()=>{
 
   // ── 5. Renderizar pantalla restaurada ──
   _renderScreen(pantallaInicial);
-  // Si la pantalla restaurada es 'grupo', aplicar la pestaña guardada
   if(pantallaInicial==='grupo'){
     const savedTab=sessionStorage.getItem('joyvi_gtab')||'cli';
     setTimeout(()=>switchGTab(savedTab),50);
@@ -3768,7 +3767,7 @@ window.verCliente=async id=>{
         ${c.telefono?`<a href="tel:${c.telefono}" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);color:#4caf50;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>`:''}
         ${c.telefono?`<a href="https://wa.me/34${c.telefono.replace(/\s/g,'')}" target="_blank" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">💬 WhatsApp</a>`:''}
         ${c.email?`<a href="mailto:${c.email}" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.15);border:1px solid rgba(66,133,244,.3);color:#4285f4;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">✉️ Email</a>`:''}
-        ${c.direccion?`<a href="https://maps.google.com/?q=${encodeURIComponent(c.direccion)}" target="_blank" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.25);color:#4285f4;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">📍 Maps</a>`:''}
+        ${c.direccion?`<a href="${c.lat&&c.lng?`https://maps.google.com/?q=${c.lat},${c.lng}`:`https://maps.google.com/?q=${encodeURIComponent(c.direccion)}`}" target="_blank" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.25);color:#4285f4;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">📍 Maps${c.lat&&c.lng?' 🎯':''}</a>`:''}
       </div>`:''}
     </div>
 
@@ -4002,7 +4001,15 @@ window.abrirFCli=async(id, preData)=>{
       <div class="fgrp"><label>Nombre *</label><input id="cNom" value="${vd.nombre||c?.nombre||''}" placeholder="Nombre del cliente"></div>
       <div class="fgrp"><label>Nombre del edificio / comunidad</label><input id="cEdif" value="${vd.edificio||c?.edificio||''}" placeholder="Ej: Comunidad Las Flores, Edif. Torre Norte..."></div>
       <div class="fgrp"><label>Teléfono</label><input type="tel" id="cTel" value="${vd.telefono||c?.telefono||''}" placeholder="600 000 000"></div>
-      <div class="fgrp"><label>Dirección</label><input id="cDir" value="${vd.direccion||c?.direccion||''}" placeholder="Calle, número, ciudad"></div>
+      <div class="fgrp"><label>Dirección</label>
+        <div style="display:flex;gap:8px;align-items:stretch">
+          <input id="cDir" value="${vd.direccion||c?.direccion||''}" placeholder="Calle, número, ciudad" style="flex:1">
+          <button type="button" onclick="usarUbicacionActualCliente()" id="btnGeoUbic" title="Usar mi ubicación actual" style="flex-shrink:0;padding:0 12px;border-radius:10px;border:1.5px solid rgba(var(--theme-rgb),.4);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:44px">${(vd.lat||c?.lat)?'🎯':'📍'}</button>
+        </div>
+        <input type="hidden" id="cLat" value="${vd.lat||c?.lat||''}">
+        <input type="hidden" id="cLng" value="${vd.lng||c?.lng||''}">
+        ${(vd.lat||c?.lat)?`<div style="font-size:11px;color:#4caf50;margin-top:4px">🎯 GPS guardado: ${parseFloat(vd.lat||c?.lat).toFixed(5)}, ${parseFloat(vd.lng||c?.lng).toFixed(5)}</div>`:''}
+      </div>
       <div class="fgrp"><label>Email</label><input type="email" id="cEmail" value="${vd.email||c?.email||''}" placeholder="cliente@email.com"></div>
       <div class="fgrp"><label>Notas</label><textarea id="cNotas" placeholder="Observaciones...">${vd.notas||c?.notas||''}</textarea></div>
     </div>
@@ -4033,6 +4040,8 @@ window.guardarCli=async(id)=>{
   const nom=$('cNom').value.trim();
   if(!nom){toast('El nombre es obligatorio','e');return}
   const data={nombre:nom,edificio:$('cEdif').value.trim(),telefono:$('cTel').value.trim(),direccion:normDir($('cDir').value.trim()),email:$('cEmail').value.trim(),notas:$('cNotas').value.trim(),color:$('cColor').value,actualizado:serverTimestamp()};
+  const latVal=$('cLat')?.value.trim();const lngVal=$('cLng')?.value.trim();
+  if(latVal&&lngVal){data.lat=parseFloat(latVal);data.lng=parseFloat(lngVal);}else{data.lat=null;data.lng=null;}
   try{
     if(id){
       const batch=writeBatch(db);
@@ -4052,7 +4061,43 @@ window.guardarCli=async(id)=>{
   }catch(e){toast('Error al guardar','e')}
 };
 
-// ── Importar contacto desde la agenda del dispositivo (Contact Picker API) ──
+// ── Geolocalización para formulario de cliente ──
+window.usarUbicacionActualCliente=async()=>{
+  const btn=$('btnGeoUbic');
+  if(!navigator.geolocation){toast('GPS no disponible en este dispositivo','e');return;}
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+    // Geocodificación inversa con Nominatim (gratuito, sin API key)
+    try{
+      const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,{headers:{'Accept-Language':'es'}});
+      const data=await res.json();
+      const a=data.address||{};
+      const road=a.road||a.pedestrian||a.footway||'';
+      const num=a.house_number||'';
+      const city=a.city||a.town||a.village||a.municipality||a.county||'';
+      const cp=a.postcode||'';
+      const parts=[road+(num?' '+num:''),cp,city].filter(Boolean);
+      const dir=parts.join(', ');
+      if($('cDir'))$('cDir').value=dir;
+      if($('cLat'))$('cLat').value=lat;
+      if($('cLng'))$('cLng').value=lng;
+      if(btn){btn.textContent='🎯';btn.disabled=false;}
+      toast('Ubicación añadida como dirección','o');
+    }catch(err){
+      // Si falla el geocoder, guardar solo coords
+      if($('cLat'))$('cLat').value=lat;
+      if($('cLng'))$('cLng').value=lng;
+      if(btn){btn.textContent='🎯';btn.disabled=false;}
+      toast('Coordenadas GPS guardadas (sin dirección textual)','i');
+    }
+  },err=>{
+    if(btn){btn.textContent='📍';btn.disabled=false;}
+    const msgs={1:'Permiso de ubicación denegado',2:'Ubicación no disponible',3:'Tiempo de espera agotado'};
+    toast(msgs[err.code]||'Error al obtener ubicación','e');
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+};
 window.importarContactoAgenda=async()=>{
   if(!('contacts' in navigator)){
     toast('Tu dispositivo no soporta esta función','e');return;
@@ -5946,7 +5991,7 @@ const renderAdministracion=async()=>{
       let acciones='';
       if(soyAdmin&&!esTu){
         acciones=`<div style="display:flex;gap:6px;flex-shrink:0">
-          ${!esAdmin?`<button class="btn btn-s btn-sm" onclick="delegarAdmin('${uid}','${nombre.replace(/'/g,"\\'")}',event)" title="Hacer administrador" style="padding:7px 10px;font-size:11px;border-color:rgba(255,167,38,.5);color:#ffa726;background:rgba(255,167,38,.1)">👑 Admin</button>`:''}
+          ${!esAdmin?`<button class="btn btn-s btn-sm" onclick="delegarAdmin('${uid}','${nombre.replace(/'/g,"\\'")}',event)" style="padding:7px 10px;font-size:11px;border-color:rgba(255,167,38,.5);color:#ffa726;background:rgba(255,167,38,.1)">👑 Admin</button>`:''}
           <button class="btn btn-del btn-sm" onclick="expulsarMiembro('${uid}')">✕</button>
         </div>`;
       }
