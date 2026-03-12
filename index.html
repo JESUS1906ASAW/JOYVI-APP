@@ -27,7 +27,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Joyvi">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#e53935">
+<meta name="theme-color" content="#111111">
 <meta name="msapplication-TileColor" content="#e53935">
 <link rel="manifest" href="/JOYVI-APP/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -5942,13 +5942,21 @@ const renderAdministracion=async()=>{
       const nombre=ms.exists()?(ms.data().nombre||uid.slice(0,16)+'...'):uid.slice(0,16)+'...';
       const esAdmin=uid===gData?.adminUid;
       const esTu=uid===CU.uid;
+      const soyAdmin=gData?.adminUid===CU.uid;
+      let acciones='';
+      if(soyAdmin&&!esTu){
+        acciones=`<div style="display:flex;gap:6px;flex-shrink:0">
+          ${!esAdmin?`<button class="btn btn-s btn-sm" onclick="delegarAdmin('${uid}','${nombre.replace(/'/g,"\\'")}',event)" title="Hacer administrador" style="padding:7px 10px;font-size:11px;border-color:rgba(255,167,38,.5);color:#ffa726;background:rgba(255,167,38,.1)">👑 Admin</button>`:''}
+          <button class="btn btn-del btn-sm" onclick="expulsarMiembro('${uid}')">✕</button>
+        </div>`;
+      }
       return`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
         <div style="width:38px;height:38px;border-radius:50%;background:rgba(var(--theme-rgb),.12);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${ms.exists()?(ms.data().nombre?ms.data().nombre[0].toUpperCase():'?'):'?'}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:700;color:var(--tx)">${nombre}${esTu?' (tú)':''}</div>
-          ${esAdmin?`<div style="font-size:11px;color:var(--r);font-weight:700">Admin</div>`:''}
+          ${esAdmin?`<div style="font-size:11px;color:#ffa726;font-weight:700">👑 Admin</div>`:'<div style="font-size:11px;color:var(--tx2)">Miembro</div>'}
         </div>
-        ${(!esTu&&gData?.adminUid===CU.uid)?`<button class="btn btn-del btn-sm" onclick="expulsarMiembro('${uid}')">✕</button>`:''}
+        ${acciones}
       </div>`;
     }).join('');
   }catch(e){
@@ -6032,6 +6040,19 @@ window.rechazarSolicitud=async(solId,uid,nombre)=>{
 window.expulsarMiembro=async uid=>{
   if(!confirm('¿Eliminar este miembro del grupo?'))return;
   try{await updateDoc(doc(db,'grupos',CGID),{miembros:arrayRemove(uid)});toast('Miembro eliminado','i');renderAdministracion()}catch(e){toast('Error','e')}
+};
+
+window.delegarAdmin=async(uid,nombre,e)=>{
+  if(e)e.stopPropagation();
+  if(!confirm(`¿Delegar la administración del grupo a ${nombre}?\n\nPerderás el rol de admin y ${nombre} pasará a ser el nuevo administrador.`))return;
+  try{
+    const snap=await getDoc(doc(db,'usuarios',uid));
+    const nuevoAdminNombre=snap.exists()?(snap.data().nombre||nombre):nombre;
+    await updateDoc(doc(db,'grupos',CGID),{adminUid:uid,adminNombre:nuevoAdminNombre});
+    await crearNotificacion([uid],'👑 Nuevo administrador',`Has sido designado administrador del grupo "${CG?.nombre||''}".`,{tipo:'nuevo_admin',grupoId:CGID,grupoNombre:CG?.nombre||''});
+    toast(`${nuevoAdminNombre} es ahora el administrador`,'o');
+    renderAdministracion();
+  }catch(err){toast('Error al delegar','e')}
 };
 window.abandonarGrupo=async()=>{
   if(!confirm('¿Salir del grupo? No podrás volver a acceder a menos que te reinviten.'))return;
