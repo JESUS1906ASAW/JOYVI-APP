@@ -2460,8 +2460,8 @@ const renderInicio=async()=>{
       .sort((a,b)=>{
         const fa=a.fechaProxima||a.fechaInicio;const fb=b.fechaProxima||b.fechaInicio;
         const da=typeof fa==='string'?new Date(fa):(fa?.toDate?fa.toDate():new Date(fa));
-        const db=typeof fb==='string'?new Date(fb):(fb?.toDate?fb.toDate():new Date(fb));
-        return da-db;
+        const _db=typeof fb==='string'?new Date(fb):(fb?.toDate?fb.toDate():new Date(fb));
+        return da-_db;
       }).slice(0,3);
 
     // Averías pendientes recientes
@@ -3636,18 +3636,21 @@ window.verCliente=async id=>{
   abrirSB(c.nombre,`<div class="skel skel-hero"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card" style="width:70%"></div>`);
 
   // Cargar mantenimientos y averías del cliente en paralelo
-  let mantsC=[], avsC=[], histMants=[], presusCli=[];
+  let mantsC=[], avsC=[], histMants=[], presusCli=[], primeraFoto=null;
   try{
     mantsC=allMantenimientos.filter(m=>m.clienteId===id);
-    const [avSnap,avHSnap,hmSnap,presuSnap]=await Promise.all([
+    const [avSnap,avHSnap,hmSnap,presuSnap,imgSnap]=await Promise.all([
       getDocs(query(collection(db,'grupos',CGID,'averias'),where('clienteId','==',id))),
       getDocs(query(collection(db,'grupos',CGID,'averias_historial'),where('clienteId','==',id))),
       getDocs(query(collection(db,'grupos',CGID,'historial_mantenimientos'),where('clienteId','==',id))),
-      getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('clienteId','==',id)))
+      getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('clienteId','==',id))),
+      getDocs(query(collection(db,'grupos',CGID,'imagenes'),where('clienteId','==',id)))
     ]);
     avsC=[...avSnap.docs.map(d=>({id:d.id,...d.data(),_src:'pend'})),...avHSnap.docs.map(d=>({id:d.id,...d.data(),_src:'hist'}))];
     histMants=hmSnap.docs.map(d=>({id:d.id,...d.data()}));
     presusCli=presuSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const imgs=imgSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.creado?.seconds||0)-(b.creado?.seconds||0));
+    if(imgs.length)primeraFoto=imgs[0];
   }catch(e){}
 
   const partesCli=allPartes.filter(p=>p.clienteId===id&&!p.archivado);
@@ -3808,6 +3811,14 @@ window.verCliente=async id=>{
   :`<div class="empty" style="padding:20px"><p>Sin actividad registrada</p></div>`;
 
   abrirSB(c.nombre,`
+    ${primeraFoto?`<div onclick="abrirImgViewer('${primeraFoto.id}')" style="position:relative;width:calc(100% + 40px);margin:-18px -20px 16px -20px;height:180px;cursor:pointer;overflow:hidden;flex-shrink:0">
+      <img src="${primeraFoto.url||primeraFoto.dataURL||''}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 50%,rgba(0,0,0,.5) 100%)"></div>
+      <div style="position:absolute;bottom:10px;right:12px;background:rgba(0,0,0,.45);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.9)">Ver foto</span>
+      </div>
+    </div>`:''}
     <!-- ── TÍTULO / CABECERA CLIENTE ── -->
     <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px">
@@ -6888,8 +6899,122 @@ window.restaurarArchivo=async(id,tipo)=>{
 };
 
 window.borrarArchivo=async(id)=>{
-  if(!confirm('¿Eliminar permanentemente? Esta acción no se puede deshacer.'))return;
-  try{await deleteDoc(doc(db,'grupos',CGID,'archivos',id));toast('Eliminado definitivamente','i');renderArchivos()}catch(e){toast('Error','e')}
+  let snapPrev;
+  try{snapPrev=await getDoc(doc(db,'grupos',CGID,'archivos',id));}catch(e){toast('Error','e');return;}
+  if(!snapPrev||!snapPrev.exists())return;
+  const itemData=snapPrev.data();
+  const esCliente=itemData.tipo==='cliente';
+
+  if(esCliente){
+    abrirSB('🗑️ Eliminar cliente definitivamente',`
+      <div style="background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.3);border-radius:14px;padding:16px;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:900;color:#e53935;margin-bottom:6px">⚠️ Eliminación permanente</div>
+        <div style="font-size:13px;color:var(--tx2);line-height:1.6">Se eliminará <strong style="color:var(--tx)">${itemData.nombre||'este cliente'}</strong> y toda su información relacionada (partes, averías, mantenimientos, imágenes, presupuestos). Esta acción <strong>no se puede deshacer</strong>.</div>
+      </div>
+      <button onclick="window._descargarFichaCliArchivado('${id}')" style="display:flex;align-items:center;gap:8px;width:100%;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);border-radius:12px;padding:13px 16px;cursor:pointer;font-family:var(--font);margin-bottom:8px">
+        <span style="font-size:20px">📄</span>
+        <div style="text-align:left"><div style="font-size:13px;font-weight:900;color:var(--tx)">Descargar PDF y luego eliminar</div><div style="font-size:11px;color:var(--tx2);margin-top:1px">Genera ficha completa con partes y datos</div></div>
+      </button>
+      <button onclick="window._confirmarBorradoCliente('${id}')" style="display:flex;align-items:center;gap:8px;width:100%;background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.3);border-radius:12px;padding:13px 16px;cursor:pointer;font-family:var(--font);margin-bottom:8px">
+        <span style="font-size:20px">🗑️</span>
+        <div style="text-align:left"><div style="font-size:13px;font-weight:900;color:#e53935">Eliminar sin descargar</div><div style="font-size:11px;color:var(--tx2);margin-top:1px">Borra todo permanentemente ahora</div></div>
+      </button>
+      <button onclick="cerrarSB()" style="width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
+    `);
+  }else{
+    if(!confirm('¿Eliminar permanentemente? Esta acción no se puede deshacer.'))return;
+    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',id));toast('Eliminado definitivamente','i');renderArchivos();}catch(e){toast('Error','e')}
+  }
+};
+
+window._descargarFichaCliArchivado=async(archId)=>{
+  toast('Generando PDF...','i');
+  try{
+    const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
+    if(!snap.exists())return;
+    const cl=snap.data();
+    const cliId=cl.id||archId;
+    const partesSnap=await getDocs(query(collection(db,'grupos',CGID,'partes'),where('clienteId','==',cliId)));
+    const partesCli=partesSnap.docs.map(d=>({id:d.id,...d.data()}));
+    let mantsCli=[];
+    try{const ms=await getDocs(query(collection(db,'grupos',CGID,'mantenimientos'),where('clienteId','==',cliId)));mantsCli=ms.docs.map(d=>({id:d.id,...d.data()}));}catch(e){}
+    let averiasCli=[];
+    try{const[avS,avHS]=await Promise.all([getDocs(query(collection(db,'grupos',CGID,'averias'),where('clienteId','==',cliId))),getDocs(query(collection(db,'grupos',CGID,'averias_historial'),where('clienteId','==',cliId)))]);averiasCli=[...avS.docs.map(d=>({id:d.id,...d.data()})),...avHS.docs.map(d=>({id:d.id,...d.data()}))];}catch(e){}
+    const hoy=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+    const iniCl=(cl.nombre||'?').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2);
+    const facTotal=partesCli.reduce((a,p)=>a+calcTotal(p),0);
+    const fichaHTML=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Ficha — ${cl.nombre||'Cliente'}</title>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito',sans-serif;background:#fff;color:#222}
+    @page{margin:0;size:A4 portrait}.pg{width:210mm;min-height:297mm;display:flex;flex-direction:column}
+    .head{background:linear-gradient(135deg,#1a1a1a,#333);color:#fff;padding:28px 36px;flex-shrink:0}
+    .ava{width:52px;height:52px;border-radius:50%;background:#e53935;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;flex-shrink:0}
+    .datos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+    .dato{background:rgba(255,255,255,.08);border-radius:8px;padding:10px 12px}
+    .dato-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+    .dato-val{font-size:13px;font-weight:700}
+    .body{padding:24px 36px;flex:1}
+    .sec{font-size:9px;font-weight:900;color:#e53935;letter-spacing:2px;text-transform:uppercase;padding-bottom:5px;border-bottom:2px solid #e53935;margin:16px 0 10px}
+    .row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;border:1px solid #eee;margin-bottom:6px;border-left:4px solid #e53935}
+    .row.ok{border-left-color:#4caf50}.rtit{font-size:12px;font-weight:800;color:#222}.rsub{font-size:10px;color:#999;margin-top:2px}
+    .total{background:#fff5f5;border:1px solid #ffcdd2;border-radius:10px;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .footer{background:#f5f5f5;padding:8px 36px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;flex-shrink:0}
+    @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body>
+    <div class="pg">
+      <div class="head">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="ava">${iniCl}</div>
+          <div><div style="font-size:22px;font-weight:900">${cl.nombre||'–'}</div><div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:3px">Ficha de cliente · ${hoy}</div></div>
+        </div>
+        <div class="datos">
+          ${cl.telefono?`<div class="dato"><div class="dato-lbl">Teléfono</div><div class="dato-val">${cl.telefono}</div></div>`:''}
+          ${cl.email?`<div class="dato"><div class="dato-lbl">Email</div><div class="dato-val">${cl.email}</div></div>`:''}
+          ${cl.direccion?`<div class="dato"><div class="dato-lbl">Dirección</div><div class="dato-val">${cl.direccion}</div></div>`:''}
+          ${cl.edificio?`<div class="dato"><div class="dato-lbl">Edificio</div><div class="dato-val">${cl.edificio}</div></div>`:''}
+          ${cl.nif?`<div class="dato"><div class="dato-lbl">NIF/CIF</div><div class="dato-val">${cl.nif}</div></div>`:''}
+        </div>
+      </div>
+      <div class="body">
+        ${cl.notas?`<div style="background:#fff8e1;border-left:3px solid #ff9800;border-radius:0 8px 8px 0;padding:8px 12px;font-size:12px;color:#555;margin-bottom:14px">${cl.notas}</div>`:''}
+        <div class="total"><div style="font-size:13px;font-weight:800;color:#555">Total facturado (${partesCli.length} partes)</div><div style="font-size:20px;font-weight:900;color:#e53935">${fmtM(facTotal)}</div></div>
+        <div class="sec">🔧 Partes de trabajo (${partesCli.length})</div>
+        ${partesCli.length?partesCli.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)).map(p=>`<div class="row ${p.estado==='completado'?'ok':''}"><div style="flex:1"><div class="rtit">${p.titulo||'–'}</div><div class="rsub">${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div></div><div style="font-size:13px;font-weight:900;color:#e53935">${fmtM(calcTotal(p))}</div></div>`).join(''):'<div style="color:#aaa;font-size:12px">Sin partes</div>'}
+        ${mantsCli.length?`<div class="sec">⚙️ Mantenimientos (${mantsCli.length})</div>${mantsCli.map(m=>`<div class="row"><div style="flex:1"><div class="rtit">${m.nombreTrabajo||'–'}</div><div class="rsub">${m.frecuencia||''}${m.fechaProxima?' · Próx: '+m.fechaProxima:''}</div></div></div>`).join('')}`:''}
+        ${averiasCli.length?`<div class="sec">⚠️ Averías (${averiasCli.length})</div>${averiasCli.map(a=>`<div class="row ${a.estado==='resuelta'?'ok':''}"><div style="flex:1"><div class="rtit">${a.tipo||'Avería'}</div><div class="rsub">${fmtF(a.creado)}</div></div></div>`).join('')}`:''}
+      </div>
+      <div class="footer"><span>${cl.nombre||'Cliente'} · ${hoy}</span><span>${CG?.nombre||'JoyviApp'}</span></div>
+    </div></body></html>`;
+    const w=window.open('','_blank');
+    if(!w){toast('Activa los popups para el PDF','e');return;}
+    w.document.write(fichaHTML);w.document.close();
+    setTimeout(()=>w.print(),700);
+    toast('PDF generado — eliminando cliente...','o');
+    setTimeout(()=>window._confirmarBorradoCliente(archId),1500);
+  }catch(e){toast('Error al generar PDF: '+e.message,'e');}
+};
+
+window._confirmarBorradoCliente=async(archId)=>{
+  cerrarSB();
+  toast('Eliminando cliente y todos sus datos...','i');
+  try{
+    const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
+    if(!snap.exists()){renderArchivos();return;}
+    const cl=snap.data();
+    const cliId=cl.id||archId;
+    const colecciones=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
+    await Promise.all(colecciones.map(async col=>{
+      try{
+        const sn=await getDocs(query(collection(db,'grupos',CGID,col),where('clienteId','==',cliId)));
+        if(!sn.docs.length)return;
+        const b=writeBatch(db);
+        sn.docs.forEach(d=>b.delete(d.ref));
+        await b.commit();
+      }catch(e){console.warn('No se pudo limpiar',col,e);}
+    }));
+    await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));
+    toast('Cliente eliminado definitivamente','i');
+    renderArchivos();
+  }catch(e){toast('Error al eliminar: '+e.message,'e');}
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
