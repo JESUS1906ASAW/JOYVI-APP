@@ -2519,7 +2519,7 @@ const renderInicio=async()=>{
       </div>`+dashHTML;
     }
 
-
+    if(proxMants.length){
       dashHTML+=`<div class="dash-section">
         <div class="dash-section-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg> Mantenimientos próximos</div>
         ${proxMants.map(m=>{
@@ -2598,6 +2598,8 @@ const renderInicio=async()=>{
           </div>`;}).join('')}
       </div>`;
     }
+
+  } // fin if(CGID)
 
   let html=`
   <div class="hero-card" onclick="goScreen('perfil')">
@@ -4502,7 +4504,7 @@ window.guardarParte=async(id)=>{
   const edificioParte=$('pEdif')?.value.trim()||'';
   const direccionParte=$('pDir')?.value.trim()||'';
   const telefonoParte=$('pTel')?.value.trim()||'';
-  const data={titulo:tit,clienteId:cliId,clienteNombre:cliNom,edificio:edificioParte,clienteDireccion:direccionParte,clienteTelefono:telefonoParte,operario:$('pOpe').value.trim()||CUD?.nombre||'',creadoPor:CUD?.nombre||CU?.email||'',descripcion:$('pDesc').value.trim(),materiales:$('pMat').value.trim(),duracion:$('pDur').value.trim(),importeManoObra:parseFloat($('pMO').value)||0,importeMateriales:parseFloat($('pMatE').value)||0,importeDesplazamiento:parseFloat($('pDesp').value)||0,aplicarIVAMateriales:$('pIVA').checked,estado:$('pEst').value,esPlantilla:esPlant,actualizado:serverTimestamp()};
+  const data={titulo:tit,clienteId:cliId,clienteNombre:cliNom,edificio:edificioParte,clienteDireccion:direccionParte,clienteTelefono:telefonoParte,operario:$('pOpe').value.trim()||CUD?.nombre||'',creadoPor:CUD?.nombre||CU?.email||'',descripcion:$('pDesc').value.trim(),materiales:$('pMat').value.trim(),duracion:$('pDur').value.trim(),importeManoObra:parseFloat($('pMO').value)||0,importeMateriales:parseFloat($('pMatE').value)||0,importeDesplazamiento:parseFloat($('pDesp').value)||0,aplicarIVAMateriales:$('pIVA')?.checked||false,estado:$('pEst').value,esPlantilla:esPlant,actualizado:serverTimestamp()};
   try{
     let parteId=id;
     if(id)await updateDoc(doc(db,'grupos',CGID,'partes',id),data);
