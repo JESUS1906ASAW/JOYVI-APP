@@ -7036,6 +7036,9 @@ const renderArchivos=async()=>{
     if(limpiezas.length)await Promise.all(limpiezas);
     items=itemsValidos;
     if(!items.length){$('archivosContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><p>No hay elementos archivados</p></div>`;return}
+    // Guardar datos en memoria para no hacer getDoc secundario
+    window._archivosCache = {};
+    items.forEach(it=>{ window._archivosCache[it.id]=it; });
     $('archivosContent').innerHTML=items.map(it=>`
       <div class="arch-card">
         <div style="font-size:22px">${it.tipo==='cliente'?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'}</div>
@@ -7053,16 +7056,26 @@ const renderArchivos=async()=>{
 
 window.restaurarArchivo=async(id,tipo)=>{
   try{
-    const snap=await getDoc(doc(db,'grupos',CGID,'archivos',id));
-    if(!snap.exists()){toast('Elemento no encontrado','e');return;}
-    const data={...snap.data()};
-    const tipoReal=data.tipo||tipo||'cliente'; // fallback por si falta campo tipo
-    const originalId=data.id||id; // ID original del cliente/parte
+    // Usar datos de caché (ya los tenemos del getDocs inicial)
+    const cached=window._archivosCache&&window._archivosCache[id];
+    let data=cached?{...cached}:null;
+    // Si no hay caché intentar Firestore igualmente
+    if(!data){
+      const snap=await getDoc(doc(db,'grupos',CGID,'archivos',id));
+      if(!snap.exists()){
+        // Doc fantasma — quitar de UI
+        delete(window._archivosCache||{})[id];
+        renderArchivos();return;
+      }
+      data={...snap.data()};
+    }
+    const tipoReal=data.tipo||tipo||'cliente';
+    const originalId=data.id||id;
     delete data.tipo; delete data.eliminadoEn; delete data.id;
     const col=tipoReal==='cliente'?'clientes':'partes';
     await setDoc(doc(db,'grupos',CGID,col,originalId),data);
     await deleteDoc(doc(db,'grupos',CGID,'archivos',id));
-    // Recargar datos locales
+    if(window._archivosCache)delete window._archivosCache[id];
     if(tipoReal==='cliente'){
       try{const cs=await getDocs(collection(db,'grupos',CGID,'clientes'));allClientes=cs.docs.map(d=>({id:d.id,...d.data()}));}catch(e){}
     }
@@ -7073,15 +7086,19 @@ window.restaurarArchivo=async(id,tipo)=>{
 
 window.borrarArchivo=async(id)=>{
   if(!CGID){toast('No hay grupo seleccionado','e');return;}
-  let snapPrev;
-  try{snapPrev=await getDoc(doc(db,'grupos',CGID,'archivos',id));}catch(e){toast('Error al leer el archivo: '+e.message,'e');return;}
-  if(!snapPrev||!snapPrev.exists()){
-    // Doc no existe en Firestore — limpiar UI
-    toast('Entrada eliminada de la lista','i');
-    renderArchivos();return;
+  // Usar datos de caché para no depender de getDoc secundario
+  const cached=window._archivosCache&&window._archivosCache[id];
+  let itemData=cached||null;
+  if(!itemData){
+    try{
+      const snapPrev=await getDoc(doc(db,'grupos',CGID,'archivos',id));
+      if(!snapPrev||!snapPrev.exists()){
+        if(window._archivosCache)delete window._archivosCache[id];
+        renderArchivos();return;
+      }
+      itemData=snapPrev.data();
+    }catch(e){toast('Error al leer: '+e.message,'e');return;}
   }
-  const itemData=snapPrev.data();
-  // Si no tiene campo tipo, asumir cliente (compatibilidad con archivados anteriores)
   const esCliente=(itemData.tipo||'cliente')==='cliente';
   const nombre=itemData.nombre||itemData.titulo||'este elemento';
 
@@ -7190,29 +7207,32 @@ window._descargarFichaCliArchivado=async(archId)=>{
 window._confirmarBorradoCliente=async(archId)=>{
   toast('Eliminando...','i');
   try{
-    // Intentar leer datos para limpiar colecciones relacionadas
+    // Usar caché si disponible, sino intentar Firestore
+    const cached=window._archivosCache&&window._archivosCache[archId];
     let cliId=archId;
-    try{
-      const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
-      if(snap.exists()){
-        const cl=snap.data();
-        cliId=cl.id||archId;
-        // Limpiar colecciones relacionadas (errores silenciosos)
-        const colecciones=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
-        await Promise.all(colecciones.map(async col=>{
-          try{
-            const sn=await getDocs(query(collection(db,'grupos',CGID,col),where('clienteId','==',cliId)));
-            if(!sn.docs.length)return;
-            const b=writeBatch(db);
-            sn.docs.forEach(d=>b.delete(d.ref));
-            await b.commit();
-          }catch(e){console.warn('No se pudo limpiar',col,e);}
-        }));
-      }
-    }catch(e){console.warn('No se pudieron limpiar datos relacionados:',e);}
-    // Borrar el doc de archivos siempre, aunque lo anterior haya fallado
+    if(cached){
+      cliId=cached.id||archId;
+    } else {
+      try{
+        const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
+        if(snap.exists()){cliId=snap.data().id||archId;}
+      }catch(e){console.warn('No se pudieron leer datos para limpiar relacionados:',e);}
+    }
+    // Limpiar colecciones relacionadas (errores silenciosos)
+    const colecciones=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
+    await Promise.all(colecciones.map(async col=>{
+      try{
+        const sn=await getDocs(query(collection(db,'grupos',CGID,col),where('clienteId','==',cliId)));
+        if(!sn.docs.length)return;
+        const b=writeBatch(db);
+        sn.docs.forEach(d=>b.delete(d.ref));
+        await b.commit();
+      }catch(e){console.warn('No se pudo limpiar',col,e);}
+    }));
+    // Borrar el doc de archivos siempre
     await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));
-    toast('Eliminado definitivamente','i');
+    if(window._archivosCache)delete window._archivosCache[archId];
+    toast('Cliente eliminado definitivamente','i');
     renderArchivos();
   }catch(e){toast('Error al eliminar: '+e.message,'e');console.error(e);}
 };
