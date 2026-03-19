@@ -4252,7 +4252,7 @@ window.archivarCli=async(id)=>{
   if(!confirm('¿Mover este cliente a archivos?'))return;
   const c=allClientes.find(x=>x.id===id);if(!c)return;
   try{
-    await addDoc(collection(db,'grupos',CGID,'archivos'),{...c,tipo:'cliente',eliminadoEn:serverTimestamp()});
+    await addDoc(collection(db,'grupos',CGID,'archivos'),{...c,id:c.id,tipo:'cliente',eliminadoEn:serverTimestamp()});
     await deleteDoc(doc(db,'grupos',CGID,'clientes',id));
     _sbReturnCli=null; // el cliente ya no existe, no volver a su ficha
     cerrarSB();toast('Cliente archivado','i');
@@ -4777,7 +4777,7 @@ window.archivarParte=async(id)=>{
   if(!confirm('¿Mover este parte a archivos?'))return;
   const p=allPartes.find(x=>x.id===id);if(!p)return;
   try{
-    await addDoc(collection(db,'grupos',CGID,'archivos'),{...p,tipo:'parte',eliminadoEn:serverTimestamp()});
+    await addDoc(collection(db,'grupos',CGID,'archivos'),{...p,id:p.id,tipo:'parte',eliminadoEn:serverTimestamp()});
     await deleteDoc(doc(db,'grupos',CGID,'partes',id));
     cerrarSB();toast('Parte archivado','i');
   }catch(e){toast('Error','e')}
