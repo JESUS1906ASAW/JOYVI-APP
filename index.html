@@ -7022,7 +7022,22 @@ const renderArchivos=async()=>{
   if(!CGID){$('archivosContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><p>Selecciona un grupo primero</p></div>`;return}
   try{
     const snap=await getDocs(collection(db,'grupos',CGID,'archivos'));
-    const items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    let items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Limpiar automáticamente entradas huérfanas (doc en 'archivos' sin datos reales en Firestore)
+    const limpiezas=[];
+    const itemsValidos=[];
+    for(const it of items){
+      // Un item válido debe tener al menos nombre o título
+      const tieneNombre=!!(it.nombre||it.titulo);
+      if(!tieneNombre){
+        // Entrada corrupta/vacía — eliminar silenciosamente
+        limpiezas.push(deleteDoc(doc(db,'grupos',CGID,'archivos',it.id)));
+      } else {
+        itemsValidos.push(it);
+      }
+    }
+    if(limpiezas.length)await Promise.all(limpiezas);
+    items=itemsValidos;
     if(!items.length){$('archivosContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><p>No hay elementos archivados</p></div>`;return}
     $('archivosContent').innerHTML=items.map(it=>`
       <div class="arch-card">
@@ -7064,8 +7079,8 @@ window.borrarArchivo=async(id)=>{
   let snapPrev;
   try{snapPrev=await getDoc(doc(db,'grupos',CGID,'archivos',id));}catch(e){toast('Error al leer el archivo: '+e.message,'e');return;}
   if(!snapPrev||!snapPrev.exists()){
-    // Puede que ya fue eliminado, refrescar lista
-    toast('Elemento no encontrado — actualizando lista','i');
+    // Doc no existe en Firestore — limpiar UI
+    toast('Entrada eliminada de la lista','i');
     renderArchivos();return;
   }
   const itemData=snapPrev.data();
