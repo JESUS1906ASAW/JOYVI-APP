@@ -8576,52 +8576,56 @@ window.cerrarHMSheet=()=>{
 window.cerrarHMFicha=()=>{
   document.getElementById('hmSheetFicha').classList.remove('open');
 };
-window.abrirHMFicha=(item)=>{
+window.abrirHMFicha=(idx)=>{
+  const item=window._hmStore&&window._hmStore[idx];
+  if(!item)return;
   const ficha=document.getElementById('hmSheetFicha');
   document.getElementById('hmFichaTitle').textContent=item.nombreTrabajo||'Mantenimiento';
   const esHistorial=!!item._esHistorial;
+  const esCompletado=!esHistorial&&item.estado==='completado';
   const fecha=item.fechaCompletado||item.ultimoCompletado||(item.creado?.seconds?new Date(item.creado.seconds*1000).toLocaleDateString('es-ES'):null)||'—';
   const rows=[
-    ['Trabajo',item.nombreTrabajo||'—'],
-    ['Cliente',item.clienteNombre||'—'],
+    ['Trabajo',item.nombreTrabajo],
+    ['Cliente',item.clienteNombre],
     ['Frecuencia',item.frecuencia||'Sin recurrencia'],
     esHistorial?['Realizado',fecha]:['Próxima fecha',item.fechaProxima||'—'],
-    esHistorial?['Realizado por',item.completadoPor||'—']:null,
-    ['Dirección',item.clienteDireccion||item.direccion||'—'],
-    ['Edificio',item.clienteEdificio||item.edificio||'—'],
-    ['Teléfono',item.clienteTelefono||item.telefono||'—'],
-    ['Notas',item.notas||'—'],
-    esHistorial?['Observaciones realizadas',item.observaciones||'—']:null,
+    esHistorial&&item.completadoPor?['Realizado por',item.completadoPor]:null,
+    item.clienteDireccion||item.direccion?['Dirección',item.clienteDireccion||item.direccion]:null,
+    item.clienteEdificio||item.edificio?['Edificio',item.clienteEdificio||item.edificio]:null,
+    item.clienteTelefono||item.telefono?['Teléfono',item.clienteTelefono||item.telefono]:null,
+    item.notas?['Notas',item.notas]:null,
+    esHistorial&&item.observaciones?['Observaciones',item.observaciones]:null,
   ].filter(Boolean);
-  const statusColor=esHistorial?'#4caf50':'#ff9800';
-  const statusLabel=esHistorial?'Realizado':'Activo';
+  const statusColor=esHistorial?'#4caf50':esCompletado?'#4caf50':'#ff9800';
+  const statusLabel=esHistorial?'Realizado':esCompletado?'Completado definitivamente':'Activo';
+  const bgColor=esHistorial||esCompletado?'rgba(76,175,80,.08)':'rgba(255,152,0,.08)';
+  const borderColor=esHistorial||esCompletado?'rgba(76,175,80,.2)':'rgba(255,152,0,.2)';
+  const iconColor=esHistorial||esCompletado?'rgba(76,175,80,.15)':'rgba(255,152,0,.15)';
+  const tel=item.clienteTelefono||item.telefono||'';
+  const dir=item.clienteDireccion||item.direccion||'';
+  const idc=item.clienteId||'';
+  const mid=item.id||'';
   document.getElementById('hmFichaBody').innerHTML=`
-    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:${esHistorial?'rgba(76,175,80,.08)':'rgba(255,152,0,.08)'};border-radius:14px;margin-bottom:18px;border:1px solid ${esHistorial?'rgba(76,175,80,.2)':'rgba(255,152,0,.2)'}">
-      <div style="width:36px;height:36px;border-radius:12px;background:${esHistorial?'rgba(76,175,80,.15)':'rgba(255,152,0,.15)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        ${esHistorial
-          ?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-          :'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg>'}
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:${bgColor};border-radius:14px;margin-bottom:18px;border:1px solid ${borderColor}">
+      <div style="width:40px;height:40px;border-radius:12px;background:${iconColor};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        ${esHistorial||esCompletado
+          ?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
+          :'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg>'}
       </div>
-      <div>
+      <div style="flex:1;min-width:0">
         <div style="font-size:15px;font-weight:900;color:var(--tx)">${item.nombreTrabajo||'—'}</div>
         <div style="font-size:12px;color:${statusColor};font-weight:700;margin-top:2px">${statusLabel}${esHistorial&&fecha!=='—'?' · '+fecha:''}</div>
       </div>
     </div>
     <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:4px 16px;margin-bottom:18px">
-      ${rows.map(([lbl,val])=>`
-        <div class="hm-det-row">
-          <div class="hm-det-lbl">${lbl}</div>
-          <div class="hm-det-val">${val||'—'}</div>
-        </div>`).join('')}
+      ${rows.map(([lbl,val])=>'<div class="hm-det-row"><div class="hm-det-lbl">'+lbl+'</div><div class="hm-det-val">'+(val||'—')+'</div></div>').join('')}
     </div>
-    ${!esHistorial?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
-      ${item.clienteTelefono||item.telefono?`<a href="tel:${item.clienteTelefono||item.telefono}" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>`:''}
-      ${item.clienteDireccion||item.direccion?`<a href="https://maps.google.com/?q=${encodeURIComponent(item.clienteDireccion||item.direccion)}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">📍 Maps</a>`:''}
-      ${item.estado==='completado'&&item.id?`<button class="btn btn-s btn-sm" style="color:#ff9800;border-color:rgba(255,152,0,.35)" onclick="window.restaurarMantCompletado('${item.id}','${item.clienteId}')">↩ Restaurar como activo</button>`:''}
-    </div>`:
-    `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
-      ${item.id?`<button class="btn btn-del btn-sm" onclick="window.eliminarHMHistorial('${item.id}','${item.clienteId}')">🗑 Eliminar del historial</button>`:''}
-    </div>`}
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${tel?'<a href="tel:'+tel+'" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>':''}
+      ${dir?'<a href="https://maps.google.com/?q='+encodeURIComponent(dir)+'" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">📍 Maps</a>':''}
+      ${esCompletado&&mid&&idc?'<button class="btn btn-s btn-sm" style="color:#ff9800;border-color:rgba(255,152,0,.4)" onclick="window.restaurarMantCompletado(\''+mid+'\',\''+idc+'\')">↩ Restaurar como activo</button>':''}
+      ${esHistorial&&mid&&idc?'<button class="btn btn-del btn-sm" onclick="window.eliminarHMHistorial(\''+mid+'\',\''+idc+'\')">🗑 Eliminar del historial</button>':''}
+    </div>
   `;
   ficha.classList.add('open');
 };
@@ -8631,7 +8635,6 @@ window.verHistorialMantCliente=async(clienteId)=>{
   if(!CGID||!c)return;
   _sbReturnCli=clienteId;
 
-  // Abrir sheet inmediatamente con skeleton
   const sh=document.getElementById('hmSheet');
   const body=document.getElementById('hmSheetBody');
   document.getElementById('hmSheetTitle').textContent=`Mantenimientos — ${c.nombre}`;
@@ -8652,54 +8655,56 @@ window.verHistorialMantCliente=async(clienteId)=>{
     const mantsActivos=allMantenimientos.filter(m=>m.clienteId===clienteId&&m.estado!=='completado');
     const mantsCompletados=allMantenimientos.filter(m=>m.clienteId===clienteId&&m.estado==='completado');
 
+    // Store en memoria — evita JSON.stringify en onclick (rompe con comillas/caracteres especiales)
+    window._hmStore=[];
+    const storeIdx=(item)=>{window._hmStore.push(item);return window._hmStore.length-1;};
+
+    const mkCard=(item,colorBorder,colorBg,colorIcon,iconSvg,badgeColor,badgeText,subtitulo)=>{
+      const idx=storeIdx(item);
+      return `<div class="hm-card" style="border-color:${colorBorder}" onclick="window.abrirHMFicha(${idx})">
+        <div style="width:36px;height:36px;border-radius:12px;background:${colorBg};display:flex;align-items:center;justify-content:center;flex-shrink:0">${iconSvg}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.nombreTrabajo||'—'}</div>
+          <div style="font-size:12px;color:var(--tx2);margin-top:2px">${subtitulo}</div>
+        </div>
+        <span class="hm-badge" style="background:${badgeColor};color:${colorIcon}">${badgeText}</span>
+        <span style="color:var(--tx3);font-size:18px">›</span>
+      </div>`;
+    };
+
     let html='';
 
     if(mantsActivos.length){
       html+=`<div class="hm-sep" style="color:#ff9800">⚙️ Activos (${mantsActivos.length})</div>`;
-      html+=mantsActivos.map((m,i)=>`
-        <div class="hm-card activo" onclick='window.abrirHMFicha(${JSON.stringify({...m,_esHistorial:false})})'>
-          <div style="width:36px;height:36px;border-radius:12px;background:rgba(255,152,0,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:14px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nombreTrabajo}</div>
-            <div style="font-size:12px;color:var(--tx2);margin-top:2px">${m.frecuencia||'Sin recurrencia'} · Próximo: ${m.fechaProxima||'—'}</div>
-          </div>
-          <span class="hm-badge" style="background:rgba(255,152,0,.15);color:#ff9800">Activo</span>
-          <span style="color:var(--tx3);font-size:18px">›</span>
-        </div>`).join('');
+      html+=mantsActivos.map(m=>mkCard(
+        {...m,_esHistorial:false},
+        'rgba(255,152,0,.25)','rgba(255,152,0,.12)','#ff9800',
+        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg>`,
+        'rgba(255,152,0,.15)','Activo',
+        `${m.frecuencia||'Sin recurrencia'} · Próximo: ${m.fechaProxima||'—'}`
+      )).join('');
     }
 
     if(mantsCompletados.length){
       html+=`<div class="hm-sep" style="color:#4caf50;${mantsActivos.length?'':'margin-top:0'}">✅ Completados definitivamente (${mantsCompletados.length})</div>`;
-      html+=mantsCompletados.map(m=>`
-        <div class="hm-card realizado" onclick='window.abrirHMFicha(${JSON.stringify({...m,_esHistorial:false})})'>
-          <div style="width:36px;height:36px;border-radius:12px;background:rgba(76,175,80,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:14px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nombreTrabajo}</div>
-            <div style="font-size:12px;color:var(--tx2);margin-top:2px">Completado: ${m.ultimoCompletado||fmtF(m.completadoEn)||'—'}${m.completadoPor?' · '+m.completadoPor:''}</div>
-          </div>
-          <span class="hm-badge" style="background:rgba(76,175,80,.15);color:#4caf50">Completado</span>
-          <span style="color:var(--tx3);font-size:18px">›</span>
-        </div>`).join('');
+      html+=mantsCompletados.map(m=>mkCard(
+        {...m,_esHistorial:false},
+        'rgba(76,175,80,.25)','rgba(76,175,80,.12)','#4caf50',
+        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+        'rgba(76,175,80,.15)','Completado',
+        `Completado: ${m.ultimoCompletado||fmtF(m.completadoEn)||'—'}${m.completadoPor?' · '+m.completadoPor:''}`
+      )).join('');
     }
 
     if(historial.length){
       html+=`<div class="hm-sep" style="color:#2196f3;${(mantsActivos.length||mantsCompletados.length)?'':'margin-top:0'}">📋 Realizados (${historial.length})</div>`;
-      html+=historial.map(h=>`
-        <div class="hm-card realizado" style="border-color:rgba(33,150,243,.2)" onclick='window.abrirHMFicha(${JSON.stringify(h)})'>
-          <div style="width:36px;height:36px;border-radius:12px;background:rgba(33,150,243,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2196f3" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:14px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.nombreTrabajo}</div>
-            <div style="font-size:12px;color:var(--tx2);margin-top:2px">${h.fechaCompletado||fmtF(h.creado)||'—'}${h.completadoPor?' · '+h.completadoPor:''}${h.frecuencia?' · '+h.frecuencia:''}</div>
-          </div>
-          <span class="hm-badge" style="background:rgba(33,150,243,.15);color:#2196f3">Realizado</span>
-          <span style="color:var(--tx3);font-size:18px">›</span>
-        </div>`).join('');
+      html+=historial.map(h=>mkCard(
+        h,
+        'rgba(33,150,243,.2)','rgba(33,150,243,.1)','#2196f3',
+        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2196f3" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+        'rgba(33,150,243,.15)','Realizado',
+        `${h.fechaCompletado||fmtF(h.creado)||'—'}${h.completadoPor?' · '+h.completadoPor:''}${h.frecuencia?' · '+h.frecuencia:''}`
+      )).join('');
     }
 
     if(!html){
@@ -8709,7 +8714,7 @@ window.verHistorialMantCliente=async(clienteId)=>{
     html+=`<button class="btn btn-p btn-sm" style="width:100%;margin-top:18px" onclick="cerrarHMSheet();setTimeout(()=>nuevoMantDesdeCliente('${clienteId}'),300)">+ Programar mantenimiento</button>`;
     body.innerHTML=html;
   }catch(e){
-    body.innerHTML=`<div class="empty"><p>Error al cargar mantenimientos</p></div>`;
+    body.innerHTML=`<div class="empty"><p>Error al cargar: ${e.message}</p></div>`;
     console.error(e);
   }
 };
