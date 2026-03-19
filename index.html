@@ -1295,7 +1295,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
   getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, onSnapshot, getDocs,
+  collection, query, where, orderBy, onSnapshot, getDocs, getDocsFromServer,
   serverTimestamp, arrayUnion, arrayRemove, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import {
@@ -7018,10 +7018,28 @@ const renderStats=async()=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ARCHIVOS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Quita un card de archivos del DOM directamente sin re-render (evita releer caché Firestore)
+const _quitarArchCard=id=>{
+  if(window._archivosCache)delete window._archivosCache[id];
+  const cont=$('archivosContent');
+  if(!cont)return;
+  const card=cont.querySelector(`.arch-card[data-archid="${id}"]`);
+  if(card){
+    card.querySelectorAll('button').forEach(b=>b.disabled=true);
+    card.style.transition='opacity .25s,transform .25s';
+    card.style.opacity='0';card.style.transform='translateX(40px)';
+    setTimeout(()=>{
+      card.remove();
+      if(!cont.querySelector('.arch-card'))
+        cont.innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><p>No hay elementos archivados</p></div>`;
+    },250);
+  }
+};
+
 const renderArchivos=async()=>{
   if(!CGID){$('archivosContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><p>Selecciona un grupo primero</p></div>`;return}
   try{
-    const snap=await getDocs(collection(db,'grupos',CGID,'archivos'));
+    const snap=await getDocsFromServer(collection(db,'grupos',CGID,'archivos'));
     let items=snap.docs.map(d=>({id:d.id,...d.data()}));
     // Limpiar automáticamente entradas sin nombre/título (corruptas)
     const limpiezas=[];
@@ -7036,11 +7054,10 @@ const renderArchivos=async()=>{
     if(limpiezas.length)await Promise.all(limpiezas);
     items=itemsValidos;
     if(!items.length){$('archivosContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><p>No hay elementos archivados</p></div>`;return}
-    // Guardar datos en memoria para no hacer getDoc secundario
     window._archivosCache = {};
     items.forEach(it=>{ window._archivosCache[it.id]=it; });
     $('archivosContent').innerHTML=items.map(it=>`
-      <div class="arch-card">
+      <div class="arch-card" data-archid="${it.id}">
         <div style="font-size:22px">${it.tipo==='cliente'?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'}</div>
         <div class="arch-info">
           <div class="arch-name">${it.nombre||it.titulo||'Sin nombre'}</div>
@@ -7056,31 +7073,25 @@ const renderArchivos=async()=>{
 
 window.restaurarArchivo=async(id,tipo)=>{
   try{
-    // Usar datos de caché (ya los tenemos del getDocs inicial)
     const cached=window._archivosCache&&window._archivosCache[id];
     let data=cached?{...cached}:null;
-    // Si no hay caché intentar Firestore igualmente
     if(!data){
       const snap=await getDoc(doc(db,'grupos',CGID,'archivos',id));
-      if(!snap.exists()){
-        // Doc fantasma — quitar de UI
-        delete(window._archivosCache||{})[id];
-        renderArchivos();return;
-      }
+      if(!snap.exists()){_quitarArchCard(id);return;}
       data={...snap.data()};
     }
     const tipoReal=data.tipo||tipo||'cliente';
     const originalId=data.id||id;
-    delete data.tipo; delete data.eliminadoEn; delete data.id;
+    const dataLimpia={...data};
+    delete dataLimpia.tipo; delete dataLimpia.eliminadoEn; delete dataLimpia.id;
     const col=tipoReal==='cliente'?'clientes':'partes';
-    await setDoc(doc(db,'grupos',CGID,col,originalId),data);
+    await setDoc(doc(db,'grupos',CGID,col,originalId),dataLimpia);
     await deleteDoc(doc(db,'grupos',CGID,'archivos',id));
-    if(window._archivosCache)delete window._archivosCache[id];
+    _quitarArchCard(id);
     if(tipoReal==='cliente'){
       try{const cs=await getDocs(collection(db,'grupos',CGID,'clientes'));allClientes=cs.docs.map(d=>({id:d.id,...d.data()}));}catch(e){}
     }
     toast('Elemento restaurado','o');
-    renderArchivos();
   }catch(e){toast('Error al restaurar: '+e.message,'e');console.error(e);}
 };
 
@@ -7093,8 +7104,7 @@ window.borrarArchivo=async(id)=>{
     try{
       const snapPrev=await getDoc(doc(db,'grupos',CGID,'archivos',id));
       if(!snapPrev||!snapPrev.exists()){
-        if(window._archivosCache)delete window._archivosCache[id];
-        renderArchivos();return;
+        _quitarArchCard(id);return;
       }
       itemData=snapPrev.data();
     }catch(e){toast('Error al leer: '+e.message,'e');return;}
@@ -7105,7 +7115,7 @@ window.borrarArchivo=async(id)=>{
   if(!esCliente){
     // Para partes: confirm nativo directo
     if(!confirm(`¿Eliminar permanentemente "${nombre}"? Esta acción no se puede deshacer.`))return;
-    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',id));toast('Eliminado definitivamente','i');renderArchivos();}catch(e){toast('Error: '+e.message,'e');}
+    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',id));_quitarArchCard(id);toast('Eliminado definitivamente','i');}catch(e){toast('Error: '+e.message,'e');}
     return;
   }
     // Modal propio (funciona desde cualquier pantalla)
@@ -7229,11 +7239,10 @@ window._confirmarBorradoCliente=async(archId)=>{
         await b.commit();
       }catch(e){console.warn('No se pudo limpiar',col,e);}
     }));
-    // Borrar el doc de archivos siempre
     await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));
     if(window._archivosCache)delete window._archivosCache[archId];
+    _quitarArchCard(archId);
     toast('Cliente eliminado definitivamente','i');
-    renderArchivos();
   }catch(e){toast('Error al eliminar: '+e.message,'e');console.error(e);}
 };
 
