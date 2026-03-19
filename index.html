@@ -2503,7 +2503,7 @@ const renderInicio=async()=>{
     });
 
     const totalHoy=mantsHoy.length+partesHoy.length;
-    _turnoDiaHTML= totalHoy>0 ? `
+    _turnoDiaHTML= `
     <div style="margin-bottom:18px;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.35)">
       <!-- Cabecera degradado -->
       <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:18px 18px 14px">
@@ -2552,11 +2552,12 @@ const renderInicio=async()=>{
             </div>
             <span style="font-size:10px;font-weight:900;color:var(--r);background:rgba(229,57,53,.1);padding:3px 9px;border-radius:20px;flex-shrink:0">Pendiente</span>
           </div>`;}).join('')}
+        ${totalHoy===0?`<div style="text-align:center;padding:16px 8px;color:var(--tx2);font-size:13px;font-weight:700">✅ Sin tareas pendientes para hoy</div>`:''}
         <div onclick="goScreen('grupo')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;cursor:pointer;color:var(--tx2);font-size:12px;font-weight:700;transition:.15s" onmouseover="this.style.color='var(--r)'" onmouseout="this.style.color='var(--tx2)'">
           Ver grupo completo <span style="font-size:14px">›</span>
         </div>
       </div>
-    </div>` : '';
+    </div>`;
 
     if(proxMants.length){
       dashHTML+=`<div class="dash-section">
@@ -3616,6 +3617,7 @@ const renderTabClientes=()=>{
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
     <button class="btn-nuevo" style="margin-left:0" onclick="exportarBackupZIP()">☁️ Backup</button>
     <button class="btn-nuevo" onclick="abrirFCli()">+ Añadir</button>
+    <button class="btn-nuevo" onclick="abrirCliExpress()" style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.35);color:var(--r)">⚡ Express</button>
     ${('contacts' in navigator)?`<button class="btn-nuevo" onclick="abrirFCli();setTimeout(importarContactoAgenda,100)" style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);color:var(--r)">📋 Agenda</button>`:''}
   </div>
   <input class="sbox" placeholder="Buscar cliente..." oninput="filtrarClis(this.value)" id="cliSearchBox">
@@ -4142,6 +4144,117 @@ window.abrirFCli=async(id, preData)=>{
     ${id?`<button class="btn btn-del" style="margin-top:8px" onclick="archivarCli('${id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:5px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Mover a archivos</button>`:''}
   `;
   abrirSB(id?'Editar cliente':'Nuevo cliente',html);
+};
+
+
+// ── Cliente Express — formulario mínimo (nombre + ubicación + color) ──
+window.abrirCliExpress=()=>{
+  abrirSB('⚡ Cliente Express',`
+    <div style="background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.25);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--r);font-weight:700">Modo rápido — solo lo esencial. Edita el resto después desde la ficha.</div>
+    <div class="fsec">
+      <div class="fgrp">
+        <label>Nombre *</label>
+        <input id="ceNom" placeholder="Nombre del cliente" autocomplete="off">
+      </div>
+      <div class="fgrp">
+        <label>Ubicación</label>
+        <div style="display:flex;gap:8px;align-items:stretch">
+          <input id="ceDir" placeholder="Dirección o pulsa 📍" style="flex:1">
+          <button type="button" id="btnGeoExpress" title="Usar ubicación exacta actual" style="flex-shrink:0;padding:0 12px;border-radius:10px;border:1.5px solid rgba(var(--theme-rgb),.4);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:44px">📍</button>
+        </div>
+        <input type="hidden" id="ceLat" value="">
+        <input type="hidden" id="ceLng" value="">
+        <div id="ceGeoInfo" style="font-size:11px;color:var(--tx2);margin-top:4px"></div>
+      </div>
+      <div class="fgrp">
+        <label>Color indicador</label>
+        <div class="ind-opts" id="ceIndOpts">
+          <div class="ind-opt ind-r" data-color="rojo"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e53935;margin-right:5px;vertical-align:middle"></span>Rojo</div>
+          <div class="ind-opt ind-y" data-color="amarillo"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc107;margin-right:5px;vertical-align:middle"></span>Amarillo</div>
+          <div class="ind-opt ind-g sel" data-color="verde"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4caf50;margin-right:5px;vertical-align:middle"></span>Verde</div>
+        </div>
+        <input type="hidden" id="ceColor" value="verde">
+      </div>
+    </div>
+    <button class="btn btn-p" style="width:100%;margin-top:4px" id="btnGuardarCliExpress">⚡ Guardar cliente</button>
+    <button id="btnCliExpressCompleto" style="width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Formulario completo →</button>
+  `);
+  // Bind events after DOM insertion
+  setTimeout(()=>{
+    const opts=document.querySelectorAll('#ceIndOpts .ind-opt');
+    opts.forEach(el=>el.addEventListener('click',()=>{
+      opts.forEach(x=>x.classList.remove('sel'));
+      el.classList.add('sel');
+      const inp=document.getElementById('ceColor');
+      if(inp)inp.value=el.dataset.color||'verde';
+    }));
+    const geoBtn=document.getElementById('btnGeoExpress');
+    if(geoBtn)geoBtn.addEventListener('click',usarUbicacionExpressCli);
+    const saveBtn=document.getElementById('btnGuardarCliExpress');
+    if(saveBtn)saveBtn.addEventListener('click',guardarCliExpress);
+    const fullBtn=document.getElementById('btnCliExpressCompleto');
+    if(fullBtn)fullBtn.addEventListener('click',()=>{cerrarSB();setTimeout(()=>abrirFCli(),150);});
+  },0);
+};
+
+window.usarUbicacionExpressCli=async()=>{
+  const btn=document.getElementById('btnGeoExpress');
+  const info=document.getElementById('ceGeoInfo');
+  if(!navigator.geolocation){toast('GPS no disponible','e');return;}
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  if(info)info.textContent='Obteniendo ubicación exacta...';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+    const latEl=document.getElementById('ceLat');
+    const lngEl=document.getElementById('ceLng');
+    const dirEl=document.getElementById('ceDir');
+    if(latEl)latEl.value=lat;
+    if(lngEl)lngEl.value=lng;
+    try{
+      const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,{headers:{'Accept-Language':'es'}});
+      const data=await res.json();
+      const a=data.address||{};
+      const road=a.road||a.pedestrian||a.footway||'';
+      const num=a.house_number||'';
+      const city=a.city||a.town||a.village||a.municipality||a.county||'';
+      const cp=a.postcode||'';
+      const parts=[road+(num?' '+num:''),cp,city].filter(Boolean);
+      const dir=parts.join(', ');
+      if(dirEl)dirEl.value=dir;
+      if(btn){btn.textContent='🎯';btn.disabled=false;}
+      if(info)info.innerHTML='<span style="color:#4caf50">🎯 GPS exacto: '+lat.toFixed(6)+', '+lng.toFixed(6)+'</span>';
+      toast('Ubicación exacta guardada','o');
+    }catch(err){
+      if(btn){btn.textContent='🎯';btn.disabled=false;}
+      if(info)info.innerHTML='<span style="color:#4caf50">🎯 GPS: '+lat.toFixed(6)+', '+lng.toFixed(6)+'</span>';
+      toast('Coordenadas GPS guardadas','i');
+    }
+  },err=>{
+    if(btn){btn.textContent='📍';btn.disabled=false;}
+    if(info)info.textContent='';
+    const msgs={1:'Permiso de ubicación denegado',2:'Ubicación no disponible',3:'Tiempo de espera agotado'};
+    toast(msgs[err.code]||'Error al obtener ubicación','e');
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+};
+
+window.guardarCliExpress=async()=>{
+  const nom=document.getElementById('ceNom')?.value.trim();
+  if(!nom){toast('El nombre es obligatorio','e');return;}
+  const dup=allClientes.find(c=>!c.archivado&&c.nombre.trim().toLowerCase()===nom.toLowerCase());
+  if(dup){toast('Ya existe "'+dup.nombre+'". Usa otro nombre o edita el existente.','e');return;}
+  const dir=document.getElementById('ceDir')?.value.trim()||'';
+  const latVal=document.getElementById('ceLat')?.value.trim();
+  const lngVal=document.getElementById('ceLng')?.value.trim();
+  const color=document.getElementById('ceColor')?.value||'verde';
+  const data={nombre:nom,direccion:normDir(dir),color,edificio:'',telefono:'',email:'',notas:'',creado:serverTimestamp(),actualizado:serverTimestamp()};
+  if(latVal&&lngVal){data.lat=parseFloat(latVal);data.lng=parseFloat(lngVal);}else{data.lat=null;data.lng=null;}
+  try{
+    await addDoc(collection(db,'grupos',CGID,'clientes'),data);
+    toast('Cliente añadido ✓','o');
+    cerrarSB();
+    try{await registrarLog('nuevo_cli','Nuevo cliente express: '+nom,{clienteId:'nuevo'});}catch(e){}
+  }catch(e){toast('Error al guardar','e');}
 };
 
 window.selInd=v=>{
@@ -6931,12 +7044,16 @@ window.restaurarArchivo=async(id,tipo)=>{
     const snap=await getDoc(doc(db,'grupos',CGID,'archivos',id));
     if(!snap.exists()){toast('Elemento no encontrado','e');return;}
     const data={...snap.data()};
+    const tipoReal=data.tipo||tipo||'cliente'; // fallback por si falta campo tipo
     const originalId=data.id||id; // ID original del cliente/parte
     delete data.tipo; delete data.eliminadoEn; delete data.id;
-    const col=tipo==='cliente'?'clientes':'partes';
-    // Restaurar con el ID original usando setDoc
+    const col=tipoReal==='cliente'?'clientes':'partes';
     await setDoc(doc(db,'grupos',CGID,col,originalId),data);
     await deleteDoc(doc(db,'grupos',CGID,'archivos',id));
+    // Recargar datos locales
+    if(tipoReal==='cliente'){
+      try{const cs=await getDocs(collection(db,'grupos',CGID,'clientes'));allClientes=cs.docs.map(d=>({id:d.id,...d.data()}));}catch(e){}
+    }
     toast('Elemento restaurado','o');
     renderArchivos();
   }catch(e){toast('Error al restaurar: '+e.message,'e');console.error(e);}
@@ -6945,9 +7062,10 @@ window.restaurarArchivo=async(id,tipo)=>{
 window.borrarArchivo=async(id)=>{
   let snapPrev;
   try{snapPrev=await getDoc(doc(db,'grupos',CGID,'archivos',id));}catch(e){toast('Error al leer el archivo','e');return;}
-  if(!snapPrev||!snapPrev.exists())return;
+  if(!snapPrev||!snapPrev.exists()){toast('Elemento no encontrado en Firebase','e');return;}
   const itemData=snapPrev.data();
-  const esCliente=itemData.tipo==='cliente';
+  // Si no tiene campo tipo, asumir cliente (compatibilidad con archivados anteriores)
+  const esCliente=(itemData.tipo||'cliente')==='cliente';
   const nombre=itemData.nombre||itemData.titulo||'este elemento';
 
   if(esCliente){
@@ -7052,7 +7170,6 @@ window._descargarFichaCliArchivado=async(archId)=>{
 };
 
 window._confirmarBorradoCliente=async(archId)=>{
-  cerrarSB();
   toast('Eliminando cliente y todos sus datos...','i');
   try{
     const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
