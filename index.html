@@ -3163,15 +3163,11 @@ const _renderGTabMantenimientos=()=>{
         📅 Calendario
       </button>
     </div>
-    <button onclick="_toggleMantHistorial()" id="btnMantHistorial" title="Historial" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.05);color:var(--tx2);cursor:pointer;transition:.18s" onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="if(!window._mantHistOpen){this.style.borderColor='var(--border)';this.style.color='var(--tx2)'}">
+    <button onclick="abrirHMSheetGrupo()" id="btnMantHistorial" title="Historial de mantenimientos" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.05);color:var(--tx2);cursor:pointer;transition:.18s" onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--tx2)'">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     </button>
   </div>
-  <div id="mantHistorialPanel" style="display:${window._mantHistOpen?'block':'none'};background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:16px">
-    <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:10px;display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Historial de mantenimientos</div>
-    <input class="sbox" id="mantHistSearch" style="margin-bottom:10px" placeholder="🔍 Buscar por cliente, nombre, fecha o tipo..." oninput="_filtrarMantHistorial(this.value)">
-    <div id="mantHistContent"><div class="empty" style="padding:12px"><p>Cargando historial...</p></div></div>
-  </div>`;
+  <div id="mantHistorialPanel" style="display:none"></div>`;
 
   if(_gMantMode==='gestionar'){
     // ── Vista Gestionar ──
@@ -9071,18 +9067,81 @@ window.guardarPerfil=async()=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 window._mantHistOpen = false;
 
-window._toggleMantHistorial = async () => {
-  window._mantHistOpen = !window._mantHistOpen;
-  const panel = document.getElementById('mantHistorialPanel');
-  const btn = document.getElementById('btnMantHistorial');
-  if(!panel) { _renderGTabMantenimientos(); return; }
-  panel.style.display = window._mantHistOpen ? 'block' : 'none';
-  if(btn) {
-    btn.style.borderColor = window._mantHistOpen ? 'var(--r)' : 'var(--border)';
-    btn.style.color = window._mantHistOpen ? 'var(--r)' : 'var(--tx2)';
+// ── Sheet superpuesto: Historial global de mantenimientos del grupo ──
+window.abrirHMSheetGrupo = async () => {
+  if(!CGID){ toast('Selecciona un grupo primero','e'); return; }
+  const sh = document.getElementById('hmSheet');
+  const body = document.getElementById('hmSheetBody');
+  if(!sh||!body){ toast('Error: sheet no encontrado','e'); return; }
+  document.getElementById('hmSheetTitle').textContent = '📋 Historial de mantenimientos';
+  document.getElementById('hmSheetFicha').classList.remove('open');
+  body.innerHTML = `
+    <input class="sbox" id="hmGrupoSearch" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, nombre, fecha..." oninput="window._hmGrupoFiltrar(this.value)">
+    <div id="hmGrupoLista"><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card" style="width:70%"></div></div>`;
+  sh.style.display = 'flex';
+  setTimeout(() => sh.classList.add('open'), 10);
+
+  window._hmGrupoCache = null;
+  try {
+    let snap;
+    try {
+      snap = await getDocsFromServer(query(
+        collection(db,'grupos',CGID,'historial_mantenimientos'),
+        orderBy('creado','desc')
+      ));
+    } catch(e) {
+      snap = await getDocs(query(
+        collection(db,'grupos',CGID,'historial_mantenimientos'),
+        orderBy('creado','desc')
+      ));
+    }
+    window._hmGrupoCache = snap.docs.map(d=>({id:d.id,...d.data(),_esHistorial:true}));
+    window._hmGrupoFiltrar('');
+  } catch(e) {
+    const lista_el = document.getElementById('hmGrupoLista');
+    if(lista_el) lista_el.innerHTML = `<div class="empty"><p>Error al cargar: ${e.message}</p></div>`;
   }
-  if(window._mantHistOpen) await _cargarMantHistorial('');
 };
+
+window._hmGrupoFiltrar = (q) => {
+  const lista_el = document.getElementById('hmGrupoLista');
+  if(!lista_el) return;
+  const cache = window._hmGrupoCache || [];
+  const words = (q||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
+  let lista = cache;
+  if(words.length) {
+    lista = lista.filter(h => {
+      const hay = [h.nombreTrabajo,h.clienteNombre,h.fechaCompletado,h.completadoPor,h.frecuencia]
+        .filter(Boolean).join(' ').toLowerCase();
+      return words.every(w => hay.includes(w));
+    });
+  }
+  if(!lista.length){
+    lista_el.innerHTML = `<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div><p>${cache.length?'Sin resultados':'Sin mantenimientos completados'}</p></div>`;
+    return;
+  }
+  window._hmStore = [];
+  lista_el.innerHTML = lista.slice(0,100).map(h => {
+    const idx = window._hmStore.length;
+    window._hmStore.push(h);
+    return `<div class="hm-card realizado" style="border-color:rgba(76,175,80,.2)" onclick="window.abrirHMFicha(${idx})">
+      <div style="width:36px;height:36px;border-radius:12px;background:rgba(76,175,80,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.nombreTrabajo||'—'}</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.clienteNombre||'—'} · ${h.fechaCompletado||fmtF(h.creado)||'—'}${h.completadoPor?' · '+h.completadoPor:''}</div>
+      </div>
+      <span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;background:rgba(76,175,80,.12);color:#4caf50;flex-shrink:0;white-space:nowrap">${h.frecuencia||'Único'}</span>
+      <span style="color:var(--tx3);font-size:16px;flex-shrink:0">›</span>
+    </div>`;
+  }).join('');
+  if(lista.length > 100){
+    lista_el.innerHTML += `<div style="text-align:center;font-size:12px;color:var(--tx2);padding:10px">Mostrando 100 de ${lista.length}. Usa el buscador para filtrar.</div>`;
+  }
+};
+
+window._toggleMantHistorial = async () => { abrirHMSheetGrupo(); };
 
 window._cargarMantHistorial = async (filtro) => {
   const cont = document.getElementById('mantHistContent');
