@@ -3614,11 +3614,11 @@ const renderTabClientes=()=>{
     : `<div style="text-align:center;padding:16px 8px;font-size:12px;color:var(--tx2)">Sin mantenimientos en los próximos 30 días</div>`;
 
   return `
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-    <button class="btn-nuevo" style="margin-left:0" onclick="exportarBackupZIP()">☁️ Backup</button>
-    <button class="btn-nuevo" onclick="abrirFCli()">+ Añadir</button>
-    <button class="btn-nuevo" onclick="abrirCliExpress()" style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.35);color:var(--r)">⚡ Express</button>
-    ${('contacts' in navigator)?`<button class="btn-nuevo" onclick="abrirFCli();setTimeout(importarContactoAgenda,100)" style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);color:var(--r)">📋 Agenda</button>`:''}
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+    <button class="btn-nuevo" style="margin-left:0;padding:8px 13px;font-size:12px" onclick="exportarBackupZIP()">☁️ Backup</button>
+    <button class="btn-nuevo" style="padding:8px 13px;font-size:12px" onclick="abrirFCli()">+ Añadir</button>
+    <button class="btn-nuevo" onclick="abrirCliExpress()" style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.35);color:var(--r);padding:8px 13px;font-size:12px">⚡ Express</button>
+    ${('contacts' in navigator)?`<button class="btn-nuevo" onclick="abrirFCli();setTimeout(importarContactoAgenda,100)" style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);color:var(--r);padding:8px 13px;font-size:12px">📋 Agenda</button>`:''}
   </div>
   <input class="sbox" placeholder="Buscar cliente..." oninput="filtrarClis(this.value)" id="cliSearchBox">
   <div id="clisList">${htmlListaClis(ultimos,false)}</div>
@@ -7060,15 +7060,25 @@ window.restaurarArchivo=async(id,tipo)=>{
 };
 
 window.borrarArchivo=async(id)=>{
+  if(!CGID){toast('No hay grupo seleccionado','e');return;}
   let snapPrev;
-  try{snapPrev=await getDoc(doc(db,'grupos',CGID,'archivos',id));}catch(e){toast('Error al leer el archivo','e');return;}
-  if(!snapPrev||!snapPrev.exists()){toast('Elemento no encontrado en Firebase','e');return;}
+  try{snapPrev=await getDoc(doc(db,'grupos',CGID,'archivos',id));}catch(e){toast('Error al leer el archivo: '+e.message,'e');return;}
+  if(!snapPrev||!snapPrev.exists()){
+    // Puede que ya fue eliminado, refrescar lista
+    toast('Elemento no encontrado — actualizando lista','i');
+    renderArchivos();return;
+  }
   const itemData=snapPrev.data();
   // Si no tiene campo tipo, asumir cliente (compatibilidad con archivados anteriores)
   const esCliente=(itemData.tipo||'cliente')==='cliente';
   const nombre=itemData.nombre||itemData.titulo||'este elemento';
 
-  if(esCliente){
+  if(!esCliente){
+    // Para partes: confirm nativo directo
+    if(!confirm(`¿Eliminar permanentemente "${nombre}"? Esta acción no se puede deshacer.`))return;
+    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',id));toast('Eliminado definitivamente','i');renderArchivos();}catch(e){toast('Error: '+e.message,'e');}
+    return;
+  }
     // Modal propio (funciona desde cualquier pantalla)
     let modal=document.getElementById('_borrarCliModal');
     if(modal)modal.remove();
@@ -7097,10 +7107,6 @@ window.borrarArchivo=async(id)=>{
     document.getElementById('_btnSoloElim').onclick=()=>{modal.remove();window._confirmarBorradoCliente(id);};
     document.getElementById('_btnCancelElim').onclick=()=>modal.remove();
     modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
-  }else{
-    if(!confirm(`¿Eliminar permanentemente "${nombre}"? Esta acción no se puede deshacer.`))return;
-    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',id));toast('Eliminado definitivamente','i');renderArchivos();}catch(e){toast('Error','e');}
-  }
 };
 
 window._descargarFichaCliArchivado=async(archId)=>{
