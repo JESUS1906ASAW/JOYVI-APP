@@ -2503,7 +2503,7 @@ const renderInicio=async()=>{
     });
 
     const totalHoy=mantsHoy.length+partesHoy.length;
-    const _turnoDiaHTML= totalHoy>0 ? `
+    _turnoDiaHTML= totalHoy>0 ? `
     <div style="margin-bottom:18px;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.35)">
       <!-- Cabecera degradado -->
       <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:18px 18px 14px">
@@ -6927,16 +6927,19 @@ const renderArchivos=async()=>{
 };
 
 window.restaurarArchivo=async(id,tipo)=>{
-  const snap=await getDoc(doc(db,'grupos',CGID,'archivos',id));
-  if(!snap.exists())return;
-  const data=snap.data();
-  delete data.tipo;delete data.eliminadoEn;
   try{
+    const snap=await getDoc(doc(db,'grupos',CGID,'archivos',id));
+    if(!snap.exists()){toast('Elemento no encontrado','e');return;}
+    const data={...snap.data()};
+    const originalId=data.id||id; // ID original del cliente/parte
+    delete data.tipo; delete data.eliminadoEn; delete data.id;
     const col=tipo==='cliente'?'clientes':'partes';
-    await addDoc(collection(db,'grupos',CGID,col),data);
+    // Restaurar con el ID original usando setDoc
+    await setDoc(doc(db,'grupos',CGID,col,originalId),data);
     await deleteDoc(doc(db,'grupos',CGID,'archivos',id));
-    toast('Elemento restaurado','o');renderArchivos();
-  }catch(e){toast('Error','e')}
+    toast('Elemento restaurado','o');
+    renderArchivos();
+  }catch(e){toast('Error al restaurar: '+e.message,'e');console.error(e);}
 };
 
 window.borrarArchivo=async(id)=>{
