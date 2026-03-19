@@ -7240,18 +7240,20 @@ window._descargarFichaCliArchivado=async(archId)=>{
 window._confirmarBorradoCliente=async(archId)=>{
   toast('Eliminando...','i');
   try{
-    // Usar caché si disponible, sino intentar Firestore
+    // Obtener el ID original del cliente (guardado como campo 'id' dentro del doc de archivos)
     const cached=window._archivosCache&&window._archivosCache[archId];
-    let cliId=archId;
+    let cliId=archId; // fallback
+    let cliData=cached||null;
     if(cached){
       cliId=cached.id||archId;
     } else {
       try{
         const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
-        if(snap.exists()){cliId=snap.data().id||archId;}
-      }catch(e){console.warn('No se pudieron leer datos para limpiar relacionados:',e);}
+        if(snap.exists()){cliData=snap.data();cliId=cliData.id||archId;}
+      }catch(e){console.warn('No se pudo leer doc de archivos:',e);}
     }
-    // Limpiar colecciones relacionadas (errores silenciosos)
+
+    // 1. Borrar todas las colecciones relacionadas con el cliente
     const colecciones=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
     await Promise.all(colecciones.map(async col=>{
       try{
@@ -7262,7 +7264,17 @@ window._confirmarBorradoCliente=async(archId)=>{
         await b.commit();
       }catch(e){console.warn('No se pudo limpiar',col,e);}
     }));
+
+    // 2. Borrar el doc de 'clientes' por si existe (p.ej. si fue restaurado y vuelto a archivar)
+    try{await deleteDoc(doc(db,'grupos',CGID,'clientes',cliId));}catch(e){}
+
+    // 3. Borrar el doc de 'archivos'
     await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));
+
+    // 4. Limpiar de allClientes local para que no reaparezca sin recargar
+    allClientes=allClientes.filter(c=>c.id!==cliId&&c.id!==archId);
+
+    // 5. Limpiar caché y UI
     if(window._archivosCache)delete window._archivosCache[archId];
     _quitarArchCard(archId);
     toast('Cliente eliminado definitivamente','i');
