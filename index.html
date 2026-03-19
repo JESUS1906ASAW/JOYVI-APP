@@ -1428,7 +1428,7 @@ const $=id=>document.getElementById(id);
 const fmtM=n=>isNaN(n)||n==null?'0,00 €':parseFloat(n).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const fmtF=ts=>{if(!ts)return'–';try{const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('es-ES')}catch{return'–'}};
 const ini=s=>{if(!s)return'?';const p=s.trim().split(' ');return p.length>1?(p[0][0]+p[1][0]).toUpperCase():s.slice(0,2).toUpperCase()};
-const colorInd=c=>c==='rojo'?'#e53935':c==='amarillo'?'#ff9800':'#1e88e5';
+const colorInd=c=>c==='rojo'?'#e53935':c==='amarillo'?'#ff9800':c==='verde'?'#43a047':'#1e88e5';
 
 // ─── Selector custom de cliente con dot de color ─────────────────────────────
 // Uso: en lugar de <select id="pCli">…</select> se pone <div id="pCli-wrap"></div>
@@ -7023,14 +7023,11 @@ const renderArchivos=async()=>{
   try{
     const snap=await getDocs(collection(db,'grupos',CGID,'archivos'));
     let items=snap.docs.map(d=>({id:d.id,...d.data()}));
-    // Limpiar automáticamente entradas huérfanas (doc en 'archivos' sin datos reales en Firestore)
+    // Limpiar automáticamente entradas sin nombre/título (corruptas)
     const limpiezas=[];
     const itemsValidos=[];
     for(const it of items){
-      // Un item válido debe tener al menos nombre o título
-      const tieneNombre=!!(it.nombre||it.titulo);
-      if(!tieneNombre){
-        // Entrada corrupta/vacía — eliminar silenciosamente
+      if(!(it.nombre||it.titulo)){
         limpiezas.push(deleteDoc(doc(db,'grupos',CGID,'archivos',it.id)));
       } else {
         itemsValidos.push(it);
@@ -7191,26 +7188,33 @@ window._descargarFichaCliArchivado=async(archId)=>{
 };
 
 window._confirmarBorradoCliente=async(archId)=>{
-  toast('Eliminando cliente y todos sus datos...','i');
+  toast('Eliminando...','i');
   try{
-    const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
-    if(!snap.exists()){renderArchivos();return;}
-    const cl=snap.data();
-    const cliId=cl.id||archId;
-    const colecciones=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
-    await Promise.all(colecciones.map(async col=>{
-      try{
-        const sn=await getDocs(query(collection(db,'grupos',CGID,col),where('clienteId','==',cliId)));
-        if(!sn.docs.length)return;
-        const b=writeBatch(db);
-        sn.docs.forEach(d=>b.delete(d.ref));
-        await b.commit();
-      }catch(e){console.warn('No se pudo limpiar',col,e);}
-    }));
+    // Intentar leer datos para limpiar colecciones relacionadas
+    let cliId=archId;
+    try{
+      const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
+      if(snap.exists()){
+        const cl=snap.data();
+        cliId=cl.id||archId;
+        // Limpiar colecciones relacionadas (errores silenciosos)
+        const colecciones=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
+        await Promise.all(colecciones.map(async col=>{
+          try{
+            const sn=await getDocs(query(collection(db,'grupos',CGID,col),where('clienteId','==',cliId)));
+            if(!sn.docs.length)return;
+            const b=writeBatch(db);
+            sn.docs.forEach(d=>b.delete(d.ref));
+            await b.commit();
+          }catch(e){console.warn('No se pudo limpiar',col,e);}
+        }));
+      }
+    }catch(e){console.warn('No se pudieron limpiar datos relacionados:',e);}
+    // Borrar el doc de archivos siempre, aunque lo anterior haya fallado
     await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));
-    toast('Cliente eliminado definitivamente','i');
+    toast('Eliminado definitivamente','i');
     renderArchivos();
-  }catch(e){toast('Error al eliminar: '+e.message,'e');}
+  }catch(e){toast('Error al eliminar: '+e.message,'e');console.error(e);}
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
