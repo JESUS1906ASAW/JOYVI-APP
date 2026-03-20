@@ -4344,7 +4344,8 @@ window.archivarCli=async(id)=>{
   try{
     await addDoc(collection(db,'grupos',CGID,'archivos'),{...c,id:c.id,tipo:'cliente',eliminadoEn:serverTimestamp()});
     await deleteDoc(doc(db,'grupos',CGID,'clientes',id));
-    _sbReturnCli=null; // el cliente ya no existe, no volver a su ficha
+    allClientes=allClientes.filter(x=>x.id!==id);
+    _sbReturnCli=null;
     cerrarSB();toast('Cliente archivado','i');
   }catch(e){toast('Error','e')}
 };
@@ -7184,55 +7185,59 @@ window._descargarFichaCliArchivado=async(archId)=>{
 window._confirmarBorradoCliente=async(archId)=>{
   toast('Eliminando...','i');
   try{
-    // Obtener datos del cliente archivado
-    const cached=window._archivosCache&&window._archivosCache[archId];
-    let cliId=archId;
-    if(cached){
-      cliId=cached.id||archId;
-    } else {
-      try{
-        const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
-        if(snap.exists()){cliId=snap.data().id||archId;}
-      }catch(e){console.warn('No se pudo leer doc de archivos:',e);}
+    // Leer el doc de archivos directamente del servidor para tener datos frescos
+    const archRef=doc(db,'grupos',CGID,'archivos',archId);
+    const archSnap=await getDocFromServer(archRef).catch(()=>getDoc(archRef));
+    if(!archSnap||!archSnap.exists()){
+      // Ya no existe en servidor — limpiar UI y salir
+      if(window._archivosCache){delete window._archivosCache[archId];}
+      _quitarArchCard(archId);
+      allClientes=allClientes.filter(c=>c.id!==archId);
+      toast('Cliente eliminado','i');
+      return;
     }
+    const archData=archSnap.data();
+    const cliId=archData.id||archId;
 
-    // 1. Borrar colecciones relacionadas con el cliente
-    const colecciones=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
-    await Promise.all(colecciones.map(async col=>{
+    // 1. Borrar datos relacionados del cliente
+    const cols=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
+    await Promise.all(cols.map(async col=>{
       try{
         const sn=await getDocs(query(collection(db,'grupos',CGID,col),where('clienteId','==',cliId)));
-        if(!sn.docs.length)return;
-        const b=writeBatch(db);
-        sn.docs.forEach(d=>b.delete(d.ref));
-        await b.commit();
-      }catch(e){console.warn('No se pudo limpiar',col,e);}
+        if(!sn.empty){const b=writeBatch(db);sn.docs.forEach(d=>b.delete(d.ref));await b.commit();}
+      }catch(e){console.warn('limpiar '+col,e);}
     }));
 
-    // 2. Borrar doc de 'clientes' por si existe
+    // 2. Borrar doc de clientes (por si existe aún)
     try{await deleteDoc(doc(db,'grupos',CGID,'clientes',cliId));}catch(e){}
-    if(cliId!==archId){try{await deleteDoc(doc(db,'grupos',CGID,'clientes',archId));}catch(e){}}
 
-    // 3. Marcar el doc de 'archivos' como _eliminado (updateDoc siempre permitido por reglas)
-    //    e intentar también deleteDoc — lo que funcione, funciona.
-    let marcado=false;
+    // 3. Borrar el doc de archivos — con verificación real contra servidor
+    console.log('[Joyvi] Intentando borrar archivos/'+archId);
+    await deleteDoc(archRef);
+    await new Promise(r=>setTimeout(r,400));
+    let checkExists=true;
     try{
-      await updateDoc(doc(db,'grupos',CGID,'archivos',archId),{_eliminado:true,_eliminadoEn:serverTimestamp()});
-      marcado=true;
-    }catch(e){console.warn('updateDoc _eliminado falló:',e);}
-    // Intento paralelo de deleteDoc (puede fallar por reglas, no importa)
-    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));}catch(e){}
-
-    // 4. Limpiar allClientes local
-    allClientes=allClientes.filter(c=>c.id!==cliId&&c.id!==archId);
-
-    // 5. Limpiar caché y UI
-    if(window._archivosCache){
-      delete window._archivosCache[archId];
-      delete window._archivosCache[cliId];
+      const check=await getDocFromServer(archRef);
+      checkExists=check.exists();
+      console.log('[Joyvi] Doc en servidor tras deleteDoc — exists:',checkExists);
+    }catch(e){
+      // not-found = borrado OK
+      checkExists=false;
+      console.log('[Joyvi] Doc no encontrado en servidor (borrado OK), error code:',e.code);
     }
+    if(checkExists){
+      console.warn('[Joyvi] deleteDoc no funcionó, aplicando flag _eliminado');
+      await updateDoc(archRef,{_eliminado:true,_eliminadoEn:serverTimestamp()}).catch(e=>console.warn('flag _eliminado error:',e));
+    }else{
+      console.log('[Joyvi] Borrado confirmado en servidor para archId:',archId);
+    }
+
+    // 4. Limpiar estado local
+    allClientes=allClientes.filter(c=>c.id!==cliId&&c.id!==archId);
+    if(window._archivosCache){delete window._archivosCache[archId];delete window._archivosCache[cliId];}
     _quitarArchCard(archId);
     toast('Cliente eliminado definitivamente','i');
-  }catch(e){toast('Error al eliminar: '+e.message,'e');console.error(e);}
+  }catch(e){toast('Error: '+e.message,'e');console.error('_confirmarBorradoCliente',e);}
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
