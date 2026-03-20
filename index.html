@@ -108,9 +108,10 @@ body.modo-claro .det-row{border-bottom-color:rgba(0,0,0,.08)}
 body.modo-claro .toggle-track{background:rgba(0,0,0,.15)}
 body.modo-claro #installBanner{background:linear-gradient(135deg,#ffffff,#f7f7f7);border-top-color:rgba(var(--theme-rgb),.2)}
 
-body.modo-claro .func-slide-title{color:#111}
+body.modo-claro .func-slide-title{color:#fff}
 body.modo-claro .func-step-txt{color:rgba(0,0,0,.7)}
 body.modo-claro .func-step-txt strong{color:#111}
+body.modo-claro .func-carousel-label{color:var(--r)}
 body.modo-claro .cli-name{color:#111}
 body.modo-claro .parte-title{color:#111}
 body.modo-claro .arch-name{color:#111}
@@ -118,7 +119,6 @@ body.modo-claro .notif-title{color:#111}
 
 body.modo-claro .stat-num{color:#111}
 body.modo-claro .grupo-title{color:#fff}
-body.modo-claro .func-label{color:var(--r)}
 body.modo-claro #topbar .logo{color:var(--r)}
 
 body.modo-claro .tl-card{background:#ffffff;border-color:rgba(0,0,0,.09)}
@@ -590,24 +590,33 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--r2),var(--r));border-radius:10px;transition:width .6s ease}
 
 /* ── CARRUSEL FUNCIONALIDADES ── */
-.func-carousel{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-top:20px;position:relative}
-.func-slide{display:none;padding:22px 20px 18px;animation:fadeSlide .4s ease}
+.func-carousel{background:var(--card);border:1px solid var(--border);border-radius:22px;overflow:hidden;margin-top:20px;position:relative}
+.func-carousel-header{padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.func-carousel-label{font-size:9px;font-weight:900;color:var(--r);letter-spacing:2.5px;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.func-carousel-label::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--r);display:inline-block;animation:pulse-dot 2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.func-carousel-counter{font-size:11px;color:var(--tx3);font-weight:700}
+.func-slide{display:none;padding:14px 18px 18px;animation:fadeSlide .35s cubic-bezier(.16,1,.3,1)}
 .func-slide.active{display:block}
-@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.func-slide-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-.func-slide-ico{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
-.func-slide-title{font-size:17px;font-weight:900;color:#fff}
-.func-slide-sub{font-size:12px;color:var(--tx2);margin-top:2px}
-.func-steps{display:flex;flex-direction:column;gap:8px}
-.func-step{display:flex;align-items:flex-start;gap:10px;background:rgba(var(--theme-rgb),.06);border-radius:10px;padding:10px 12px}
-.func-step-num{width:22px;height:22px;border-radius:50%;background:var(--r);color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.func-step-txt{font-size:13px;color:var(--tx);line-height:1.4}
+@keyframes fadeSlide{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.func-slide-hero{position:relative;border-radius:16px;overflow:hidden;margin-bottom:14px;cursor:pointer;min-height:88px;display:flex;align-items:center;gap:0}
+.func-slide-hero-bg{position:absolute;inset:0;opacity:1}
+.func-slide-hero-content{position:relative;z-index:1;padding:16px 18px;flex:1}
+.func-slide-hero-ico{position:relative;z-index:1;width:68px;height:88px;display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0}
+.func-slide-title{font-size:18px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:3px;text-shadow:0 1px 4px rgba(0,0,0,.25)}
+.func-slide-sub{font-size:12px;color:rgba(255,255,255,.75);font-weight:600}
+.func-slide-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;z-index:2}
+.func-steps{display:flex;flex-direction:column;gap:7px}
+.func-step{display:flex;align-items:flex-start;gap:11px;background:rgba(var(--theme-rgb),.05);border-radius:11px;padding:10px 13px;border:1px solid rgba(var(--theme-rgb),.08);transition:.15s}
+.func-step-num{width:20px;height:20px;border-radius:6px;background:var(--r);color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.func-step-txt{font-size:12.5px;color:var(--tx);line-height:1.45}
 .func-step-txt strong{color:var(--tx);font-weight:800}
-.func-dots{display:flex;gap:6px;justify-content:center;padding:12px 0 16px;align-items:center}
-.func-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:.2s}
-.func-dot.active{background:var(--r);width:20px;border-radius:4px}
-.func-label{font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;text-align:center;padding:10px 20px 0;border-top:1px solid var(--border)}
-.func-tip{background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:12px;color:var(--tx2);display:flex;align-items:flex-start;gap:8px}
+.func-dots{display:flex;gap:5px;justify-content:center;padding:10px 0 14px;align-items:center}
+.func-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:.25s cubic-bezier(.16,1,.3,1)}
+.func-dot.active{background:var(--r);width:22px;border-radius:3px}
+.func-nav-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--tx3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.func-nav-btn:active{transform:scale(.9)}
+.func-tip{background:linear-gradient(135deg,rgba(var(--theme-rgb),.1),rgba(var(--theme-rgb),.04));border:1px solid rgba(var(--theme-rgb),.18);border-radius:10px;padding:10px 13px;margin-top:10px;font-size:12px;color:var(--tx2);display:flex;align-items:flex-start;gap:8px;line-height:1.45}
 .func-tip-ico{font-size:14px;flex-shrink:0}
 
 /* ── CALENDARIO ── */
@@ -2373,17 +2382,17 @@ let _carouselTimer=null;
 const renderCarousel=()=>{
   const el=document.getElementById('funcCarousel');
   if(!el)return;
-  const s=FUNC_SLIDES[_carouselIdx];
   const slides=el.querySelectorAll('.func-slide');
   slides.forEach((sl,i)=>sl.classList.toggle('active',i===_carouselIdx));
   const dots=el.querySelectorAll('.func-dot');
   dots.forEach((d,i)=>d.classList.toggle('active',i===_carouselIdx));
+  const counter=el.querySelector('.func-carousel-counter');
+  if(counter)counter.textContent=`${_carouselIdx+1} / ${FUNC_SLIDES.length}`;
 };
 
 window.goSlide=idx=>{
   _carouselIdx=(idx+FUNC_SLIDES.length)%FUNC_SLIDES.length;
   renderCarousel();
-  // Reiniciar timer
   if(_carouselTimer)clearInterval(_carouselTimer);
   _carouselTimer=setInterval(()=>{_carouselIdx=(_carouselIdx+1)%FUNC_SLIDES.length;renderCarousel();},10000);
 };
@@ -2391,14 +2400,13 @@ window.goSlide=idx=>{
 // Abrir detalle de slide al hacer clic
 window.abrirDetalleSlide=idx=>{
   const s=FUNC_SLIDES[idx];
-  // Mapeo slide → pantalla destino
   const destinos={
-    0:'grupo',    // Grupos de trabajo
-    1:'grupo',    // Partes de trabajo → tab partes
-    2:'mantenimiento', // Mantenimientos
-    3:'grupo',    // PDFs y backup
-    4:'grupo',    // Gestión de clientes
-    5:'estadisticas',  // Estadísticas
+    0:'grupo',
+    1:'grupo',
+    2:'mantenimiento',
+    3:'grupo',
+    4:'grupo',
+    5:'estadisticas',
   };
   const html=`
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
@@ -2410,7 +2418,7 @@ window.abrirDetalleSlide=idx=>{
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
       ${s.steps.map((st,j)=>`<div style="display:flex;align-items:flex-start;gap:12px;background:rgba(var(--theme-rgb),.06);border-radius:12px;padding:14px">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--r);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${j+1}</div>
+        <div style="width:26px;height:26px;border-radius:8px;background:var(--r);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${j+1}</div>
         <div><div style="font-size:14px;font-weight:800;color:var(--tx);margin-bottom:4px">${st.t}</div><div style="font-size:13px;color:var(--tx2);line-height:1.5">${st.d}</div></div>
       </div>`).join('')}
     </div>
@@ -2424,31 +2432,45 @@ window.abrirDetalleSlide=idx=>{
 };
 
 const buildCarousel=()=>{
+  // Color sólido de fondo para cada slide basado en su color temático
+  const heroBgs=[
+    'linear-gradient(135deg,rgba(var(--theme-rgb),.55) 0%,rgba(var(--theme-rgb),.3) 100%)',
+    'linear-gradient(135deg,rgba(76,175,80,.55) 0%,rgba(76,175,80,.3) 100%)',
+    'linear-gradient(135deg,rgba(33,150,243,.55) 0%,rgba(33,150,243,.3) 100%)',
+    'linear-gradient(135deg,rgba(255,152,0,.55) 0%,rgba(255,152,0,.3) 100%)',
+    'linear-gradient(135deg,rgba(156,39,176,.5) 0%,rgba(156,39,176,.28) 100%)',
+    'linear-gradient(135deg,rgba(233,30,99,.5) 0%,rgba(233,30,99,.28) 100%)',
+    'linear-gradient(135deg,rgba(0,188,212,.5) 0%,rgba(0,188,212,.28) 100%)',
+  ];
   const slidesHTML=FUNC_SLIDES.map((s,i)=>`
-    <div class="func-slide ${i===0?'active':''}" onclick="abrirDetalleSlide(${i})" style="cursor:pointer">
-      <div class="func-slide-header">
-        <div class="func-slide-ico" style="background:${s.color}">${s.ico}</div>
-        <div>
+    <div class="func-slide ${i===0?'active':''}">
+      <div class="func-slide-hero" onclick="abrirDetalleSlide(${i})">
+        <div class="func-slide-hero-bg" style="background:${heroBgs[i]||heroBgs[0]}"></div>
+        <div class="func-slide-hero-ico">${s.ico}</div>
+        <div class="func-slide-hero-content">
           <div class="func-slide-title">${s.titulo}</div>
           <div class="func-slide-sub">${s.sub}</div>
         </div>
-        <div style="color:var(--tx3);font-size:18px;margin-left:auto">›</div>
+        <div class="func-slide-arrow">›</div>
       </div>
       <div class="func-steps">
-        ${s.steps.map((st,j)=>`<div class="func-step"><div class="func-step-num">${j+1}</div><div class="func-step-txt"><strong>${st.t}</strong><br>${st.d}</div></div>`).join('')}
+        ${s.steps.map((st,j)=>`<div class="func-step"><div class="func-step-num">${j+1}</div><div class="func-step-txt"><strong>${st.t}</strong> — ${st.d}</div></div>`).join('')}
       </div>
       ${s.tip?`<div class="func-tip"><div class="func-tip-ico">💡</div><div>${s.tip.slice(2)}</div></div>`:''}
     </div>`).join('');
   const dotsHTML=FUNC_SLIDES.map((_,i)=>`<div class="func-dot ${i===0?'active':''}" onclick="goSlide(${i})"></div>`).join('');
   return`<div class="func-carousel" id="funcCarousel">
-    <div class="func-label">✨ Descubre JoyviApp — desliza para ver más</div>
-    <div class="func-slides-wrap" id="funcSlidesWrap" style="position:relative;overflow:hidden">
+    <div class="func-carousel-header">
+      <div class="func-carousel-label">Guía de uso</div>
+      <span class="func-carousel-counter">1 / ${FUNC_SLIDES.length}</span>
+    </div>
+    <div id="funcSlidesWrap" style="position:relative;overflow:hidden">
       ${slidesHTML}
     </div>
     <div class="func-dots">
-      <span onclick="goSlide(_carouselIdx-1)" style="cursor:pointer;color:var(--tx3);font-size:18px;padding:0 4px">‹</span>
+      <button class="func-nav-btn" onclick="goSlide(_carouselIdx-1)">‹</button>
       ${dotsHTML}
-      <span onclick="goSlide(_carouselIdx+1)" style="cursor:pointer;color:var(--tx3);font-size:18px;padding:0 4px">›</span>
+      <button class="func-nav-btn" onclick="goSlide(_carouselIdx+1)">›</button>
     </div>
   </div>`;
 };
@@ -7261,17 +7283,36 @@ window._confirmarBorradoCliente=async(archId)=>{
       }catch(e){console.warn('No se pudo limpiar',col,e);}
     }));
 
-    // 2. Borrar el doc de 'clientes' por si existe (p.ej. si fue restaurado y vuelto a archivar)
-    try{await deleteDoc(doc(db,'grupos',CGID,'clientes',cliId));}catch(e){}
+    // 2. Borrar el doc de 'clientes' por si existe
+    try{await deleteDoc(doc(db,'grupos',CGID,'clientes',cliId));}catch(e){console.warn('clientes delete:',e);}
+    // También intentar con archId por si acaso
+    if(cliId!==archId){try{await deleteDoc(doc(db,'grupos',CGID,'clientes',archId));}catch(e){}}
 
-    // 3. Borrar el doc de 'archivos'
-    await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));
+    // 3. Borrar el doc de 'archivos' — operación principal, con reintento
+    let archBorrado=false;
+    for(let intento=0;intento<3;intento++){
+      try{
+        await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));
+        archBorrado=true;
+        break;
+      }catch(e){
+        console.warn(`Intento ${intento+1} borrado archivos falló:`,e);
+        if(intento<2)await new Promise(r=>setTimeout(r,500));
+      }
+    }
+    if(!archBorrado){
+      toast('No se pudo eliminar el registro archivado. Verifica permisos.','e');
+      return;
+    }
 
     // 4. Limpiar de allClientes local para que no reaparezca sin recargar
     allClientes=allClientes.filter(c=>c.id!==cliId&&c.id!==archId);
 
     // 5. Limpiar caché y UI
-    if(window._archivosCache)delete window._archivosCache[archId];
+    if(window._archivosCache){
+      delete window._archivosCache[archId];
+      delete window._archivosCache[cliId];
+    }
     _quitarArchCard(archId);
     toast('Cliente eliminado definitivamente','i');
   }catch(e){toast('Error al eliminar: '+e.message,'e');console.error(e);}
@@ -8632,6 +8673,7 @@ window.abrirHMFicha=(idx)=>{
       ${tel?'<a href="tel:'+tel+'" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>':''}
       ${dir?'<a href="https://maps.google.com/?q='+encodeURIComponent(dir)+'" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">📍 Maps</a>':''}
       ${esCompletado&&mid&&idc?'<button class="btn btn-s btn-sm" style="color:#ff9800;border-color:rgba(255,152,0,.4)" onclick="window.restaurarMantCompletado(\''+mid+'\',\''+idc+'\')">↩ Restaurar como activo</button>':''}
+      ${esHistorial&&mid?'<button class="btn btn-s btn-sm" style="color:#ff9800;border-color:rgba(255,152,0,.4)" onclick="window.restablecerMantHistorial(\''+mid+'\')">↩ Restablecer al calendario</button>':''}
       ${esHistorial&&mid&&idc?'<button class="btn btn-del btn-sm" onclick="window.eliminarHMHistorial(\''+mid+'\',\''+idc+'\')">🗑 Eliminar del historial</button>':''}
     </div>
   `;
@@ -8736,6 +8778,60 @@ window.eliminarHMHistorial=async(hmId,clienteId)=>{
     cerrarHMFicha();
     verHistorialMantCliente(clienteId);
   }catch(e){toast('Error al eliminar: '+e.message,'e');}
+};
+
+// ── Restablecer mantenimiento desde historial al calendario ──
+window.restablecerMantHistorial=async(hmId)=>{
+  if(!confirm('¿Restablecer este mantenimiento al calendario? Volverá a aparecer en la fecha en que se completó.'))return;
+  try{
+    const hmSnap=await getDoc(doc(db,'grupos',CGID,'historial_mantenimientos',hmId));
+    if(!hmSnap.exists()){toast('Registro no encontrado','e');return;}
+    const h={id:hmSnap.id,...hmSnap.data()};
+    const mantId=h.mantenimientoId;
+    const fechaBase=h.fechaCompletado||new Date().toISOString().split('T')[0];
+    if(mantId){
+      // El mantenimiento original puede seguir existiendo (con nueva fechaProxima avanzada)
+      // Calcular fecha anterior = la fecha en que se completó
+      const mantSnap=await getDoc(doc(db,'grupos',CGID,'mantenimientos',mantId));
+      if(mantSnap.exists()){
+        const m=mantSnap.data();
+        // Retroceder la fechaProxima a la fecha de completado para que vuelva a aparecer
+        await updateDoc(doc(db,'grupos',CGID,'mantenimientos',mantId),{
+          fechaProxima:fechaBase,
+          ultimoCompletado:null,
+          estado:'pendiente'
+        });
+        try{const ms=await getDocs(collection(db,'grupos',CGID,'mantenimientos'));allMantenimientos=ms.docs.map(d=>({id:d.id,...d.data()}));}catch(e){}
+      } else {
+        // El mantenimiento fue eliminado — recrearlo con los datos del historial
+        const nuevoMant={
+          nombreTrabajo:h.nombreTrabajo||'Mantenimiento',
+          clienteId:h.clienteId||'',
+          clienteNombre:h.clienteNombre||'',
+          frecuencia:h.frecuencia||'',
+          equipos:h.equipos||'',
+          fechaInicio:fechaBase,
+          fechaProxima:fechaBase,
+          estado:'pendiente',
+          creadoPor:CU?.uid||'',
+          creado:serverTimestamp()
+        };
+        await addDoc(collection(db,'grupos',CGID,'mantenimientos'),nuevoMant);
+        try{const ms=await getDocs(collection(db,'grupos',CGID,'mantenimientos'));allMantenimientos=ms.docs.map(d=>({id:d.id,...d.data()}));}catch(e){}
+      }
+    } else {
+      toast('No se puede vincular con el mantenimiento original','e');return;
+    }
+    // Eliminar del historial
+    await deleteDoc(doc(db,'grupos',CGID,'historial_mantenimientos',hmId));
+    // Actualizar caché local del historial global
+    if(window._hmGrupoCache)window._hmGrupoCache=window._hmGrupoCache.filter(x=>x.id!==hmId);
+    _mantHistCache=_mantHistCache.filter(x=>x.id!==hmId);
+    toast('Mantenimiento restablecido al calendario','o');
+    cerrarHMFicha();
+    // Refrescar la vista si el sheet global sigue abierto
+    if(window._hmGrupoCache!==null)window._hmGrupoFiltrar(document.getElementById('hmGrupoSearch')?.value||'');
+  }catch(e){toast('Error al restablecer: '+e.message,'e');console.error(e);}
 };
 
 // ── Restaurar mantenimiento completado a activo ──
