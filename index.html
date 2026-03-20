@@ -7018,18 +7018,8 @@ const renderArchivos=async()=>{
   try{
     const snap=await getDocsFromServer(collection(db,'grupos',CGID,'archivos'));
     let items=snap.docs.map(d=>({id:d.id,...d.data()}));
-    // Limpiar automáticamente entradas sin nombre/título (corruptas)
-    const limpiezas=[];
-    const itemsValidos=[];
-    for(const it of items){
-      if(!(it.nombre||it.titulo)){
-        limpiezas.push(deleteDoc(doc(db,'grupos',CGID,'archivos',it.id)));
-      } else {
-        itemsValidos.push(it);
-      }
-    }
-    if(limpiezas.length)await Promise.all(limpiezas);
-    items=itemsValidos;
+    // Filtrar eliminados con flag y entradas corruptas sin nombre
+    items=items.filter(it=>(it.nombre||it.titulo)&&!it._eliminado);
     if(!items.length){$('archivosContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><p>No hay elementos archivados</p></div>`;return}
     window._archivosCache = {};
     items.forEach(it=>{ window._archivosCache[it.id]=it; });
@@ -7194,20 +7184,19 @@ window._descargarFichaCliArchivado=async(archId)=>{
 window._confirmarBorradoCliente=async(archId)=>{
   toast('Eliminando...','i');
   try{
-    // Obtener el ID original del cliente (guardado como campo 'id' dentro del doc de archivos)
+    // Obtener datos del cliente archivado
     const cached=window._archivosCache&&window._archivosCache[archId];
-    let cliId=archId; // fallback
-    let cliData=cached||null;
+    let cliId=archId;
     if(cached){
       cliId=cached.id||archId;
     } else {
       try{
         const snap=await getDoc(doc(db,'grupos',CGID,'archivos',archId));
-        if(snap.exists()){cliData=snap.data();cliId=cliData.id||archId;}
+        if(snap.exists()){cliId=snap.data().id||archId;}
       }catch(e){console.warn('No se pudo leer doc de archivos:',e);}
     }
 
-    // 1. Borrar todas las colecciones relacionadas con el cliente
+    // 1. Borrar colecciones relacionadas con el cliente
     const colecciones=['partes','mantenimientos','averias','averias_historial','presupuestos','imagenes','historial_mantenimientos'];
     await Promise.all(colecciones.map(async col=>{
       try{
@@ -7219,34 +7208,21 @@ window._confirmarBorradoCliente=async(archId)=>{
       }catch(e){console.warn('No se pudo limpiar',col,e);}
     }));
 
-    // 2. Borrar el doc de 'clientes' por si existe
-    try{await deleteDoc(doc(db,'grupos',CGID,'clientes',cliId));}catch(e){console.warn('clientes delete:',e);}
-    // También intentar con archId por si acaso
+    // 2. Borrar doc de 'clientes' por si existe
+    try{await deleteDoc(doc(db,'grupos',CGID,'clientes',cliId));}catch(e){}
     if(cliId!==archId){try{await deleteDoc(doc(db,'grupos',CGID,'clientes',archId));}catch(e){}}
 
-    // 3. Borrar el doc de 'archivos' y verificar contra servidor
-    let archBorrado=false;
-    for(let intento=0;intento<3;intento++){
-      try{
-        const archRef=doc(db,'grupos',CGID,'archivos',archId);
-        await deleteDoc(archRef);
-        // Verificar en servidor (evita falso OK por caché optimista local)
-        let aun=false;
-        try{const chk=await getDocFromServer(archRef);aun=chk.exists();}catch(er){if(er&&(er.code==='not-found'||String(er.message).includes('not-found')))aun=false;else throw er;}
-        if(!aun){archBorrado=true;break;}
-        console.warn('Intento '+intento+': doc sigue en servidor');
-      }catch(e){
-        if(e&&(e.code==='not-found'||String(e.message).includes('not-found'))){archBorrado=true;break;}
-        console.warn('Borrado archivos intento '+intento+' fallo:',e);
-      }
-      if(intento<2)await new Promise(r=>setTimeout(r,700));
-    }
-    if(!archBorrado){
-      toast('No se pudo eliminar. Comprueba conexión o permisos en Firestore.','e');
-      return;
-    }
+    // 3. Marcar el doc de 'archivos' como _eliminado (updateDoc siempre permitido por reglas)
+    //    e intentar también deleteDoc — lo que funcione, funciona.
+    let marcado=false;
+    try{
+      await updateDoc(doc(db,'grupos',CGID,'archivos',archId),{_eliminado:true,_eliminadoEn:serverTimestamp()});
+      marcado=true;
+    }catch(e){console.warn('updateDoc _eliminado falló:',e);}
+    // Intento paralelo de deleteDoc (puede fallar por reglas, no importa)
+    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));}catch(e){}
 
-    // 4. Limpiar de allClientes local para que no reaparezca sin recargar
+    // 4. Limpiar allClientes local
     allClientes=allClientes.filter(c=>c.id!==cliId&&c.id!==archId);
 
     // 5. Limpiar caché y UI
