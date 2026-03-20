@@ -591,33 +591,29 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 
 /* ── CARRUSEL FUNCIONALIDADES ── */
 .func-carousel{background:var(--card);border:1px solid var(--border);border-radius:22px;overflow:hidden;margin-top:20px;position:relative}
-.func-carousel-header{padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.func-carousel-header{padding:13px 16px 0;display:flex;align-items:center;justify-content:space-between}
 .func-carousel-label{font-size:9px;font-weight:900;color:var(--r);letter-spacing:2.5px;text-transform:uppercase;display:flex;align-items:center;gap:5px}
-.func-carousel-label::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--r);display:inline-block;animation:pulse-dot 2s ease-in-out infinite}
-@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.func-carousel-label::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--r);display:inline-block;animation:pulse-dot 2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
 .func-carousel-counter{font-size:11px;color:var(--tx3);font-weight:700}
-.func-slide{display:none;padding:14px 18px 18px;animation:fadeSlide .35s cubic-bezier(.16,1,.3,1)}
+.func-slide{display:none;padding:12px 16px 16px;animation:fadeSlide .3s cubic-bezier(.16,1,.3,1)}
 .func-slide.active{display:block}
-@keyframes fadeSlide{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
-.func-slide-hero{position:relative;border-radius:16px;overflow:hidden;margin-bottom:14px;cursor:pointer;min-height:88px;display:flex;align-items:center;gap:0}
-.func-slide-hero-bg{position:absolute;inset:0;opacity:1}
-.func-slide-hero-content{position:relative;z-index:1;padding:16px 18px;flex:1}
-.func-slide-hero-ico{position:relative;z-index:1;width:68px;height:88px;display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0}
-.func-slide-title{font-size:18px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:3px;text-shadow:0 1px 4px rgba(0,0,0,.25)}
-.func-slide-sub{font-size:12px;color:rgba(255,255,255,.75);font-weight:600}
-.func-slide-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;z-index:2}
-.func-steps{display:flex;flex-direction:column;gap:7px}
-.func-step{display:flex;align-items:flex-start;gap:11px;background:rgba(var(--theme-rgb),.05);border-radius:11px;padding:10px 13px;border:1px solid rgba(var(--theme-rgb),.08);transition:.15s}
-.func-step-num{width:20px;height:20px;border-radius:6px;background:var(--r);color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.func-step-txt{font-size:12.5px;color:var(--tx);line-height:1.45}
-.func-step-txt strong{color:var(--tx);font-weight:800}
-.func-dots{display:flex;gap:5px;justify-content:center;padding:10px 0 14px;align-items:center}
-.func-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:.25s cubic-bezier(.16,1,.3,1)}
-.func-dot.active{background:var(--r);width:22px;border-radius:3px}
-.func-nav-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--tx3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
-.func-nav-btn:active{transform:scale(.9)}
-.func-tip{background:linear-gradient(135deg,rgba(var(--theme-rgb),.1),rgba(var(--theme-rgb),.04));border:1px solid rgba(var(--theme-rgb),.18);border-radius:10px;padding:10px 13px;margin-top:10px;font-size:12px;color:var(--tx2);display:flex;align-items:flex-start;gap:8px;line-height:1.45}
-.func-tip-ico{font-size:14px;flex-shrink:0}
+@keyframes fadeSlide{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+.func-slide-hero{position:relative;border-radius:16px;overflow:hidden;margin-bottom:12px;min-height:80px;display:flex;align-items:stretch}
+.func-slide-hero-side{width:72px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;position:relative;z-index:1}
+.func-slide-hero-body{flex:1;padding:14px 14px 14px 4px;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center}
+.func-slide-hero-bg{position:absolute;inset:0}
+.func-slide-title{font-size:17px;font-weight:900;color:#fff;line-height:1.15;text-shadow:0 1px 6px rgba(0,0,0,.3)}
+.func-slide-sub{font-size:11.5px;color:rgba(255,255,255,.8);font-weight:600;margin-top:2px;line-height:1.3}
+.func-slide-desc{font-size:12.5px;color:var(--tx2);line-height:1.5;margin-bottom:10px}
+.func-feats{display:flex;flex-wrap:wrap;gap:6px}
+.func-feat{font-size:11px;font-weight:700;color:var(--tx);background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.14);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.func-feat::before{content:'✓';font-size:9px;color:var(--r);font-weight:900}
+.func-dots{display:flex;gap:5px;justify-content:center;padding:10px 0 13px;align-items:center}
+.func-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:.25s cubic-bezier(.16,1,.3,1)}
+.func-dot.active{background:var(--r);width:20px;border-radius:3px}
+.func-nav-btn{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--tx3);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.func-nav-btn:active{transform:scale(.88)}
 
 /* ── CALENDARIO ── */
 .cal-mes{margin-bottom:20px}
@@ -1326,7 +1322,7 @@ import {
   sendPasswordResetEmail, onAuthStateChanged, signOut, updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
-  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+  getFirestore, doc, getDoc, getDocFromServer, setDoc, addDoc, updateDoc, deleteDoc,
   collection, query, where, orderBy, onSnapshot, getDocs, getDocsFromServer,
   serverTimestamp, arrayUnion, arrayRemove, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -2326,53 +2322,40 @@ const actualizarDrawer=()=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const FUNC_SLIDES=[
   {
-    ico:'👥',color:'rgba(var(--theme-rgb),.15)',titulo:'Grupos de trabajo',sub:'Organiza tu equipo en grupos',steps:[
-      {t:'Crea tu primer grupo',d:'Pulsa <strong>+ Nuevo</strong> en "Mis grupos". Dale un nombre y elige una imagen de fondo.'},
-      {t:'Comparte el ID del grupo',d:'El administrador puede compartir el ID del grupo (en Administración) para que otros se unan pulsando <strong>Buscar</strong>.'},
-      {t:'Gestiona todo desde un lugar',d:'Clientes, partes de trabajo, mantenimientos y estadísticas agrupados en un solo espacio.'},
-    ],tip:'💡 Puedes tener varios grupos: uno por zona, por técnico o por tipo de servicio.'
+    ico:'👥',grad:'linear-gradient(135deg,#3a3aff,#6c63ff)',titulo:'Grupos de trabajo',sub:'Colabora con tu equipo en tiempo real',desc:'Crea espacios de trabajo compartidos donde todo el equipo ve los mismos clientes, partes y mantenimientos al instante.',feats:['Varios grupos por zona o técnico','Invita con ID de grupo','Roles admin y miembro','Sincronización en tiempo real'],
   },
   {
-    ico:'👥',color:'rgba(76,175,80,.12)',titulo:'Gestión de clientes',sub:'Toda la información de cada cliente',steps:[
-      {t:'Añade un cliente',d:'Dentro del grupo, ve a la pestaña <strong>👷 Clientes</strong> y pulsa <strong>+ Añadir</strong>.'},
-      {t:'Ficha completa',d:'Guarda nombre, teléfono, dirección, email, edificio/comunidad, notas y un indicador de color (🟢🟡🔴).'},
-      {t:'Historial de partes',d:'Al abrir un cliente ves todos sus partes anteriores con importes totales y estado.'},
-    ],tip:'💡 Si el cliente tiene nombre de comunidad/edificio, se rellena solo en los partes nuevos.'
+    ico:'👷',grad:'linear-gradient(135deg,#00897b,#26c6da)',titulo:'Gestión de clientes',sub:'Fichas completas con toda la información',desc:'Cada cliente tiene su ficha con datos de contacto, dirección, edificio/comunidad, notas y un indicador de prioridad visual.',feats:['Teléfono, email y dirección','Indicador 🟢🟡🔴 de estado','Historial completo de partes','Búsqueda instantánea'],
   },
   {
-    ico:'🔧',color:'rgba(33,150,243,.12)',titulo:'Partes de trabajo',sub:'Registra cada intervención',steps:[
-      {t:'Nuevo parte',d:'Pestaña <strong>🔧 Partes → + Nuevo</strong>. Selecciona el cliente y completa título, materiales, importes y estado.'},
-      {t:'Genera el PDF',d:'Pulsa <strong>📄 PDF</strong> para imprimir el parte con recuadro de firma del cliente.'},
-      {t:'Plantillas de título',d:'Guarda títulos frecuentes como plantillas y reutilízalos con un toque para ahorrar tiempo.'},
-    ],tip:'💡 El PDF incluye todos los datos del trabajo, importes desglosados y un recuadro de firma.'
+    ico:'🔧',grad:'linear-gradient(135deg,#1565c0,#42a5f5)',titulo:'Partes de trabajo',sub:'Registra cada intervención al detalle',desc:'Crea partes de trabajo con materiales, importes, operario y estado. Genera PDFs profesionales con firma del cliente en segundos.',feats:['Materiales e importes desglosados','PDF con firma del cliente','Plantillas de títulos frecuentes','Estados: pendiente, en curso, completado'],
   },
   {
-    ico:'⚙️',color:'rgba(255,152,0,.12)',titulo:'Mantenimientos',sub:'Programa revisiones recurrentes',steps:[
-      {t:'Programa el mantenimiento',d:'Ve a <strong>🔩 Mantenimientos → Programar</strong>. Elige cliente, nombre y frecuencia (semanal, mensual...).'},
-      {t:'El calendario lo organiza',d:'Cada semana verás los mantenimientos que tocan, ordenados por fecha y agrupados por mes.'},
-      {t:'Marca como completado',d:'Al pulsar <strong>✅ Completar</strong> en el calendario, la próxima fecha se recalcula automáticamente.'},
-    ],tip:'💡 Frecuencias: semanal, quincenal, mensual, bimestral, trimestral y semestral.'
+    ico:'⚙️',grad:'linear-gradient(135deg,#e65100,#ffa726)',titulo:'Mantenimientos',sub:'Programa revisiones recurrentes automáticas',desc:'Planifica mantenimientos periódicos por cliente. El calendario los organiza automáticamente y recalcula la próxima fecha al completarlos.',feats:['6 frecuencias: semanal a semestral','Calendario organizado por semanas','Recálculo automático de fechas','Historial de mantenimientos realizados'],
   },
   {
-    ico:'📄',color:'rgba(156,39,176,.1)',titulo:'PDFs y Backup',sub:'Documenta y protege tus datos',steps:[
-      {t:'PDF de parte individual',d:'Genera un documento profesional con todos los datos del trabajo y firma del cliente para archivar.'},
-      {t:'Backup completo',d:'El botón <strong>☁️ Backup</strong> genera un PDF con todos los clientes y sus partes ordenados.'},
-      {t:'Imprime o comparte',d:'Los PDFs se abren en el navegador listos para imprimir, guardar o compartir por WhatsApp.'},
-    ],tip:'💡 El backup incluye portada, índice de clientes y cada parte con recuadro de firma.'
+    ico:'⚠️',grad:'linear-gradient(135deg,#b71c1c,#ef5350)',titulo:'Averías',sub:'Gestiona incidencias urgentes',desc:'Registra averías con prioridad, asígnalas a técnicos y haz seguimiento hasta su resolución. Todo queda en el historial del cliente.',feats:['Prioridad alta / media / baja','Asignación por técnico','Estado: pendiente → resuelta','Historial de averías resueltas'],
   },
   {
-    ico:'🎨',color:'rgba(233,30,99,.1)',titulo:'Personaliza tu app',sub:'Cambia colores y apariencia',steps:[
-      {t:'Accede a tu perfil',d:'Pulsa en tu nombre o avatar (arriba a la izquierda) para abrir la pantalla de perfil.'},
-      {t:'Cambia el color de acento',d:'En <strong>🎨 Personalización</strong> elige entre Rojo, Azul o Morado. El cambio se aplica al instante en toda la app.'},
-      {t:'Activa el modo claro',d:'Activa <strong>☀️ Modo claro</strong> para cambiar el fondo oscuro por un fondo blanco. Ideal para uso en exteriores.'},
-    ],tip:'💡 Tu tema y modo de color se guardan automáticamente en el dispositivo.'
+    ico:'📋',grad:'linear-gradient(135deg,#6a1b9a,#ab47bc)',titulo:'Presupuestos',sub:'Genera presupuestos profesionales',desc:'Crea presupuestos detallados con partidas, totales y firma digital. Envíalos directamente desde la app o imprimelos en PDF.',feats:['Partidas con precios','PDF con firma digital','Vinculación con cliente','Seguimiento de estado'],
   },
   {
-    ico:'📊',color:'rgba(0,188,212,.1)',titulo:'Estadísticas y calendario',sub:'Visualiza el rendimiento',steps:[
-      {t:'Estadísticas del grupo',d:'Total de partes, clientes activos, facturación estimada y tasa de completado del grupo activo.'},
-      {t:'Calendario semanal',d:'Vista de mantenimientos próximos agrupados por semana y mes. La semana actual se resalta en rojo.'},
-      {t:'Archivos',d:'Los clientes y partes archivados se guardan en Archivos y pueden restaurarse en cualquier momento.'},
-    ],tip:'💡 Las estadísticas se actualizan en tiempo real según los partes del grupo activo.'
+    ico:'📊',grad:'linear-gradient(135deg,#00695c,#26a69a)',titulo:'Estadísticas',sub:'Visualiza el rendimiento del grupo',desc:'Panel con KPIs en tiempo real: partes realizados, facturación estimada, clientes activos y tasa de completado del grupo.',feats:['Facturación estimada','Partes por estado','Clientes activos','Actualización en tiempo real'],
+  },
+  {
+    ico:'📄',grad:'linear-gradient(135deg,#1a237e,#3949ab)',titulo:'PDFs y Backups',sub:'Documenta y protege todos tus datos',desc:'Genera PDFs individuales de cada parte o un backup completo con todos los clientes y partes ordenados. Comparte o imprime al instante.',feats:['PDF por parte con firma','Backup completo del grupo','Compartir por WhatsApp','Portada e índice automáticos'],
+  },
+  {
+    ico:'🎤',grad:'linear-gradient(135deg,#880e4f,#e91e63)',titulo:'Asistente de voz',sub:'Crea partes y consulta por voz',desc:'Habla con naturalidad y JoyviApp entiende: busca clientes, crea partes, consulta averías o navega entre pantallas sin tocar la pantalla.',feats:['Detección automática de cliente','Rellenado inteligente de campos','Consultas en lenguaje natural','Navegación por voz'],
+  },
+  {
+    ico:'🏆',grad:'linear-gradient(135deg,#33691e,#8bc34a)',titulo:'Horas y rendimiento',sub:'Control de horas trabajadas por técnico',desc:'Registra las horas de cada técnico por parte de trabajo. Vista consolidada del equipo con exportación a CSV para facturación.',feats:['Horas por técnico y parte','Vista consolidada del equipo','Exportación CSV','Filtros por fecha'],
+  },
+  {
+    ico:'🔔',grad:'linear-gradient(135deg,#e65100,#ff7043)',titulo:'Notificaciones push',sub:'Avisos al equipo en tiempo real',desc:'Envía notificaciones push a todos los miembros del grupo aunque tengan el móvil bloqueado. Mantén al equipo siempre informado.',feats:['Push a todos los miembros','Mensajes personalizados','Historial de notificaciones','Funciona con móvil bloqueado'],
+  },
+  {
+    ico:'🗂️',grad:'linear-gradient(135deg,#37474f,#78909c)',titulo:'Archivos y recuperación',sub:'Nada se pierde nunca',desc:'Clientes y partes archivados se guardan aparte y se pueden recuperar en cualquier momento. Eliminación permanente solo cuando la confirmes.',feats:['Archivo de clientes y partes','Restauración con un toque','Eliminación permanente segura','Ficha PDF antes de borrar'],
   },
 ];
 
@@ -2397,74 +2380,27 @@ window.goSlide=idx=>{
   _carouselTimer=setInterval(()=>{_carouselIdx=(_carouselIdx+1)%FUNC_SLIDES.length;renderCarousel();},10000);
 };
 
-// Abrir detalle de slide al hacer clic
-window.abrirDetalleSlide=idx=>{
-  const s=FUNC_SLIDES[idx];
-  const destinos={
-    0:'grupo',
-    1:'grupo',
-    2:'mantenimiento',
-    3:'grupo',
-    4:'grupo',
-    5:'estadisticas',
-  };
-  const html=`
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
-      <div style="width:60px;height:60px;border-radius:18px;background:${s.color};display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0">${s.ico}</div>
-      <div>
-        <div style="font-size:20px;font-weight:900;color:var(--tx)">${s.titulo}</div>
-        <div style="font-size:13px;color:var(--tx2);margin-top:3px">${s.sub}</div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-      ${s.steps.map((st,j)=>`<div style="display:flex;align-items:flex-start;gap:12px;background:rgba(var(--theme-rgb),.06);border-radius:12px;padding:14px">
-        <div style="width:26px;height:26px;border-radius:8px;background:var(--r);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${j+1}</div>
-        <div><div style="font-size:14px;font-weight:800;color:var(--tx);margin-bottom:4px">${st.t}</div><div style="font-size:13px;color:var(--tx2);line-height:1.5">${st.d}</div></div>
-      </div>`).join('')}
-    </div>
-    ${s.tip?`<div style="background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:16px">
-      <div style="font-size:18px">💡</div>
-      <div style="font-size:13px;color:var(--tx2);line-height:1.5">${s.tip.slice(2)}</div>
-    </div>`:''}
-    ${CGID&&destinos[idx]?`<button class="btn btn-p" onclick="cerrarSB();${idx===1?`goScreen('grupo');setTimeout(()=>switchGTab('part'),100)`:idx===2?`goScreen('grupo');setTimeout(()=>switchGTab('mant'),100)`:idx===4?`goScreen('grupo');setTimeout(()=>switchGTab('cli'),100)`:`goScreen('${destinos[idx]}')`}">Ir a ${s.titulo} →</button>`:''}
-  `;
-  abrirSB(s.titulo,html);
-};
-
 const buildCarousel=()=>{
-  // Color sólido de fondo para cada slide basado en su color temático
-  const heroBgs=[
-    'linear-gradient(135deg,rgba(var(--theme-rgb),.55) 0%,rgba(var(--theme-rgb),.3) 100%)',
-    'linear-gradient(135deg,rgba(76,175,80,.55) 0%,rgba(76,175,80,.3) 100%)',
-    'linear-gradient(135deg,rgba(33,150,243,.55) 0%,rgba(33,150,243,.3) 100%)',
-    'linear-gradient(135deg,rgba(255,152,0,.55) 0%,rgba(255,152,0,.3) 100%)',
-    'linear-gradient(135deg,rgba(156,39,176,.5) 0%,rgba(156,39,176,.28) 100%)',
-    'linear-gradient(135deg,rgba(233,30,99,.5) 0%,rgba(233,30,99,.28) 100%)',
-    'linear-gradient(135deg,rgba(0,188,212,.5) 0%,rgba(0,188,212,.28) 100%)',
-  ];
   const slidesHTML=FUNC_SLIDES.map((s,i)=>`
     <div class="func-slide ${i===0?'active':''}">
-      <div class="func-slide-hero" onclick="abrirDetalleSlide(${i})">
-        <div class="func-slide-hero-bg" style="background:${heroBgs[i]||heroBgs[0]}"></div>
-        <div class="func-slide-hero-ico">${s.ico}</div>
-        <div class="func-slide-hero-content">
+      <div class="func-slide-hero">
+        <div class="func-slide-hero-bg" style="background:${s.grad}"></div>
+        <div class="func-slide-hero-side">${s.ico}</div>
+        <div class="func-slide-hero-body">
           <div class="func-slide-title">${s.titulo}</div>
           <div class="func-slide-sub">${s.sub}</div>
         </div>
-        <div class="func-slide-arrow">›</div>
       </div>
-      <div class="func-steps">
-        ${s.steps.map((st,j)=>`<div class="func-step"><div class="func-step-num">${j+1}</div><div class="func-step-txt"><strong>${st.t}</strong> — ${st.d}</div></div>`).join('')}
-      </div>
-      ${s.tip?`<div class="func-tip"><div class="func-tip-ico">💡</div><div>${s.tip.slice(2)}</div></div>`:''}
+      <p class="func-slide-desc">${s.desc}</p>
+      <div class="func-feats">${s.feats.map(f=>`<span class="func-feat">${f}</span>`).join('')}</div>
     </div>`).join('');
   const dotsHTML=FUNC_SLIDES.map((_,i)=>`<div class="func-dot ${i===0?'active':''}" onclick="goSlide(${i})"></div>`).join('');
   return`<div class="func-carousel" id="funcCarousel">
     <div class="func-carousel-header">
-      <div class="func-carousel-label">Guía de uso</div>
+      <div class="func-carousel-label">Funciones</div>
       <span class="func-carousel-counter">1 / ${FUNC_SLIDES.length}</span>
     </div>
-    <div id="funcSlidesWrap" style="position:relative;overflow:hidden">
+    <div id="funcSlidesWrap" style="overflow:hidden">
       ${slidesHTML}
     </div>
     <div class="func-dots">
@@ -7288,20 +7224,25 @@ window._confirmarBorradoCliente=async(archId)=>{
     // También intentar con archId por si acaso
     if(cliId!==archId){try{await deleteDoc(doc(db,'grupos',CGID,'clientes',archId));}catch(e){}}
 
-    // 3. Borrar el doc de 'archivos' — operación principal, con reintento
+    // 3. Borrar el doc de 'archivos' y verificar contra servidor
     let archBorrado=false;
     for(let intento=0;intento<3;intento++){
       try{
-        await deleteDoc(doc(db,'grupos',CGID,'archivos',archId));
-        archBorrado=true;
-        break;
+        const archRef=doc(db,'grupos',CGID,'archivos',archId);
+        await deleteDoc(archRef);
+        // Verificar en servidor (evita falso OK por caché optimista local)
+        let aun=false;
+        try{const chk=await getDocFromServer(archRef);aun=chk.exists();}catch(er){if(er&&(er.code==='not-found'||String(er.message).includes('not-found')))aun=false;else throw er;}
+        if(!aun){archBorrado=true;break;}
+        console.warn('Intento '+intento+': doc sigue en servidor');
       }catch(e){
-        console.warn(`Intento ${intento+1} borrado archivos falló:`,e);
-        if(intento<2)await new Promise(r=>setTimeout(r,500));
+        if(e&&(e.code==='not-found'||String(e.message).includes('not-found'))){archBorrado=true;break;}
+        console.warn('Borrado archivos intento '+intento+' fallo:',e);
       }
+      if(intento<2)await new Promise(r=>setTimeout(r,700));
     }
     if(!archBorrado){
-      toast('No se pudo eliminar el registro archivado. Verifica permisos.','e');
+      toast('No se pudo eliminar. Comprueba conexión o permisos en Firestore.','e');
       return;
     }
 
