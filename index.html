@@ -108,7 +108,7 @@ body.modo-claro .det-row{border-bottom-color:rgba(0,0,0,.08)}
 body.modo-claro .toggle-track{background:rgba(0,0,0,.15)}
 body.modo-claro #installBanner{background:linear-gradient(135deg,#ffffff,#f7f7f7);border-top-color:rgba(var(--theme-rgb),.2)}
 
-body.modo-claro .func-slide-title{color:#fff}
+
 body.modo-claro .func-step-txt{color:rgba(0,0,0,.7)}
 body.modo-claro .func-step-txt strong{color:#111}
 body.modo-claro .func-carousel-label{color:var(--r)}
@@ -599,16 +599,14 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .func-slide{display:none;padding:12px 16px 16px;animation:fadeSlide .3s cubic-bezier(.16,1,.3,1)}
 .func-slide.active{display:block}
 @keyframes fadeSlide{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
-.func-slide-hero{position:relative;border-radius:16px;overflow:hidden;margin-bottom:12px;min-height:80px;display:flex;align-items:stretch}
-.func-slide-hero-side{width:72px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;position:relative;z-index:1}
-.func-slide-hero-body{flex:1;padding:14px 14px 14px 4px;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center}
-.func-slide-hero-bg{position:absolute;inset:0}
-.func-slide-title{font-size:17px;font-weight:900;color:#fff;line-height:1.15;text-shadow:0 1px 6px rgba(0,0,0,.3)}
-.func-slide-sub{font-size:11.5px;color:rgba(255,255,255,.8);font-weight:600;margin-top:2px;line-height:1.3}
-.func-slide-desc{font-size:12.5px;color:var(--tx2);line-height:1.5;margin-bottom:10px}
-.func-feats{display:flex;flex-wrap:wrap;gap:6px}
-.func-feat{font-size:11px;font-weight:700;color:var(--tx);background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.14);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:4px;white-space:nowrap}
-.func-feat::before{content:'✓';font-size:9px;color:var(--r);font-weight:900}
+.func-slide-vis{width:100%;border-radius:12px;overflow:hidden;margin-bottom:11px;background:var(--card2);border:1px solid var(--border)}
+.func-slide-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.func-slide-ico-wrap{width:32px;height:32px;border-radius:9px;background:rgba(var(--theme-rgb),.12);border:1px solid rgba(var(--theme-rgb),.18);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.func-slide-title{font-size:14px;font-weight:900;color:var(--tx);line-height:1.2}
+.func-slide-sub{font-size:11px;color:var(--tx2);margin-top:1px;line-height:1.3}
+.func-feats{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.func-feat{font-size:10.5px;font-weight:700;color:var(--tx2);background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 9px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.func-feat::before{content:'✓';font-size:8px;color:var(--r);font-weight:900}
 .func-dots{display:flex;gap:5px;justify-content:center;padding:10px 0 13px;align-items:center}
 .func-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:.25s cubic-bezier(.16,1,.3,1)}
 .func-dot.active{background:var(--r);width:20px;border-radius:3px}
@@ -2321,42 +2319,254 @@ const actualizarDrawer=()=>{
 // RENDER: INICIO
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const FUNC_SLIDES=[
-  {
-    ico:'👥',grad:'linear-gradient(135deg,#3a3aff,#6c63ff)',titulo:'Grupos de trabajo',sub:'Colabora con tu equipo en tiempo real',desc:'Crea espacios de trabajo compartidos donde todo el equipo ve los mismos clientes, partes y mantenimientos al instante.',feats:['Varios grupos por zona o técnico','Invita con ID de grupo','Roles admin y miembro','Sincronización en tiempo real'],
-  },
-  {
-    ico:'👷',grad:'linear-gradient(135deg,#00897b,#26c6da)',titulo:'Gestión de clientes',sub:'Fichas completas con toda la información',desc:'Cada cliente tiene su ficha con datos de contacto, dirección, edificio/comunidad, notas y un indicador de prioridad visual.',feats:['Teléfono, email y dirección','Indicador 🟢🟡🔴 de estado','Historial completo de partes','Búsqueda instantánea'],
-  },
-  {
-    ico:'🔧',grad:'linear-gradient(135deg,#1565c0,#42a5f5)',titulo:'Partes de trabajo',sub:'Registra cada intervención al detalle',desc:'Crea partes de trabajo con materiales, importes, operario y estado. Genera PDFs profesionales con firma del cliente en segundos.',feats:['Materiales e importes desglosados','PDF con firma del cliente','Plantillas de títulos frecuentes','Estados: pendiente, en curso, completado'],
-  },
-  {
-    ico:'⚙️',grad:'linear-gradient(135deg,#e65100,#ffa726)',titulo:'Mantenimientos',sub:'Programa revisiones recurrentes automáticas',desc:'Planifica mantenimientos periódicos por cliente. El calendario los organiza automáticamente y recalcula la próxima fecha al completarlos.',feats:['6 frecuencias: semanal a semestral','Calendario organizado por semanas','Recálculo automático de fechas','Historial de mantenimientos realizados'],
-  },
-  {
-    ico:'⚠️',grad:'linear-gradient(135deg,#b71c1c,#ef5350)',titulo:'Averías',sub:'Gestiona incidencias urgentes',desc:'Registra averías con prioridad, asígnalas a técnicos y haz seguimiento hasta su resolución. Todo queda en el historial del cliente.',feats:['Prioridad alta / media / baja','Asignación por técnico','Estado: pendiente → resuelta','Historial de averías resueltas'],
-  },
-  {
-    ico:'📋',grad:'linear-gradient(135deg,#6a1b9a,#ab47bc)',titulo:'Presupuestos',sub:'Genera presupuestos profesionales',desc:'Crea presupuestos detallados con partidas, totales y firma digital. Envíalos directamente desde la app o imprimelos en PDF.',feats:['Partidas con precios','PDF con firma digital','Vinculación con cliente','Seguimiento de estado'],
-  },
-  {
-    ico:'📊',grad:'linear-gradient(135deg,#00695c,#26a69a)',titulo:'Estadísticas',sub:'Visualiza el rendimiento del grupo',desc:'Panel con KPIs en tiempo real: partes realizados, facturación estimada, clientes activos y tasa de completado del grupo.',feats:['Facturación estimada','Partes por estado','Clientes activos','Actualización en tiempo real'],
-  },
-  {
-    ico:'📄',grad:'linear-gradient(135deg,#1a237e,#3949ab)',titulo:'PDFs y Backups',sub:'Documenta y protege todos tus datos',desc:'Genera PDFs individuales de cada parte o un backup completo con todos los clientes y partes ordenados. Comparte o imprime al instante.',feats:['PDF por parte con firma','Backup completo del grupo','Compartir por WhatsApp','Portada e índice automáticos'],
-  },
-  {
-    ico:'🎤',grad:'linear-gradient(135deg,#880e4f,#e91e63)',titulo:'Asistente de voz',sub:'Crea partes y consulta por voz',desc:'Habla con naturalidad y JoyviApp entiende: busca clientes, crea partes, consulta averías o navega entre pantallas sin tocar la pantalla.',feats:['Detección automática de cliente','Rellenado inteligente de campos','Consultas en lenguaje natural','Navegación por voz'],
-  },
-  {
-    ico:'🏆',grad:'linear-gradient(135deg,#33691e,#8bc34a)',titulo:'Horas y rendimiento',sub:'Control de horas trabajadas por técnico',desc:'Registra las horas de cada técnico por parte de trabajo. Vista consolidada del equipo con exportación a CSV para facturación.',feats:['Horas por técnico y parte','Vista consolidada del equipo','Exportación CSV','Filtros por fecha'],
-  },
-  {
-    ico:'🔔',grad:'linear-gradient(135deg,#e65100,#ff7043)',titulo:'Notificaciones push',sub:'Avisos al equipo en tiempo real',desc:'Envía notificaciones push a todos los miembros del grupo aunque tengan el móvil bloqueado. Mantén al equipo siempre informado.',feats:['Push a todos los miembros','Mensajes personalizados','Historial de notificaciones','Funciona con móvil bloqueado'],
-  },
-  {
-    ico:'🗂️',grad:'linear-gradient(135deg,#37474f,#78909c)',titulo:'Archivos y recuperación',sub:'Nada se pierde nunca',desc:'Clientes y partes archivados se guardan aparte y se pueden recuperar en cualquier momento. Eliminación permanente solo cuando la confirmes.',feats:['Archivo de clientes y partes','Restauración con un toque','Eliminación permanente segura','Ficha PDF antes de borrar'],
-  },
+  {ico:"👥",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <text x="10" y="16" font-size="7" fill="#e53935" font-weight="700" font-family="sans-serif" letter-spacing="1">MIS GRUPOS</text>
+  <rect x="10" y="22" width="78" height="78" rx="12" fill="#252525"/>
+  <rect x="10" y="22" width="78" height="78" rx="12" fill="url(#g0)" opacity=".7"/>
+  <defs><linearGradient id="g0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d5a27"/><stop offset="1" stop-color="#1a3a16"/></linearGradient></defs>
+  <text x="49" y="85" font-size="9" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">Joyvi</text>
+  <rect x="96" y="22" width="78" height="78" rx="12" fill="#252525"/>
+  <text x="135" y="68" font-size="22" text-anchor="middle" font-family="sans-serif">+</text>
+  <text x="135" y="85" font-size="8" fill="rgba(255,255,255,.35)" font-family="sans-serif" text-anchor="middle">Nuevo grupo</text>
+  <rect x="182" y="22" width="78" height="78" rx="12" fill="#252525"/>
+  <rect x="182" y="22" width="78" height="78" rx="12" fill="url(#g1)" opacity=".5"/>
+  <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a237e"/><stop offset="1" stop-color="#0d47a1"/></linearGradient></defs>
+  <text x="221" y="85" font-size="9" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">Zona Norte</text>
+</svg>`,titulo:"Grupos de trabajo",sub:"Colabora con tu equipo en tiempo real",feats:["Varios grupos por zona o técnico", "Invita con ID de grupo", "Roles admin y miembro", "Sincronización en tiempo real"]},
+  {ico:"👷",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <rect x="10" y="8" width="200" height="18" rx="9" fill="#252525"/>
+  <text x="22" y="20" font-size="8" fill="rgba(255,255,255,.3)" font-family="sans-serif">🔍 Buscar cliente...</text>
+  <rect x="10" y="32" width="260" height="22" rx="8" fill="#252525"/>
+  <circle cx="22" cy="43" r="6" fill="#4caf50"/>
+  <text x="34" y="47" font-size="8" fill="#f0f0f0" font-weight="700" font-family="sans-serif">Comunidad Las Flores</text>
+  <text x="34" y="56" font-size="6.5" fill="rgba(255,255,255,.4)" font-family="sans-serif">C/ Rambla 12 · 968 123 456</text>
+  <rect x="10" y="58" width="260" height="22" rx="8" fill="#252525"/>
+  <circle cx="22" cy="69" r="6" fill="#ff9800"/>
+  <text x="34" y="73" font-size="8" fill="#f0f0f0" font-weight="700" font-family="sans-serif">Edificio Mediterráneo</text>
+  <text x="34" y="82" font-size="6.5" fill="rgba(255,255,255,.4)" font-family="sans-serif">Av. Principal 4 · 3 partes</text>
+  <rect x="10" y="84" width="260" height="22" rx="8" fill="#252525"/>
+  <circle cx="22" cy="95" r="6" fill="#e53935"/>
+  <text x="34" y="99" font-size="8" fill="#f0f0f0" font-weight="700" font-family="sans-serif">Hotel Costa Azul</text>
+  <text x="34" y="108" font-size="6.5" fill="rgba(255,255,255,.4)" font-family="sans-serif">Paseo Marítimo 8 · 7 partes</text>
+</svg>`,titulo:"Gestión de clientes",sub:"Fichas completas con toda la información",feats:["Teléfono, email y dirección", "Indicador 🟢🟡🔴 de estado", "Historial completo de partes", "Búsqueda instantánea"]},
+  {ico:"🔧",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <text x="10" y="13" font-size="8" fill="rgba(255,255,255,.4)" font-family="sans-serif">CLIENTE</text>
+  <rect x="10" y="17" width="175" height="14" rx="5" fill="#252525"/>
+  <text x="16" y="27" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Comunidad Las Flores</text>
+  <text x="10" y="43" font-size="8" fill="rgba(255,255,255,.4)" font-family="sans-serif">TÍTULO</text>
+  <rect x="10" y="47" width="260" height="14" rx="5" fill="#252525"/>
+  <text x="16" y="57" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Revisión bomba presión grupo 2</text>
+  <text x="10" y="73" font-size="8" fill="rgba(255,255,255,.4)" font-family="sans-serif">MATERIALES</text>
+  <rect x="10" y="77" width="260" height="14" rx="5" fill="#252525"/>
+  <text x="16" y="87" font-size="7.5" fill="rgba(255,255,255,.5)" font-family="sans-serif">Filtro 3/4", junta tórica x2...</text>
+  <rect x="10" y="95" width="78" height="13" rx="6" fill="#e53935"/>
+  <text x="49" y="104" font-size="7.5" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">📄 PDF</text>
+  <rect x="96" y="95" width="78" height="13" rx="6" fill="#252525"/>
+  <text x="135" y="104" font-size="7.5" fill="#f0f0f0" font-family="sans-serif" text-anchor="middle">Guardar</text>
+  <rect x="200" y="95" width="70" height="13" rx="6" fill="#252525" stroke="rgba(76,175,80,.4)" stroke-width="1"/>
+  <text x="235" y="104" font-size="7.5" fill="#4caf50" font-family="sans-serif" text-anchor="middle">✓ Completar</text>
+</svg>`,titulo:"Partes de trabajo",sub:"Registra cada intervención al detalle",feats:["PDF con firma del cliente", "Materiales e importes", "Plantillas de títulos", "Estados personalizables"]},
+  {ico:"⚙️",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <text x="10" y="13" font-size="7.5" fill="#e53935" font-weight="700" font-family="sans-serif">ESTA SEMANA</text>
+  <rect x="10" y="18" width="260" height="20" rx="7" fill="#1a2a1a" stroke="rgba(76,175,80,.3)" stroke-width="1"/>
+  <circle cx="22" cy="28" r="5" fill="rgba(76,175,80,.2)" stroke="#4caf50" stroke-width="1"/>
+  <text x="32" y="32" font-size="7.5" fill="#f0f0f0" font-weight="700" font-family="sans-serif">Revisión bomba — Las Flores</text>
+  <text x="220" y="32" font-size="6.5" fill="#4caf50" font-family="sans-serif">hoy</text>
+  <rect x="10" y="42" width="260" height="20" rx="7" fill="#252525"/>
+  <circle cx="22" cy="52" r="5" fill="rgba(255,152,0,.2)" stroke="#ff9800" stroke-width="1"/>
+  <text x="32" y="56" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Mantenimiento filtros — Hotel</text>
+  <text x="220" y="56" font-size="6.5" fill="rgba(255,255,255,.4)" font-family="sans-serif">mañana</text>
+  <text x="10" y="74" font-size="7.5" fill="rgba(255,255,255,.35)" font-weight="700" font-family="sans-serif">PRÓXIMA SEMANA</text>
+  <rect x="10" y="78" width="260" height="20" rx="7" fill="#252525"/>
+  <circle cx="22" cy="88" r="5" fill="#252525" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+  <text x="32" y="92" font-size="7.5" fill="rgba(255,255,255,.6)" font-family="sans-serif">Revisión trimestral — Mediterráneo</text>
+  <rect x="246" y="82" width="22" height="12" rx="5" fill="#e53935"/>
+  <text x="257" y="91" font-size="6.5" fill="#fff" font-family="sans-serif" text-anchor="middle">Usar</text>
+</svg>`,titulo:"Mantenimientos",sub:"Revisiones recurrentes automáticas",feats:["6 frecuencias disponibles", "Calendario por semanas", "Recálculo automático", "Historial de realizados"]},
+  {ico:"⚠️",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <rect x="10" y="6" width="260" height="22" rx="8" fill="#2a1a1a" stroke="rgba(229,57,53,.4)" stroke-width="1"/>
+  <rect x="18" y="11" width="28" height="12" rx="4" fill="#e53935"/>
+  <text x="32" y="20" font-size="6.5" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">ALTA</text>
+  <text x="52" y="20" font-size="7.5" fill="#f0f0f0" font-weight="700" font-family="sans-serif">Bomba sin presión — Las Flores</text>
+  <text x="52" y="28" font-size="6" fill="rgba(255,255,255,.4)" font-family="sans-serif">Hoy 09:14 · Sin asignar</text>
+  <rect x="10" y="32" width="260" height="22" rx="8" fill="#252525"/>
+  <rect x="18" y="37" width="28" height="12" rx="4" fill="rgba(255,152,0,.9)"/>
+  <text x="32" y="46" font-size="6.5" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">MEDIA</text>
+  <text x="52" y="46" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Fuga tubería — Hotel Costa</text>
+  <text x="52" y="54" font-size="6" fill="rgba(255,255,255,.4)" font-family="sans-serif">Ayer · Jesús</text>
+  <rect x="10" y="58" width="260" height="22" rx="8" fill="#252525"/>
+  <rect x="18" y="63" width="28" height="12" rx="4" fill="rgba(76,175,80,.9)"/>
+  <text x="32" y="72" font-size="6.5" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">BAJA</text>
+  <text x="52" y="72" font-size="7.5" fill="rgba(255,255,255,.6)" font-family="sans-serif">Ruido motor — Mediterráneo</text>
+  <text x="52" y="80" font-size="6" fill="rgba(255,255,255,.4)" font-family="sans-serif">12/06 · Resuelto ✓</text>
+  <rect x="10" y="90" width="85" height="14" rx="6" fill="#e53935"/>
+  <text x="52" y="100" font-size="7.5" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">+ Nueva avería</text>
+</svg>`,titulo:"Averías",sub:"Gestiona incidencias urgentes",feats:["Prioridad alta/media/baja", "Asignación por técnico", "Estado hasta resolución", "Historial de resueltas"]},
+  {ico:"📋",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <text x="10" y="13" font-size="8" fill="#f0f0f0" font-weight="700" font-family="sans-serif">Presupuesto #0042</text>
+  <text x="10" y="22" font-size="6.5" fill="rgba(255,255,255,.4)" font-family="sans-serif">Comunidad Las Flores · 14/06/2025</text>
+  <line x1="10" y1="27" x2="270" y2="27" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <text x="10" y="37" font-size="7" fill="rgba(255,255,255,.4)" font-family="sans-serif">Descripción</text>
+  <text x="225" y="37" font-size="7" fill="rgba(255,255,255,.4)" font-family="sans-serif" text-anchor="end">Importe</text>
+  <text x="10" y="50" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Bomba presión 1HP</text>
+  <text x="225" y="50" font-size="7.5" fill="#f0f0f0" font-family="sans-serif" text-anchor="end">320,00 €</text>
+  <text x="10" y="62" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Mano de obra (4h)</text>
+  <text x="225" y="62" font-size="7.5" fill="#f0f0f0" font-family="sans-serif" text-anchor="end">160,00 €</text>
+  <text x="10" y="74" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Material auxiliar</text>
+  <text x="225" y="74" font-size="7.5" fill="#f0f0f0" font-family="sans-serif" text-anchor="end">45,00 €</text>
+  <line x1="10" y1="80" x2="270" y2="80" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <text x="10" y="92" font-size="8" fill="#f0f0f0" font-weight="700" font-family="sans-serif">TOTAL</text>
+  <text x="225" y="92" font-size="9" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="end">525,00 €</text>
+  <rect x="230" y="82" width="40" height="13" rx="5" fill="#e53935"/>
+  <text x="250" y="91" font-size="6.5" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">PDF ↗</text>
+</svg>`,titulo:"Presupuestos",sub:"Genera presupuestos profesionales",feats:["Partidas con precios", "PDF con firma digital", "Vinculación con cliente", "Seguimiento de estado"]},
+  {ico:"📊",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <rect x="10" y="6" width="58" height="42" rx="8" fill="#252525"/>
+  <text x="39" y="23" font-size="14" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="middle">47</text>
+  <text x="39" y="33" font-size="6" fill="rgba(255,255,255,.4)" font-family="sans-serif" text-anchor="middle">PARTES</text>
+  <text x="39" y="43" font-size="6" fill="#4caf50" font-family="sans-serif" text-anchor="middle">+12%</text>
+  <rect x="74" y="6" width="58" height="42" rx="8" fill="#252525"/>
+  <text x="103" y="23" font-size="14" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="middle">18</text>
+  <text x="103" y="33" font-size="6" fill="rgba(255,255,255,.4)" font-family="sans-serif" text-anchor="middle">CLIENTES</text>
+  <text x="103" y="43" font-size="6" fill="#4caf50" font-family="sans-serif" text-anchor="middle">activos</text>
+  <rect x="138" y="6" width="132" height="42" rx="8" fill="#252525"/>
+  <text x="204" y="23" font-size="11" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="middle">8.420 €</text>
+  <text x="204" y="33" font-size="6" fill="rgba(255,255,255,.4)" font-family="sans-serif" text-anchor="middle">FACTURACIÓN EST.</text>
+  <text x="204" y="43" font-size="6" fill="#4caf50" font-family="sans-serif" text-anchor="middle">este mes</text>
+  <rect x="10" y="54" width="260" height="14" rx="5" fill="#252525"/>
+  <rect x="10" y="54" width="188" height="14" rx="5" fill="rgba(229,57,53,.35)"/>
+  <text x="10" y="80" font-size="6.5" fill="rgba(255,255,255,.4)" font-family="sans-serif">Completado 72% · 34 de 47</text>
+  <rect x="10" y="84" width="260" height="22" rx="7" fill="#252525"/>
+  <rect x="16" y="88" width="8" height="12" rx="2" fill="#e53935"/>
+  <rect x="28" y="91" width="8" height="9" rx="2" fill="#e53935" opacity=".7"/>
+  <rect x="40" y="89" width="8" height="11" rx="2" fill="#e53935" opacity=".5"/>
+  <rect x="52" y="86" width="8" height="14" rx="2" fill="#e53935"/>
+  <rect x="64" y="90" width="8" height="10" rx="2" fill="#e53935" opacity=".6"/>
+  <rect x="76" y="88" width="8" height="12" rx="2" fill="#e53935" opacity=".8"/>
+  <text x="200" y="99" font-size="6" fill="rgba(255,255,255,.4)" font-family="sans-serif">partes / semana</text>
+</svg>`,titulo:"Estadísticas",sub:"Visualiza el rendimiento del grupo",feats:["Facturación estimada", "Partes por estado", "Clientes activos", "Tiempo real"]},
+  {ico:"📄",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <rect x="10" y="6" width="76" height="98" rx="6" fill="#fff"/>
+  <rect x="14" y="10" width="68" height="12" rx="2" fill="#e53935"/>
+  <text x="48" y="19" font-size="5.5" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">PARTE DE TRABAJO</text>
+  <rect x="14" y="26" width="44" height="3" rx="1" fill="#e8e8e8"/>
+  <rect x="14" y="32" width="60" height="3" rx="1" fill="#e8e8e8"/>
+  <rect x="14" y="38" width="50" height="3" rx="1" fill="#e8e8e8"/>
+  <rect x="14" y="46" width="68" height="1" fill="#f0f0f0"/>
+  <rect x="14" y="50" width="30" height="3" rx="1" fill="#e8e8e8"/>
+  <rect x="14" y="56" width="60" height="3" rx="1" fill="#e8e8e8"/>
+  <rect x="14" y="62" width="68" height="1" fill="#f0f0f0"/>
+  <text x="48" y="74" font-size="5" fill="#999" font-family="sans-serif" text-anchor="middle">Firma del cliente</text>
+  <rect x="18" y="76" width="56" height="18" rx="2" fill="#f7f7f7" stroke="#e0e0e0" stroke-width=".5"/>
+  <rect x="10" y="6" width="76" height="98" rx="6" fill="none" stroke="rgba(0,0,0,.1)" stroke-width="1"/>
+  <rect x="100" y="6" width="180" height="44" rx="8" fill="#252525"/>
+  <text x="112" y="22" font-size="8" fill="#f0f0f0" font-weight="700" font-family="sans-serif">☁️ Backup completo</text>
+  <text x="112" y="34" font-size="6.5" fill="rgba(255,255,255,.4)" font-family="sans-serif">18 clientes · 47 partes</text>
+  <rect x="112" y="38" width="60" height="10" rx="4" fill="#e53935"/>
+  <text x="142" y="45.5" font-size="6" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">Generar PDF</text>
+  <rect x="100" y="56" width="180" height="44" rx="8" fill="#252525"/>
+  <text x="112" y="72" font-size="8" fill="#f0f0f0" font-weight="700" font-family="sans-serif">📄 Parte individual</text>
+  <text x="112" y="82" font-size="6.5" fill="rgba(255,255,255,.4)" font-family="sans-serif">Con firma · Listo para imprimir</text>
+  <rect x="112" y="87" width="60" height="10" rx="4" fill="#252525" stroke="rgba(229,57,53,.5)" stroke-width="1"/>
+  <text x="142" y="94.5" font-size="6" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="middle">Ver PDF ↗</text>
+</svg>`,titulo:"PDFs y Backups",sub:"Documenta y protege tus datos",feats:["PDF por parte con firma", "Backup completo del grupo", "Compartir por WhatsApp", "Portada e índice automáticos"]},
+  {ico:"🎤",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <circle cx="140" cy="45" r="28" fill="rgba(229,57,53,.1)" stroke="rgba(229,57,53,.3)" stroke-width="1"/>
+  <circle cx="140" cy="45" r="20" fill="rgba(229,57,53,.15)" stroke="rgba(229,57,53,.5)" stroke-width="1"/>
+  <circle cx="140" cy="45" r="13" fill="#e53935"/>
+  <rect x="136" y="33" width="8" height="14" rx="4" fill="#fff"/>
+  <path d="M130 46 Q130 53 140 53 Q150 53 150 46" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="140" y1="53" x2="140" y2="57" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="136" y1="57" x2="144" y2="57" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="108" y1="43" x2="108" y2="48" stroke="#e53935" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+  <line x1="114" y1="39" x2="114" y2="52" stroke="#e53935" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+  <line x1="120" y1="41" x2="120" y2="50" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
+  <line x1="160" y1="41" x2="160" y2="50" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
+  <line x1="166" y1="39" x2="166" y2="52" stroke="#e53935" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+  <line x1="172" y1="43" x2="172" y2="48" stroke="#e53935" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+  <rect x="30" y="80" width="220" height="22" rx="10" fill="#252525"/>
+  <text x="140" y="88" font-size="7.5" fill="rgba(255,255,255,.5)" font-family="sans-serif" text-anchor="middle" font-style="italic">"Nuevo parte para Las Flores..."</text>
+  <text x="140" y="98" font-size="6.5" fill="#e53935" font-family="sans-serif" text-anchor="middle">Cliente detectado ✓</text>
+  <text x="140" y="12" font-size="7" fill="rgba(255,255,255,.35)" font-family="sans-serif" text-anchor="middle">Escuchando...</text>
+</svg>`,titulo:"Asistente de voz",sub:"Crea partes y consulta por voz",feats:["Detección de cliente", "Rellenado inteligente", "Consultas naturales", "Navegación por voz"]},
+  {ico:"🏆",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <text x="10" y="12" font-size="7" fill="rgba(255,255,255,.4)" font-family="sans-serif">TÉCNICO</text>
+  <text x="160" y="12" font-size="7" fill="rgba(255,255,255,.4)" font-family="sans-serif" text-anchor="end">HORAS</text>
+  <text x="220" y="12" font-size="7" fill="rgba(255,255,255,.4)" font-family="sans-serif" text-anchor="end">PARTES</text>
+  <line x1="10" y1="15" x2="270" y2="15" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <rect x="10" y="18" width="260" height="18" rx="5" fill="#252525"/>
+  <circle cx="21" cy="27" r="6" fill="#e53935"/>
+  <text x="21" y="30" font-size="6" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">J</text>
+  <text x="32" y="30" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Jesús</text>
+  <text x="160" y="30" font-size="8" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="end">38h</text>
+  <text x="220" y="30" font-size="7.5" fill="#f0f0f0" font-family="sans-serif" text-anchor="end">12</text>
+  <rect x="10" y="40" width="260" height="18" rx="5" fill="#252525"/>
+  <circle cx="21" cy="49" r="6" fill="#3a3aff"/>
+  <text x="21" y="52" font-size="6" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">M</text>
+  <text x="32" y="52" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Miguel</text>
+  <text x="160" y="52" font-size="8" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="end">24h</text>
+  <text x="220" y="52" font-size="7.5" fill="#f0f0f0" font-family="sans-serif" text-anchor="end">8</text>
+  <rect x="10" y="62" width="260" height="18" rx="5" fill="#252525"/>
+  <circle cx="21" cy="71" r="6" fill="#00897b"/>
+  <text x="21" y="74" font-size="6" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">A</text>
+  <text x="32" y="74" font-size="7.5" fill="#f0f0f0" font-family="sans-serif">Antonio</text>
+  <text x="160" y="74" font-size="8" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="end">16h</text>
+  <text x="220" y="74" font-size="7.5" fill="#f0f0f0" font-family="sans-serif" text-anchor="end">5</text>
+  <line x1="10" y1="85" x2="270" y2="85" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <text x="10" y="96" font-size="7.5" fill="#f0f0f0" font-weight="700" font-family="sans-serif">TOTAL</text>
+  <text x="160" y="96" font-size="8.5" fill="#e53935" font-weight="700" font-family="sans-serif" text-anchor="end">78h</text>
+  <rect x="230" y="87" width="40" height="14" rx="5" fill="#252525" stroke="rgba(76,175,80,.4)" stroke-width="1"/>
+  <text x="250" y="96" font-size="6.5" fill="#4caf50" font-family="sans-serif" text-anchor="middle">CSV ↓</text>
+</svg>`,titulo:"Horas y rendimiento",sub:"Control de horas por técnico",feats:["Horas por parte", "Vista consolidada", "Exportación CSV", "Filtros por fecha"]},
+  {ico:"🔔",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <rect x="30" y="8" width="220" height="46" rx="12" fill="#252525" stroke="rgba(229,57,53,.3)" stroke-width="1"/>
+  <circle cx="46" cy="31" r="10" fill="#e53935"/>
+  <text x="46" y="35" font-size="8" fill="#fff" font-weight="700" font-family="sans-serif" text-anchor="middle">J</text>
+  <text x="62" y="24" font-size="7.5" fill="#f0f0f0" font-weight="700" font-family="sans-serif">JoyviApp</text>
+  <text x="62" y="34" font-size="6.5" fill="rgba(255,255,255,.5)" font-family="sans-serif">Avería urgente en Las Flores</text>
+  <text x="62" y="44" font-size="6" fill="rgba(255,255,255,.3)" font-family="sans-serif">hace 2 min · desliza para ver</text>
+  <rect x="10" y="62" width="260" height="40" rx="10" fill="#252525"/>
+  <text x="20" y="78" font-size="7.5" fill="#f0f0f0" font-weight="700" font-family="sans-serif">📢 Enviar aviso al grupo</text>
+  <rect x="20" y="82" width="220" height="13" rx="5" fill="#1e1e1e"/>
+  <text x="28" y="91" font-size="6.5" fill="rgba(255,255,255,.3)" font-family="sans-serif">Escribe el mensaje del aviso...</text>
+  <rect x="246" y="83" width="22" height="11" rx="5" fill="#e53935"/>
+  <text x="257" y="91" font-size="8" fill="#fff" font-family="sans-serif" text-anchor="middle">↑</text>
+</svg>`,titulo:"Notificaciones push",sub:"Avisos al equipo en tiempo real",feats:["Push aunque móvil bloqueado", "Mensajes personalizados", "Historial de notificaciones", "Todo el grupo al instante"]},
+  {ico:"🗂️",vis:`<svg viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+  <rect width="280" height="110" fill="#181818"/>
+  <text x="10" y="13" font-size="7.5" fill="#f0f0f0" font-weight="700" font-family="sans-serif">🗂️ Clientes clasificados</text>
+  <rect x="10" y="18" width="260" height="22" rx="8" fill="#252525"/>
+  <rect x="18" y="24" width="16" height="16" rx="4" fill="rgba(229,57,53,.15)"/>
+  <text x="26" y="35" font-size="9" font-family="sans-serif" text-anchor="middle">👤</text>
+  <text x="42" y="32" font-size="7.5" fill="rgba(255,255,255,.6)" font-family="sans-serif">Comunidad San Pedro</text>
+  <text x="42" y="40" font-size="6" fill="rgba(255,255,255,.3)" font-family="sans-serif">Cliente · archivado 12/05</text>
+  <rect x="224" y="22" width="22" height="14" rx="5" fill="rgba(76,175,80,.15)" stroke="rgba(76,175,80,.3)" stroke-width="1"/>
+  <text x="235" y="31.5" font-size="7" fill="#4caf50" font-family="sans-serif" text-anchor="middle">↩</text>
+  <rect x="248" y="22" width="22" height="14" rx="5" fill="rgba(229,57,53,.12)" stroke="rgba(229,57,53,.3)" stroke-width="1"/>
+  <text x="259" y="31.5" font-size="8" fill="#e53935" font-family="sans-serif" text-anchor="middle">🗑</text>
+  <rect x="10" y="44" width="260" height="22" rx="8" fill="#252525"/>
+  <rect x="18" y="50" width="16" height="16" rx="4" fill="rgba(33,150,243,.15)"/>
+  <text x="26" y="61" font-size="9" font-family="sans-serif" text-anchor="middle">🔧</text>
+  <text x="42" y="58" font-size="7.5" fill="rgba(255,255,255,.6)" font-family="sans-serif">Revisión bomba #0031</text>
+  <text x="42" y="66" font-size="6" fill="rgba(255,255,255,.3)" font-family="sans-serif">Parte · archivado 03/05</text>
+  <rect x="224" y="48" width="22" height="14" rx="5" fill="rgba(76,175,80,.15)" stroke="rgba(76,175,80,.3)" stroke-width="1"/>
+  <text x="235" y="57.5" font-size="7" fill="#4caf50" font-family="sans-serif" text-anchor="middle">↩</text>
+  <rect x="248" y="48" width="22" height="14" rx="5" fill="rgba(229,57,53,.12)" stroke="rgba(229,57,53,.3)" stroke-width="1"/>
+  <text x="259" y="57.5" font-size="8" fill="#e53935" font-family="sans-serif" text-anchor="middle">🗑</text>
+  <rect x="10" y="78" width="260" height="26" rx="8" fill="rgba(76,175,80,.06)" stroke="rgba(76,175,80,.2)" stroke-width="1"/>
+  <text x="140" y="94" font-size="7.5" fill="#4caf50" font-weight="700" font-family="sans-serif" text-anchor="middle">✓ Restaurar o eliminar definitivamente</text>
+</svg>`,titulo:"Archivos y recuperación",sub:"Nada se pierde nunca",feats:["Archivo de clientes y partes", "Restauración con un toque", "Eliminación segura", "Ficha PDF antes de borrar"]},
 ];
 
 let _carouselIdx=0;
@@ -2383,15 +2593,14 @@ window.goSlide=idx=>{
 const buildCarousel=()=>{
   const slidesHTML=FUNC_SLIDES.map((s,i)=>`
     <div class="func-slide ${i===0?'active':''}">
-      <div class="func-slide-hero">
-        <div class="func-slide-hero-bg" style="background:${s.grad}"></div>
-        <div class="func-slide-hero-side">${s.ico}</div>
-        <div class="func-slide-hero-body">
+      <div class="func-slide-vis">${s.vis}</div>
+      <div class="func-slide-header">
+        <div class="func-slide-ico-wrap">${s.ico}</div>
+        <div>
           <div class="func-slide-title">${s.titulo}</div>
           <div class="func-slide-sub">${s.sub}</div>
         </div>
       </div>
-      <p class="func-slide-desc">${s.desc}</p>
       <div class="func-feats">${s.feats.map(f=>`<span class="func-feat">${f}</span>`).join('')}</div>
     </div>`).join('');
   const dotsHTML=FUNC_SLIDES.map((_,i)=>`<div class="func-dot ${i===0?'active':''}" onclick="goSlide(${i})"></div>`).join('');
@@ -7014,13 +7223,23 @@ const _quitarArchCard=id=>{
   }
 };
 
+
+// ── Lista negra local de archivos eliminados (persiste en localStorage) ──
+const _archBL={
+  key:()=>'joyvi_arch_del_'+(CGID||''),
+  get:()=>{try{return new Set(JSON.parse(localStorage.getItem(_archBL.key())||'[]'));}catch(e){return new Set();}},
+  add:(id)=>{try{const s=_archBL.get();s.add(id);localStorage.setItem(_archBL.key(),JSON.stringify([...s]));}catch(e){}},
+  has:(id)=>{return _archBL.get().has(id);},
+};
+
 const renderArchivos=async()=>{
   if(!CGID){$('archivosContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><p>Selecciona un grupo primero</p></div>`;return}
   try{
     const snap=await getDocsFromServer(collection(db,'grupos',CGID,'archivos'));
     let items=snap.docs.map(d=>({id:d.id,...d.data()}));
     // Filtrar eliminados con flag y entradas corruptas sin nombre
-    items=items.filter(it=>(it.nombre||it.titulo)&&!it._eliminado);
+    const _bl=_archBL.get();
+    items=items.filter(it=>(it.nombre||it.titulo)&&!it._eliminado&&!_bl.has(it.id));
     if(!items.length){$('archivosContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><p>No hay elementos archivados</p></div>`;return}
     window._archivosCache = {};
     items.forEach(it=>{ window._archivosCache[it.id]=it; });
@@ -7083,7 +7302,7 @@ window.borrarArchivo=async(id)=>{
   if(!esCliente){
     // Para partes: confirm nativo directo
     if(!confirm(`¿Eliminar permanentemente "${nombre}"? Esta acción no se puede deshacer.`))return;
-    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',id));_quitarArchCard(id);toast('Eliminado definitivamente','i');}catch(e){toast('Error: '+e.message,'e');}
+    try{await deleteDoc(doc(db,'grupos',CGID,'archivos',id));_archBL.add(id);_quitarArchCard(id);toast('Eliminado definitivamente','i');}catch(e){toast('Error: '+e.message,'e');}
     return;
   }
     // Modal propio (funciona desde cualquier pantalla)
@@ -7232,7 +7451,10 @@ window._confirmarBorradoCliente=async(archId)=>{
       console.log('[Joyvi] Borrado confirmado en servidor para archId:',archId);
     }
 
-    // 4. Limpiar estado local
+    // 4. Añadir a blacklist local — garantiza que no reaparezca aunque Firestore falle
+    _archBL.add(archId);
+
+    // 5. Limpiar estado local
     allClientes=allClientes.filter(c=>c.id!==cliId&&c.id!==archId);
     if(window._archivosCache){delete window._archivosCache[archId];delete window._archivosCache[cliId];}
     _quitarArchCard(archId);
