@@ -10,7 +10,6 @@
   "start_url": "/JOYVI-APP/",
   "scope": "/JOYVI-APP/",
   "id": "joyvi-electrobombas-app",
-  "theme_color": "#000000",
   "background_color": "#0d0d0d",
   "categories": ["business", "productivity", "utilities"],
   "prefer_related_applications": false,
