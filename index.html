@@ -10426,6 +10426,108 @@ const _TEMAS={
   lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)'},
 };
 
+
+
+// ════════════════════════════════════════════════════════════
+// MANIFEST DINÁMICO — el icono cambia según el tema
+// Al instalar la PWA, tomará el color seleccionado
+// ════════════════════════════════════════════════════════════
+const _ICON_COLORS = {
+  rojo:  { c1:'#ff5252', c2:'#e53935', c3:'#c62828' },
+  azul:  { c1:'#42a5f5', c2:'#1976d2', c3:'#0d47a1' },
+  lila:  { c1:'#ce93d8', c2:'#8e24aa', c3:'#6a1b9a' },
+};
+
+// Generar SVG del icono con el color del tema
+const _generarSVGIcono = (tema) => {
+  const col = _ICON_COLORS[tema] || _ICON_COLORS.rojo;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+    <defs>
+      <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${col.c1}"/>
+        <stop offset="100%" stop-color="${col.c3}"/>
+      </linearGradient>
+      <clipPath id="c">
+        <rect width="192" height="192" rx="42" ry="42"/>
+      </clipPath>
+    </defs>
+    <rect width="192" height="192" rx="42" ry="42" fill="#111111"/>
+    <rect width="192" height="192" rx="42" ry="42" fill="url(#g)" opacity="0.12"/>
+    <text x="100" y="138" font-family="Anton,Arial Black,sans-serif" font-size="130" font-weight="900"
+      text-anchor="middle" fill="url(#g)" letter-spacing="2">J</text>
+  </svg>`;
+};
+
+// Generar PNG desde SVG usando canvas (necesario para manifest icons)
+const _svgToPngDataUrl = (svgStr, size) => new Promise(resolve => {
+  const img = new Image();
+  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = size;
+    cv.getContext('2d').drawImage(img, 0, 0, size, size);
+    URL.revokeObjectURL(url);
+    resolve(cv.toDataURL('image/png'));
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+  img.src = url;
+});
+
+// Actualizar el manifest dinámicamente con el nuevo icono
+const _actualizarManifestTema = async (tema) => {
+  try {
+    const svg = _generarSVGIcono(tema);
+    // Generar iconos en múltiples tamaños
+    const [png192, png512] = await Promise.all([
+      _svgToPngDataUrl(svg, 192),
+      _svgToPngDataUrl(svg, 512),
+    ]);
+    if (!png192 || !png512) return;
+
+    // Actualizar favicon y apple-touch-icon inmediatamente
+    document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"], link[rel="shortcut icon"]')
+      .forEach(el => { el.href = png192; });
+
+    // Crear manifest como blob con los nuevos iconos
+    const manifestData = {
+      name: "Joyvi",
+      short_name: "Joyvi",
+      description: "Gestión de electrobombas y mantenimientos",
+      start_url: "/JOYVI-APP/",
+      scope: "/JOYVI-APP/",
+      display: "standalone",
+      orientation: "portrait",
+      background_color: "#0d0d0d",
+      icons: [
+        { src: png192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+        { src: png512, sizes: "512x512", type: "image/png", purpose: "any maskable" },
+      ]
+    };
+
+    // Revocar blob anterior si existe
+    const oldLink = document.querySelector('link[rel="manifest"]');
+    if (oldLink && oldLink.href.startsWith('blob:')) {
+      URL.revokeObjectURL(oldLink.href);
+    }
+
+    // Aplicar nuevo manifest
+    const manifestBlob = new Blob([JSON.stringify(manifestData)], {type:'application/manifest+json'});
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+
+    if (oldLink) {
+      oldLink.href = manifestUrl;
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = manifestUrl;
+      document.head.appendChild(link);
+    }
+  } catch(e) {
+    console.warn('manifest dinámico:', e);
+  }
+};
+
 const _aplicarColorTema=(tema)=>{
   const t=_TEMAS[tema]||_TEMAS.rojo;
   const root=document.documentElement.style;
@@ -10435,6 +10537,8 @@ const _aplicarColorTema=(tema)=>{
   root.setProperty('--r4',t.r4);
   root.setProperty('--theme-rgb',t.rgb);
   root.setProperty('--shadow2',t.shadow);
+  // Actualizar icono y manifest dinámicamente
+  _actualizarManifestTema(tema);
 };
 
 window.cambiarColorTema=(tema)=>{
