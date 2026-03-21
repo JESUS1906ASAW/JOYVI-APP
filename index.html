@@ -27,7 +27,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Joyvi">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#e53935">
 <meta name="msapplication-TileColor" content="#111111">
 <link rel="manifest" href="/JOYVI-APP/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -270,7 +270,7 @@ body.modo-claro .skel{background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(
 .skel-row.w80{width:80%}
 
 /* ── TOPBAR ── */
-#topbar{background:rgba(21,21,21,.92);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);padding:14px 20px;display:flex;align-items:center;border-bottom:1px solid var(--border);border-top:2px solid var(--r);z-index:90;flex-shrink:0;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.04),0 2px 16px rgba(0,0,0,.3)}
+#topbar{background:rgba(21,21,21,.92);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);padding:14px 20px;display:flex;align-items:center;border-bottom:1px solid var(--border);z-index:90;flex-shrink:0;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.04),0 2px 16px rgba(0,0,0,.3)}
 #topbar .logo{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--r) 0%,var(--r3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px;flex:1;filter:drop-shadow(0 0 8px rgba(var(--theme-rgb),.35));transition:.2s}
 .tb-btn{width:40px;height:40px;border-radius:12px;border:none;background:transparent;color:var(--tx);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .12s,color .15s;position:relative;overflow:hidden}
 .tb-btn::after{content:'';position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle,rgba(255,255,255,.2) 0%,transparent 70%);opacity:0;transition:opacity .2s}
@@ -12985,7 +12985,7 @@ const _LOCK_PAT_KEY  = 'joyvi_lock_pattern';
 const _LOCK_METHOD   = 'joyvi_lock_method';   // 'pin' | 'pattern'
 const _LOCK_FP_KEY   = 'joyvi_lock_fp';        // '1' si huella activa
 const _LOCK_TS       = 'joyvi_lock_ts';
-const _LOCK_TIMEOUT  = 30 * 1000;
+const _LOCK_TIMEOUT  = 15 * 1000;  // 15s en background → bloquear
 
 // ── Hash SHA-256 con sal ──
 const _lockHash = async (v) => {
@@ -13037,6 +13037,7 @@ const _lockOcultar = () => {
   _lockPinBuffer = '';
   _lockPatternReset();
   localStorage.setItem(_LOCK_TS, Date.now().toString());
+  localStorage.removeItem('joyvi_lock_closed'); // limpiar flag de cierre
 };
 
 const _lockMostrarMetodo = (modo) => {
@@ -13614,13 +13615,21 @@ const _lockComprobar = () => {
 
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){
-    if(_lockHasAny()) localStorage.setItem(_LOCK_TS, Date.now().toString());
+    if(_lockHasAny()){
+      localStorage.setItem(_LOCK_TS, Date.now().toString());
+      localStorage.setItem('joyvi_lock_closed','1');
+    }
   } else {
     // Volvió al primer plano — comprobar tras breve delay para que el DOM esté listo
     setTimeout(_lockComprobar, 500);
   }
 });
-window.addEventListener('pagehide', ()=>{ if(_lockHasAny()) localStorage.setItem(_LOCK_TS, Date.now().toString()); });
+window.addEventListener('pagehide', ()=>{
+  if(_lockHasAny()){
+    localStorage.setItem(_LOCK_TS, Date.now().toString());
+    localStorage.setItem('joyvi_lock_closed','1'); // flag de cierre
+  }
+});
 window.addEventListener('focus',    ()=>{ if(_lockHasAny()) setTimeout(_lockComprobar, 500); });
 window.addEventListener('pageshow', ()=>{ if(_lockHasAny()) setTimeout(_lockComprobar, 500); });
 window.addEventListener('resume',   ()=>{ if(_lockHasAny()) setTimeout(_lockComprobar, 500); });
@@ -13628,9 +13637,10 @@ window.addEventListener('resume',   ()=>{ if(_lockHasAny()) setTimeout(_lockComp
 const _lockInicializar = () => {
   if(!_lockHasAny()) return;
   const ts = parseInt(localStorage.getItem(_LOCK_TS)||'0');
-  // Si ts es 0 (nunca se registró) o ha pasado el timeout → bloquear
-  if(ts === 0 || Date.now() - ts > _LOCK_TIMEOUT) {
-    _lockMostrar();
+  const wasClosed = localStorage.getItem('joyvi_lock_closed') === '1';
+  // Bloquear si: fue cerrado explícitamente, ts=0, o pasó el timeout
+  if(wasClosed || ts === 0 || Date.now() - ts > _LOCK_TIMEOUT) {
+    requestAnimationFrame(()=>{ requestAnimationFrame(_lockMostrar); });
   }
 };
 
