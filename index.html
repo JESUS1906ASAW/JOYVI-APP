@@ -28,7 +28,7 @@
 <meta name="apple-mobile-web-app-title" content="Joyvi">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111111">
-<meta name="msapplication-TileColor" content="#e53935">
+<meta name="msapplication-TileColor" content="#111111">
 <link rel="manifest" href="/JOYVI-APP/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
@@ -225,7 +225,7 @@ body.modo-visualizacion .kiosk-pdf-btn{display:flex!important}
 body.modo-visualizacion .kiosk-pdf-btn{display:flex!important}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{height:100%;height:100dvh}
-body{height:100%;height:100dvh;overflow:hidden;background:#0d0d0d;font-family:var(--font);color:var(--tx);font-size:15px;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body{height:100%;height:100dvh;overflow:hidden;background:#0d0d0d;font-family:var(--font);color:var(--tx);font-size:15px;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;overscroll-behavior-y:none}
 body.modo-claro{background:#f2f2f7 !important}
 ::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px;transition:background .2s}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.3)}
 
@@ -237,7 +237,7 @@ body.modo-claro{background:#f2f2f7 !important}
 #app.active{display:flex}
 .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0}
 .screen.active{display:flex}
-.scroll-pad{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 16px 100px;-webkit-overflow-scrolling:touch;min-height:0}
+.scroll-pad{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 16px 100px;-webkit-overflow-scrolling:touch;min-height:0;overscroll-behavior-y:contain}
 
 /* ── TRANSICIONES SUAVES ENTRE PANTALLAS ── */
 .screen{will-change:opacity,transform}
@@ -930,6 +930,78 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
 .map-picker-app-desc{font-size:11px;color:var(--tx2);margin-top:2px}
 .map-picker-cancel{display:block;width:calc(100% - 28px);margin:10px 14px 0;padding:13px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--tx2);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);text-align:center;transition:.12s}
 .map-picker-cancel:active{background:rgba(255,255,255,.12)}
+/* ── PULL TO REFRESH ── */
+#ptrIndicator{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:0;height:0;overflow:hidden;
+  background:var(--card);
+  transition:height .2s cubic-bezier(.16,1,.3,1),box-shadow .2s;
+  pointer-events:none;
+}
+#ptrIndicator.pulling{height:56px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+#ptrIndicator.releasing{height:56px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+#ptrIndicator.loading{height:56px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.ptr-spinner{
+  width:22px;height:22px;border-radius:50%;
+  border:2.5px solid rgba(var(--theme-rgb),.2);
+  border-top-color:var(--r);
+  transition:transform .2s ease,opacity .2s;
+}
+#ptrIndicator.loading .ptr-spinner{animation:ptrSpin .7s linear infinite}
+@keyframes ptrSpin{to{transform:rotate(360deg)}}
+.ptr-label{font-size:12px;font-weight:700;color:var(--tx2)}
+
+/* ══ PANTALLA DE BLOQUEO ══ */
+#lockScreen{position:fixed;inset:0;z-index:99999;background:#0d0d0d;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;animation:fadeIn .2s ease}
+#lockScreen.active{display:flex}
+.lock-logo{font-family:'Anton',sans-serif;font-size:34px;background:linear-gradient(135deg,var(--r) 0%,var(--r3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;letter-spacing:1px}
+.lock-sub{font-size:12px;color:var(--tx2);margin-bottom:28px;text-align:center}
+.lock-user{font-size:14px;font-weight:800;color:var(--tx);margin-bottom:28px;display:flex;align-items:center;gap:10px}
+.lock-user-ava{width:40px;height:40px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#fff;flex-shrink:0;overflow:hidden}
+.lock-user-ava img{width:100%;height:100%;object-fit:cover}
+/* ── PIN ── */
+.pin-display{display:flex;gap:14px;margin-bottom:28px;justify-content:center}
+.pin-dot{width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.22);transition:background .12s,border-color .12s,transform .12s}
+.pin-dot.filled{background:var(--r);border-color:var(--r);transform:scale(1.18)}
+.pin-dot.error{background:#e53935;border-color:#e53935;animation:pinShake .32s ease}
+@keyframes pinShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;max-width:272px;width:100%}
+.pin-btn{height:68px;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--tx);font-size:23px;font-weight:700;font-family:var(--font);cursor:pointer;transition:background .1s,transform .1s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;-webkit-tap-highlight-color:transparent}
+.pin-btn:active{background:rgba(var(--theme-rgb),.22);transform:scale(.93)}
+.pin-btn-del{font-size:19px}
+.pin-btn-sub{font-size:8.5px;color:var(--tx2);font-weight:600;letter-spacing:.4px}
+/* ── PATRÓN ── */
+.pattern-wrap{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;margin-bottom:24px}
+#patternSvg{position:absolute;inset:0;pointer-events:none;z-index:1}
+.pattern-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;width:248px;height:248px}
+.pat-dot{display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pat-dot-inner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:transparent;transition:background .12s,transform .12s,border-color .12s;position:relative;z-index:2}
+.pat-dot-outer{width:52px;height:52px;border-radius:50%;border:1px solid transparent;display:flex;align-items:center;justify-content:center;transition:border-color .12s}
+.pat-dot.active .pat-dot-inner{background:var(--r);border-color:var(--r);transform:scale(1.3)}
+.pat-dot.active .pat-dot-outer{border-color:rgba(var(--theme-rgb),.3)}
+.pat-dot.error .pat-dot-inner{background:#e53935;border-color:#e53935}
+/* ── Controles inferiores ── */
+.lock-error{font-size:13px;color:#ff5252;margin-top:10px;min-height:18px;text-align:center}
+.lock-forgot{margin-top:16px;font-size:12px;color:var(--tx2);cursor:pointer;text-decoration:none;background:none;border:none;font-family:var(--font);opacity:.7}
+.lock-forgot:hover{opacity:1;color:var(--tx)}
+.lock-method-switch{display:flex;gap:6px;margin-top:14px}
+.lock-msw-btn{padding:7px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--tx2);font-size:11px;font-weight:700;font-family:var(--font);cursor:pointer;transition:.15s;-webkit-tap-highlight-color:transparent}
+.lock-msw-btn.active{border-color:var(--r);background:rgba(var(--theme-rgb),.12);color:var(--r)}
+/* ── Huella ── */
+.lock-fingerprint{display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:20px}
+.fp-btn{width:80px;height:80px;border-radius:24px;background:rgba(var(--theme-rgb),.1);border:1.5px solid rgba(var(--theme-rgb),.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,background .15s;-webkit-tap-highlight-color:transparent}
+.fp-btn:active{transform:scale(.93);background:rgba(var(--theme-rgb),.2)}
+.fp-scanning .fp-btn{animation:fpPulse 1.2s ease-in-out infinite}
+@keyframes fpPulse{0%,100%{box-shadow:0 0 0 0 rgba(var(--theme-rgb),.4)}50%{box-shadow:0 0 0 16px rgba(var(--theme-rgb),0)}}
+/* ── Sección seguridad en perfil ── */
+.sec-method-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.sec-method-card{border-radius:14px;border:1.5px solid var(--border);background:transparent;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:.15s;-webkit-tap-highlight-color:transparent;font-family:var(--font)}
+.sec-method-card:active{transform:scale(.97)}
+.sec-method-card.active{border-color:var(--r);background:rgba(var(--theme-rgb),.1)}
+.sec-method-card .smc-ico{font-size:24px}
+.sec-method-card .smc-lbl{font-size:11px;font-weight:800;color:var(--tx2)}
+.sec-method-card.active .smc-lbl{color:var(--r)}
 </style>
 </head>
 <body>
@@ -1118,6 +1190,81 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
 
   <!-- TOAST -->
   <div id="toastWrap"></div>
+  <!-- ══ PANTALLA DE BLOQUEO ══ -->
+  <div id="lockScreen">
+    <div class="lock-logo">Joyvi</div>
+    <div class="lock-sub" id="lockSub">Introduce tu PIN para continuar</div>
+    <div class="lock-user">
+      <div class="lock-user-ava" id="lockUserAva">?</div>
+      <span id="lockUserName">Usuario</span>
+    </div>
+
+    <!-- PIN -->
+    <div id="lockPinSection">
+      <div class="pin-display" id="pinDisplay">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-btn" onclick="_lockPinPress('1')"><span>1</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('2')"><span>2</span><span class="pin-btn-sub">ABC</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('3')"><span>3</span><span class="pin-btn-sub">DEF</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('4')"><span>4</span><span class="pin-btn-sub">GHI</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('5')"><span>5</span><span class="pin-btn-sub">JKL</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('6')"><span>6</span><span class="pin-btn-sub">MNO</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('7')"><span>7</span><span class="pin-btn-sub">PQRS</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('8')"><span>8</span><span class="pin-btn-sub">TUV</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('9')"><span>9</span><span class="pin-btn-sub">WXYZ</span></button>
+        <button class="pin-btn" style="opacity:0;pointer-events:none"></button>
+        <button class="pin-btn" onclick="_lockPinPress('0')"><span>0</span></button>
+        <button class="pin-btn pin-btn-del" onclick="_lockPinDel()">⌫</button>
+      </div>
+    </div>
+
+    <!-- PATRÓN -->
+    <div id="lockPatternSection" style="display:none">
+      <div class="pattern-wrap" id="patternWrap">
+        <svg id="patternSvg" width="248" height="248"></svg>
+        <div class="pattern-grid" id="patternGrid">
+          <!-- 9 puntos generados por JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- HUELLA -->
+    <div id="lockFingerprintSection" style="display:none">
+      <div class="lock-fingerprint" id="lockFingerprintUI">
+        <div class="fp-btn" id="fpBtn" onclick="_lockFingerprintIntento()">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C9.52 2 7.27 2.9 5.54 4.43"/>
+            <path d="M12 2c2.48 0 4.73.9 6.46 2.43"/>
+            <path d="M2 12c0-1.85.5-3.58 1.37-5.06"/>
+            <path d="M22 12c0-1.85-.5-3.58-1.37-5.06"/>
+            <path d="M12 8a4 4 0 0 0-4 4c0 2.5.5 5 1.5 7"/>
+            <path d="M12 8a4 4 0 0 1 4 4c0 1-.13 2-.37 2.9"/>
+            <path d="M12 8v0"/>
+          </svg>
+        </div>
+        <div style="font-size:13px;color:var(--tx2);text-align:center" id="fpLabel">Toca para usar huella dactilar</div>
+      </div>
+    </div>
+
+    <div class="lock-error" id="lockError"></div>
+
+    <!-- Cambiar método -->
+    <div class="lock-method-switch" id="lockMethodSwitch" style="display:none">
+      <button class="lock-msw-btn" id="lswPin" onclick="_lockMostrarMetodo('pin')">PIN</button>
+      <button class="lock-msw-btn" id="lswPattern" onclick="_lockMostrarMetodo('pattern')">Patrón</button>
+    </div>
+
+    <button class="lock-forgot" onclick="_lockOlvidado()">¿Olvidaste el PIN? Usar contraseña</button>
+  </div>
+
+  <!-- PULL TO REFRESH -->
+  <div id="ptrIndicator"><div class="ptr-spinner"></div><span class="ptr-label" id="ptrLabel">Suelta para actualizar</span></div>
+
 
   <!-- SELECTOR DE APP DE MAPAS -->
   <div id="mapPickerModal" onclick="if(event.target===this)cerrarMapPicker()">
@@ -2281,6 +2428,8 @@ onAuthStateChanged(auth,async user=>{
     if(snap.exists()){CUD=snap.data()}
     else{CUD={nombre:user.displayName||'Usuario',tipo:'trabajador'}}
     $('authWrap').style.display='none';
+    // Comprobar bloqueo al iniciar sesión
+    setTimeout(_lockInicializar, 500);
     $('app').style.display='flex';
     iniciarApp();
   }else{
@@ -9378,6 +9527,37 @@ const renderPerfil=()=>{
   </div></div>
   </div>
 
+  <!-- ── SEGURIDAD ── -->
+  <div class="fsec">
+    <div class="fsec-title">🔒 Seguridad</div>
+    <div class="toggle-row" style="margin-bottom:0">
+      <div>
+        <div class="toggle-label">Bloqueo de app</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:220px">Solicita verificación al reabrir la app tras cerrarla.</div>
+      </div>
+      <label class="toggle-sw" style="flex-shrink:0"><input type="checkbox" id="toggleLock" onchange="_lockToggle(this.checked)" ${((localStorage.getItem('joyvi_lock_pin')||localStorage.getItem('joyvi_lock_pattern')))?'checked':''}><span class="toggle-track"></span></label>
+    </div>
+    ${((localStorage.getItem('joyvi_lock_pin')||localStorage.getItem('joyvi_lock_pattern')))?`
+    <div style="margin-top:14px">
+      <div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Método de bloqueo</div>
+      <div class="sec-method-row">
+        <button class="sec-method-card ${(localStorage.getItem('joyvi_lock_method')||'pin')==='pin'?'active':''}" onclick="_lockSetMethod('pin')">
+          <span class="smc-ico">🔢</span><span class="smc-lbl">PIN</span>
+        </button>
+        <button class="sec-method-card ${(localStorage.getItem('joyvi_lock_method')||'pin')==='pattern'?'active':''}" onclick="_lockSetMethod('pattern')">
+          <span class="smc-ico">⬡</span><span class="smc-lbl">Patrón</span>
+        </button>
+        <button class="sec-method-card ${(localStorage.getItem('joyvi_lock_fp')==='1')?'active':''}" onclick="_lockSetMethod('fingerprint')">
+          <span class="smc-ico">👆</span><span class="smc-lbl">Huella</span>
+        </button>
+      </div>
+      ${(localStorage.getItem('joyvi_lock_fp')==='1')?`<div style="font-size:11px;color:var(--tx2);margin-top:8px;padding:8px 10px;background:rgba(var(--theme-rgb),.06);border-radius:10px">👆 Huella activa — la app pedirá tu huella primero. También puedes usar ${(localStorage.getItem('joyvi_lock_method')||'pin')==='pin'?'PIN':'patrón'} como alternativa.</div>`:''}
+      <button onclick="_lockCambiar()" style="margin-top:10px;width:100%;padding:10px;border-radius:12px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.07);color:var(--r);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">
+        ✏️ Cambiar ${(localStorage.getItem('joyvi_lock_method')||'pin')==='pin'?'PIN':'Patrón'}
+      </button>
+    </div>`:''}
+  </div>
+
   <button class="btn btn-del" style="margin-top:8px" onclick="doLogout()">🚪 Cerrar sesión</button>`;
 
   $('perfilContent').innerHTML = html;
@@ -10244,9 +10424,9 @@ const _prevScreen=id=>{
 // PERSONALIZACIÓN: TEMA Y MODO CLARO
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _TEMAS={
-  rojo: {r:'#e53935',r2:'#c62828',r3:'#ff5252',r4:'#b71c1c',rgb:'229,57,53',shadow:'0 6px 28px rgba(229,57,53,.28)'},
-  azul: {r:'#1976d2',r2:'#0d47a1',r3:'#42a5f5',r4:'#0a2e6e',rgb:'25,118,210',shadow:'0 6px 28px rgba(25,118,210,.28)'},
-  lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)'},
+  rojo: {r:'#e53935',r2:'#c62828',r3:'#ff5252',r4:'#b71c1c',rgb:'229,57,53',shadow:'0 6px 28px rgba(229,57,53,.28)',bar:'#1a0a0a'},
+  azul: {r:'#1976d2',r2:'#0d47a1',r3:'#42a5f5',r4:'#0a2e6e',rgb:'25,118,210',shadow:'0 6px 28px rgba(25,118,210,.28)',bar:'#080f1a'},
+  lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)',bar:'#0f0514'},
 };
 
 const _aplicarColorTema=(tema)=>{
@@ -10258,6 +10438,10 @@ const _aplicarColorTema=(tema)=>{
   root.setProperty('--r4',t.r4);
   root.setProperty('--theme-rgb',t.rgb);
   root.setProperty('--shadow2',t.shadow);
+  // Actualizar theme-color del navegador (barra de estado en Android/Chrome)
+  let m=document.querySelector('meta[name="theme-color"]');
+  if(!m){m=document.createElement('meta');m.name='theme-color';document.head.appendChild(m);}
+  m.content=t.bar;
 };
 
 window.cambiarColorTema=(tema)=>{
@@ -12819,5 +13003,769 @@ if(typeof window.abrirGrupo === 'function'){
   </div>
 </div>
 
+// ════════════════════════════════════════════════════════
+// PULL TO REFRESH — Solo activo en PWA instalada
+// Comportamiento idéntico a Instagram/YouTube:
+// - Si el scroll-pad activo no está en top → primero sube
+// - Solo si está en top → activa el PTR
+// - Al soltar con suficiente pull → refresca contenido sin recargar página
+// ════════════════════════════════════════════════════════
+(()=>{
+  // Solo activar en modo standalone (PWA instalada)
+  const isStandalone=()=>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  const THRESHOLD = 72;   // px de pull necesarios para activar
+  const MAX_PULL  = 110;  // px máximo de resistencia visual
+
+  let startY=0, currentY=0, pulling=false, blocked=false;
+  const ind=document.getElementById('ptrIndicator');
+  const lbl=document.getElementById('ptrLabel');
+  if(!ind||!lbl)return;
+
+  // Obtener el scroll-pad de la pantalla activa
+  const getActivePad=()=>{
+    const active=document.querySelector('.screen.active');
+    if(!active)return null;
+    return active.querySelector('.scroll-pad')||null;
+  };
+
+  // Guardar pantalla actual en sessionStorage antes de recargar
+  const _guardarEstado=()=>{
+    const active=document.querySelector('.screen.active');
+    if(!active)return;
+    const id=Object.keys(screens||{}).find(k=>(screens[k]===active.id));
+    if(id){
+      sessionStorage.setItem('joyvi_ptr_screen',id);
+      if(id==='grupo'){
+        const tab=sessionStorage.getItem('joyvi_gtab')||'cli';
+        sessionStorage.setItem('joyvi_ptr_gtab',tab);
+      }
+    }
+  };
+
+  // Refrescar el contenido de la pantalla actual SIN recargar la página
+  const _refrescarPantalla=async()=>{
+    ind.className='loading';
+    lbl.textContent='Actualizando...';
+    try{
+      const active=document.querySelector('.screen.active');
+      if(!active){ind.className='';return;}
+      const id=Object.keys(screens||{}).find(k=>screens[k]===active.id)||'';
+      // Llamar al render de la pantalla activa
+      if(id==='inicio'&&typeof renderInicio==='function')await renderInicio();
+      else if(id==='grupo'&&typeof renderGrupo==='function'){renderGrupo();await new Promise(r=>setTimeout(r,600));}
+      else if(id==='notificaciones'&&typeof renderNotificaciones==='function')await renderNotificaciones();
+      else if(id==='archivos'&&typeof renderArchivos==='function')await renderArchivos();
+      else if(id==='estadisticas'&&typeof renderEstadisticas==='function')await renderEstadisticas();
+      else if(id==='horas'&&typeof renderHoras==='function')await renderHoras();
+      else if(id==='imagenes'&&typeof renderImagenes==='function')await renderImagenes();
+      else if(id==='averias'&&typeof renderAverias==='function')await renderAverias();
+      else if(id==='presupuestos'&&typeof renderPresupuestos==='function')await renderPresupuestos();
+      else if(id==='perfil'&&typeof renderPerfil==='function')renderPerfil();
+      // Feedback
+      lbl.textContent='✓ Actualizado';
+      if(typeof toast==='function')toast('✓ Actualizado','o');
+    }catch(e){
+      lbl.textContent='Error al actualizar';
+    }finally{
+      setTimeout(()=>{ind.className='';},600);
+    }
+  };
+
+  document.addEventListener('touchstart',e=>{
+    if(!isStandalone())return;
+    const pad=getActivePad();
+    if(!pad)return;
+    // Solo iniciar si el pad está en scroll top 0
+    if(pad.scrollTop>0){blocked=true;return;}
+    blocked=false;
+    startY=e.touches[0].clientY;
+    currentY=startY;
+    pulling=false;
+  },{passive:true});
+
+  document.addEventListener('touchmove',e=>{
+    if(!isStandalone()||blocked)return;
+    const pad=getActivePad();
+    if(!pad)return;
+    // Si el pad no está en top, no hacer nada (scroll normal)
+    if(pad.scrollTop>2){blocked=true;return;}
+    currentY=e.touches[0].clientY;
+    const dy=currentY-startY;
+    if(dy<=0)return;
+    pulling=true;
+    // Resistencia logarítmica: sensación física
+    const pull=Math.min(MAX_PULL, dy*0.45);
+    const ready=pull>=THRESHOLD*0.45;
+    ind.className=ready?'releasing':'pulling';
+    lbl.textContent=ready?'Suelta para actualizar':'Arrastra para actualizar';
+    // Rotar spinner según el avance
+    const spinner=ind.querySelector('.ptr-spinner');
+    if(spinner)spinner.style.transform=`rotate(${pull/MAX_PULL*360}deg)`;
+  },{passive:true});
+
+  document.addEventListener('touchend',e=>{
+    if(!isStandalone()||blocked||!pulling){
+      ind.className='';pulling=false;blocked=false;return;
+    }
+    const dy=currentY-startY;
+    const pull=Math.min(MAX_PULL,dy*0.45);
+    pulling=false;blocked=false;
+    if(pull>=THRESHOLD*0.45){
+      _refrescarPantalla();
+    }else{
+      ind.className='';
+    }
+  },{passive:true});
+})();
+
+// ════════════════════════════════════════════════════════════
+// SISTEMA DE BLOQUEO — PIN + PATRÓN + HUELLA
+// ════════════════════════════════════════════════════════════
+const _LOCK_PIN_KEY  = 'joyvi_lock_pin';
+const _LOCK_PAT_KEY  = 'joyvi_lock_pattern';
+const _LOCK_METHOD   = 'joyvi_lock_method';   // 'pin' | 'pattern'
+const _LOCK_FP_KEY   = 'joyvi_lock_fp';        // '1' si huella activa
+const _LOCK_TS       = 'joyvi_lock_ts';
+const _LOCK_TIMEOUT  = 30 * 1000;
+
+// ── Hash SHA-256 con sal ──
+const _lockHash = async (v) => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v + 'joyvi_salt_2025'));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+};
+
+const _lockHasPin     = () => !!localStorage.getItem(_LOCK_PIN_KEY);
+const _lockHasPattern = () => !!localStorage.getItem(_LOCK_PAT_KEY);
+const _lockHasAny     = () => _lockHasPin() || _lockHasPattern();
+const _lockMethod     = () => localStorage.getItem(_LOCK_METHOD) || 'pin';
+const _lockFPActive   = () => localStorage.getItem(_LOCK_FP_KEY) === '1';
+
+// ══════════════════════════════════════════════
+// PANTALLA DE BLOQUEO — mostrar / ocultar
+// ══════════════════════════════════════════════
+let _lockActiveMode = 'pin'; // qué está mostrando ahora mismo
+
+const _lockMostrar = () => {
+  const el = document.getElementById('lockScreen');
+  if(!el) return;
+  // Avatar usuario
+  const nom = CUD?.nombre || CU?.email || 'Usuario';
+  const ini = nom.trim()[0]?.toUpperCase() || '?';
+  const ava = document.getElementById('lockUserAva');
+  const nameEl = document.getElementById('lockUserName');
+  if(ava){ ava.textContent=''; const img=ava.querySelector('img');
+    if(window._cliAvatarCache&&CU?.uid){}  // no aplica aquí
+    ava.textContent = ini; }
+  if(nameEl) nameEl.textContent = nom;
+  document.getElementById('lockError').textContent = '';
+  el.classList.add('active');
+  // Decidir método a mostrar
+  const method = _lockMethod();
+  // Si huella activa, intentar primero
+  if(_lockFPActive()) {
+    _lockMostrarMetodo('fingerprint');
+    setTimeout(_lockFingerprintIntento, 400);
+  } else {
+    _lockMostrarMetodo(method);
+  }
+  // Mostrar switch si tiene ambos o para alternar
+  _lockActualizarSwitch();
+};
+
+const _lockOcultar = () => {
+  const el = document.getElementById('lockScreen');
+  if(el) el.classList.remove('active');
+  _lockPinBuffer = '';
+  _lockPatternReset();
+  localStorage.setItem(_LOCK_TS, Date.now().toString());
+};
+
+const _lockMostrarMetodo = (modo) => {
+  _lockActiveMode = modo;
+  const pin = document.getElementById('lockPinSection');
+  const pat = document.getElementById('lockPatternSection');
+  const fp  = document.getElementById('lockFingerprintSection');
+  const sub = document.getElementById('lockSub');
+  if(pin) pin.style.display = modo==='pin' ? '' : 'none';
+  if(pat) pat.style.display = modo==='pattern' ? '' : 'none';
+  if(fp)  fp.style.display  = modo==='fingerprint' ? '' : 'none';
+  if(sub) sub.textContent = modo==='pin' ? 'Introduce tu PIN' :
+                             modo==='pattern' ? 'Dibuja tu patrón' : 'Huella dactilar';
+  if(modo==='pattern') _lockPatternInit();
+  document.getElementById('lockError').textContent = '';
+  _lockActualizarSwitch();
+};
+
+const _lockActualizarSwitch = () => {
+  const sw = document.getElementById('lockMethodSwitch');
+  if(!sw) return;
+  // Mostrar switch solo si tiene método base configurado y no es el propio modo activo
+  const method = _lockMethod();
+  const hasFp  = _lockFPActive();
+  // Siempre mostrar si huella activa (para poder cambiar a PIN/patrón)
+  sw.style.display = (hasFp || true) ? 'flex' : 'none';
+  const pinBtn = document.getElementById('lswPin');
+  const patBtn = document.getElementById('lswPattern');
+  if(pinBtn){ pinBtn.style.display = _lockHasPin() ? '' : 'none'; pinBtn.classList.toggle('active', _lockActiveMode==='pin'); }
+  if(patBtn){ patBtn.style.display = _lockHasPattern() ? '' : 'none'; patBtn.classList.toggle('active', _lockActiveMode==='pattern'); }
+  // Huella switch inline ya está en el grid de botones del método
+  sw.style.display = (_lockHasPin()&&_lockHasPattern()) || (_lockFPActive()&&_lockHasAny()) ? 'flex' : 'none';
+};
+
+// ══════════════════════════════════════════════
+// PIN
+// ══════════════════════════════════════════════
+let _lockPinBuffer = '';
+
+const _lockActualizarDots = () => {
+  for(let i=0;i<4;i++){
+    const d = document.getElementById('pd'+i);
+    if(d){ d.classList.toggle('filled', i < _lockPinBuffer.length); d.classList.remove('error'); }
+  }
+};
+
+window._lockPinPress = (digit) => {
+  if(_lockPinBuffer.length >= 4) return;
+  if(navigator.vibrate) navigator.vibrate(10);
+  _lockPinBuffer += digit;
+  _lockActualizarDots();
+  if(_lockPinBuffer.length === 4) _lockVerificarPin();
+};
+
+window._lockPinDel = () => {
+  if(!_lockPinBuffer.length) return;
+  if(navigator.vibrate) navigator.vibrate(10);
+  _lockPinBuffer = _lockPinBuffer.slice(0,-1);
+  _lockActualizarDots();
+};
+
+const _lockVerificarPin = async () => {
+  const stored = localStorage.getItem(_LOCK_PIN_KEY);
+  if(!stored){ _lockOcultar(); return; }
+  const hash = await _lockHash(_lockPinBuffer);
+  if(hash === stored){
+    if(navigator.vibrate) navigator.vibrate([12,25,12]);
+    _lockOcultar();
+  } else {
+    if(navigator.vibrate) navigator.vibrate([60,40,60]);
+    const err = document.getElementById('lockError');
+    if(err) err.textContent = 'PIN incorrecto';
+    for(let i=0;i<4;i++){ const d=document.getElementById('pd'+i); if(d){d.classList.add('error');d.classList.remove('filled');} }
+    setTimeout(()=>{ _lockPinBuffer=''; _lockActualizarDots(); if(err)err.textContent=''; },800);
+  }
+};
+
+// ══════════════════════════════════════════════
+// PATRÓN 3×3
+// ══════════════════════════════════════════════
+let _patSeq=[], _patDrawing=false, _patLastPos=null;
+
+const _lockPatternInit = () => {
+  const grid = document.getElementById('patternGrid');
+  if(!grid||grid.dataset.init==='1') return;
+  grid.dataset.init='1';
+  grid.innerHTML='';
+  for(let i=0;i<9;i++){
+    const d=document.createElement('div');
+    d.className='pat-dot'; d.dataset.idx=i;
+    d.innerHTML='<div class="pat-dot-outer"><div class="pat-dot-inner"></div></div>';
+    grid.appendChild(d);
+  }
+  const wrap = document.getElementById('patternWrap');
+  if(!wrap) return;
+  wrap.addEventListener('touchstart', _patOnStart, {passive:false});
+  wrap.addEventListener('touchmove',  _patOnMove,  {passive:false});
+  wrap.addEventListener('touchend',   _patOnEnd,   {passive:false});
+  wrap.addEventListener('mousedown',  _patOnStart, {passive:false});
+  wrap.addEventListener('mousemove',  _patOnMove,  {passive:false});
+  wrap.addEventListener('mouseup',    _patOnEnd,   {passive:false});
+};
+
+const _lockPatternReset = () => {
+  _patSeq=[]; _patDrawing=false; _patLastPos=null;
+  const grid=document.getElementById('patternGrid');
+  if(grid){ grid.querySelectorAll('.pat-dot').forEach(d=>{d.classList.remove('active','error');}); }
+  const svg=document.getElementById('patternSvg');
+  if(svg) svg.innerHTML='';
+};
+
+const _patGetPos = (e) => {
+  const t = e.touches ? e.touches[0] : e;
+  const wrap = document.getElementById('patternWrap');
+  if(!wrap) return null;
+  const r = wrap.getBoundingClientRect();
+  return {x: t.clientX - r.left, y: t.clientY - r.top};
+};
+
+const _patDotCenter = (idx) => {
+  const grid = document.getElementById('patternGrid');
+  if(!grid) return null;
+  const dots = grid.querySelectorAll('.pat-dot');
+  const d = dots[idx];
+  if(!d) return null;
+  const wrap = document.getElementById('patternWrap');
+  const rw = wrap.getBoundingClientRect();
+  const rd = d.getBoundingClientRect();
+  return {x: rd.left - rw.left + rd.width/2, y: rd.top - rw.top + rd.height/2};
+};
+
+const _patHitTest = (pos) => {
+  const grid = document.getElementById('patternGrid');
+  if(!grid) return -1;
+  const dots = grid.querySelectorAll('.pat-dot');
+  for(let i=0;i<dots.length;i++){
+    if(_patSeq.includes(i)) continue;
+    const c = _patDotCenter(i);
+    if(!c) continue;
+    const dist = Math.hypot(pos.x-c.x, pos.y-c.y);
+    if(dist < 28) return i;
+  }
+  return -1;
+};
+
+const _patDrawLine = (from, to) => {
+  const svg = document.getElementById('patternSvg');
+  if(!svg) return;
+  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
+  line.setAttribute('x2', to.x);   line.setAttribute('y2', to.y);
+  line.setAttribute('stroke', 'var(--r)'); line.setAttribute('stroke-width','3');
+  line.setAttribute('stroke-linecap','round'); line.setAttribute('opacity','.7');
+  svg.appendChild(line);
+};
+
+const _patActivateDot = (idx) => {
+  const grid = document.getElementById('patternGrid');
+  if(!grid) return;
+  const d = grid.querySelectorAll('.pat-dot')[idx];
+  if(d){ d.classList.add('active'); if(navigator.vibrate)navigator.vibrate(8); }
+};
+
+const _patOnStart = (e) => {
+  e.preventDefault();
+  _lockPatternReset();
+  _patDrawing = true;
+  const pos = _patGetPos(e);
+  if(!pos) return;
+  _patLastPos = pos;
+  const hit = _patHitTest(pos);
+  if(hit >= 0){ _patSeq.push(hit); _patActivateDot(hit); _patLastPos=_patDotCenter(hit); }
+};
+
+const _patOnMove = (e) => {
+  e.preventDefault();
+  if(!_patDrawing) return;
+  const pos = _patGetPos(e);
+  if(!pos) return;
+  const hit = _patHitTest(pos);
+  if(hit >= 0){
+    const prev = _patLastPos;
+    const c = _patDotCenter(hit);
+    _patSeq.push(hit); _patActivateDot(hit);
+    if(prev) _patDrawLine(prev, c);
+    _patLastPos = c;
+  } else if(_patLastPos) {
+    // Línea provisional al cursor
+    const svg = document.getElementById('patternSvg');
+    const last = svg?.querySelector('line.live');
+    if(last) last.remove();
+    if(svg && _patSeq.length > 0){
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',_patLastPos.x); line.setAttribute('y1',_patLastPos.y);
+      line.setAttribute('x2',pos.x); line.setAttribute('y2',pos.y);
+      line.setAttribute('stroke','var(--r)'); line.setAttribute('stroke-width','2.5');
+      line.setAttribute('stroke-linecap','round'); line.setAttribute('opacity','.4');
+      line.classList.add('live');
+      svg.appendChild(line);
+    }
+  }
+};
+
+const _patOnEnd = (e) => {
+  e.preventDefault();
+  _patDrawing = false;
+  // Quitar línea provisional
+  document.getElementById('patternSvg')?.querySelector('line.live')?.remove();
+  if(_patSeq.length < 4){
+    const err = document.getElementById('lockError');
+    if(err) err.textContent = 'Patrón demasiado corto (mín. 4 puntos)';
+    setTimeout(()=>{ _lockPatternReset(); if(err)err.textContent=''; },800);
+    return;
+  }
+  _lockVerificarPatron();
+};
+
+const _lockVerificarPatron = async () => {
+  const stored = localStorage.getItem(_LOCK_PAT_KEY);
+  if(!stored){ _lockOcultar(); return; }
+  const hash = await _lockHash(_patSeq.join('-'));
+  if(hash === stored){
+    if(navigator.vibrate) navigator.vibrate([12,25,12]);
+    _lockOcultar();
+  } else {
+    if(navigator.vibrate) navigator.vibrate([60,40,60]);
+    const err = document.getElementById('lockError');
+    if(err) err.textContent = 'Patrón incorrecto';
+    const grid = document.getElementById('patternGrid');
+    if(grid) grid.querySelectorAll('.pat-dot.active').forEach(d=>{ d.classList.add('error'); });
+    setTimeout(()=>{ _lockPatternReset(); if(err)err.textContent=''; },800);
+  }
+};
+
+// ══════════════════════════════════════════════
+// HUELLA DACTILAR (WebAuthn / Biometric)
+// ══════════════════════════════════════════════
+window._lockFingerprintIntento = async () => {
+  const fpLabel = document.getElementById('fpLabel');
+  const fpBtn   = document.getElementById('fpBtn');
+  const err     = document.getElementById('lockError');
+  if(fpLabel) fpLabel.textContent = 'Verifica con tu huella...';
+  if(fpBtn)   fpBtn.parentElement?.classList.add('fp-scanning');
+  try{
+    // Usar WebAuthn con credencial guardada
+    const credIdB64 = localStorage.getItem('joyvi_fp_credId');
+    if(!credIdB64) throw new Error('no_cred');
+    const credId = Uint8Array.from(atob(credIdB64), c=>c.charCodeAt(0));
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    await navigator.credentials.get({
+      publicKey:{
+        challenge,
+        allowCredentials:[{type:'public-key', id:credId}],
+        userVerification:'required',
+        timeout:30000,
+      }
+    });
+    // Éxito
+    if(fpBtn) fpBtn.parentElement?.classList.remove('fp-scanning');
+    if(navigator.vibrate) navigator.vibrate([12,25,12]);
+    _lockOcultar();
+  }catch(e){
+    if(fpBtn) fpBtn.parentElement?.classList.remove('fp-scanning');
+    if(e.name==='NotAllowedError'||e.message==='no_cred'){
+      if(fpLabel) fpLabel.textContent = 'Huella no reconocida — usa PIN o patrón';
+      if(err) err.textContent = 'Huella no reconocida';
+      setTimeout(()=>{ if(fpLabel)fpLabel.textContent='Toca para usar huella dactilar'; if(err)err.textContent=''; },2000);
+    } else {
+      if(fpLabel) fpLabel.textContent = 'Toca para reintentar';
+    }
+  }
+};
+
+const _lockRegistrarHuella = async () => {
+  if(!window.PublicKeyCredential){ toast('Este dispositivo no admite biometría','e'); return false; }
+  try{
+    const check = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if(!check){ toast('No hay autenticador biométrico disponible','e'); return false; }
+    const uid = CU?.uid || 'joyvi_user';
+    const cred = await navigator.credentials.create({
+      publicKey:{
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp:{ name:'Joyvi', id: location.hostname },
+        user:{ id: new TextEncoder().encode(uid), name: CU?.email||uid, displayName: CUD?.nombre||uid },
+        pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+        authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required' },
+        timeout:30000,
+      }
+    });
+    // Guardar ID de credencial
+    const idB64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+    localStorage.setItem('joyvi_fp_credId', idB64);
+    localStorage.setItem(_LOCK_FP_KEY,'1');
+    return true;
+  }catch(e){
+    if(e.name!=='NotAllowedError') toast('Error al registrar huella: '+e.message,'e');
+    return false;
+  }
+};
+
+// ══════════════════════════════════════════════
+// OLVIDÉ — Verificar con contraseña
+// ══════════════════════════════════════════════
+window._lockOlvidado = () => {
+  let modal=document.getElementById('_lockPassModal');
+  if(modal)modal.remove();
+  modal=document.createElement('div');
+  modal.id='_lockPassModal';
+  modal.style.cssText='position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML=`<div style="background:var(--card);border-radius:20px;padding:24px 20px;width:100%;max-width:360px;box-shadow:0 8px 40px rgba(0,0,0,.5)">
+    <div style="font-size:17px;font-weight:900;color:var(--tx);margin-bottom:6px">🔑 Verificar identidad</div>
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:18px">Introduce la contraseña de tu cuenta.</div>
+    <div class="fgrp" style="margin-bottom:10px"><input type="password" id="_lockPassInput" placeholder="Contraseña" style="width:100%;box-sizing:border-box" autocomplete="current-password"></div>
+    <div id="_lockPassErr" style="font-size:12px;color:#ff5252;margin-bottom:12px;min-height:16px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="document.getElementById('_lockPassModal').remove()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
+      <button id="_lockPassOkBtn" onclick="_lockVerificarContraseña()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--r);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font)">Verificar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('_lockPassInput')?.focus(),100);
+  document.getElementById('_lockPassInput').addEventListener('keydown',e=>{if(e.key==='Enter')_lockVerificarContraseña();});
+};
+
+window._lockVerificarContraseña = async () => {
+  const inp=document.getElementById('_lockPassInput');
+  const errEl=document.getElementById('_lockPassErr');
+  const btn=document.getElementById('_lockPassOkBtn');
+  if(!inp||!CU?.email)return;
+  const pass=inp.value;
+  if(!pass){if(errEl)errEl.textContent='Introduce tu contraseña';return;}
+  if(btn){btn.disabled=true;btn.textContent='Verificando...';}
+  try{
+    await signInWithEmailAndPassword(auth,CU.email,pass);
+    document.getElementById('_lockPassModal')?.remove();
+    _lockOcultar();
+    toast('✓ Desbloqueado con contraseña','o');
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent='Verificar';}
+    if(errEl)errEl.textContent='Contraseña incorrecta';
+  }
+};
+
+// ══════════════════════════════════════════════
+// CONFIGURACIÓN DESDE PERFIL
+// ══════════════════════════════════════════════
+window._lockToggle = (activar) => {
+  if(activar){
+    _lockFlujoConfigurar('pin', ()=>{ renderPerfil(); }, ()=>{
+      const t=document.getElementById('toggleLock'); if(t)t.checked=false;
+    });
+  } else {
+    _lockDesactivar();
+  }
+};
+
+window._lockSetMethod = (method) => {
+  if(method==='fingerprint'){
+    // Registrar huella — requiere tener PIN o patrón primero
+    if(!_lockHasAny()){ toast('Configura primero un PIN o patrón','e'); return; }
+    _lockRegistrarHuella().then(ok=>{ if(ok){ toast('✓ Huella registrada','o'); renderPerfil(); } });
+    return;
+  }
+  // Cambiar entre PIN y patrón — reconfigurar
+  _lockFlujoConfigurar(method, ()=>{ renderPerfil(); toast('✓ Método actualizado','o'); }, ()=>{});
+};
+
+window._lockCambiar = () => {
+  const method = _lockMethod();
+  _lockFlujoConfigurar(method, ()=>{ toast(`✓ ${method==='pin'?'PIN':'Patrón'} actualizado`,'o'); renderPerfil(); }, ()=>{});
+};
+
+// ── Flujo de configuración: verificar contraseña → nuevo PIN/patrón → confirmar ──
+const _lockFlujoConfigurar = (method, onOk, onCancel) => {
+  let modal=document.getElementById('_lockSetupModal');
+  if(modal)modal.remove();
+
+  const _buildModal=(html,cls='')=>{
+    let m=document.getElementById('_lockSetupModal');
+    if(!m){m=document.createElement('div');m.id='_lockSetupModal';document.body.appendChild(m);}
+    m.style.cssText='position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)';
+    m.innerHTML=html; return m;
+  };
+
+  // PASO 1: verificar contraseña (si ya tiene bloqueo activo o primera vez)
+  const step1=()=>{
+    _buildModal(`<div style="background:var(--card);border-radius:20px;padding:24px 20px;width:100%;max-width:360px">
+      <div style="font-size:17px;font-weight:900;color:var(--tx);margin-bottom:6px">🔑 Confirmar identidad</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:18px">Introduce la contraseña de tu cuenta para continuar.</div>
+      <div class="fgrp" style="margin-bottom:10px"><input type="password" id="_sv1Pass" placeholder="Contraseña" style="width:100%;box-sizing:border-box" autocomplete="current-password"></div>
+      <div id="_sv1Err" style="font-size:12px;color:#ff5252;margin-bottom:12px;min-height:16px"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="_lockSetupCancel()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
+        <button id="_sv1Btn" onclick="_sv1Verify()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--r);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font)">Continuar</button>
+      </div>
+    </div>`);
+    setTimeout(()=>document.getElementById('_sv1Pass')?.focus(),100);
+    document.getElementById('_sv1Pass').addEventListener('keydown',e=>{if(e.key==='Enter')_sv1Verify();});
+
+    window._sv1Verify = async()=>{
+      const inp=document.getElementById('_sv1Pass');
+      const errEl=document.getElementById('_sv1Err');
+      const btn=document.getElementById('_sv1Btn');
+      if(!inp.value){if(errEl)errEl.textContent='Introduce tu contraseña';return;}
+      if(btn){btn.disabled=true;btn.textContent='Verificando...';}
+      try{
+        await signInWithEmailAndPassword(auth,CU.email,inp.value);
+        method==='pin' ? step2Pin() : step2Patron();
+      }catch(e){
+        if(btn){btn.disabled=false;btn.textContent='Continuar';}
+        if(errEl)errEl.textContent='Contraseña incorrecta';
+      }
+    };
+  };
+
+  // PASO 2a: PIN
+  let _pin1='';
+  const step2Pin=()=>_buildPinStep('Elige un PIN de 4 dígitos','Introduce un PIN seguro','set');
+  const step3Pin=()=>_buildPinStep('Confirma tu PIN','Repite el mismo PIN','confirm');
+
+  const _buildPinStep=(title,sub,fase)=>{
+    let buf='';
+    const m=_buildModal(`<div style="text-align:center;width:100%;max-width:300px">
+      <div style="font-size:18px;font-weight:900;color:var(--tx);margin-bottom:8px">${title}</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:28px">${sub}</div>
+      <div style="display:flex;gap:14px;justify-content:center;margin-bottom:28px">
+        ${[0,1,2,3].map(i=>`<div id="spd${i}" style="width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.22);transition:background .12s"></div>`).join('')}
+      </div>
+      <div id="_spErr" style="font-size:13px;color:#ff5252;margin-bottom:14px;min-height:18px"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:272px;margin:0 auto">
+        ${['1','2','3','4','5','6','7','8','9','_','0','⌫'].map(k=>
+          k==='_'?'<div></div>'
+          :`<button style="height:66px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--tx);font-size:22px;font-weight:700;font-family:var(--font);cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center" ontouchstart="this.style.background='rgba(var(--theme-rgb),.2)'" ontouchend="this.style.background='rgba(255,255,255,.06)'" onmousedown="this.style.background='rgba(var(--theme-rgb),.2)'" onmouseup="this.style.background='rgba(255,255,255,.06)'" onclick="_spPress('${k}')">${k}</button>`
+        ).join('')}
+      </div>
+      <button onclick="_lockSetupCancel()" style="margin-top:20px;background:none;border:none;color:var(--tx2);font-size:12px;font-family:var(--font);cursor:pointer">Cancelar</button>
+    </div>`);
+
+    const updateDots=()=>{ for(let i=0;i<4;i++){const d=document.getElementById('spd'+i);if(d)d.style.background=i<buf.length?'var(--r)':'rgba(255,255,255,.2)';} };
+
+    window._spPress=(k)=>{
+      if(navigator.vibrate)navigator.vibrate(10);
+      if(k==='⌫'){buf=buf.slice(0,-1);updateDots();return;}
+      if(buf.length>=4)return;
+      buf+=k; updateDots();
+      if(buf.length===4){
+        if(fase==='set'){_pin1=buf;buf='';setTimeout(step3Pin,200);}
+        else{
+          if(buf===_pin1){
+            _lockHash(buf).then(hash=>{
+              localStorage.setItem(_LOCK_PIN_KEY,hash);
+              localStorage.setItem(_LOCK_METHOD,'pin');
+              localStorage.setItem(_LOCK_TS,Date.now().toString());
+              document.getElementById('_lockSetupModal')?.remove();
+              onOk();
+            });
+          }else{
+            const errEl=document.getElementById('_spErr');
+            if(errEl)errEl.textContent='Los PINs no coinciden';
+            for(let i=0;i<4;i++){const d=document.getElementById('spd'+i);if(d)d.style.background='#e53935';}
+            setTimeout(()=>{buf='';_pin1='';updateDots();setTimeout(step2Pin,200);},800);
+          }
+        }
+      }
+    };
+  };
+
+  // PASO 2b: PATRÓN
+  let _pat1=[];
+  const step2Patron=()=>_buildPatronStep('Dibuja tu patrón','Desliza entre al menos 4 puntos','set');
+  const step3Patron=()=>_buildPatronStep('Confirma tu patrón','Repite el mismo patrón','confirm');
+
+  const _buildPatronStep=(title,sub,fase)=>{
+    let seq=[],drawing=false,lastPos=null;
+    const m=_buildModal(`<div style="text-align:center;width:100%;max-width:300px">
+      <div style="font-size:18px;font-weight:900;color:var(--tx);margin-bottom:8px">${title}</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:24px">${sub}</div>
+      <div id="_spPatWrap" style="position:relative;display:inline-block;touch-action:none">
+        <svg id="_spPatSvg" style="position:absolute;inset:0;pointer-events:none;z-index:1" width="248" height="248"></svg>
+        <div id="_spPatGrid" style="display:grid;grid-template-columns:repeat(3,1fr);width:248px;height:248px"></div>
+      </div>
+      <div id="_spPatErr" style="font-size:13px;color:#ff5252;margin-top:16px;min-height:18px"></div>
+      <button onclick="_lockSetupCancel()" style="margin-top:16px;background:none;border:none;color:var(--tx2);font-size:12px;font-family:var(--font);cursor:pointer">Cancelar</button>
+    </div>`);
+
+    const grid=document.getElementById('_spPatGrid');
+    for(let i=0;i<9;i++){
+      const d=document.createElement('div');
+      d.style.cssText='display:flex;align-items:center;justify-content:center';
+      d.innerHTML='<div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center"><div class="spd" style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.3);transition:background .1s,transform .1s"></div></div>';
+      d.dataset.idx=i; grid.appendChild(d);
+    }
+
+    const getPos=(e)=>{ const t=e.touches?e.touches[0]:e; const r=document.getElementById('_spPatWrap').getBoundingClientRect(); return{x:t.clientX-r.left,y:t.clientY-r.top}; };
+    const dotCenter=(idx)=>{ const dots=grid.querySelectorAll('[data-idx]'); const d=dots[idx]; if(!d)return null; const rw=document.getElementById('_spPatWrap').getBoundingClientRect(); const rd=d.getBoundingClientRect(); return{x:rd.left-rw.left+rd.width/2,y:rd.top-rw.top+rd.height/2}; };
+    const hitTest=(pos)=>{ const dots=grid.querySelectorAll('[data-idx]'); for(let i=0;i<dots.length;i++){if(seq.includes(i))continue; const c=dotCenter(i); if(c&&Math.hypot(pos.x-c.x,pos.y-c.y)<26)return i;} return -1; };
+    const drawLine=(a,b,cls='')=>{ const svg=document.getElementById('_spPatSvg'); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);l.setAttribute('stroke','var(--r)');l.setAttribute('stroke-width','2.5');l.setAttribute('stroke-linecap','round');l.setAttribute('opacity',cls?'.35':'.7');if(cls)l.classList.add(cls);svg.appendChild(l); };
+    const activateDot=(idx)=>{ const d=grid.querySelectorAll('[data-idx]')[idx]?.querySelector('.spd'); if(d){d.style.background='var(--r)';d.style.borderColor='var(--r)';d.style.transform='scale(1.3)';if(navigator.vibrate)navigator.vibrate(8);} };
+    const resetPat=()=>{ seq=[];drawing=false;lastPos=null; grid.querySelectorAll('.spd').forEach(d=>{d.style.background='';d.style.borderColor='rgba(255,255,255,.3)';d.style.transform='';}); const svg=document.getElementById('_spPatSvg');if(svg)svg.innerHTML=''; };
+    const errPat=()=>{ grid.querySelectorAll('.spd').forEach(d=>{d.style.background='#e53935';d.style.borderColor='#e53935';}); };
+
+    const onStart=(e)=>{ e.preventDefault(); resetPat(); drawing=true; const pos=getPos(e); const hit=hitTest(pos); if(hit>=0){seq.push(hit);activateDot(hit);lastPos=dotCenter(hit);} };
+    const onMove=(e)=>{ e.preventDefault(); if(!drawing)return; const pos=getPos(e); const hit=hitTest(pos); if(hit>=0){const c=dotCenter(hit);if(lastPos)drawLine(lastPos,c);seq.push(hit);activateDot(hit);lastPos=c;} else if(lastPos&&seq.length>0){const svg=document.getElementById('_spPatSvg');svg.querySelector('.live')?.remove();drawLine(lastPos,pos,'live');} };
+    const onEnd=(e)=>{ e.preventDefault(); drawing=false; document.getElementById('_spPatSvg')?.querySelector('.live')?.remove();
+      if(seq.length<4){const err=document.getElementById('_spPatErr');if(err)err.textContent='Mínimo 4 puntos';setTimeout(()=>{resetPat();if(err)err.textContent='';},700);return;}
+      if(fase==='set'){_pat1=[...seq];resetPat();setTimeout(step3Patron,200);}
+      else{
+        if(seq.join('-')===_pat1.join('-')){
+          _lockHash(seq.join('-')).then(hash=>{
+            localStorage.setItem(_LOCK_PAT_KEY,hash);
+            localStorage.setItem(_LOCK_METHOD,'pattern');
+            localStorage.setItem(_LOCK_TS,Date.now().toString());
+            document.getElementById('_lockSetupModal')?.remove();
+            onOk();
+          });
+        }else{
+          const err=document.getElementById('_spPatErr');if(err)err.textContent='Los patrones no coinciden';
+          errPat();setTimeout(()=>{resetPat();_pat1=[];setTimeout(step2Patron,200);},800);
+        }
+      }
+    };
+    const wrap=document.getElementById('_spPatWrap');
+    wrap.addEventListener('touchstart',onStart,{passive:false});wrap.addEventListener('touchmove',onMove,{passive:false});wrap.addEventListener('touchend',onEnd,{passive:false});
+    wrap.addEventListener('mousedown',onStart);wrap.addEventListener('mousemove',onMove);wrap.addEventListener('mouseup',onEnd);
+  };
+
+  window._lockSetupCancel=()=>{ document.getElementById('_lockSetupModal')?.remove(); onCancel(); };
+  step1();
+};
+
+// ── Desactivar bloqueo (pide contraseña) ──
+const _lockDesactivar = () => {
+  let m=document.getElementById('_lockOffModal');if(m)m.remove();
+  m=document.createElement('div');m.id='_lockOffModal';
+  m.style.cssText='position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:20px';
+  m.innerHTML=`<div style="background:var(--card);border-radius:20px;padding:24px 20px;width:100%;max-width:360px">
+    <div style="font-size:17px;font-weight:900;color:var(--tx);margin-bottom:6px">🔓 Desactivar bloqueo</div>
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:18px">Introduce tu contraseña para desactivarlo.</div>
+    <div class="fgrp" style="margin-bottom:10px"><input type="password" id="_lockOffPass" placeholder="Contraseña" style="width:100%;box-sizing:border-box"></div>
+    <div id="_lockOffErr" style="font-size:12px;color:#ff5252;margin-bottom:12px;min-height:16px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="document.getElementById('_lockOffModal').remove();document.getElementById('toggleLock').checked=true" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
+      <button id="_lockOffBtn" onclick="_lockDesactivarVerificar()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--r);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font)">Desactivar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  setTimeout(()=>document.getElementById('_lockOffPass')?.focus(),100);
+  document.getElementById('_lockOffPass').addEventListener('keydown',e=>{if(e.key==='Enter')_lockDesactivarVerificar();});
+};
+
+window._lockDesactivarVerificar = async () => {
+  const inp=document.getElementById('_lockOffPass'),errEl=document.getElementById('_lockOffErr'),btn=document.getElementById('_lockOffBtn');
+  if(!inp.value){if(errEl)errEl.textContent='Introduce tu contraseña';return;}
+  if(btn){btn.disabled=true;btn.textContent='Verificando...';}
+  try{
+    await signInWithEmailAndPassword(auth,CU.email,inp.value);
+    [_LOCK_PIN_KEY,_LOCK_PAT_KEY,_LOCK_FP_KEY,_LOCK_METHOD,'joyvi_fp_credId'].forEach(k=>localStorage.removeItem(k));
+    document.getElementById('_lockOffModal')?.remove();
+    toast('🔓 Bloqueo desactivado','o'); renderPerfil();
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent='Desactivar';}
+    if(errEl)errEl.textContent='Contraseña incorrecta';
+  }
+};
+
+// ══════════════════════════════════════════════
+// CICLO DE VIDA — bloquear al salir / desbloquear al entrar
+// ══════════════════════════════════════════════
+const _lockComprobar = () => {
+  if(!_lockHasAny()) return;
+  if(document.getElementById('lockScreen')?.classList.contains('active')) return;
+  const ts = parseInt(localStorage.getItem(_LOCK_TS)||'0');
+  if(Date.now() - ts > _LOCK_TIMEOUT) _lockMostrar();
+};
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'){ if(_lockHasAny())localStorage.setItem(_LOCK_TS,Date.now().toString()); }
+  else { setTimeout(_lockComprobar,300); }
+});
+window.addEventListener('pagehide',()=>{ if(_lockHasAny())localStorage.setItem(_LOCK_TS,Date.now().toString()); });
+window.addEventListener('focus',()=>setTimeout(_lockComprobar,300));
+window.addEventListener('pageshow',()=>setTimeout(_lockComprobar,300));
+
+const _lockInicializar = () => {
+  if(_lockHasAny() && Date.now() - parseInt(localStorage.getItem(_LOCK_TS)||'0') > _LOCK_TIMEOUT) _lockMostrar();
+};
 </body>
 </html>
