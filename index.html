@@ -2209,93 +2209,118 @@ window.doRegister=async()=>{
 // ONBOARDING — Nuevo usuario: color + seguridad
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _onboardingNuevoUsuario = () => {
-  // Paso 1: elegir color
   const overlay = document.createElement('div');
   overlay.id = '_onboardingOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px)';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:200000;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);overflow-y:auto';
 
-  const _step1 = () => {
-    overlay.innerHTML = `
-      <div style="max-width:380px;width:100%;background:var(--card);border-radius:24px;padding:32px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
-        <div style="text-align:center;margin-bottom:24px">
-          <div style="font-size:40px;margin-bottom:12px">🎨</div>
-          <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:6px">¡Bienvenido/a!</div>
-          <div style="font-size:13px;color:var(--tx2);line-height:1.5">Elige el color de tu app.<br>Podrás cambiarlo más adelante en Perfil.</div>
-        </div>
-        <div style="display:flex;justify-content:center;gap:20px;margin-bottom:28px">
-          <div onclick="_onbSelectColor('rojo',this)" data-color="rojo" style="display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer">
-            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e53935,#c62828);border:3px solid transparent;transition:.2s;box-shadow:0 4px 14px rgba(229,57,53,.4)" id="_onbSwRojo"></div>
-            <span style="font-size:12px;font-weight:700;color:var(--tx2)">Rojo</span>
-          </div>
-          <div onclick="_onbSelectColor('azul',this)" data-color="azul" style="display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer">
-            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1976d2,#0d47a1);border:3px solid transparent;transition:.2s;box-shadow:0 4px 14px rgba(25,118,210,.4)" id="_onbSwAzul"></div>
-            <span style="font-size:12px;font-weight:700;color:var(--tx2)">Azul</span>
-          </div>
-          <div onclick="_onbSelectColor('lila',this)" data-color="lila" style="display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer">
-            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#8e24aa,#6a1b9a);border:3px solid transparent;transition:.2s;box-shadow:0 4px 14px rgba(142,36,170,.4)" id="_onbSwLila"></div>
-            <span style="font-size:12px;font-weight:700;color:var(--tx2)">Lila</span>
-          </div>
-        </div>
-        <button id="_onbNextBtn" onclick="_onbPaso2()" disabled style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--r);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);opacity:.45;transition:.2s">Continuar →</button>
-      </div>
-    `;
-  };
-
+  // ── Estado compartido ──────────────────────────────
   window._onbColorElegido = null;
-  window._onbSelectColor = (color, el) => {
-    window._onbColorElegido = color;
-    // Apply theme immediately
-    if(typeof cambiarColorTema === 'function') cambiarColorTema(color);
-    // Visual feedback
+  window._onbModoClaro    = false; // oscuro por defecto
+
+  // ── Helpers visuales ──────────────────────────────
+  const _onbRefreshSwatches = () => {
     ['Rojo','Azul','Lila'].forEach(c => {
       const sw = document.getElementById('_onbSw'+c);
-      if(sw) sw.style.borderColor = 'transparent';
+      if(!sw) return;
+      sw.style.borderColor = 'transparent';
+      sw.style.transform   = 'scale(1)';
     });
-    const key = color.charAt(0).toUpperCase() + color.slice(1);
-    const sw = document.getElementById('_onbSw'+key);
-    if(sw) { sw.style.borderColor = '#fff'; sw.style.transform = 'scale(1.12)'; }
-    const btn = document.getElementById('_onbNextBtn');
-    if(btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    if(window._onbColorElegido){
+      const key = window._onbColorElegido.charAt(0).toUpperCase() + window._onbColorElegido.slice(1);
+      const sw  = document.getElementById('_onbSw'+key);
+      if(sw){ sw.style.borderColor = 'var(--tx)'; sw.style.transform = 'scale(1.14)'; }
+    }
   };
 
-  window._onbPaso2 = () => {
-    // Paso 2: configurar seguridad
+  const _onbRefreshModo = () => {
+    const btnC = document.getElementById('_onbBtnClaro');
+    const btnO = document.getElementById('_onbBtnOscuro');
+    if(!btnC || !btnO) return;
+    const base = 'display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s;border:2px solid ';
+    if(window._onbModoClaro){
+      btnC.style.cssText = base + 'var(--r);background:rgba(var(--theme-rgb),.1);color:var(--r)';
+      btnO.style.cssText = base + 'var(--border);background:transparent;color:var(--tx2)';
+    } else {
+      btnO.style.cssText = base + 'var(--r);background:rgba(var(--theme-rgb),.1);color:var(--r)';
+      btnC.style.cssText = base + 'var(--border);background:transparent;color:var(--tx2)';
+    }
+  };
+
+  const _onbCheckPaso1Btn = () => {
+    const btn = document.getElementById('_onbNextBtn');
+    if(btn){ btn.disabled = !window._onbColorElegido; btn.style.opacity = window._onbColorElegido ? '1' : '.45'; }
+  };
+
+  // ── PASO 1: Color + Modo ───────────────────────────
+  const _paso1 = () => {
     overlay.innerHTML = `
-      <div style="max-width:380px;width:100%;background:var(--card);border-radius:24px;padding:32px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
-        <div style="text-align:center;margin-bottom:24px">
-          <div style="font-size:40px;margin-bottom:12px">🔒</div>
-          <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:6px">Seguridad</div>
-          <div style="font-size:13px;color:var(--tx2);line-height:1.5">¿Quieres proteger la app con un código de acceso?</div>
+      <div style="max-width:390px;width:100%;background:var(--card);border-radius:24px;padding:28px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
+        <div style="text-align:center;margin-bottom:22px">
+          <div style="font-size:38px;margin-bottom:10px">🎨</div>
+          <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:5px">¡Bienvenido/a a Joyvi!</div>
+          <div style="font-size:13px;color:var(--tx2);line-height:1.5">Personaliza tu app antes de empezar.</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
-          <div onclick="_onbElegirSeg('pin')" id="_onbOptPin" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:.15s;background:var(--bg)">
-            <span style="font-size:24px">🔢</span>
-            <div style="flex:1">
-              <div style="font-size:14px;font-weight:800;color:var(--tx)">PIN numérico</div>
-              <div style="font-size:11px;color:var(--tx2)">4–6 dígitos para desbloquear</div>
-            </div>
+
+        <div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Color de la app</div>
+        <div style="display:flex;justify-content:center;gap:24px;margin-bottom:24px">
+          <div onclick="_onbSelectColor('rojo')" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#e53935,#c62828);border:3px solid transparent;transition:.2s;box-shadow:0 4px 14px rgba(229,57,53,.45)" id="_onbSwRojo"></div>
+            <span style="font-size:11px;font-weight:700;color:var(--tx2)">Rojo</span>
           </div>
-          <div onclick="_onbElegirSeg('pattern')" id="_onbOptPat" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:.15s;background:var(--bg)">
-            <span style="font-size:24px">⬛</span>
-            <div style="flex:1">
-              <div style="font-size:14px;font-weight:800;color:var(--tx)">Patrón</div>
-              <div style="font-size:11px;color:var(--tx2)">Dibuja tu patrón de desbloqueo</div>
-            </div>
+          <div onclick="_onbSelectColor('azul')" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1976d2,#0d47a1);border:3px solid transparent;transition:.2s;box-shadow:0 4px 14px rgba(25,118,210,.45)" id="_onbSwAzul"></div>
+            <span style="font-size:11px;font-weight:700;color:var(--tx2)">Azul</span>
           </div>
-          <div onclick="_onbElegirSeg('huella')" id="_onbOptHue" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:.15s;background:var(--bg)">
-            <span style="font-size:24px">👆</span>
-            <div style="flex:1">
-              <div style="font-size:14px;font-weight:800;color:var(--tx)">Huella + PIN/Patrón</div>
-              <div style="font-size:11px;color:var(--tx2)">Biometría como opción rápida</div>
-            </div>
+          <div onclick="_onbSelectColor('lila')" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#8e24aa,#6a1b9a);border:3px solid transparent;transition:.2s;box-shadow:0 4px 14px rgba(142,36,170,.45)" id="_onbSwLila"></div>
+            <span style="font-size:11px;font-weight:700;color:var(--tx2)">Lila</span>
           </div>
-          <div onclick="_onbElegirSeg('none')" id="_onbOptNone" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:.15s;background:var(--bg)">
-            <span style="font-size:24px">🔓</span>
-            <div style="flex:1">
-              <div style="font-size:14px;font-weight:800;color:var(--tx)">Sin seguridad</div>
-              <div style="font-size:11px;color:var(--tx2)">Acceso directo a la app</div>
-            </div>
-          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Modo de la interfaz</div>
+        <div style="display:flex;gap:10px;margin-bottom:24px">
+          <button id="_onbBtnOscuro" onclick="_onbToggleModo(false)">🌙 Oscuro</button>
+          <button id="_onbBtnClaro"  onclick="_onbToggleModo(true)">☀️ Claro</button>
+        </div>
+
+        <button id="_onbNextBtn" onclick="_paso2()" disabled style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--r);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);opacity:.45;transition:.2s">Continuar →</button>
+      </div>
+    `;
+    _onbRefreshSwatches();
+    _onbRefreshModo();
+    _onbCheckPaso1Btn();
+  };
+
+  window._onbSelectColor = (color) => {
+    window._onbColorElegido = color;
+    if(typeof _aplicarColorTema === 'function') _aplicarColorTema(color);
+    localStorage.setItem('joyvi_theme', color);
+    _onbRefreshSwatches();
+    _onbCheckPaso1Btn();
+  };
+
+  window._onbToggleModo = (claro) => {
+    window._onbModoClaro = claro;
+    localStorage.setItem('joyvi_claro', claro ? '1' : '0');
+    if(typeof _aplicarModoClaro === 'function') _aplicarModoClaro();
+    _onbRefreshModo();
+  };
+
+  // ── PASO 2: Seguridad ──────────────────────────────
+  const _paso2 = () => {
+    window._onbSegElegida = null;
+    overlay.innerHTML = `
+      <div style="max-width:390px;width:100%;background:var(--card);border-radius:24px;padding:28px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
+        <div style="text-align:center;margin-bottom:22px">
+          <div style="font-size:38px;margin-bottom:10px">🔒</div>
+          <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:5px">Seguridad</div>
+          <div style="font-size:13px;color:var(--tx2);line-height:1.5">¿Quieres proteger la app con un código?</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px">
+          <div onclick="_onbElegirSeg('pin')"     id="_onbOptPin"  style="display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:.15s;background:var(--bg)"><span style="font-size:22px">🔢</span><div style="flex:1"><div style="font-size:14px;font-weight:800;color:var(--tx)">PIN numérico</div><div style="font-size:11px;color:var(--tx2)">4 dígitos para desbloquear</div></div></div>
+          <div onclick="_onbElegirSeg('pattern')" id="_onbOptPat"  style="display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:.15s;background:var(--bg)"><span style="font-size:22px">⬛</span><div style="flex:1"><div style="font-size:14px;font-weight:800;color:var(--tx)">Patrón</div><div style="font-size:11px;color:var(--tx2)">Dibuja tu patrón de desbloqueo</div></div></div>
+          <div onclick="_onbElegirSeg('huella')"  id="_onbOptHue"  style="display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:.15s;background:var(--bg)"><span style="font-size:22px">👆</span><div style="flex:1"><div style="font-size:14px;font-weight:800;color:var(--tx)">Huella + PIN/Patrón</div><div style="font-size:11px;color:var(--tx2)">Biometría con código de respaldo</div></div></div>
+          <div onclick="_onbElegirSeg('none')"    id="_onbOptNone" style="display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:14px;border:2px solid var(--border);cursor:pointer;transition:.15s;background:var(--bg)"><span style="font-size:22px">🔓</span><div style="flex:1"><div style="font-size:14px;font-weight:800;color:var(--tx)">Sin seguridad</div><div style="font-size:11px;color:var(--tx2)">Acceso directo a la app</div></div></div>
         </div>
         <div id="_onbSegInfo" style="display:none;font-size:12px;color:var(--tx2);text-align:center;margin-bottom:12px;padding:10px;background:rgba(var(--theme-rgb),.08);border-radius:10px"></div>
         <button id="_onbFinBtn" onclick="_onbFinalizar()" disabled style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--r);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);opacity:.45;transition:.2s">Empezar →</button>
@@ -2303,70 +2328,188 @@ const _onboardingNuevoUsuario = () => {
     `;
   };
 
-  window._onbSegElegida = null;
   window._onbElegirSeg = (tipo) => {
     window._onbSegElegida = tipo;
     ['Pin','Pat','Hue','None'].forEach(k => {
       const el = document.getElementById('_onbOpt'+k);
       if(el){ el.style.borderColor = 'var(--border)'; el.style.background = 'var(--bg)'; }
     });
-    const key = tipo === 'pin' ? 'Pin' : tipo === 'pattern' ? 'Pat' : tipo === 'huella' ? 'Hue' : 'None';
-    const el = document.getElementById('_onbOpt'+key);
+    const key = tipo==='pin'?'Pin':tipo==='pattern'?'Pat':tipo==='huella'?'Hue':'None';
+    const el  = document.getElementById('_onbOpt'+key);
     if(el){ el.style.borderColor = 'var(--r)'; el.style.background = 'rgba(var(--theme-rgb),.08)'; }
     const info = document.getElementById('_onbSegInfo');
-    if(tipo === 'huella'){
-      info.style.display = 'block';
-      info.textContent = 'La huella digital requiere también un PIN o patrón como respaldo.';
-    } else { info.style.display = 'none'; }
+    if(info){ info.style.display = tipo==='huella' ? 'block' : 'none'; if(tipo==='huella') info.textContent='La huella necesita también un código de respaldo.'; }
     const btn = document.getElementById('_onbFinBtn');
     if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
   };
 
+  // ── Configuración de PIN directo (sin pedir contraseña) ──
+  const _onbSetupPIN = (onOk, onBack) => {
+    // Reutilizamos la lógica del bloque de seguridad pero sin step1 (verificar pass)
+    // Lo hacemos directamente: 2 pantallas (nuevo PIN → confirmar)
+    let _pin1 = '';
+    let buf   = '';
+
+    const _buildPinUI = (title, sub, fase) => {
+      buf = '';
+      overlay.innerHTML = `
+        <div style="max-width:320px;width:100%;text-align:center">
+          <div style="font-size:18px;font-weight:900;color:var(--tx);margin-bottom:8px">${title}</div>
+          <div style="font-size:13px;color:var(--tx2);margin-bottom:28px">${sub}</div>
+          <div style="display:flex;gap:14px;justify-content:center;margin-bottom:28px">
+            ${[0,1,2,3].map(i=>`<div id="_onbPD${i}" style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.25);transition:background .12s"></div>`).join('')}
+          </div>
+          <div id="_onbPinErr" style="font-size:13px;color:#ff5252;margin-bottom:14px;min-height:18px"></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:272px;margin:0 auto 20px">
+            ${['1','2','3','4','5','6','7','8','9','_','0','⌫'].map(k=>
+              k==='_'?'<div></div>'
+              :`<button style="height:66px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--tx);font-size:22px;font-weight:700;font-family:var(--font);cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center" ontouchstart="this.style.background='rgba(var(--theme-rgb),.2)'" ontouchend="this.style.background='rgba(255,255,255,.06)'" onmousedown="this.style.background='rgba(var(--theme-rgb),.2)'" onmouseup="this.style.background='rgba(255,255,255,.06)'" onclick="_onbPinKey('${k}')">${k}</button>`
+            ).join('')}
+          </div>
+          <button onclick="${fase==='set'?'_paso2()':'_onbPinRedo()'}" style="background:none;border:none;color:var(--tx2);font-size:12px;font-family:var(--font);cursor:pointer">${fase==='set'?'← Volver':'Volver a intentarlo'}</button>
+        </div>
+      `;
+      const updateDots = () => { for(let i=0;i<4;i++){const d=document.getElementById('_onbPD'+i);if(d)d.style.background=i<buf.length?'var(--r)':'rgba(255,255,255,.2)';} };
+      window._onbPinKey = (k) => {
+        if(navigator.vibrate) navigator.vibrate(8);
+        if(k==='⌫'){ buf=buf.slice(0,-1); updateDots(); return; }
+        if(buf.length>=4) return;
+        buf+=k; updateDots();
+        if(buf.length===4){
+          if(fase==='set'){
+            _pin1=buf; buf='';
+            setTimeout(()=>_buildPinUI('Confirma tu PIN','Repite el mismo PIN','confirm'),200);
+          } else {
+            if(buf===_pin1){
+              _lockHash(buf).then(hash=>{
+                localStorage.setItem(_LOCK_PIN_KEY,hash);
+                localStorage.setItem(_LOCK_METHOD,'pin');
+                localStorage.setItem(_LOCK_TS,Date.now().toString());
+                onOk();
+              });
+            } else {
+              const errEl=document.getElementById('_onbPinErr');
+              if(errEl) errEl.textContent='Los PINs no coinciden';
+              for(let i=0;i<4;i++){const d=document.getElementById('_onbPD'+i);if(d)d.style.background='#e53935';}
+              setTimeout(()=>{ buf=''; _pin1=''; _buildPinUI('Elige un PIN de 4 dígitos','Introduce un PIN seguro','set'); },800);
+            }
+          }
+        }
+      };
+      window._onbPinRedo = () => _buildPinUI('Elige un PIN de 4 dígitos','Introduce un PIN seguro','set');
+    };
+    _buildPinUI('Elige un PIN de 4 dígitos','Introduce un PIN seguro','set');
+  };
+
+  // ── Configuración de Patrón directo ───────────────
+  const _onbSetupPatron = (onOk, onBack) => {
+    let _pat1 = [];
+
+    const _buildPatUI = (title, sub, fase) => {
+      overlay.innerHTML = `
+        <div style="max-width:320px;width:100%;text-align:center">
+          <div style="font-size:18px;font-weight:900;color:var(--tx);margin-bottom:8px">${title}</div>
+          <div style="font-size:13px;color:var(--tx2);margin-bottom:22px">${sub}</div>
+          <div id="_onbPatWrap" style="position:relative;display:inline-block;touch-action:none">
+            <svg id="_onbPatSvg" style="position:absolute;inset:0;pointer-events:none;z-index:1" width="248" height="248"></svg>
+            <div id="_onbPatGrid" style="display:grid;grid-template-columns:repeat(3,1fr);width:248px;height:248px"></div>
+          </div>
+          <div id="_onbPatErr" style="font-size:13px;color:#ff5252;margin-top:14px;min-height:18px"></div>
+          <button onclick="${fase==='set'?'_paso2()':'_onbPatRedo()'}" style="margin-top:14px;background:none;border:none;color:var(--tx2);font-size:12px;font-family:var(--font);cursor:pointer">${fase==='set'?'← Volver':'Volver a intentarlo'}</button>
+        </div>
+      `;
+
+      const grid = document.getElementById('_onbPatGrid');
+      for(let i=0;i<9;i++){
+        const d=document.createElement('div');
+        d.style.cssText='display:flex;align-items:center;justify-content:center';
+        d.innerHTML='<div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center"><div class="onbDot" style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.3);transition:background .1s,transform .1s"></div></div>';
+        d.dataset.idx=i; grid.appendChild(d);
+      }
+
+      let seq=[],drawing=false,lastPos=null;
+      const wrap = ()=>document.getElementById('_onbPatWrap');
+      const getPos=(e)=>{ const t=e.touches?e.touches[0]:e; const r=wrap()?.getBoundingClientRect()||{}; return{x:t.clientX-(r.left||0),y:t.clientY-(r.top||0)}; };
+      const dotCenter=(idx)=>{ const dots=grid.querySelectorAll('[data-idx]'); const d=dots[idx]; if(!d)return null; const rw=wrap()?.getBoundingClientRect()||{}; const rd=d.getBoundingClientRect(); return{x:rd.left-rw.left+rd.width/2,y:rd.top-rw.top+rd.height/2}; };
+      const hitTest=(pos)=>{ const dots=grid.querySelectorAll('[data-idx]'); for(let i=0;i<dots.length;i++){if(seq.includes(i))continue;const c=dotCenter(i);if(c&&Math.hypot(pos.x-c.x,pos.y-c.y)<26)return i;}return -1; };
+      const drawLine=(a,b,cls='')=>{ const svg=document.getElementById('_onbPatSvg'); const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);l.setAttribute('stroke','var(--r)');l.setAttribute('stroke-width','2.5');l.setAttribute('stroke-linecap','round');l.setAttribute('opacity',cls?'.35':'.7');if(cls)l.classList.add(cls);svg.appendChild(l); };
+      const activateDot=(idx)=>{ const d=grid.querySelectorAll('[data-idx]')[idx]?.querySelector('.onbDot'); if(d){d.style.background='var(--r)';d.style.borderColor='var(--r)';d.style.transform='scale(1.3)';if(navigator.vibrate)navigator.vibrate(8);} };
+      const resetPat=()=>{ seq=[];drawing=false;lastPos=null; grid.querySelectorAll('.onbDot').forEach(d=>{d.style.background='';d.style.borderColor='rgba(255,255,255,.3)';d.style.transform='';}); const svg=document.getElementById('_onbPatSvg');if(svg)svg.innerHTML=''; };
+      const onStart=(e)=>{ e.preventDefault(); resetPat(); drawing=true; const pos=getPos(e); const hit=hitTest(pos); if(hit>=0){seq.push(hit);activateDot(hit);lastPos=dotCenter(hit);} };
+      const onMove=(e)=>{ e.preventDefault(); if(!drawing)return; const pos=getPos(e); const hit=hitTest(pos); if(hit>=0){const c=dotCenter(hit);if(lastPos)drawLine(lastPos,c);seq.push(hit);activateDot(hit);lastPos=c;}else if(lastPos&&seq.length>0){const svg=document.getElementById('_onbPatSvg');svg.querySelector('.live')?.remove();drawLine(lastPos,pos,'live');} };
+      const onEnd=(e)=>{ e.preventDefault(); drawing=false; document.getElementById('_onbPatSvg')?.querySelector('.live')?.remove();
+        if(seq.length<4){const err=document.getElementById('_onbPatErr');if(err)err.textContent='Mínimo 4 puntos';setTimeout(()=>{resetPat();if(err)err.textContent='';},700);return;}
+        if(fase==='set'){_pat1=[...seq];resetPat();setTimeout(()=>_buildPatUI('Confirma tu patrón','Repite el mismo patrón','confirm'),200);}
+        else{
+          if(seq.join('-')===_pat1.join('-')){
+            _lockHash(seq.join('-')).then(hash=>{
+              localStorage.setItem(_LOCK_PAT_KEY,hash);
+              localStorage.setItem(_LOCK_METHOD,'pattern');
+              localStorage.setItem(_LOCK_TS,Date.now().toString());
+              onOk();
+            });
+          }else{
+            const errEl=document.getElementById('_onbPatErr');
+            grid.querySelectorAll('.onbDot').forEach(d=>{d.style.background='#e53935';d.style.borderColor='#e53935';});
+            if(errEl)errEl.textContent='Los patrones no coinciden';
+            setTimeout(()=>{ _buildPatUI('Dibuja tu patrón','Desliza entre al menos 4 puntos','set'); },900);
+          }
+        }
+      };
+      const w=wrap();
+      if(w){ w.addEventListener('touchstart',onStart,{passive:false}); w.addEventListener('touchmove',onMove,{passive:false}); w.addEventListener('touchend',onEnd,{passive:false}); w.addEventListener('mousedown',onStart); w.addEventListener('mousemove',onMove); w.addEventListener('mouseup',onEnd); }
+      window._onbPatRedo = () => _buildPatUI('Dibuja tu patrón','Desliza entre al menos 4 puntos','set');
+    };
+    _buildPatUI('Dibuja tu patrón','Desliza entre al menos 4 puntos','set');
+  };
+
+  // ── Finalizar onboarding con la opción elegida ────
   window._onbFinalizar = async () => {
     const seg = window._onbSegElegida;
-    overlay.remove();
+    if(!seg) return;
 
-    if(seg === 'none' || !seg) return; // Sin seguridad
-
+    if(seg === 'none'){
+      overlay.remove(); return;
+    }
     if(seg === 'pin'){
-      if(typeof _lockFlujoConfigurar === 'function')
-        _lockFlujoConfigurar('pin', ()=>{ toast('✓ PIN configurado','o'); }, ()=>{});
+      _onbSetupPIN(()=>{ overlay.remove(); toast('✓ PIN configurado','o'); }, _paso2);
     } else if(seg === 'pattern'){
-      if(typeof _lockFlujoConfigurar === 'function')
-        _lockFlujoConfigurar('pattern', ()=>{ toast('✓ Patrón configurado','o'); }, ()=>{});
+      _onbSetupPatron(()=>{ overlay.remove(); toast('✓ Patrón configurado','o'); }, _paso2);
     } else if(seg === 'huella'){
-      // Primero configurar PIN o patrón (respaldo obligatorio), luego huella
-      // Preguntar qué método de respaldo quieren
-      const respOverlay = document.createElement('div');
-      respOverlay.style.cssText = 'position:fixed;inset:0;z-index:200001;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px)';
-      respOverlay.innerHTML = `
-        <div style="max-width:360px;width:100%;background:var(--card);border-radius:24px;padding:28px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
+      // Elegir tipo de respaldo primero
+      overlay.innerHTML = `
+        <div style="max-width:360px;width:100%;background:var(--card);border-radius:24px;padding:28px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
           <div style="text-align:center;margin-bottom:20px">
             <div style="font-size:32px;margin-bottom:10px">🔐</div>
             <div style="font-size:17px;font-weight:900;color:var(--tx);margin-bottom:6px">Código de respaldo</div>
-            <div style="font-size:12px;color:var(--tx2)">La huella necesita un código de respaldo por si falla el sensor.</div>
+            <div style="font-size:12px;color:var(--tx2);line-height:1.5">La huella digital necesita un código de respaldo por si falla el sensor.</div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-            <button onclick="document.querySelector('[data-onb-resp]').remove();_lockFlujoConfigurar('pin',()=>{_activarHuellaOnboarding();toast('✓ Seguridad configurada','o');},()=>{})" style="padding:13px;border-radius:12px;border:2px solid var(--border);background:var(--bg);color:var(--tx);font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s">🔢 Usar PIN de respaldo</button>
-            <button onclick="document.querySelector('[data-onb-resp]').remove();_lockFlujoConfigurar('pattern',()=>{_activarHuellaOnboarding();toast('✓ Seguridad configurada','o');},()=>{})" style="padding:13px;border-radius:12px;border:2px solid var(--border);background:var(--bg);color:var(--tx);font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s">⬛ Usar Patrón de respaldo</button>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+            <button onclick="_onbHuellaConPIN()"    style="padding:14px;border-radius:12px;border:2px solid var(--border);background:var(--bg);color:var(--tx);font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font)">🔢 Usar PIN como respaldo</button>
+            <button onclick="_onbHuellaConPatron()" style="padding:14px;border-radius:12px;border:2px solid var(--border);background:var(--bg);color:var(--tx);font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font)">⬛ Usar Patrón como respaldo</button>
           </div>
+          <button onclick="_paso2()" style="width:100%;background:none;border:none;color:var(--tx2);font-size:12px;font-family:var(--font);cursor:pointer">← Volver</button>
         </div>
       `;
-      respOverlay.setAttribute('data-onb-resp','1');
-      document.body.appendChild(respOverlay);
-    }
-  };
-
-  window._activarHuellaOnboarding = async () => {
-    if(typeof _lockRegistrarHuella === 'function'){
-      const ok = await _lockRegistrarHuella();
-      if(ok) toast('✓ Huella registrada','o');
-      else toast('Huella no registrada, pero el código de respaldo sí está activo','i');
+      window._onbHuellaConPIN = () => {
+        _onbSetupPIN(async ()=>{
+          const ok = typeof _lockRegistrarHuella==='function' ? await _lockRegistrarHuella() : false;
+          overlay.remove();
+          toast(ok ? '✓ Huella y PIN configurados' : '✓ PIN configurado (huella no disponible)','o');
+        }, _paso2);
+      };
+      window._onbHuellaConPatron = () => {
+        _onbSetupPatron(async ()=>{
+          const ok = typeof _lockRegistrarHuella==='function' ? await _lockRegistrarHuella() : false;
+          overlay.remove();
+          toast(ok ? '✓ Huella y Patrón configurados' : '✓ Patrón configurado (huella no disponible)','o');
+        }, _paso2);
+      };
     }
   };
 
   document.body.appendChild(overlay);
-  _step1();
+  _paso1();
 };
 
 window.doReset=async()=>{
