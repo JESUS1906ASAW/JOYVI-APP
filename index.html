@@ -273,6 +273,37 @@ body.modo-claro .skel{background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(
 .tb-btn:active{transform:scale(.93);background:rgba(255,255,255,.12)}
 .tb-btn:active::after{opacity:1}
 .tb-btn:hover{background:rgba(var(--theme-rgb),.15)}
+
+/* ── ASISTENTE DE VOZ ── */
+#asistentOverlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+#asistentOverlay.open{display:flex}
+#asistentPanel{width:100%;max-width:540px;background:var(--bg);border-radius:28px 28px 0 0;padding:0 0 env(safe-area-inset-bottom,16px);max-height:85vh;display:flex;flex-direction:column;animation:slideUpPanel .3s cubic-bezier(.16,1,.3,1)}
+@keyframes slideUpPanel{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+#asistentPanel .asist-header{padding:20px 20px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.asist-mic-btn{width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(var(--theme-rgb),.4);transition:.2s;flex-shrink:0}
+.asist-mic-btn:active{transform:scale(.93)}
+.asist-mic-btn.grabando{animation:micPulse 1s infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 4px 16px rgba(var(--theme-rgb),.4),0 0 0 0 rgba(var(--theme-rgb),.4)}50%{box-shadow:0 4px 16px rgba(var(--theme-rgb),.4),0 0 0 14px rgba(var(--theme-rgb),0)}}
+.asist-estado{font-size:13px;font-weight:700;color:var(--tx2);flex:1}
+.asist-estado strong{display:block;font-size:15px;font-weight:900;color:var(--tx);margin-bottom:2px}
+#asistentBody{flex:1;overflow-y:auto;padding:14px 20px 20px}
+.asist-msg{border-radius:14px;padding:12px 15px;margin-bottom:10px;font-size:13px;line-height:1.55}
+.asist-msg.user{background:linear-gradient(135deg,rgba(var(--theme-rgb),.15),rgba(var(--theme-rgb),.08));border:1px solid rgba(var(--theme-rgb),.2);color:var(--tx);margin-left:20%}
+.asist-msg.bot{background:var(--card);border:1px solid var(--border);color:var(--tx);margin-right:20%}
+.asist-msg.bot .asist-msg-label{font-size:10px;font-weight:900;color:var(--r);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.asist-result-card{background:rgba(var(--theme-rgb),.06);border:1px solid rgba(var(--theme-rgb),.2);border-radius:10px;padding:10px 12px;margin-top:8px;cursor:pointer;transition:.15s}
+.asist-result-card:hover{background:rgba(var(--theme-rgb),.12)}
+.asist-result-card .arc-title{font-size:13px;font-weight:800;color:var(--tx)}
+.asist-result-card .arc-sub{font-size:11px;color:var(--tx2);margin-top:2px}
+.asist-hint-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.asist-hint{background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--r);cursor:pointer;transition:.15s}
+.asist-hint:hover{background:rgba(var(--theme-rgb),.16)}
+.asist-input-row{display:flex;gap:8px;padding:10px 20px 0;flex-shrink:0;border-top:1px solid var(--border)}
+.asist-input-row input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:13px;font-family:var(--font);color:var(--tx);outline:none}
+.asist-input-row input:focus{border-color:var(--r)}
+.asist-send-btn{width:40px;height:40px;border-radius:12px;border:none;background:var(--r);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+.tb-btn-asist{background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2)}
+body.modo-claro .asist-msg.user{background:linear-gradient(135deg,rgba(var(--theme-rgb),.12),rgba(var(--theme-rgb),.06))}
 .notif-dot{position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:var(--r);border-radius:8px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;padding:0 4px;font-family:var(--font);border:2px solid var(--bg);line-height:1}
 .notif-dot.show{display:flex;animation:notifPop .4s cubic-bezier(.16,1,.3,1)}
 @keyframes notifPop{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
@@ -524,6 +555,8 @@ body.modo-claro .gtab-sm{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.08)
 
 /* ── CLIENTE CARDS ── */
 .cli-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s ease,background .15s ease,border-color .2s ease;margin-bottom:8px}
+.cli-card-banner{display:flex!important;flex-direction:column!important;align-items:stretch!important;padding:0!important;overflow:hidden}
+.cli-card-banner:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.35);border-color:rgba(255,255,255,.15)}
 .cli-card:hover{transform:translateY(-2px);background:var(--card2);box-shadow:0 6px 20px rgba(0,0,0,.35);border-color:rgba(255,255,255,.11)}
 .cli-ava{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;flex-shrink:0}
 .cli-ava img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
@@ -712,14 +745,50 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .hg-filtro.active{background:var(--r);color:#fff;border-color:var(--r)}
 
 /* ── MAPA CLIENTES ── */
-#leafletMap .leaflet-container{background:#1a1a2e}
-.mapa-marker-ring{width:42px;height:42px;border-radius:50%;border:3px solid var(--r);background:var(--card);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.5);overflow:hidden;cursor:pointer;transition:.2s}
-.mapa-marker-ring:hover{transform:scale(1.15)}
-.mapa-marker-ring.seleccionado{border-color:#4caf50;box-shadow:0 3px 16px rgba(76,175,80,.6)}
-.mapa-popup{font-family:var(--font);min-width:180px}
-.mapa-popup-nombre{font-size:14px;font-weight:900;color:#111;margin-bottom:4px}
-.mapa-popup-dir{font-size:12px;color:#555;margin-bottom:8px}
-.mapa-popup-btns{display:flex;gap:6px;flex-wrap:wrap}
+/* ── MAPA DE CLIENTES ── */
+#leafletMap{transition:opacity .3s}
+#leafletMap .leaflet-container{background:#181822}
+body.modo-claro #leafletMap .leaflet-container{background:#e8e0d8}
+.mapa-marker-wrap{position:relative;display:inline-flex;flex-direction:column;align-items:center}
+.mapa-marker-ring{width:46px;height:46px;border-radius:50%;border:3px solid var(--r);background:var(--card);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.07);overflow:hidden;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s,border-color .15s}
+.mapa-marker-ring:hover{transform:scale(1.12) translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.mapa-marker-ring.seleccionado{border-color:#4caf50;box-shadow:0 4px 16px rgba(76,175,80,.5)}
+.mapa-marker-ring.seleccionado::before{content:'✓';position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;background:#4caf50;color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);z-index:2}
+.mapa-marker-punta{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid var(--r);margin-top:-1px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
+.mapa-marker-ring.seleccionado+.mapa-marker-punta{border-top-color:#4caf50}
+/* Popup */
+.mapa-popup{font-family:var(--font)}
+.mapa-popup-header{padding:12px 14px 8px;border-bottom:1px solid rgba(128,128,128,.12)}
+.mapa-popup-body{padding:8px 14px 12px}
+.mapa-popup-nombre{font-size:14px;font-weight:900;color:var(--tx,#111);margin-bottom:3px}
+.mapa-popup-dir{font-size:11px;color:var(--tx2,#555);margin-bottom:0;line-height:1.4}
+.mapa-popup-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:10px}
+.mapa-popup-btns a,.mapa-popup-btns button{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 6px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer;text-decoration:none;font-family:var(--font);transition:.15s;border:none}
+.mapa-popup-btn-primary{background:var(--r,#1976d2)!important;color:#fff!important}
+.mapa-popup-btn-green{background:rgba(76,175,80,.15)!important;color:#4caf50!important;border:1px solid rgba(76,175,80,.3)!important}
+.mapa-popup-btn-blue{background:rgba(66,165,245,.12)!important;color:#42a5f5!important;border:1px solid rgba(66,165,245,.3)!important}
+.mapa-popup-btn-wa{background:rgba(37,211,102,.12)!important;color:#25d366!important;border:1px solid rgba(37,211,102,.3)!important}
+.mapa-popup-wrapper .leaflet-popup-content-wrapper{padding:0!important;overflow:hidden;border-radius:16px!important;border:1px solid rgba(128,128,128,.15);box-shadow:0 12px 40px rgba(0,0,0,.5)!important}
+.mapa-popup-wrapper .leaflet-popup-content{margin:0!important;width:auto!important;min-width:220px}
+.mapa-popup-wrapper .leaflet-popup-tip{background:var(--bg,#111)!important}
+body.modo-claro .mapa-popup-wrapper .leaflet-popup-tip{background:#fff!important}
+.mapa-popup-wrapper .leaflet-popup-close-button{color:rgba(128,128,128,.7)!important;top:8px!important;right:10px!important;font-size:16px!important}
+/* Status bar flotante */
+.mapa-status-bar{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:800;color:var(--tx);z-index:500;display:flex;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(0,0,0,.3);white-space:nowrap;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.mapa-status-dot{width:7px;height:7px;border-radius:50%;background:var(--r);flex-shrink:0;animation:statusPulse 2s infinite}
+@keyframes statusPulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* Barra superior del mapa */
+.mapa-topbar{display:flex;align-items:center;gap:10px;padding:12px 16px 10px;flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border)}
+body.modo-claro .mapa-topbar{box-shadow:0 1px 0 rgba(0,0,0,.06)}
+/* Panel ruta */
+.mapa-ruta-panel{background:var(--bg);border-top:2px solid rgba(var(--theme-rgb),.3);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+/* Leaflet global overrides */
+.leaflet-popup-content{font-family:var(--font)!important;padding:0!important}
+.leaflet-control-zoom{border:1px solid var(--border)!important;border-radius:10px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.3)!important}
+.leaflet-control-zoom a{background:var(--card)!important;color:var(--tx)!important;border-bottom:1px solid var(--border)!important;font-size:16px!important}
+.leaflet-control-zoom a:hover{background:var(--card2)!important}
+.leaflet-control-attribution{background:rgba(0,0,0,.4)!important;color:rgba(255,255,255,.5)!important;font-size:9px!important;border-radius:6px 0 0 0!important;backdrop-filter:blur(4px)}
+body.modo-claro .leaflet-control-attribution{background:rgba(255,255,255,.7)!important;color:rgba(0,0,0,.5)!important}
 
 /* ── RUTA DEL DÍA ── */
 .ruta-item{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;transition:.15s;touch-action:none}
@@ -750,9 +819,7 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .dash-offline-bar{background:rgba(255,152,0,.12);border:1px solid rgba(255,152,0,.3);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;color:#ff9800;margin-bottom:12px;display:flex;align-items:center;gap:8px;display:none}
 body.offline .dash-offline-bar{display:flex}
 
-/* ── MAPA POPUP (Leaflet) ── */
-.leaflet-popup-content{font-family:var(--font)!important;padding:4px 2px}
-.leaflet-popup-content-wrapper{border-radius:14px!important;box-shadow:0 8px 32px rgba(0,0,0,.4)!important}
+/* ── MAPA POPUP (Leaflet) — ver CSS mapa arriba ── */
 
 /* ── ARCHIVO CARD ── */
 .arch-empty{text-align:center;padding:40px 20px}
@@ -1119,6 +1186,9 @@ body.offline .dash-offline-bar{display:flex}
   <div id="topbar">
     <span class="logo" onclick="if(!document.body.classList.contains('modo-visualizacion'))goScreen('inicio')" style="cursor:pointer" title="Inicio">Joyvi</span>
     <span class="kiosk-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Gestión</span>
+    <button class="tb-btn tb-btn-asist" onclick="abrirAsistente()" title="Asistente Joyvi" id="btnAsistente">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </button>
     <button class="tb-btn" onclick="goScreen('notificaciones')" style="position:relative">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot"></span>
     </button>
@@ -1126,6 +1196,38 @@ body.offline .dash-offline-bar{display:flex}
   </div>
 
   <!-- DRAWER -->
+  <!-- ── ASISTENTE DE VOZ JOYVI ── -->
+  <div id="asistentOverlay" onclick="cerrarAsistente()">
+    <div id="asistentPanel" onclick="event.stopPropagation()">
+      <div class="asist-header">
+        <button class="asist-mic-btn" id="asistMicBtn" onclick="toggleAsistMic()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <div class="asist-estado">
+          <strong id="asistTitulo">Asistente Joyvi</strong>
+          <span id="asistEstadoTxt">Pulsa el micrófono o escribe tu consulta</span>
+        </div>
+        <button onclick="cerrarAsistente()" style="background:none;border:none;color:var(--tx2);font-size:22px;cursor:pointer;padding:4px;line-height:1">✕</button>
+      </div>
+      <div id="asistentBody">
+        <div class="asist-hint-chips" id="asistHints">
+          <div class="asist-hint" onclick="asistConsulta('¿Cuándo fue el último mantenimiento de un cliente?')">🔧 Último mantenimiento</div>
+          <div class="asist-hint" onclick="asistConsulta('¿Qué clientes tienen mantenimiento esta semana?')">📅 Esta semana</div>
+          <div class="asist-hint" onclick="asistConsulta('¿Cuándo fue el último presupuesto de un cliente?')">💶 Último presupuesto</div>
+          <div class="asist-hint" onclick="asistConsulta('¿Qué averías hay pendientes?')">⚡ Averías abiertas</div>
+          <div class="asist-hint" onclick="asistConsulta('¿Cuál es el teléfono de un cliente?')">📞 Teléfono cliente</div>
+          <div class="asist-hint" onclick="asistConsulta('Llévame a la dirección de un cliente')">📍 Ir a cliente</div>
+        </div>
+      </div>
+      <div class="asist-input-row">
+        <input id="asistInputText" placeholder="Escribe tu consulta aquí..." onkeydown="if(event.key==='Enter')asistEnviarTexto()" autocomplete="off">
+        <button class="asist-send-btn" onclick="asistEnviarTexto()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="drawerOverlay" onclick="cerrarDrawer()"></div>
   <div id="drawer">
     <div class="drawer-head" onclick="goScreen('perfil');cerrarDrawer()">
@@ -1500,23 +1602,40 @@ body.offline .dash-offline-bar{display:flex}
 
   <!-- ─── PANTALLA: MAPA DE CLIENTES ─── -->
   <div class="screen" id="screenMapaClientes">
-    <div class="scroll-pad" style="padding:0;overflow:hidden;height:100%">
-      <div id="mapaClientesUI" style="display:flex;flex-direction:column;height:100%">
-        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 10px;flex-shrink:0">
-          <div class="volver-btn" style="margin-bottom:0" onclick="goBack()">‹ Volver</div>
-          <div style="font-size:17px;font-weight:900;color:var(--tx);flex:1">Mapa de clientes</div>
-          <button id="btnRutaDesdeMapaToggle" onclick="toggleSeleccionRuta()" style="border:none;background:rgba(var(--theme-rgb),.12);color:var(--r);border-radius:10px;padding:7px 13px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--font);transition:.15s">+ Ruta</button>
+    <div class="scroll-pad" style="padding:0;overflow:hidden;height:100%;display:flex;flex-direction:column">
+      <!-- Barra superior -->
+      <div class="mapa-topbar">
+        <div class="volver-btn" style="margin-bottom:0;flex-shrink:0" onclick="goBack()">‹ Volver</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:16px;font-weight:900;color:var(--tx);white-space:nowrap">Mapa de clientes</div>
+          <div id="mapaSubtitle" style="font-size:11px;color:var(--tx2);margin-top:1px">Cargando clientes...</div>
         </div>
-        <div id="mapaClientesContainer" style="flex:1;position:relative;min-height:0">
-          <div id="leafletMap" style="width:100%;height:100%;min-height:400px"></div>
-          <!-- Panel selección ruta -->
-          <div id="rutaSelPanel" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);padding:12px 16px;z-index:1000;max-height:45%;overflow-y:auto">
-            <div style="font-size:13px;font-weight:900;color:var(--tx);margin-bottom:8px">Clientes seleccionados para la ruta</div>
-            <div id="rutaSelList"></div>
-            <div style="display:flex;gap:8px;margin-top:10px">
-              <button class="btn btn-p" style="flex:1" onclick="añadirSeleccionARuta()">Añadir a ruta del día</button>
-              <button class="btn btn-s" onclick="cancelarSeleccionRuta()">Cancelar</button>
-            </div>
+        <button id="btnRutaDesdeMapaToggle" onclick="toggleSeleccionRuta()" style="border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);border-radius:10px;padding:7px 13px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--font);transition:.15s;flex-shrink:0;display:flex;align-items:center;gap:5px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ruta
+        </button>
+      </div>
+      <!-- Mapa -->
+      <div id="mapaClientesContainer" style="flex:1;position:relative;min-height:0;overflow:hidden">
+        <div id="leafletMap" style="width:100%;height:100%;min-height:0;position:absolute;inset:0"></div>
+        <!-- Contador flotante -->
+        <div class="mapa-status-bar" id="mapaStatusBar" style="display:none">
+          <div class="mapa-status-dot"></div>
+          <span id="mapaStatusTxt">0 clientes</span>
+        </div>
+        <!-- Panel selección ruta -->
+        <div id="rutaSelPanel" class="mapa-ruta-panel" style="display:none;position:absolute;bottom:0;left:0;right:0;padding:14px 16px 20px;z-index:1000;max-height:50%;overflow-y:auto">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div style="font-size:13px;font-weight:900;color:var(--tx);flex:1">Seleccionados para la ruta</div>
+            <button onclick="cancelarSeleccionRuta()" style="background:none;border:none;color:var(--tx2);font-size:20px;cursor:pointer;line-height:1;padding:2px">✕</button>
+          </div>
+          <div id="rutaSelList" style="margin-bottom:12px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-p" style="flex:1;font-size:13px" onclick="añadirSeleccionARuta()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:5px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Añadir a ruta del día
+            </button>
+            <button class="btn btn-s" onclick="cancelarSeleccionRuta()" style="font-size:13px">Cancelar</button>
           </div>
         </div>
       </div>
@@ -2130,6 +2249,15 @@ window.addEventListener('popstate',e=>{
   }
   // Caso 3: navegación entre pantallas
   _navFromPop=true;
+  // En modo gestión: interceptar popstate y redirigir a kiosk
+  if(localStorage.getItem('joyvi_kiosk')==='1'){
+    const cur=document.querySelector('.screen.active');
+    const curKey=cur?Object.keys(screens).find(k=>screens[k]===cur.id):null;
+    if(curKey!=='kiosk'){ _renderScreen('kiosk'); } // siempre al menú kiosk
+    history.pushState({screen:'kiosk',sbOpen:false},'','#kiosk'); // evitar salir del historial
+    _navFromPop=false;
+    return;
+  }
   if(e.state&&e.state.screen&&!e.state.sbOpen){
     _renderScreen(e.state.screen);
   } else if(screenHistory.length){
@@ -2143,6 +2271,19 @@ window.addEventListener('popstate',e=>{
 
 window.goBack=()=>{
   if($('sb').classList.contains('open')){cerrarSB();return;}
+  // En modo gestión: retroceder va a kiosk, nunca fuera del modo
+  const isKiosk=localStorage.getItem('joyvi_kiosk')==='1';
+  if(isKiosk){
+    const kioskScreens=['kiosk','kioskCli','kioskPartes','kioskAverias','kioskMant','kioskPresu'];
+    const cur=document.querySelector('.screen.active');
+    const curKey=cur?Object.keys(screens).find(k=>screens[k]===cur.id):null;
+    // Si ya estamos en el menú principal del kiosk, no retroceder más
+    if(curKey==='kiosk') return;
+    // Si estamos en una sub-pantalla del kiosk, volver al menú del kiosk
+    if(kioskScreens.includes(curKey)){ goScreen('kiosk'); return; }
+    // Si venimos de una SB abierta desde kiosk, volver al kiosk
+    goScreen('kiosk'); return;
+  }
   if(history.length>1){history.back();}
   else if(screenHistory.length){goScreen(screenHistory.pop());}
   else{goScreen('inicio');}
@@ -2247,7 +2388,7 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-item" onclick="goScreen('archivos');cerrarDrawer()" style="color:#e53935"><span class="d-icon" style="color:#e53935"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Clientes clasificados</div>
     ${sep}
     <div class="d-section" style="padding-top:6px">Herramientas</div>
-    <div class="d-item" onclick="goScreen('facturas');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>Facturas</div>
+
     <div class="d-item" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
     <div class="d-item" onclick="goScreen('mapaClientes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z"/></svg></span>Mapa de clientes</div>
     <div class="d-item" onclick="goScreen('rutaDia');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Ruta del día</div>
@@ -4000,13 +4141,17 @@ const htmlListaClis=(clis,preview=false)=>{
     if(c.edificio)subParts.push(c.edificio);
     if(c.direccion)subParts.push(c.direccion);
     const avaUrl=(window._cliAvatarCache&&window._cliAvatarCache[c.id])||'';
-    const avaStyle=`background:${col}`;
     const avaIni=c.nombre?c.nombre.trim()[0].toUpperCase():'?';
+    // Color del tema actual para el avatar (no siempre verde)
+    const temaActual=localStorage.getItem('joyvi_theme')||'azul';
+    const temaColor=document.documentElement.style.getPropertyValue('--r')||col;
+    // Avatar: imagen circular si tiene foto, inicial con color del tema si no
     const avaHtml=avaUrl
-      ?`<img src="${avaUrl}" alt="${c.nombre}" loading="lazy">`
-      :`<div class="cli-ava-initials" style="background:${col}">${avaIni}</div>`;
+      ? `<img src="${avaUrl}" alt="${c.nombre}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`
+      : `<div class="cli-ava-initials" style="background:${temaColor||col}">${avaIni}</div>`;
+    const avaBg=avaUrl?'transparent':(temaColor||col);
     return`<div class="cli-card" onclick="verCliente('${c.id}')">
-      <div class="cli-ava" style="${avaUrl?'background:transparent':'background:'+col}">${avaHtml}</div>
+      <div class="cli-ava" style="background:${avaBg};border:${avaUrl?'2px solid rgba(var(--theme-rgb),.3)':'none'}">${avaHtml}</div>
       <div class="cli-info">
         <div class="cli-name">${c.nombre} <span>${colEmo}</span></div>
         <div class="cli-sub">${subParts.join(' · ')||'Sin datos de contacto'}</div>
@@ -10878,18 +11023,21 @@ const renderRutaDia=()=>{
 
   html+=`</div>`;
 
-  // Botón Google Maps con todas las paradas en orden
-  const coordsDisp=_rutaDia.filter(r=>r.lat&&r.lng);
-  const dirDisp=_rutaDia.filter(r=>r.direccion);
-  if(dirDisp.length>0||coordsDisp.length>0){
-    const puntosUrl=_rutaDia.map(r=>{
+  // Botón Google Maps: desde ubicación actual -> paradas en orden
+  const tieneDestinos=_rutaDia.some(r=>r.lat&&r.lng||r.direccion);
+  if(tieneDestinos){
+    // Construcción de URL Google Maps:
+    // /dir/origen/parada1/parada2/.../destino
+    // Usar "current+location" como origen (Maps detecta GPS automáticamente)
+    const paradasUrl=_rutaDia.map(r=>{
       if(r.lat&&r.lng) return `${r.lat},${r.lng}`;
       return encodeURIComponent(r.direccion||r.nombre);
     });
-    const mapsUrl=`https://www.google.com/maps/dir/${puntosUrl.join('/')}`;
+    // Insertar punto de origen = ubicación actual al principio
+    const mapsUrl=`https://www.google.com/maps/dir/current+location/${paradasUrl.join('/')}`;
     html+=`<a href="${mapsUrl}" target="_blank" class="btn btn-p" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;text-decoration:none;font-weight:900">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-      🧭 Ir a la ruta en Google Maps
+      🧭 Iniciar ruta desde mi ubicación
     </a>`;
   }
 
@@ -10954,14 +11102,19 @@ const renderMapaClientes=async()=>{
     center:[37.9,-1.5],
     zoom:9,
     zoomControl:true,
-    attributionControl:false
+    zoomAnimation:true,
+    attributionControl:true
   });
 
-  // Tile layer oscuro / neutro
-  window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-    maxZoom:19,attribution:'© OpenStreetMap © CARTO'
+  // Tile layer: oscuro o claro según modo
+  const _modoClaro=document.body.classList.contains('modo-claro');
+  const _tileUrl=_modoClaro
+    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_matter_retina/{z}/{x}/{y}{r}.png';
+  window.L.tileLayer(_tileUrl,{
+    maxZoom:19,
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>'
   }).addTo(_leafletMap);
-  window.L.control.attribution({position:'bottomright',prefix:false}).addTo(_leafletMap);
 
   _rutaSeleccionIds=[];
   _rutaSelModo=false;
@@ -10981,32 +11134,54 @@ const renderMapaClientes=async()=>{
 
   clisConCoords.forEach(cli=>{
     const inicial=(cli.nombre||'?')[0].toUpperCase();
-    const fotoUrl=cli.fotoUrl||cli.avatarUrl||'';
+    // Usar la primera imagen del cliente del cache (igual que la lista de clientes)
+    const fotoUrl=(window._cliAvatarCache&&window._cliAvatarCache[cli.id])||cli.fotoUrl||cli.avatarUrl||'';
+    const col=typeof colorInd==='function'?colorInd(cli.color||'verde'):'#1976d2';
     const innerHtml=fotoUrl
-      ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-      : `<span style="font-size:14px;font-weight:900;color:var(--r)">${inicial}</span>`;
+      ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`
+      : `<span style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;background:${col};border-radius:50%">${inicial}</span>`;
 
     const icon=window.L.divIcon({
-      html:`<div class="mapa-marker-ring" id="mmarker_${cli.id}">${innerHtml}</div>`,
-      iconSize:[42,42],
-      iconAnchor:[21,21],
-      popupAnchor:[0,-24],
+      html:`<div class="mapa-marker-wrap"><div class="mapa-marker-ring" id="mmarker_${cli.id}">${innerHtml}</div><div class="mapa-marker-punta"></div></div>`,
+      iconSize:[46,54],
+      iconAnchor:[23,52],
+      popupAnchor:[0,-56],
       className:''
     });
 
     const marker=window.L.marker([cli.lat,cli.lng],{icon}).addTo(_leafletMap);
     marker._cliId=cli.id;
 
+    const _nMants=allMantenimientos.filter(m=>m.clienteId===cli.id&&m.estado!=='completado').length;
+    const _nAvers=(_averiasPend||[]).filter(a=>a.clienteId===cli.id).length;
+    const _badgesHtml=(_nMants||_nAvers)?`<div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap">${_nMants?`<span style="font-size:10px;font-weight:800;background:rgba(255,152,0,.15);color:#ff9800;border-radius:12px;padding:2px 8px">🔧 ${_nMants} mant.</span>`:''} ${_nAvers?`<span style="font-size:10px;font-weight:800;background:rgba(239,83,80,.12);color:#ef5350;border-radius:12px;padding:2px 8px">⚡ ${_nAvers} avería${_nAvers!==1?'s':''}</span>`:''}</div>`:'';
     const popupHtml=`<div class="mapa-popup">
-      <div class="mapa-popup-nombre">${cli.nombre||'—'}</div>
-      <div class="mapa-popup-dir">${cli.direccion||'Sin dirección'}${cli.telefono?`<br>📞 ${cli.telefono}`:''}</div>
-      <div class="mapa-popup-btns">
-        <button onclick="_mapaVerFicha('${cli.id}')" style="background:var(--r);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;cursor:pointer">Ver ficha</button>
-        <button onclick="_mapaAddRuta('${cli.id}')" style="background:rgba(76,175,80,.2);color:#4caf50;border:1px solid rgba(76,175,80,.4);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;cursor:pointer">+ Ruta hoy</button>
-        ${cli.telefono?`<a href="tel:${cli.telefono}" style="background:rgba(66,165,245,.15);color:#42a5f5;border:1px solid rgba(66,165,245,.3);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;text-decoration:none">📞</a>`:''}
+      <div class="mapa-popup-header">
+        <div class="mapa-popup-nombre">${cli.nombre||'—'}</div>
+        <div class="mapa-popup-dir">${cli.direccion||'Sin dirección registrada'}${cli.telefono?`<br>📞 ${cli.telefono}`:''}</div>
+      </div>
+      <div class="mapa-popup-body">
+        ${_badgesHtml}
+        <div class="mapa-popup-btns">
+          <button class="mapa-popup-btn-primary" onclick="_mapaVerFicha('${cli.id}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Ver ficha
+          </button>
+          <button class="mapa-popup-btn-green" onclick="_mapaAddRuta('${cli.id}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            + Ruta
+          </button>
+          ${cli.direccion?`<button class="mapa-popup-btn-blue" onclick="cerrarSBTotal&&cerrarSBTotal();abrirMapa('${cli.lat||''}','${cli.lng||''}','${(cli.direccion||'').replace(/'/g,"\'").replace(/"/g,'\"')}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z"/></svg>
+            Navegar
+          </button>`:''}
+          ${cli.telefono?`<a class="mapa-popup-btn-wa" href="https://wa.me/34${cli.telefono.replace(/\s/g,'')}">
+            💬 WhatsApp
+          </a>`:''}
+        </div>
       </div>
     </div>`;
-    marker.bindPopup(popupHtml,{maxWidth:240,className:'mapa-popup-wrapper'});
+    marker.bindPopup(popupHtml,{maxWidth:260,className:'mapa-popup-wrapper',offset:[0,-8]});
 
     marker.on('click',()=>{
       if(_rutaSelModo){
@@ -11016,10 +11191,19 @@ const renderMapaClientes=async()=>{
     _leafletMarkers.push(marker);
   });
 
+  // Actualizar status bar y subtítulo
+  const statusBar=document.getElementById('mapaStatusBar');
+  const statusTxt=document.getElementById('mapaStatusTxt');
+  const subtitle=document.getElementById('mapaSubtitle');
+  const sinCoords=clisTotal.length-clisConCoords.length;
+  if(statusBar){ statusBar.style.display='flex'; }
+  if(statusTxt){ statusTxt.textContent=`${clisConCoords.length} cliente${clisConCoords.length!==1?'s':''} en el mapa`+(sinCoords>0?` · ${sinCoords} sin GPS`:''); }
+  if(subtitle){ subtitle.textContent=clisConCoords.length===clisTotal.length?`${clisTotal.length} clientes con ubicación`:`${clisConCoords.length} de ${clisTotal.length} clientes con GPS`; }
+
   // Ajustar vista a los marcadores
   if(clisConCoords.length>0){
     const group=window.L.featureGroup(_leafletMarkers);
-    _leafletMap.fitBounds(group.getBounds().pad(0.2));
+    _leafletMap.fitBounds(group.getBounds().pad(0.25));
   }
 };
 
@@ -11086,6 +11270,422 @@ window.añadirSeleccionARuta=()=>{
   document.head.appendChild(s);
 })();
 
+// ════════════════════════════════════════════════════════════
+// ASISTENTE DE VOZ JOYVI — consultas inteligentes sobre datos
+// ════════════════════════════════════════════════════════════
+let _asistSR = null;       // SpeechRecognition
+let _asistGrabando = false;
+const _asistHistorial = []; // [{role:'user'|'bot', text, cards}]
+
+window.abrirAsistente = () => {
+  document.getElementById('asistentOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('asistInputText')?.focus(), 300);
+};
+
+window.cerrarAsistente = () => {
+  document.getElementById('asistentOverlay').classList.remove('open');
+  if(_asistGrabando) _asistPararMic();
+};
+
+window.toggleAsistMic = () => {
+  if(_asistGrabando) _asistPararMic();
+  else _asistIniciarMic();
+};
+
+const _asistIniciarMic = () => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ toast('Micrófono no disponible en este navegador','e'); return; }
+  _asistSR = new SR();
+  _asistSR.lang = 'es-ES';
+  _asistSR.continuous = false;
+  _asistSR.interimResults = false;
+  _asistSR.onstart = () => {
+    _asistGrabando = true;
+    const btn = document.getElementById('asistMicBtn');
+    if(btn) btn.classList.add('grabando');
+    document.getElementById('asistEstadoTxt').textContent = 'Escuchando...';
+    document.getElementById('asistTitulo').textContent = '🎙️ Habla ahora';
+  };
+  _asistSR.onresult = e => {
+    const texto = e.results[0][0].transcript;
+    _asistSR = null;
+    _asistGrabando = false;
+    const btn = document.getElementById('asistMicBtn');
+    if(btn) btn.classList.remove('grabando');
+    asistConsulta(texto);
+  };
+  _asistSR.onerror = () => { _asistPararMic(); toast('No se pudo escuchar, inténtalo de nuevo','i'); };
+  _asistSR.onend = () => {
+    _asistGrabando = false;
+    const btn = document.getElementById('asistMicBtn');
+    if(btn) btn.classList.remove('grabando');
+    document.getElementById('asistEstadoTxt').textContent = 'Pulsa el micrófono o escribe tu consulta';
+    document.getElementById('asistTitulo').textContent = 'Asistente Joyvi';
+  };
+  _asistSR.start();
+};
+
+const _asistPararMic = () => {
+  if(_asistSR){ try{ _asistSR.stop(); }catch(e){} _asistSR = null; }
+  _asistGrabando = false;
+  const btn = document.getElementById('asistMicBtn');
+  if(btn) btn.classList.remove('grabando');
+};
+
+window.asistEnviarTexto = () => {
+  const inp = document.getElementById('asistInputText');
+  const txt = (inp?.value||'').trim();
+  if(!txt) return;
+  inp.value = '';
+  asistConsulta(txt);
+};
+
+// Añadir mensaje al chat
+const _asistAddMsg = (role, text, cards=[]) => {
+  const body = document.getElementById('asistentBody');
+  if(!body) return;
+  // Ocultar hints al primer mensaje
+  const hints = document.getElementById('asistHints');
+  if(hints) hints.style.display = 'none';
+  const div = document.createElement('div');
+  div.className = `asist-msg ${role}`;
+  if(role === 'bot'){
+    let html = `<div class="asist-msg-label">✨ Joyvi</div><div>${text}</div>`;
+    if(cards.length){
+      html += cards.map(card => `
+        <div class="asist-result-card" onclick="${card.action}">
+          <div class="arc-title">${card.title}</div>
+          <div class="arc-sub">${card.sub}</div>
+        </div>`).join('');
+    }
+    div.innerHTML = html;
+  } else {
+    div.textContent = text;
+  }
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+};
+
+const _asistPensando = () => {
+  const body = document.getElementById('asistentBody');
+  if(!body) return;
+  const div = document.createElement('div');
+  div.className = 'asist-msg bot';
+  div.id = 'asistPensandoMsg';
+  div.innerHTML = `<div class="asist-msg-label">✨ Joyvi</div><div style="display:flex;gap:5px;align-items:center;padding:4px 0"><span style="width:7px;height:7px;border-radius:50%;background:var(--r);animation:micPulse .8s infinite"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--r);animation:micPulse .8s .15s infinite"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--r);animation:micPulse .8s .3s infinite"></span></div>`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+};
+
+const _asistQuitarPensando = () => {
+  document.getElementById('asistPensandoMsg')?.remove();
+};
+
+// ── Motor de consulta: analiza el texto y busca en los datos locales ──
+window.asistConsulta = async (texto) => {
+  if(!texto) return;
+  _asistAddMsg('user', texto);
+  document.getElementById('asistEstadoTxt').textContent = 'Buscando...';
+  _asistPensando();
+
+  // Normalizar texto para análisis
+  const q = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+  // ── Funciones de apoyo ──
+  const fmtFecha = ts => {
+    if(!ts) return '—';
+    try{ const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}); }catch{ return '—'; }
+  };
+  const fmtFechaStr = str => {
+    if(!str) return '—';
+    try{ return new Date(str+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}); }catch{ return str; }
+  };
+
+  // Extraer nombre de cliente del query: patrones tipo "de X cliente", "de X", "a X", etc.
+  const extraerNombreCli = (q) => {
+    const patrones = [
+      /(?:de|para|del|al|a|con)\s+(.+?)(?:\?|$|\s+(?:esta|el|la|los|las|un|una|su|sus|cuándo|cuando|que|qué|tiene|hay|próximo|proximo|último|ultimo))/i,
+      /(?:cliente[s]?\s+(?:llamad[oa]?\s+)?|ficha\s+de\s+)(.+?)(?:\?|$)/i,
+      /(?:ir|llevame|navegar|ubicacion|teléfono|telefono|llamar)\s+(?:a\s+|al\s+)?(.+?)(?:\?|$)/i,
+    ];
+    for(const p of patrones){
+      const m = q.match(p);
+      if(m && m[1] && m[1].trim().length > 1) return m[1].trim().toLowerCase();
+    }
+    // Último recurso: palabras después de palabras clave
+    const keywords = ['de ','para ','a ','con ','al '];
+    for(const kw of keywords){
+      const idx = q.indexOf(kw);
+      if(idx > -1){
+        const resto = q.slice(idx + kw.length).replace(/[?¿]/g,'').trim();
+        if(resto.length > 1) return resto;
+      }
+    }
+    return null;
+  };
+
+  // Buscar cliente por nombre aproximado
+  const buscarCliente = (nombreQ) => {
+    if(!nombreQ) return null;
+    const nq = nombreQ.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    return allClientes.filter(c=>!c.archivado).find(c=>{
+      const cn = (c.nombre||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      return cn.includes(nq) || nq.includes(cn) || cn.split(' ').some(p=>nq.includes(p)&&p.length>2);
+    }) || null;
+  };
+
+  const buscarClientesFuzzy = (nombreQ) => {
+    if(!nombreQ) return [];
+    const nq = nombreQ.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    return allClientes.filter(c=>{
+      if(c.archivado) return false;
+      const cn = (c.nombre||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      return cn.includes(nq) || nq.includes(cn) || cn.split(' ').some(p=>nq.includes(p)&&p.length>2);
+    });
+  };
+
+  // ── Detectar intención ──
+  const esMantenimiento = /manten|revision|revisi[oó]n|servicio program/i.test(q);
+  const esParte = /parte|trabajo|visita|servicio realiz/i.test(q);
+  const esAveria = /averia|avería|fallo|incidencia|urgente|urgencia/i.test(q);
+  const esPresupuesto = /presupuest|oferta|cotizaci/i.test(q);
+  const esLlamar = /llam|tel[eé]fono|contactar|llamar/i.test(q);
+  const esIrMapa = /ir a|llevar|navegar|ubicaci[oó]n|direcci[oó]n|casa|domicilio|mapa/i.test(q);
+  const esFicha = /ficha|abrir|ver|mostrar|info|informaci[oó]n/i.test(q);
+  const esUltimo = /[uú]ltimo|[uú]ltima|reciente|anterior/i.test(q);
+  const esProximo = /pr[oó]ximo|siguiente|cuando ser[aá]|cuándo/i.test(q);
+  const esSemana = /semana|esta semana|semana que viene/i.test(q);
+  const esTodos = /todos|lista|hay|cuántos|cuantos/i.test(q);
+  const esPendiente = /pendiente|abierto|sin resolver|por hacer/i.test(q);
+
+  let respuesta = '';
+  let cards = [];
+
+  await new Promise(r => setTimeout(r, 400)); // pequeña pausa para UX
+
+  try {
+
+    // ── LLAMAR A CLIENTE ──
+    if(esLlamar){
+      const nombreQ = extraerNombreCli(q);
+      const resultados = nombreQ ? buscarClientesFuzzy(nombreQ) : [];
+      if(resultados.length === 1){
+        const cli = resultados[0];
+        if(cli.telefono){
+          _asistQuitarPensando();
+          _asistAddMsg('bot', `Llamando a <strong>${cli.nombre}</strong> (${cli.telefono})...`, [
+            {title:`📞 Llamar a ${cli.nombre}`, sub:cli.telefono, action:`window.location.href='tel:${cli.telefono}';cerrarAsistente()`}
+          ]);
+          return;
+        } else {
+          respuesta = `<strong>${cli.nombre}</strong> no tiene teléfono registrado en su ficha.`;
+        }
+      } else if(resultados.length > 1){
+        respuesta = `Encontré varios clientes. ¿A cuál quieres llamar?`;
+        cards = resultados.slice(0,5).map(c=>({title:`📞 ${c.nombre}`, sub:c.telefono||'Sin teléfono', action:`if('${c.telefono}')window.location.href='tel:${c.telefono}';else toast('Sin teléfono','i')`}));
+      } else {
+        respuesta = nombreQ ? `No encontré ningún cliente llamado "<strong>${nombreQ}</strong>".` : 'Dime a qué cliente quieres llamar.';
+      }
+
+    // ── IR A MAPA / DIRECCIÓN ──
+    } else if(esIrMapa && !esMantenimiento && !esParte){
+      const nombreQ = extraerNombreCli(q);
+      const resultados = nombreQ ? buscarClientesFuzzy(nombreQ) : [];
+      if(resultados.length === 1){
+        const cli = resultados[0];
+        if(cli.lat && cli.lng || cli.direccion){
+          _asistQuitarPensando();
+          _asistAddMsg('bot', `Abriendo ubicación de <strong>${cli.nombre}</strong>...`, [
+            {title:`📍 Ir a ${cli.nombre}`, sub:cli.direccion||`${cli.lat}, ${cli.lng}`, action:`cerrarAsistente();abrirMapa('${cli.lat||''}','${cli.lng||''}','${(cli.direccion||'').replace(/'/g,"\'")}');`}
+          ]);
+          return;
+        } else {
+          respuesta = `<strong>${cli.nombre}</strong> no tiene dirección registrada.`;
+        }
+      } else if(resultados.length > 1){
+        respuesta = `¿A qué cliente quieres ir?`;
+        cards = resultados.slice(0,5).map(c=>({title:`📍 ${c.nombre}`, sub:c.direccion||'Sin dirección', action:`cerrarAsistente();abrirMapa('${c.lat||''}','${c.lng||''}','${(c.direccion||'').replace(/'/g,"\'")}');`}));
+      } else {
+        respuesta = nombreQ ? `No encontré ningún cliente llamado "<strong>${nombreQ}</strong>".` : 'Dime a qué cliente quieres ir.';
+      }
+
+    // ── AVERÍAS PENDIENTES ──
+    } else if(esAveria){
+      const avsPend = _averiasPend || [];
+      if(esTodos || esPendiente || avsPend.length > 0 && !extraerNombreCli(q)){
+        if(!avsPend.length){
+          respuesta = '✅ No hay averías pendientes en este momento.';
+        } else {
+          respuesta = `Hay <strong>${avsPend.length} avería${avsPend.length!==1?'s':''} pendiente${avsPend.length!==1?'s':''}</strong>:`;
+          cards = avsPend.slice(0,6).map(a=>{
+            const cli = allClientes.find(c=>c.id===a.clienteId);
+            return {title:`⚡ ${a.tipo||'Avería'}`, sub:`${cli?.nombre||a.clienteNombre||'—'} · ${fmtFecha(a.creado)}`, action:`cerrarAsistente();goScreen('grupo');switchGTab('aver');setTimeout(()=>verAveria('${a.id}'),300)`};
+          });
+        }
+      } else {
+        const nombreQ = extraerNombreCli(q);
+        const cli = nombreQ ? buscarCliente(nombreQ) : null;
+        if(cli){
+          const avsC = avsPend.filter(a=>a.clienteId===cli.id);
+          if(!avsC.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene averías pendientes.`; }
+          else {
+            respuesta = `<strong>${cli.nombre}</strong> tiene <strong>${avsC.length} avería${avsC.length!==1?'s':''} pendiente${avsC.length!==1?'s':''}</strong>:`;
+            cards = avsC.map(a=>({title:`⚡ ${a.tipo||'Avería'}`, sub:fmtFecha(a.creado), action:`cerrarAsistente();verAveria('${a.id}')`}));
+          }
+        } else {
+          respuesta = nombreQ ? `No encontré el cliente "<strong>${nombreQ}</strong>".` : `Hay <strong>${avsPend.length}</strong> avería${avsPend.length!==1?'s pendientes':'  pendiente'}.`;
+        }
+      }
+
+    // ── PRESUPUESTOS ──
+    } else if(esPresupuesto){
+      const presus = _presusPend || [];
+      const nombreQ = extraerNombreCli(q);
+      const cli = nombreQ ? buscarCliente(nombreQ) : null;
+      if(cli){
+        // Buscar todos los presupuestos del cliente en Firestore
+        try{
+          const snap = await getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('clienteId','==',cli.id)));
+          const todosPresus = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+          if(!todosPresus.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene presupuestos registrados.`; }
+          else if(esUltimo){
+            const p = todosPresus[0];
+            const total = _calcTotal?_calcTotal(p):((parseFloat(p.importeManoObra)||0)+(parseFloat(p.importeMateriales)||0)+(parseFloat(p.importeDesplazamiento)||0));
+            respuesta = `El último presupuesto de <strong>${cli.nombre}</strong> fue el <strong>${fmtFecha(p.creado)}</strong>:`;
+            cards = [{title:`💶 ${p.titulo||'Presupuesto'}`, sub:`${fmtFecha(p.creado)} · ${isNaN(total)?'—':total.toLocaleString('es-ES',{minimumFractionDigits:2})+'€'} · ${p.estado||'espera'}`, action:`cerrarAsistente();verPresupuesto('${p.id}')`}];
+          } else {
+            respuesta = `<strong>${cli.nombre}</strong> tiene <strong>${todosPresus.length} presupuesto${todosPresus.length!==1?'s':''}</strong>:`;
+            cards = todosPresus.slice(0,5).map(p=>({title:`💶 ${p.titulo||'Presupuesto'}`, sub:`${fmtFecha(p.creado)} · ${p.estado||'espera'}`, action:`cerrarAsistente();verPresupuesto('${p.id}')`}));
+          }
+        }catch(e){ respuesta = 'Error al buscar los presupuestos.'; }
+      } else if(esPendiente || esTodos){
+        if(!presus.length){ respuesta = 'No hay presupuestos pendientes.'; }
+        else {
+          respuesta = `Hay <strong>${presus.length} presupuesto${presus.length!==1?'s':''} pendiente${presus.length!==1?'s':''}</strong>:`;
+          cards = presus.slice(0,6).map(p=>({title:`💶 ${p.titulo||'Presupuesto'}`, sub:`${p.clienteNombre||'—'} · ${fmtFecha(p.creado)}`, action:`cerrarAsistente();verPresupuesto('${p.id}')`}));
+        }
+      } else {
+        respuesta = nombreQ ? `No encontré el cliente "<strong>${nombreQ}</strong>".` : 'Dime de qué cliente quieres ver el presupuesto.';
+      }
+
+    // ── MANTENIMIENTOS ──
+    } else if(esMantenimiento){
+      const hoyStr = new Date().toISOString().split('T')[0];
+      const finSem = new Date(); finSem.setDate(finSem.getDate()+7);
+      const finSemStr = finSem.toISOString().split('T')[0];
+
+      const nombreQ = extraerNombreCli(q);
+      const cli = nombreQ ? buscarCliente(nombreQ) : null;
+
+      if(esSemana && !cli){
+        // Mantenimientos esta semana
+        const estaSem = allMantenimientos.filter(m=>m.estado!=='completado'&&m.fechaProxima&&m.fechaProxima>=hoyStr&&m.fechaProxima<=finSemStr);
+        if(!estaSem.length){ respuesta = 'No hay mantenimientos programados para esta semana.'; }
+        else {
+          respuesta = `Esta semana hay <strong>${estaSem.length} mantenimiento${estaSem.length!==1?'s':''}</strong> programados:`;
+          cards = estaSem.sort((a,b)=>a.fechaProxima<b.fechaProxima?-1:1).map(m=>({
+            title:`🔧 ${m.nombreTrabajo}`,
+            sub:`${m.clienteNombre||'—'} · ${fmtFechaStr(m.fechaProxima)}`,
+            action:`cerrarAsistente();goScreen('grupo');switchGTab('mant');setTimeout(()=>verMant('${m.id}'),300)`
+          }));
+        }
+      } else if(cli){
+        // Mantenimientos de un cliente concreto
+        const mantsC = allMantenimientos.filter(m=>m.clienteId===cli.id);
+        if(!mantsC.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene mantenimientos registrados.`; }
+        else if(esUltimo){
+          // Último completado
+          try{
+            const snap = await getDocs(query(collection(db,'grupos',CGID,'historial_mantenimientos'),where('clienteId','==',cli.id),orderBy('fechaCompletado','desc')));
+            const hist = snap.docs.map(d=>d.data());
+            if(!hist.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene mantenimientos completados aún.`; }
+            else {
+              const h = hist[0];
+              respuesta = `El último mantenimiento de <strong>${cli.nombre}</strong> fue el <strong>${fmtFechaStr(h.fechaCompletado)}</strong>:`;
+              const mOrig = mantsC.find(m=>m.id===h.mantenimientoId);
+              cards = [{title:`✅ ${h.nombreTrabajo||'Mantenimiento'}`, sub:`${fmtFechaStr(h.fechaCompletado)} · Realizado por ${h.completadoPor||'—'}`, action:mOrig?`cerrarAsistente();verMant('${mOrig.id}')`:`cerrarAsistente();verCliente('${cli.id}')`}];
+            }
+          }catch(e){
+            const completado = mantsC.filter(m=>m.ultimoCompletado).sort((a,b)=>b.ultimoCompletado<a.ultimoCompletado?-1:1)[0];
+            if(completado){ respuesta = `El último mantenimiento completado de <strong>${cli.nombre}</strong> fue el <strong>${fmtFechaStr(completado.ultimoCompletado)}</strong>:`; cards = [{title:`✅ ${completado.nombreTrabajo}`, sub:fmtFechaStr(completado.ultimoCompletado), action:`cerrarAsistente();verMant('${completado.id}')`}]; }
+            else { respuesta = `<strong>${cli.nombre}</strong> aún no tiene mantenimientos completados.`; }
+          }
+        } else if(esProximo){
+          const prox = mantsC.filter(m=>m.estado!=='completado'&&m.fechaProxima).sort((a,b)=>a.fechaProxima<b.fechaProxima?-1:1)[0];
+          if(!prox){ respuesta = `<strong>${cli.nombre}</strong> no tiene mantenimientos pendientes programados.`; }
+          else { respuesta = `El próximo mantenimiento de <strong>${cli.nombre}</strong> es el <strong>${fmtFechaStr(prox.fechaProxima)}</strong>:`; cards = [{title:`🔧 ${prox.nombreTrabajo}`, sub:`${fmtFechaStr(prox.fechaProxima)}${prox.frecuencia?' · '+prox.frecuencia:''}`, action:`cerrarAsistente();verMant('${prox.id}')`}]; }
+        } else {
+          respuesta = `<strong>${cli.nombre}</strong> tiene <strong>${mantsC.length} mantenimiento${mantsC.length!==1?'s':''}</strong>:`;
+          cards = mantsC.slice(0,5).map(m=>({title:`🔧 ${m.nombreTrabajo}`, sub:`Próximo: ${fmtFechaStr(m.fechaProxima)||'—'}`, action:`cerrarAsistente();verMant('${m.id}')`}));
+        }
+      } else {
+        // Todos los próximos
+        const proximos = allMantenimientos.filter(m=>m.estado!=='completado'&&m.fechaProxima).sort((a,b)=>a.fechaProxima<b.fechaProxima?-1:1);
+        if(!proximos.length){ respuesta = 'No hay mantenimientos pendientes.'; }
+        else {
+          respuesta = `Hay <strong>${proximos.length} mantenimiento${proximos.length!==1?'s':''} pendiente${proximos.length!==1?'s':''}</strong>. Los próximos:`;
+          cards = proximos.slice(0,5).map(m=>({title:`🔧 ${m.nombreTrabajo}`, sub:`${m.clienteNombre||'—'} · ${fmtFechaStr(m.fechaProxima)}`, action:`cerrarAsistente();verMant('${m.id}')`}));
+        }
+      }
+
+    // ── PARTES DE TRABAJO ──
+    } else if(esParte){
+      const nombreQ = extraerNombreCli(q);
+      const cli = nombreQ ? buscarCliente(nombreQ) : null;
+      if(cli){
+        const partesC = allPartes.filter(p=>p.clienteId===cli.id&&!p.archivado);
+        if(!partesC.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene partes de trabajo.`; }
+        else if(esUltimo){
+          const p = partesC[0];
+          respuesta = `El último parte de <strong>${cli.nombre}</strong> fue el <strong>${fmtFecha(p.creado)}</strong>:`;
+          cards = [{title:`📋 ${p.titulo||'Parte de trabajo'}`, sub:`${fmtFecha(p.creado)} · ${p.estado||'—'}`, action:`cerrarAsistente();verParte('${p.id}')`}];
+        } else {
+          respuesta = `<strong>${cli.nombre}</strong> tiene <strong>${partesC.length} parte${partesC.length!==1?'s':''}</strong>:`;
+          cards = partesC.slice(0,5).map(p=>({title:`📋 ${p.titulo||'Parte'}`, sub:`${fmtFecha(p.creado)} · ${p.estado||'—'}`, action:`cerrarAsistente();verParte('${p.id}')`}));
+        }
+      } else {
+        const pendientes = allPartes.filter(p=>p.estado==='pendiente'&&!p.archivado);
+        respuesta = pendientes.length
+          ? `Hay <strong>${pendientes.length} parte${pendientes.length!==1?'s':''} pendiente${pendientes.length!==1?'s':''}</strong>:`
+          : '✅ No hay partes pendientes.';
+        cards = pendientes.slice(0,5).map(p=>({title:`📋 ${p.titulo||'Parte'}`, sub:`${p.clienteNombre||'—'} · ${fmtFecha(p.creado)}`, action:`cerrarAsistente();verParte('${p.id}')`}));
+      }
+
+    // ── FICHA DE CLIENTE ──
+    } else if(esFicha || !esMantenimiento && !esParte && !esAveria && !esPresupuesto){
+      const nombreQ = extraerNombreCli(q) || q.replace(/[¿?]/g,'').trim();
+      if(nombreQ && nombreQ.length > 1){
+        const resultados = buscarClientesFuzzy(nombreQ);
+        if(resultados.length === 1){
+          const cli = resultados[0];
+          respuesta = `Encontré a <strong>${cli.nombre}</strong>:`;
+          cards = [{
+            title:`👤 ${cli.nombre}`,
+            sub:`${cli.telefono||''}${cli.direccion?' · '+cli.direccion:''}`,
+            action:`cerrarAsistente();verCliente('${cli.id}')`
+          }];
+        } else if(resultados.length > 1){
+          respuesta = `Encontré ${resultados.length} clientes:`;
+          cards = resultados.slice(0,5).map(c=>({title:`👤 ${c.nombre}`, sub:c.telefono||c.direccion||'Sin datos', action:`cerrarAsistente();verCliente('${c.id}')`}));
+        } else {
+          respuesta = `No encontré ningún cliente con "<strong>${nombreQ}</strong>". Intenta con otro nombre.`;
+        }
+      } else {
+        respuesta = 'Puedo ayudarte con mantenimientos, averías, presupuestos, partes de trabajo, o información de un cliente. ¿Qué necesitas?';
+      }
+    }
+
+  } catch(err) {
+    respuesta = 'Ocurrió un error al procesar tu consulta. Inténtalo de nuevo.';
+    console.error('Asistente error:', err);
+  }
+
+  _asistQuitarPensando();
+  if(respuesta) _asistAddMsg('bot', respuesta, cards);
+  document.getElementById('asistEstadoTxt').textContent = 'Pulsa el micrófono o escribe tu consulta';
+  document.getElementById('asistTitulo').textContent = 'Asistente Joyvi';
+};
+
 // ── Kiosk-safe navigation (for notifications) ──
 window._kioskSafeNav=(action,grupoId,parteId,tab)=>{
   const isKiosk=localStorage.getItem('joyvi_kiosk')==='1';
@@ -11121,13 +11721,16 @@ window.activarModoVisualizacion=()=>{
   _aplicarModoVisualizacion();
   toast('🏭 Modo gestión activado','o');
   if(!screens['kiosk'])screens['kiosk']='screenKiosk';
+  // Limpiar historial para que el botón físico no pueda salir del modo
+  screenHistory=[];
+  cerrarDrawer&&cerrarDrawer();
   setTimeout(()=>{
     goScreen('kiosk');
-    // Mostrar nombre del grupo en header kiosk
+    // Reemplazar entrada de historial del navegador para bloquear retroceso físico
+    history.replaceState({screen:'kiosk',sbOpen:false},'','#kiosk');
     const hg=document.getElementById('kioskHeaderGroup');
     if(hg&&CG?.nombre)hg.textContent=CG.nombre;
   },300);
-  cerrarDrawer&&cerrarDrawer();
 };
 
 window.salirModoVisualizacion=()=>{
