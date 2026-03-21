@@ -4158,44 +4158,87 @@ window.cerrarMapPicker=()=>{
 
 // ── Helper geocodificación inversa (Nominatim) ──
 const _geocodificarCoordenadas=async(lat,lng)=>{
-  // Helper: construye dirección legible desde objeto address de Nominatim
-  const _parsearAddressNominatim=(a,displayName)=>{
-    const road=(a.road||a.pedestrian||a.footway||a.cycleway||a.path||a.hamlet||'').trim();
-    const num=(a.house_number||'').trim();
-    const city=(a.city||a.town||a.village||a.municipality||a.suburb||a.county||'').trim();
-    const cp=(a.postcode||'').trim();
-    const streetPart=road+(num?' '+num:'');
-    const cityPart=cp&&city?`${cp} ${city}`:city;
-    if(streetPart&&cityPart)return`${streetPart}, ${cityPart}`;
-    // Fallback: display_name sin país y sin región administrativa de alto nivel
-    if(displayName){
-      const parts=displayName.split(',').map(s=>s.trim())
-        .filter(s=>s&&!/^(España|Spain|Espagne|Region de Murcia|Región de Murcia|Comunidad|Community|Autonomous)$/i.test(s));
-      // Tomar los primeros 4 fragmentos relevantes: calle, número, barrio/ciudad, CP/provincia
-      return parts.slice(0,4).join(', ');
+  // ── Parsear display_name de Nominatim inteligentemente ──
+  // Formatos posibles en España:
+  // "8, Calle Mayor, Barrio, Murcia, Región de Murcia, 30001, España"
+  // "Calle Mayor, 8, Centro, Murcia, 30001, España"
+  // "Edificio X, Calle Y, 12, Murcia, 30002, España"
+  const _parsearDisplayName=(dn,a)=>{
+    if(!dn)return'';
+    const partes=dn.split(',').map(s=>s.trim()).filter(Boolean);
+
+    // Detectar posición del CP (5 dígitos) → todo lo que está antes es la dirección
+    const cpIdx=partes.findIndex(s=>/^\d{5}$/.test(s));
+    const cp=cpIdx>=0?partes[cpIdx]:'';
+    // Ciudad = lo que viene justo después del CP (si existe)
+    const ciudadDN=cpIdx>=0&&partes[cpIdx+1]&&!/^(España|Spain)$/i.test(partes[cpIdx+1])?partes[cpIdx+1]:'';
+
+    // Dirección = los tokens ANTES del CP (excluir país, regiones largas)
+    const EXCLUIR=/^(España|Spain|Espagne|Region|Región|Comunidad|Community|Autonomous|Murcia Region|Región de Murcia)$/i;
+    const tokensDireccion=cpIdx>0
+      ?partes.slice(0,cpIdx).filter(s=>!EXCLUIR.test(s)&&s.length<50)
+      :partes.filter(s=>!EXCLUIR.test(s)&&s.length<50).slice(0,3);
+
+    // Detectar número suelto al inicio o al final de los tokens de dirección
+    // "8, Calle Mayor, ..." → número=8, calle=Calle Mayor
+    // "Calle Mayor, 8, ..." → calle=Calle Mayor, número=8
+    let calle='', numero='';
+    if(tokensDireccion.length>=2){
+      if(/^\d+[a-zA-Z]?$/.test(tokensDireccion[0])){
+        numero=tokensDireccion[0];
+        calle=tokensDireccion[1];
+      } else if(/^\d+[a-zA-Z]?$/.test(tokensDireccion[1])){
+        calle=tokensDireccion[0];
+        numero=tokensDireccion[1];
+      } else {
+        calle=tokensDireccion[0];
+      }
+    } else if(tokensDireccion.length===1){
+      calle=tokensDireccion[0];
     }
-    return city||'';
+
+    // Usar ciudad del objeto address si está disponible (más fiable)
+    const ciudadObj=(a&&(a.city||a.town||a.village||a.municipality||''))||'';
+    const ciudad=ciudadObj||ciudadDN;
+
+    const calleNum=calle+(numero?' '+numero:'');
+    const cpCiudad=cp&&ciudad?`${cp} ${ciudad}`:ciudad||cp;
+
+    if(calleNum&&cpCiudad)return`${calleNum}, ${cpCiudad}`;
+    if(calleNum)return calleNum;
+    if(cpCiudad)return cpCiudad;
+    // Si todo falla, devolver los 3 primeros tokens útiles
+    return tokensDireccion.slice(0,3).join(', ');
   };
 
-  // ── Intento 1: Nominatim con zoom 18 (nivel portal) ──
+  // ── Intento 1: Nominatim zoom=18 (máximo detalle, nivel portal) ──
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18&accept-language=es`);
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18`);
     if(r.ok){
       const d=await r.json();
-      const dir=_parsearAddressNominatim(d.address||{},d.display_name);
-      if(dir)return dir;
+      const a=d.address||{};
+      // Primero intentar con campos estructurados
+      const road=(a.road||a.pedestrian||a.footway||a.cycleway||a.path||'').trim();
+      const num=(a.house_number||'').trim();
+      const cp=(a.postcode||'').trim();
+      const city=(a.city||a.town||a.village||a.municipality||'').trim();
+      if(road&&cp&&city)return`${road}${num?' '+num:''}, ${cp} ${city}`;
+      if(road&&city)return`${road}${num?' '+num:''}, ${city}`;
+      // Fallback a display_name parseado
+      const dir=_parsearDisplayName(d.display_name,a);
+      if(dir&&dir.length>4)return dir;
     }
-  }catch(e1){}
+  }catch(_){}
 
-  // ── Intento 2: Nominatim zoom 16 (nivel calle, más tolerante) ──
+  // ── Intento 2: Nominatim zoom=16 (nivel calle, más datos de zona) ──
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=16&accept-language=es`);
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=16`);
     if(r.ok){
       const d=await r.json();
-      const dir=_parsearAddressNominatim(d.address||{},d.display_name);
-      if(dir)return dir;
+      const dir=_parsearDisplayName(d.display_name,d.address||{});
+      if(dir&&dir.length>4)return dir;
     }
-  }catch(e2){}
+  }catch(_){}
 
   // ── Intento 3: BigDataCloud (CORS garantizado, sin API key) ──
   try{
@@ -4203,20 +4246,17 @@ const _geocodificarCoordenadas=async(lat,lng)=>{
     if(r.ok){
       const d=await r.json();
       const road=(d.road||d.streetName||d.street||'').trim();
-      const num=(d.houseNumber||d.streetNumber||d.house_number||'').trim();
-      const city=(d.city||d.locality||d.principalSubdivision||'').trim();
-      const cp=(d.postcode||'').trim();
-      const streetPart=road+(num?' '+num:'');
-      const cityPart=cp&&city?`${cp} ${city}`:city;
-      if(streetPart&&cityPart)return`${streetPart}, ${cityPart}`;
-      if(streetPart||cityPart)return streetPart||cityPart;
-      // localityInfo como último recurso
-      const admin=(d.localityInfo?.administrative||[]).map(a=>a.name).filter(Boolean);
-      if(admin.length>=2)return admin.slice(0,3).join(', ');
+      const num=(d.streetNumber||d.houseNumber||d.house_number||'').trim();
+      const cp=(d.postcode||d.zipCode||'').trim();
+      const city=(d.city||d.locality||d.town||'').trim();
+      if(road&&cp&&city)return`${road}${num?' '+num:''}, ${cp} ${city}`;
+      if(road&&city)return`${road}${num?' '+num:''}, ${city}`;
+      if(cp&&city)return`${cp} ${city}`;
+      if(city)return city;
     }
-  }catch(e3){}
+  }catch(_){}
 
-  // ── Fallback final: coordenadas ──
+  // ── Último recurso: coordenadas ──
   return`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 };
 
