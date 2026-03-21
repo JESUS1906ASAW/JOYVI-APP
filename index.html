@@ -44,7 +44,7 @@
   --border:rgba(255,255,255,.08);--rd:16px;
   --font:'Nunito',sans-serif;
   --shadow:0 4px 20px rgba(0,0,0,.55);
-  --shadow2:0 6px 28px rgba(229,57,53,.28);
+  --shadow2:0 6px 28px rgba(var(--theme-rgb),.28);
   --shadow-sm:0 2px 10px rgba(0,0,0,.35);
   --theme-rgb:229,57,53;
   --ease-spring:cubic-bezier(.16,1,.3,1);
@@ -159,38 +159,70 @@ body.modo-claro .stat2-num{color:#111}
 .toggle-sw input:checked+.toggle-track::before{transform:translateX(22px)}
 
 /* ── MODO VISUALIZACIÓN (TABLET/TALLER) ── */
-body.modo-visualizacion #topbar .logo::after{content:' · Solo lectura';font-size:12px;font-weight:600;color:var(--tx2);letter-spacing:0;font-family:var(--font)}
+body.modo-visualizacion #topbar .logo::after{content:' · Taller';font-size:12px;font-weight:600;color:var(--tx2);letter-spacing:0;font-family:var(--font)}
 body.modo-visualizacion #topbar .logo{cursor:default!important;pointer-events:none!important}
 .kiosk-badge{display:none;background:rgba(255,152,0,.15);border:1px solid rgba(255,152,0,.35);color:#ff9800;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.5px}
 body.modo-visualizacion .kiosk-badge{display:inline-flex;align-items:center;gap:5px}
-/* Ocultar botones de acción en modo visualización */
-body.modo-visualizacion .btn-nuevo,
-body.modo-visualizacion .btn-p[onclick*="nuevo"],
-body.modo-visualizacion .btn-p[onclick*="Nuevo"],
-body.modo-visualizacion .btn-p[onclick*="Nueva"],
-body.modo-visualizacion .btn-p[onclick*="nueva"],
-body.modo-visualizacion [onclick*="abrirNuevo"],
-body.modo-visualizacion [onclick*="abrirNueva"],
-body.modo-visualizacion [onclick*="guardar"],
-body.modo-visualizacion [onclick*="eliminar"],
-body.modo-visualizacion [onclick*="borrar"],
+/* Modo visualización: solo ocultar acciones de EDICIÓN/BORRADO, no creación */
+body.modo-visualizacion [onclick*="abrirFParte('"],
+body.modo-visualizacion [onclick*="abrirFPartePreservando"],
+body.modo-visualizacion [onclick*="clonarParte"],
+body.modo-visualizacion [onclick*="guardarParteComoPlantilla"],
+body.modo-visualizacion [onclick*="archivarParte"],
+body.modo-visualizacion [onclick*="archivarCliente"],
+body.modo-visualizacion [onclick*="guardarCli("],
+body.modo-visualizacion [onclick*="eliminarMant"],
+body.modo-visualizacion [onclick*="borrarArchivo"],
+body.modo-visualizacion [onclick*="restaurarArchivo"],
 body.modo-visualizacion [onclick*="doLogout"],
+body.modo-visualizacion [onclick*="eliminarGrupoCompleto"],
+body.modo-visualizacion [onclick*="borrarImagen"],
+body.modo-visualizacion [onclick*="flujoCompletarFirmarPDF"],
 body.modo-visualizacion .btn-del{display:none!important}
+/* Botón de PDF siempre visible y destacado en modo visualización */
+body.modo-visualizacion .kiosk-pdf-btn{display:flex!important}
 /* Pantalla kiosk (pantalla de selección de vista) */
 #screenKiosk{background:var(--bg)}
-.kiosk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:8px 0}
-.kiosk-tile{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),border-color .2s ease,background .15s ease,box-shadow .2s ease;min-height:130px;text-align:center}
-.kiosk-tile.kiosk-tile-wide{grid-column:1/-1}
-.kiosk-tile:hover{border-color:rgba(var(--theme-rgb),.6);background:rgba(var(--theme-rgb),.08);transform:translateY(-3px);box-shadow:0 8px 24px rgba(229,57,53,.15)}
-.kiosk-tile:active{transform:translateY(0) scale(.97)}
-.kiosk-tile-ico{width:56px;height:56px;display:flex;align-items:center;justify-content:center;opacity:.9}
-.kiosk-tile-label{font-size:15px;font-weight:800;color:var(--tx)}
-.kiosk-tile-sub{font-size:11px;color:var(--tx2);margin-top:-4px}
-.kiosk-header{text-align:center;padding:32px 0 24px}
-.kiosk-header-title{font-size:26px;font-weight:900;color:var(--tx);margin-bottom:6px}
-.kiosk-header-sub{font-size:13px;color:var(--tx2)}
-.kiosk-exit-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:24px;padding:12px 24px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;font-size:13px;font-weight:700;color:var(--tx2);cursor:pointer;width:100%;font-family:var(--font);transition:.15s}
-.kiosk-exit-btn:hover{border-color:var(--r);color:var(--r)}
+.kiosk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0}
+.kiosk-section-label{grid-column:1/-1;font-size:9.5px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;padding:4px 2px 2px;display:flex;align-items:center;gap:8px}
+.kiosk-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.kiosk-tile{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px 14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform .22s cubic-bezier(.16,1,.3,1),border-color .18s,background .15s,box-shadow .22s;min-height:118px;text-align:center;position:relative;overflow:hidden}
+.kiosk-tile::before{content:'';position:absolute;inset:0;background:rgba(var(--theme-rgb),0);transition:background .15s}
+.kiosk-tile.kiosk-tile-wide{grid-column:1/-1;flex-direction:row;min-height:72px;padding:16px 22px;justify-content:flex-start;gap:16px}
+.kiosk-tile.kiosk-tile-wide .kiosk-tile-txt{text-align:left}
+.kiosk-tile.kiosk-tile-crear{border-style:dashed;border-color:rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.04)}
+.kiosk-tile.kiosk-tile-crear:hover{background:rgba(var(--theme-rgb),.1);border-style:solid}
+.kiosk-tile:active{transform:scale(.96)!important}
+.kiosk-tile:hover{border-color:rgba(var(--theme-rgb),.55);background:rgba(var(--theme-rgb),.07);transform:translateY(-2px);box-shadow:0 6px 20px rgba(var(--theme-rgb),.14)}
+.kiosk-tile-ico{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.15);flex-shrink:0}
+.kiosk-tile-crear .kiosk-tile-ico{background:rgba(var(--theme-rgb),.08)}
+.kiosk-tile-label{font-size:14px;font-weight:900;color:var(--tx);line-height:1.2}
+.kiosk-tile-sub{font-size:10.5px;color:var(--tx2);line-height:1.3}
+.kiosk-tile-txt{display:flex;flex-direction:column;gap:2px}
+.kiosk-header{text-align:center;padding:28px 0 20px}
+.kiosk-header-logo{width:52px;height:52px;border-radius:16px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.kiosk-header-title{font-size:22px;font-weight:900;color:var(--tx);margin-bottom:4px}
+.kiosk-header-group{font-size:13px;color:var(--r);font-weight:700;margin-bottom:3px}
+.kiosk-header-sub{font-size:12px;color:var(--tx2)}
+.kiosk-exit-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding:11px 20px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:12px;font-size:12.5px;font-weight:700;color:var(--tx2);cursor:pointer;width:100%;font-family:var(--font);transition:.15s}
+.kiosk-exit-btn:hover{border-color:var(--r);color:var(--r);background:rgba(var(--theme-rgb),.05)}
+/* Sub-pantallas kiosk */
+.kiosk-sub-header{display:flex;align-items:center;gap:12px;padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:16px;position:sticky;top:0;background:var(--bg);z-index:5;backdrop-filter:blur(12px)}
+.kiosk-back-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px 14px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;flex-shrink:0;transition:.15s}
+.kiosk-back-btn:hover{border-color:rgba(var(--theme-rgb),.4);color:var(--tx)}
+.kiosk-sub-title{font-size:18px;font-weight:900;color:var(--tx);flex:1}
+.kiosk-crear-fab{display:none;position:fixed;bottom:28px;right:20px;z-index:100;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;border:none;border-radius:18px;padding:14px 22px;font-size:14px;font-weight:900;font-family:var(--font);cursor:pointer;box-shadow:0 6px 24px rgba(var(--theme-rgb),.45);align-items:center;gap:8px;transition:.2s cubic-bezier(.16,1,.3,1)}
+.kiosk-crear-fab:active{transform:scale(.95)}
+/* Tarjetas kiosk mejoradas */
+.kiosk-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,transform .15s}
+.kiosk-card:active{transform:scale(.98)}
+.kiosk-card:hover{border-color:rgba(var(--theme-rgb),.35)}
+.kiosk-card-title{font-size:14px;font-weight:800;color:var(--tx);margin-bottom:3px}
+.kiosk-card-meta{font-size:12px;color:var(--tx2);line-height:1.5}
+.kiosk-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
+.kiosk-pdf-btn{display:none;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);color:var(--r);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s}
+.kiosk-pdf-btn:hover{background:rgba(var(--theme-rgb),.18)}
+body.modo-visualizacion .kiosk-pdf-btn{display:flex!important}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{height:100%;height:100dvh}
 body{height:100%;height:100dvh;overflow:hidden;background:#0d0d0d;font-family:var(--font);color:var(--tx);font-size:15px;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
@@ -239,7 +271,7 @@ body.modo-claro .skel{background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(
 
 /* ── TOPBAR ── */
 #topbar{background:rgba(21,21,21,.92);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);padding:14px 20px;display:flex;align-items:center;border-bottom:1px solid var(--border);z-index:90;flex-shrink:0;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.04),0 2px 16px rgba(0,0,0,.3)}
-#topbar .logo{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--r) 0%,var(--r3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px;flex:1;filter:drop-shadow(0 0 8px rgba(229,57,53,.35));transition:.2s}
+#topbar .logo{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--r) 0%,var(--r3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px;flex:1;filter:drop-shadow(0 0 8px rgba(var(--theme-rgb),.35));transition:.2s}
 .tb-btn{width:40px;height:40px;border-radius:12px;border:none;background:transparent;color:var(--tx);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .12s,color .15s;position:relative;overflow:hidden}
 .tb-btn::after{content:'';position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle,rgba(255,255,255,.2) 0%,transparent 70%);opacity:0;transition:opacity .2s}
 .tb-btn:hover{background:rgba(255,255,255,.08);transform:scale(1.05)}
@@ -267,7 +299,7 @@ body.modo-claro .skel{background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(
 .d-sep{height:1px;background:rgba(255,255,255,.1);margin:10px 20px}
 
 /* ── AUTH ── */
-.auth-logo{font-family:'Anton',sans-serif;font-size:68px;background:linear-gradient(135deg,#fff 30%,var(--r3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(229,57,53,.5));margin-bottom:6px;text-align:center;animation:authLogoIn .6s cubic-bezier(.16,1,.3,1)}
+.auth-logo{font-family:'Anton',sans-serif;font-size:68px;background:linear-gradient(135deg,#fff 30%,var(--r3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(var(--theme-rgb),.5));margin-bottom:6px;text-align:center;animation:authLogoIn .6s cubic-bezier(.16,1,.3,1)}
 @keyframes authLogoIn{0%{opacity:0;transform:scale(.85) translateY(-10px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 
 #loginWrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
@@ -323,8 +355,8 @@ body.modo-claro .cli-sel-opt:hover{background:rgba(0,0,0,.05)}
 .btn-ok{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.3)}
 .btn-del{background:rgba(var(--theme-rgb),.12);color:var(--r);border:1px solid rgba(var(--theme-rgb),.25)}
 .btn-sm{padding:8px 14px;width:auto;font-size:13px;border-radius:10px}
-.btn-nuevo{background:linear-gradient(135deg,var(--r) 0%,var(--r2) 100%);color:#fff;border:none;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;margin-left:auto;transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s ease,filter .15s;white-space:nowrap;box-shadow:0 3px 12px rgba(229,57,53,.3)}
-.btn-nuevo:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 5px 18px rgba(229,57,53,.4)}
+.btn-nuevo{background:linear-gradient(135deg,var(--r) 0%,var(--r2) 100%);color:#fff;border:none;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;margin-left:auto;transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s ease,filter .15s;white-space:nowrap;box-shadow:0 3px 12px rgba(var(--theme-rgb),.3)}
+.btn-nuevo:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 5px 18px rgba(var(--theme-rgb),.4)}
 .btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
 
 /* ── CARDS ── */
@@ -345,7 +377,7 @@ body.modo-claro .cli-sel-opt:hover{background:rgba(0,0,0,.05)}
 .fbtn{background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--tx2);cursor:pointer;font-family:var(--font);transition:border-color .18s ease,color .18s ease,background .18s ease,transform .15s cubic-bezier(.16,1,.3,1),box-shadow .18s ease;white-space:nowrap}
 .fbtn:hover{border-color:rgba(255,255,255,.3);color:var(--tx);transform:scale(1.02)}
 .fbtn:active{transform:scale(.97)}
-.fbtn.active{background:linear-gradient(135deg,var(--r),var(--r2));border-color:var(--r);color:#fff;box-shadow:0 2px 8px rgba(229,57,53,.3)}
+.fbtn.active{background:linear-gradient(135deg,var(--r),var(--r2));border-color:var(--r);color:#fff;box-shadow:0 2px 8px rgba(var(--theme-rgb),.3)}
 .fbtn:hover:not(.active){border-color:rgba(255,255,255,.3);color:var(--tx)}
 
 /* ── EMPTY STATE ── */
@@ -380,8 +412,8 @@ body.modo-claro .cli-sel-opt:hover{background:rgba(0,0,0,.05)}
 .dash-item-title{font-size:14px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dash-item-sub{font-size:11px;color:var(--tx2);margin-top:2px}
 .dash-item-right{font-size:11px;font-weight:700;color:var(--tx3);flex-shrink:0}
-.dash-alert{background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.2);border-radius:14px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:.15s}
-.dash-alert:hover{background:rgba(229,57,53,.13)}
+.dash-alert{background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:14px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:.15s}
+.dash-alert:hover{background:rgba(var(--theme-rgb),.13)}
 .dash-alert-ico{width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;opacity:.8}
 .dash-alert-txt{flex:1}
 .dash-alert-title{font-size:13px;font-weight:800;color:#ff7043}
@@ -590,29 +622,16 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--r2),var(--r));border-radius:10px;transition:width .6s ease}
 
 /* ── CARRUSEL FUNCIONALIDADES ── */
-/* ── INICIO PROFESIONAL ── */
-.inicio-hero{background:linear-gradient(135deg,rgba(var(--theme-rgb),.11) 0%,rgba(var(--theme-rgb),.04) 100%);border:1px solid rgba(var(--theme-rgb),.2);border-radius:22px;padding:22px 20px 20px;margin-bottom:18px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s}
-.inicio-hero:active{opacity:.9}
-.inicio-hero::after{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:radial-gradient(circle,rgba(var(--theme-rgb),.18),transparent 65%);pointer-events:none}
-.inicio-hero-greeting{font-size:10.5px;font-weight:800;color:var(--r);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px;opacity:.9}
-.inicio-hero-name{font-size:23px;font-weight:900;color:var(--tx);line-height:1.1;margin-bottom:4px}
-.inicio-hero-sub{font-size:12px;color:var(--tx2);line-height:1.4;display:flex;align-items:center;gap:6px}
-.inicio-hero-sub::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#4caf50;box-shadow:0 0 6px #4caf50;flex-shrink:0}
-.inicio-hero-arrow{position:absolute;bottom:18px;right:20px;font-size:11px;font-weight:800;color:rgba(var(--theme-rgb),1);letter-spacing:.5px;opacity:.7;display:flex;align-items:center;gap:4px}
-/* Stats strip */
-.inicio-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:18px}
-.inicio-stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:13px 10px 11px;text-align:center;cursor:pointer;transition:border-color .15s,transform .15s;-webkit-tap-highlight-color:transparent}
-.inicio-stat:active{transform:scale(.95);border-color:rgba(var(--theme-rgb),.4)}
-.inicio-stat-ico{font-size:17px;margin-bottom:4px;line-height:1}
-.inicio-stat-num{font-size:21px;font-weight:900;color:var(--tx);line-height:1}
-.inicio-stat-lbl{font-size:9.5px;color:var(--tx2);margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
-/* Accesos rápidos */
-.inicio-accesos{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}
-.inicio-acceso{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:14px 12px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:border-color .15s,background .15s,transform .15s;-webkit-tap-highlight-color:transparent}
-.inicio-acceso:active{transform:scale(.97);border-color:rgba(var(--theme-rgb),.4);background:rgba(var(--theme-rgb),.05)}
-.inicio-acceso-ico{width:36px;height:36px;border-radius:10px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.15);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.inicio-acceso-lbl{font-size:12.5px;font-weight:800;color:var(--tx);line-height:1.2}
-.inicio-acceso-sub{font-size:10px;color:var(--tx2);margin-top:2px}
+/* ── INICIO LIMPIO ── */
+.inicio-saludo{padding:4px 2px 20px}
+.inicio-saludo-txt{font-size:22px;font-weight:900;color:var(--tx);line-height:1.15;margin-bottom:4px}
+.inicio-saludo-sub{font-size:12px;color:var(--tx2)}
+.grupos-empty{text-align:center;padding:40px 20px 20px}
+.grupos-empty-ico{width:64px;height:64px;border-radius:20px;background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--r)}
+.grupos-empty-title{font-size:17px;font-weight:900;color:var(--tx);margin-bottom:8px}
+.grupos-empty-sub{font-size:13px;color:var(--tx2);line-height:1.6;max-width:260px;margin:0 auto}
+.btn-nuevo-ghost{background:transparent!important;border:1px solid rgba(var(--theme-rgb),.35)!important;color:var(--r)!important;box-shadow:none!important}
+.btn-nuevo-ghost:hover{background:rgba(var(--theme-rgb),.06)!important}
 /* Selector de color de tema */
 .theme-picker-wrap{margin-top:14px}
 .theme-picker-label{font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.8px}
@@ -815,7 +834,7 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
 }
 /* Estado: hablando asistente (bloqueado, rojo apagado) */
 .voz-mic-btn.estado-hablando{
-  background:radial-gradient(circle at 40% 35%,rgba(229,57,53,.45),rgba(140,20,20,.55));
+  background:radial-gradient(circle at 40% 35%,rgba(var(--theme-rgb),.45),rgba(0,0,0,.55));
   box-shadow:none;
   cursor:not-allowed;
   animation:none;
@@ -836,7 +855,7 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
   color:var(--tx2);text-align:center;margin-top:2px;
 }
 .voz-mic-label.label-escuchando{color:#2ecc71}
-.voz-mic-label.label-hablando{color:rgba(229,57,53,.7)}
+.voz-mic-label.label-hablando{color:rgba(var(--theme-rgb),.7)}
 
 /* Ondas del asistente hablando */
 .voz-speak-waves{display:flex;align-items:center;gap:3px;height:22px}
@@ -877,6 +896,24 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
 .hm-det-lbl{font-size:11px;font-weight:900;color:var(--tx2);min-width:110px;flex-shrink:0;text-transform:uppercase;letter-spacing:.5px}
 .hm-det-val{font-size:13px;font-weight:700;color:var(--tx);flex:1}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+/* ── CROP MODAL ── */
+#cropModal{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+#cropModal.open{display:flex;animation:fadeIn .2s ease}
+.crop-wrap{position:relative;width:100%;max-width:420px;background:#111;border-radius:18px;overflow:hidden;touch-action:none}
+.crop-canvas-wrap{position:relative;width:100%;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+#cropCanvas{display:block;max-width:100%;max-height:55vh;object-fit:contain;cursor:crosshair}
+.crop-overlay{position:absolute;inset:0;pointer-events:none}
+.crop-selection{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.55);box-sizing:border-box}
+.crop-handle{position:absolute;width:18px;height:18px;background:#fff;border-radius:3px;opacity:.9}
+.crop-handle.tl{top:-5px;left:-5px;cursor:nwse-resize}
+.crop-handle.tr{top:-5px;right:-5px;cursor:nesw-resize}
+.crop-handle.bl{bottom:-5px;left:-5px;cursor:nesw-resize}
+.crop-handle.br{bottom:-5px;right:-5px;cursor:nwse-resize}
+.crop-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px;background:#1a1a1a}
+.crop-ratio-btns{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap;background:#1a1a1a}
+.crop-ratio-btn{padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:.15s}
+.crop-ratio-btn.active{background:rgba(var(--theme-rgb),.2);border-color:var(--r);color:var(--r)}
+
 </style>
 </head>
 <body>
@@ -1066,94 +1103,146 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
   <!-- TOAST -->
   <div id="toastWrap"></div>
 
+  <!-- CROP MODAL -->
+  <div id="cropModal">
+    <div class="crop-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#1a1a1a;border-bottom:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:14px;font-weight:900;color:#fff">✂️ Recortar imagen</div>
+        <button onclick="window._cropCancel()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+      <div class="crop-ratio-btns" id="cropRatioBtns">
+        <button class="crop-ratio-btn active" onclick="window._setCropRatio(0)" data-ratio="0">Libre</button>
+        <button class="crop-ratio-btn" onclick="window._setCropRatio(1)" data-ratio="1">1:1</button>
+        <button class="crop-ratio-btn" onclick="window._setCropRatio(4/3)" data-ratio="1.333">4:3</button>
+        <button class="crop-ratio-btn" onclick="window._setCropRatio(16/9)" data-ratio="1.778">16:9</button>
+      </div>
+      <div class="crop-canvas-wrap">
+        <canvas id="cropCanvas"></canvas>
+        <div class="crop-overlay">
+          <div class="crop-selection" id="cropSel">
+            <div class="crop-handle tl" data-h="tl"></div>
+            <div class="crop-handle tr" data-h="tr"></div>
+            <div class="crop-handle bl" data-h="bl"></div>
+            <div class="crop-handle br" data-h="br"></div>
+          </div>
+        </div>
+      </div>
+      <div class="crop-actions">
+        <button class="btn btn-s" onclick="window._cropCancel()" style="padding:12px">Cancelar</button>
+        <button class="btn btn-p" onclick="window._cropConfirm()" style="padding:12px">✓ Recortar y usar</button>
+      </div>
+    </div>
+  </div>
+
+
   <!-- KIOSK SCREEN -->
   <div class="screen" id="screenKiosk">
     <div class="scroll-pad">
       <div class="kiosk-header">
-        <div style="display:flex;align-items:center;justify-content:center;margin-bottom:10px"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-        <div class="kiosk-header-title">Joyvi — Modo Taller</div>
-        <div class="kiosk-header-sub">Vista de solo lectura · Selecciona una sección</div>
+        <div class="kiosk-header-logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+        <div class="kiosk-header-title">Modo Taller</div>
+        <div class="kiosk-header-group" id="kioskHeaderGroup"></div>
+        <div class="kiosk-header-sub">Selecciona una sección</div>
       </div>
       <div class="kiosk-grid">
+        <div class="kiosk-section-label">Ver existentes</div>
         <div class="kiosk-tile" onclick="kioskIr('grupo')">
-          <div class="kiosk-tile-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div class="kiosk-tile-label">Clientes</div>
-          <div class="kiosk-tile-sub">Fichas y contactos</div>
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Clientes</div><div class="kiosk-tile-sub">Fichas y contactos</div></div>
         </div>
         <div class="kiosk-tile" onclick="kioskIr('partes')">
-          <div class="kiosk-tile-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-          <div class="kiosk-tile-label">Partes</div>
-          <div class="kiosk-tile-sub">Órdenes de trabajo</div>
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Partes</div><div class="kiosk-tile-sub">Órdenes de trabajo</div></div>
         </div>
         <div class="kiosk-tile" onclick="kioskIr('averias')">
-          <div class="kiosk-tile-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div class="kiosk-tile-label">Averías</div>
-          <div class="kiosk-tile-sub">Pendientes de resolver</div>
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Averías</div><div class="kiosk-tile-sub">Pendientes y resueltas</div></div>
         </div>
         <div class="kiosk-tile" onclick="kioskIr('mant')">
-          <div class="kiosk-tile-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
-          <div class="kiosk-tile-label">Mantenimientos</div>
-          <div class="kiosk-tile-sub">Gestionar · Calendario</div>
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Mantenimientos</div><div class="kiosk-tile-sub">Programados</div></div>
         </div>
         <div class="kiosk-tile kiosk-tile-wide" onclick="kioskIr('presupuestos')">
-          <div class="kiosk-tile-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="kiosk-tile-label">Presupuestos</div>
-          <div class="kiosk-tile-sub">Consultar presupuestos</div>
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Presupuestos</div><div class="kiosk-tile-sub">Consultar y exportar</div></div>
+        </div>
+        <div class="kiosk-section-label" style="margin-top:6px">Crear nuevo</div>
+        <div class="kiosk-tile kiosk-tile-crear" onclick="abrirFParte()">
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Parte</div><div class="kiosk-tile-sub">Nueva orden</div></div>
+        </div>
+        <div class="kiosk-tile kiosk-tile-crear" onclick="abrirNuevaAveria()">
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Avería</div><div class="kiosk-tile-sub">Nueva incidencia</div></div>
+        </div>
+        <div class="kiosk-tile kiosk-tile-crear" onclick="abrirCliExpress()">
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Cliente</div><div class="kiosk-tile-sub">Registro rápido</div></div>
+        </div>
+        <div class="kiosk-tile kiosk-tile-crear" onclick="abrirNuevoPresupuesto()">
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Presupuesto</div><div class="kiosk-tile-sub">Nueva oferta</div></div>
         </div>
       </div>
-      <button class="kiosk-exit-btn" onclick="salirModoVisualizacion()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Salir del modo visualización</button>
+      <button class="kiosk-exit-btn" onclick="salirModoVisualizacion()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Salir del modo taller</button>
     </div>
   </div>
 
   <!-- KIOSK SUB-SCREENS -->
   <div class="screen" id="screenKioskCli">
     <div class="scroll-pad">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-        <button onclick="goScreen('kiosk')" style="background:rgba(255,255,255,.07);border:none;border-radius:12px;padding:9px 14px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Volver</button>
-        <div style="font-size:20px;font-weight:900;color:var(--tx);flex:1">👷 Clientes</div>
+      <div class="kiosk-sub-header">
+        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
+        <div class="kiosk-sub-title">👷 Clientes</div>
       </div>
-      <div id="kioskCliContent"><div class="empty"><div class="empty-ico">👷</div><p>Cargando clientes...</p></div></div>
+      
+      <div id="kioskCliContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
     </div>
+    <button class="kiosk-crear-fab" id="kiosk-fab-kioskCliContent" onclick="abrirCliExpress()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Cliente</button>
   </div>
   <div class="screen" id="screenKioskPartes">
     <div class="scroll-pad">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-        <button onclick="goScreen('kiosk')" style="background:rgba(255,255,255,.07);border:none;border-radius:12px;padding:9px 14px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Volver</button>
-        <div style="font-size:20px;font-weight:900;color:var(--tx);flex:1">🔧 Partes de trabajo</div>
+      <div class="kiosk-sub-header">
+        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
+        <div class="kiosk-sub-title">🔧 Partes de trabajo</div>
       </div>
-      <input class="sbox" style="margin-bottom:12px" placeholder="🔍 Buscar por cliente, título, operario..." oninput="_kioskFiltrar('partes',this.value)">
-      <div id="kioskPartesContent"><div class="empty"><div class="empty-ico">🔧</div><p>Cargando partes...</p></div></div>
+      <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, título, operario..." oninput="_kioskFiltrar('partes',this.value)">
+      <div id="kioskPartesContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
     </div>
+    <button class="kiosk-crear-fab" id="kiosk-fab-kioskPartesContent" onclick="abrirFParte()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Nuevo parte</button>
   </div>
   <div class="screen" id="screenKioskAverias">
     <div class="scroll-pad">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-        <button onclick="goScreen('kiosk')" style="background:rgba(255,255,255,.07);border:none;border-radius:12px;padding:9px 14px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Volver</button>
-        <div style="font-size:20px;font-weight:900;color:var(--tx);flex:1">⚠️ Averías</div>
+      <div class="kiosk-sub-header">
+        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
+        <div class="kiosk-sub-title">⚠️ Averías</div>
       </div>
-      <input class="sbox" style="margin-bottom:12px" placeholder="🔍 Buscar por cliente, tipo..." oninput="_kioskFiltrar('averias',this.value)">
-      <div id="kioskAveriasContent"><div class="empty"><div class="empty-ico">⚠️</div><p>Cargando averías...</p></div></div>
+      <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, tipo..." oninput="_kioskFiltrar('averias',this.value)">
+      <div id="kioskAveriasContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
     </div>
+    <button class="kiosk-crear-fab" id="kiosk-fab-kioskAveriasContent" onclick="abrirNuevaAveria()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Nueva avería</button>
   </div>
   <div class="screen" id="screenKioskMant">
     <div class="scroll-pad">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-        <button onclick="goScreen('kiosk')" style="background:rgba(255,255,255,.07);border:none;border-radius:12px;padding:9px 14px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Volver</button>
-        <div style="font-size:20px;font-weight:900;color:var(--tx);flex:1">⚙️ Mantenimientos</div>
+      <div class="kiosk-sub-header">
+        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
+        <div class="kiosk-sub-title">⚙️ Mantenimientos</div>
       </div>
-      <input class="sbox" style="margin-bottom:12px" placeholder="🔍 Buscar por cliente, trabajo..." oninput="_kioskFiltrar('mant',this.value)">
-      <div id="kioskMantContent"><div class="empty"><div class="empty-ico">⚙️</div><p>Cargando mantenimientos...</p></div></div>
+      <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, trabajo..." oninput="_kioskFiltrar('mant',this.value)">
+      <div id="kioskMantContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
     </div>
+    
   </div>
   <div class="screen" id="screenKioskPresu">
     <div class="scroll-pad">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-        <button onclick="goScreen('kiosk')" style="background:rgba(255,255,255,.07);border:none;border-radius:12px;padding:9px 14px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Volver</button>
-        <div style="font-size:20px;font-weight:900;color:var(--tx);flex:1">💶 Presupuestos</div>
+      <div class="kiosk-sub-header">
+        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
+        <div class="kiosk-sub-title">💶 Presupuestos</div>
       </div>
-      <input class="sbox" style="margin-bottom:12px" placeholder="🔍 Buscar por cliente, título..." oninput="_kioskFiltrar('presu',this.value)">
-      <div id="kioskPresuContent"><div class="empty"><div class="empty-ico">💶</div><p>Cargando presupuestos...</p></div></div>
+      <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, título..." oninput="_kioskFiltrar('presu',this.value)">
+      <div id="kioskPresuContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
     </div>
+    <button class="kiosk-crear-fab" id="kiosk-fab-kioskPresuContent" onclick="abrirNuevoPresupuesto()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Nuevo presupuesto</button>
   </div>
 
   <!-- INSTALL BANNER PWA -->
@@ -1228,7 +1317,7 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
     <div class="scroll-pad">
       <div class="volver-btn" onclick="goBack()">‹ Volver</div>
       <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:4px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Archivos</div>
-      <div style="font-size:12px;color:var(--tx2);margin-bottom:18px;line-height:1.5;padding:10px 12px;background:rgba(229,57,53,.06);border:1px solid rgba(229,57,53,.18);border-radius:10px">
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:18px;line-height:1.5;padding:10px 12px;background:rgba(var(--theme-rgb),.06);border:1px solid rgba(var(--theme-rgb),.18);border-radius:10px">
         <strong style="color:var(--r)">⚠️ Zona de eliminación definitiva.</strong> Los elementos aquí pueden restaurarse o eliminarse para siempre. La eliminación no tiene vuelta atrás.
       </div>
       <div id="archivosContent"></div>
@@ -1770,8 +1859,13 @@ const notifLocal=(titulo,cuerpo)=>{
     });
   }catch(e){}
   if(navigator.vibrate)navigator.vibrate([300,100,300,100,300]);
-  // Usar siempre el icono de la app Joyvi (desde el meta og:image o el favicon configurado)
-  const appIcon=document.getElementById('appleTouchIcon')?.href||document.getElementById('faviconLink')?.href||'https://joyvioficial.netlify.app/icon-192.png';
+  // Usar la URL absoluta del icono de la app (icon-192 del manifest/favicon)
+  const _iconLink=document.querySelector('link[rel="apple-touch-icon"]')||document.querySelector('link[rel="icon"]');
+  const _iconHref=_iconLink?.href||'';
+  // Si la href es relativa al origen actual, construir URL absoluta
+  const appIcon=_iconHref&&_iconHref.startsWith('http')?_iconHref
+    :_iconHref?new URL(_iconHref,location.origin).href
+    :'https://joyvioficial.netlify.app/icon-192.png';
   if(Notification.permission==='granted'){
     const opts={
       body:cuerpo,
@@ -1987,7 +2081,7 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
 
   // ── CON GRUPO ACTIVO: menú completo ──
   const grupoNombre = (typeof CG !== 'undefined' && CG?.nombre) || 'Grupo';
-  const kioskBtn = `<div class="d-item" onclick="activarModoVisualizacion();cerrarDrawer()" style="color:#ff9800"><span class="d-icon">${icoKiosk}</span>Modo visualización</div>`;
+  const kioskBtn = `<div class="d-item" onclick="activarModoVisualizacion();cerrarDrawer()" style="color:#ff9800"><span class="d-icon">${icoKiosk}</span>Modo taller</div>`;
 
   return `
     <div class="d-section">Principal</div>
@@ -2344,247 +2438,39 @@ const actualizarDrawer=()=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const renderInicio=async()=>{
   $('inicioContent').innerHTML=`
-  <div class="skel skel-hero"></div>
-  <div class="skel skel-card"></div>
-  <div class="skel skel-card"></div>`;
+    <div class="skel skel-hero" style="height:56px;border-radius:14px;margin-bottom:10px"></div>
+    <div class="skel skel-card"></div>
+    <div class="skel skel-card"></div>`;
 
-  let dashHTML='';
-  let _turnoDiaHTML='';
-  if(CGID){
-    const hoy=new Date();
-    const manana=new Date(hoy);manana.setDate(hoy.getDate()+1);manana.setHours(23,59,59,999);
-    hoy.setHours(0,0,0,0);
-
-    const proxMants=allMantenimientos
-      .filter(m=>{
-        if(m.estado==='completado')return false;
-        const fp=m.fechaProxima||m.fechaInicio;if(!fp)return false;
-        const d=typeof fp==='string'?new Date(fp):(fp.toDate?fp.toDate():new Date(fp));
-        return d<=manana;
-      })
-      .sort((a,b)=>{
-        const fa=a.fechaProxima||a.fechaInicio;const fb=b.fechaProxima||b.fechaInicio;
-        const da=typeof fa==='string'?new Date(fa):(fa?.toDate?fa.toDate():new Date(fa));
-        const _db=typeof fb==='string'?new Date(fb):(fb?.toDate?fb.toDate():new Date(fb));
-        return da-_db;
-      }).slice(0,3);
-
-    let avsRecientes=[];
-    try{
-      const avSnap=await getDocs(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente')));
-      avsRecientes=avSnap.docs.map(d=>({id:d.id,...d.data()}))
-        .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)).slice(0,3);
-    }catch(e){}
-
-    const alertas=[];
-    const seisM=new Date();seisM.setMonth(seisM.getMonth()-6);
-    allClientes.filter(c=>!c.archivado).forEach(c=>{
-      const partesC=allPartes.filter(p=>p.clienteId===c.id&&!p.archivado);
-      if(!partesC.length)return;
-      const ultimo=partesC.reduce((mx,p)=>Math.max(mx,p.creado?.seconds||0),0);
-      if(ultimo&&new Date(ultimo*1000)<seisM){
-        alertas.push({cli:c,meses:Math.floor((Date.now()/1000-ultimo)/2592000)});
-      }
-    });
-
-    const nombreActual=(CUD?.nombre||'').toLowerCase();
-    const partesHoy=allPartes.filter(p=>{
-      if(p.archivado||p.estado==='completado')return false;
-      const esDelOpe=!nombreActual||!p.operario||(p.operario.toLowerCase().includes(nombreActual)||nombreActual.includes(p.operario.toLowerCase()));
-      return esDelOpe;
-    }).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)).slice(0,5);
-
-    const mantsHoy=allMantenimientos.filter(m=>{
-      if(m.estado==='completado')return false;
-      const fp=m.fechaProxima||m.fechaInicio;if(!fp)return false;
-      const d=typeof fp==='string'?new Date(fp):(fp.toDate?fp.toDate():new Date(fp));
-      d.setHours(0,0,0,0);
-      const hoyDate=new Date();hoyDate.setHours(0,0,0,0);
-      return d.getTime()===hoyDate.getTime();
-    });
-
-    const totalHoy=mantsHoy.length+partesHoy.length;
-    _turnoDiaHTML=`
-    <div style="margin-bottom:18px;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.35)">
-      <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:18px 18px 14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:20px">☀️</div>
-            <div>
-              <div style="font-size:15px;font-weight:900;color:#fff">Tu trabajo de hoy</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:1px">${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</div>
-            </div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:26px;font-weight:900;color:#fff">${totalHoy}</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px">tarea${totalHoy!==1?'s':''}</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${mantsHoy.length?`<div style="background:rgba(255,152,0,.2);border:1px solid rgba(255,152,0,.4);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:800;color:#ffb74d">⚙️ ${mantsHoy.length} mantenimiento${mantsHoy.length!==1?'s':''}</div>`:''}
-          ${partesHoy.length?`<div style="background:rgba(229,57,53,.2);border:1px solid rgba(229,57,53,.4);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:800;color:#ef9a9a">🔧 ${partesHoy.length} parte${partesHoy.length!==1?'s':''} pendiente${partesHoy.length!==1?'s':''}</div>`:''}
-          ${totalHoy===0?`<div style="background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:800;color:#81c784">✓ Al día</div>`:''}
-        </div>
-      </div>
-      ${(partesHoy.length||mantsHoy.length)?`
-      <div style="background:var(--card2);border-top:1px solid var(--border)">
-        ${mantsHoy.slice(0,2).map(m=>{
-          const c=allClientes.find(x=>x.id===m.clienteId);
-          return`<div class="dash-item" onclick="goScreen('grupo');switchGTab('mant');setTimeout(()=>_switchGMantMode('calendario'),100)">
-            <div class="dash-item-ico" style="background:rgba(255,152,0,.15)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
-            <div class="dash-item-info"><div class="dash-item-title">${m.nombreTrabajo}</div><div class="dash-item-sub">${c?.nombre||m.clienteNombre||'—'}</div></div>
-            <span class="dash-item-right" style="color:#ff9800;font-weight:900">HOY</span>
-          </div>`;}).join('')}
-        ${partesHoy.slice(0,3).map(p=>{
-          const c=allClientes.find(x=>x.id===p.clienteId);
-          return`<div class="dash-item" onclick="goScreen('grupo');switchGTab('partes')">
-            <div class="dash-item-ico" style="background:rgba(var(--theme-rgb),.12)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-            <div class="dash-item-info"><div class="dash-item-title">${p.titulo||'Parte'}</div><div class="dash-item-sub">${c?.nombre||p.clienteNombre||'—'}</div></div>
-            <span class="dash-item-right">›</span>
-          </div>`;}).join('')}
-      </div>`:''}
-    </div>`;
-
-    if(proxMants.length){
-      dashHTML+=`<div class="dash-section">
-        <div class="dash-section-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg> Próximos mantenimientos</div>
-        ${proxMants.map(m=>{
-          const c=allClientes.find(x=>x.id===m.clienteId);
-          const fp=m.fechaProxima||m.fechaInicio;
-          const d=typeof fp==='string'?new Date(fp):(fp?.toDate?fp.toDate():new Date(fp));
-          const esHoy=d<=new Date()&&d>=hoy;
-          return`<div class="dash-item" onclick="goScreen('grupo');switchGTab('mant');setTimeout(()=>_switchGMantMode('calendario'),100)">
-            <div class="dash-item-ico" style="background:rgba(255,152,0,.15)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
-            <div class="dash-item-info"><div class="dash-item-title">${m.nombreTrabajo}</div><div class="dash-item-sub">${c?.nombre||m.clienteNombre||'—'}</div></div>
-            <span class="dash-item-right" style="${esHoy?'color:#ff9800;font-weight:900':''}">
-              ${esHoy?'HOY':'Mañana'}
-            </span>
-          </div>`;}).join('')}
-      </div>`;
-    }
-
-    if(avsRecientes.length){
-      dashHTML+=`<div class="dash-section">
-        <div class="dash-section-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Averías abiertas</div>
-        ${avsRecientes.map(a=>{
-          const c=allClientes.find(x=>x.id===a.clienteId);
-          return`<div class="dash-item" onclick="goScreen('averias')">
-            <div class="dash-item-ico" style="background:rgba(229,57,53,.12)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-            <div class="dash-item-info"><div class="dash-item-title">${a.tipo||'Avería'}</div><div class="dash-item-sub">${c?.nombre||a.clienteNombre||'—'} · ${fmtF(a.creado)}</div></div>
-            <span class="dash-item-right">›</span>
-          </div>`;}).join('')}
-      </div>`;
-    }
-
-    if(alertas.length){
-      dashHTML+=`<div class="dash-section">
-        <div class="dash-section-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Alertas predictivas</div>
-        ${alertas.slice(0,3).map(({cli,meses})=>`
-        <div class="dash-alert" onclick="verCliente('${cli.id}')">
-          <div class="dash-alert-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-          <div class="dash-alert-txt">
-            <div class="dash-alert-title">${cli.nombre} — sin revisión</div>
-            <div class="dash-alert-sub">Última actividad hace ${meses} meses. Considera programar un mantenimiento.</div>
-          </div>
-        </div>`).join('')}
-      </div>`;
-    }
-
-    const DIAS_PRESU_ALERTA=7;
-    const ahora=Date.now()/1000;
-    let presusSinResp=[];
-    try{
-      const prSnap=await getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','espera')));
-      presusSinResp=prSnap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>{
-        const ts=p.creado?.seconds||0;
-        return ts&&(ahora-ts)>(DIAS_PRESU_ALERTA*86400);
-      }).sort((a,b)=>(a.creado?.seconds||0)-(b.creado?.seconds||0)).slice(0,4);
-    }catch(e){}
-    if(presusSinResp.length){
-      dashHTML+=`<div class="dash-section">
-        <div class="dash-section-title" style="color:#9c27b0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Presupuestos sin respuesta</div>
-        ${presusSinResp.map(p=>{
-          const c=allClientes.find(x=>x.id===p.clienteId);
-          const dias=Math.floor((ahora-(p.creado?.seconds||0))/86400);
-          const _calcTotalPr=pr=>{const iva=pr.aplicarIVA?(parseFloat(pr.importeMateriales)||0)*0.21:0;return(parseFloat(pr.importeManoObra)||0)+(parseFloat(pr.importeMateriales)||0)+iva+(parseFloat(pr.importeDesplazamiento)||0)+((pr.partidas||[]).reduce((a,b)=>a+(parseFloat(b.importe)||0),0));};
-          return`<div class="dash-item" onclick="goScreen('grupo');switchGTab('presu')" style="border-left:3px solid #9c27b0">
-            <div class="dash-item-ico" style="background:rgba(156,39,176,.12)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-            <div class="dash-item-info"><div class="dash-item-title">${p.titulo||'Presupuesto'}</div><div class="dash-item-sub">${c?.nombre||p.clienteNombre||'—'} · ${fmtM(_calcTotalPr(p))}</div></div>
-            <span class="dash-item-right" style="color:#9c27b0;font-weight:900">${dias}d</span>
-          </div>`;}).join('')}
-      </div>`;
-    }
-  } // fin if(CGID)
-
-  // ── Stats rápidas ──
-  const nClis=allClientes.filter(c=>!c.archivado).length;
-  const nPartesPend=allPartes.filter(p=>!p.archivado&&p.estado!=='completado').length;
-  const nMantsPend=allMantenimientos.filter(m=>m.estado!=='completado').length;
-
-  // ── Saludo dinámico ──
   const hora=new Date().getHours();
   const saludo=hora<13?'Buenos días':hora<20?'Buenas tardes':'Buenas noches';
-  const nombre1=(CUD?.nombre||'Usuario').split(' ')[0];
+  const nombre1=(CUD?.nombre||'').split(' ')[0];
 
   let html=`
-  <div class="inicio-hero" onclick="goScreen('perfil')">
-    <div class="inicio-hero-greeting">${saludo}</div>
-    <div class="inicio-hero-name">${nombre1}</div>
-    <div class="inicio-hero-sub">${CGID&&CG?.nombre?CG.nombre:'Joyvi · Gestión de campo'}</div>
-    <div class="inicio-hero-arrow">Ver perfil →</div>
+  <div class="inicio-saludo">
+    <div class="inicio-saludo-txt">${saludo}${nombre1?', '+nombre1:''}</div>
+    <div class="inicio-saludo-sub">${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</div>
   </div>
-
-  <div class="inicio-stats">
-    <div class="inicio-stat" onclick="goScreen('grupo');switchGTab('clientes')">
-      <div class="inicio-stat-ico">👷</div>
-      <div class="inicio-stat-num">${nClis}</div>
-      <div class="inicio-stat-lbl">Clientes</div>
-    </div>
-    <div class="inicio-stat" onclick="goScreen('grupo');switchGTab('partes')">
-      <div class="inicio-stat-ico">🔧</div>
-      <div class="inicio-stat-num">${nPartesPend}</div>
-      <div class="inicio-stat-lbl">Partes</div>
-    </div>
-    <div class="inicio-stat" onclick="goScreen('grupo');switchGTab('mant')">
-      <div class="inicio-stat-ico">⚙️</div>
-      <div class="inicio-stat-num">${nMantsPend}</div>
-      <div class="inicio-stat-lbl">Mantenimientos</div>
-    </div>
-  </div>
-
-  <div class="inicio-accesos">
-    <div class="inicio-acceso" onclick="goScreen('averias')">
-      <div class="inicio-acceso-ico">⚠️</div>
-      <div><div class="inicio-acceso-lbl">Averías</div><div class="inicio-acceso-sub">Gestionar incidencias</div></div>
-    </div>
-    <div class="inicio-acceso" onclick="goScreen('presupuestos')">
-      <div class="inicio-acceso-ico">💶</div>
-      <div><div class="inicio-acceso-lbl">Presupuestos</div><div class="inicio-acceso-sub">Ver ofertas</div></div>
-    </div>
-    <div class="inicio-acceso" onclick="goScreen('estadisticas')">
-      <div class="inicio-acceso-ico">📊</div>
-      <div><div class="inicio-acceso-lbl">Estadísticas</div><div class="inicio-acceso-sub">Rendimiento</div></div>
-    </div>
-    <div class="inicio-acceso" onclick="goScreen('horas')">
-      <div class="inicio-acceso-ico">🕐</div>
-      <div><div class="inicio-acceso-lbl">Horas</div><div class="inicio-acceso-sub">Control técnicos</div></div>
-    </div>
-  </div>
-
-  ${dashHTML}
 
   <div class="sec-header">
     <span class="sec-label">Mis grupos</span>
     <div style="display:flex;gap:8px;margin-left:auto">
-      <button class="btn-nuevo" style="background:transparent;border:1px solid rgba(var(--theme-rgb),.35);color:var(--r)" onclick="abrirBuscarGrupo()">Buscar</button>
+      <button class="btn-nuevo btn-nuevo-ghost" onclick="abrirBuscarGrupo()">Buscar</button>
       <button class="btn-nuevo" onclick="abrirFormGrupo()">+ Nuevo</button>
     </div>
   </div>`;
 
   if(!allGrupos.length){
-    html+=`<div class="empty"><div class="empty-ico">👥</div><p>Sin grupos todavía.<br>Crea tu primer grupo.</p></div>`;
-    html+=(_turnoDiaHTML||'');
-  }else{
+    html+=`
+    <div class="grupos-empty">
+      <div class="grupos-empty-ico">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="grupos-empty-title">Sin grupos todavía</div>
+      <div class="grupos-empty-sub">Crea tu primer grupo para empezar a gestionar clientes y partes de trabajo.</div>
+      <button class="btn btn-p" onclick="abrirFormGrupo()" style="margin-top:18px;padding:13px 28px;font-size:14px">+ Crear grupo</button>
+    </div>`;
+  } else {
     const cls=allGrupos.length===1?'n1':allGrupos.length===2?'n2':'nN';
     html+=`<div class="grupos-grid ${cls}">`;
     allGrupos.forEach(g=>{
@@ -2596,7 +2482,6 @@ const renderInicio=async()=>{
       </div>`;
     });
     html+=`</div>`;
-    html+=(_turnoDiaHTML||'');
   }
   $('inicioContent').innerHTML=html;
 }
@@ -3210,8 +3095,8 @@ const _renderGMantProgramarSelector=async()=>{
   }catch(e){}
   const plantsHTML=plantsFull.length
     ? plantsFull.map(p=>`
-      <div onclick="window._abrirGMantPlantillaPorId('${p.id}')" style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;margin-bottom:8px;transition:.15s" onmouseover="this.style.borderColor='rgba(229,57,53,.4)';this.style.background='rgba(229,57,53,.04)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">
-        <div style="width:42px;height:42px;border-radius:12px;background:rgba(229,57,53,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div onclick="window._abrirGMantPlantillaPorId('${p.id}')" style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;margin-bottom:8px;transition:.15s" onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.4)';this.style.background='rgba(var(--theme-rgb),.04)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">
+        <div style="width:42px;height:42px;border-radius:12px;background:rgba(var(--theme-rgb),.12);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:900;color:var(--tx)">${p.nombre}</div>
           <div style="font-size:11px;color:var(--tx2);margin-top:2px">${p.nombreTrabajo||'–'} · ${p.frecuencia||'Sin recurrencia'}</div>
@@ -3237,7 +3122,7 @@ window._renderGMantProgramarForm=(plantillaJson)=>{
   const chips=mantPlantillas.map(t=>`<div class="pchip" onclick="document.getElementById('gMNom').value='${t}'">${t}</div>`).join('');
   el.innerHTML=`
     <button onclick="_renderGMantProgramarSelector()" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;color:var(--tx2);font-family:var(--font);cursor:pointer;margin-bottom:14px">‹ Volver a plantillas</button>
-    ${p.nombre?`<div style="display:flex;align-items:center;gap:8px;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.2);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Plantilla: ${p.nombre}</div>`:''}
+    ${p.nombre?`<div style="display:flex;align-items:center;gap:8px;background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Plantilla: ${p.nombre}</div>`:''}
     <div class="fsec">
       <div class="fgrp"><label>Cliente</label><div id="gMCli-wrap"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="gMDir" value="${p.clienteDireccion||''}" placeholder="Dirección del cliente"></div>
@@ -3502,7 +3387,7 @@ const renderTabClientes=()=>{
         const difftxt=diff===0?'Hoy':diff===1?'Mañana':`En ${diff} días`;
         const urgent=diff<=3;
         return`<div onclick="goScreen('grupo');switchGTab('mant')" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:.15s;background:var(--card)" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='var(--card)'">
-          <div style="width:38px;height:38px;border-radius:10px;background:${urgent?'rgba(229,57,53,.15)':'rgba(255,255,255,.06)'};display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+          <div style="width:38px;height:38px;border-radius:10px;background:${urgent?'rgba(var(--theme-rgb),.15)':'rgba(255,255,255,.06)'};display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
             <div style="font-size:13px;font-weight:900;color:${urgent?'#e53935':'var(--tx)'};">${d.getDate()}</div>
             <div style="font-size:9px;color:var(--tx2);font-weight:700;text-transform:uppercase">${d.toLocaleString('es',{month:'short'})}</div>
           </div>
@@ -3719,7 +3604,7 @@ window.verCliente=async id=>{
       const totPr=calcTotal(pr);
       const estadoPr=pr.estado||'pendiente';
       const colorPr=estadoPr==='aprobado'?'#4caf50':estadoPr==='rechazado'?'#e53935':'#ff9800';
-      const bgPr=estadoPr==='aprobado'?'rgba(76,175,80,.12)':estadoPr==='rechazado'?'rgba(229,57,53,.12)':'rgba(255,152,0,.12)';
+      const bgPr=estadoPr==='aprobado'?'rgba(76,175,80,.12)':estadoPr==='rechazado'?'rgba(var(--theme-rgb),.12)':'rgba(255,152,0,.12)';
       return`<div class="tl-item">
         <div class="tl-dot" style="background:${colorPr}"></div>
         <div class="tl-card" onclick="verPresupuesto('${pr.id}')" style="cursor:pointer">
@@ -3741,7 +3626,7 @@ window.verCliente=async id=>{
         <div class="tl-card-head">
           <span style="display:flex;align-items:center">${resuelta?`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`}</span>
           <span class="tl-card-title">${a.tipo||'Avería'}</span>
-          <span class="tl-card-badge" style="background:${resuelta?'rgba(76,175,80,.12)':'rgba(229,57,53,.12)'};color:${resuelta?'#4caf50':'#e53935'}">${resuelta?'Resuelta':'Pendiente'}</span>
+          <span class="tl-card-badge" style="background:${resuelta?'rgba(76,175,80,.12)':'rgba(var(--theme-rgb),.12)'};color:${resuelta?'#4caf50':'#e53935'}">${resuelta?'Resuelta':'Pendiente'}</span>
         </div>
         <div class="tl-card-sub">${fmtF(a.creado)}</div>
       </div>
@@ -4036,7 +3921,7 @@ window.abrirFCli=async(id, preData)=>{
     </div>
     <div class="fsec"><div class="fsec-title">Indicador de color</div>
       <div class="ind-opts">
-        <div class="ind-opt ind-r ${(c?.color||'verde')==='rojo'?'sel':''}" onclick="selInd('rojo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e53935;margin-right:5px;vertical-align:middle"></span>Rojo</div>
+        <div class="ind-opt ind-r ${(c?.color||'verde')==='rojo'?'sel':''}" onclick="selInd('rojo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--r);margin-right:5px;vertical-align:middle"></span>Rojo</div>
         <div class="ind-opt ind-y ${(c?.color||'verde')==='amarillo'?'sel':''}" onclick="selInd('amarillo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc107;margin-right:5px;vertical-align:middle"></span>Amarillo</div>
         <div class="ind-opt ind-g ${(c?.color||'verde')==='verde'?'sel':''}" onclick="selInd('verde')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4caf50;margin-right:5px;vertical-align:middle"></span>Verde</div>
       </div>
@@ -4059,6 +3944,18 @@ window.abrirCliExpress=()=>{
         <input id="ceNom" placeholder="Nombre del cliente" autocomplete="off">
       </div>
       <div class="fgrp">
+        <label>Foto (opcional)</label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div id="ceFotoPreview" style="width:64px;height:64px;border-radius:14px;background:rgba(var(--theme-rgb),.08);border:1.5px dashed rgba(var(--theme-rgb),.3);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden">👤</div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+            <button type="button" id="ceFotoGalBtn" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.07);color:var(--r);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font);text-align:left">🖼 Galería</button>
+            <button type="button" id="ceFotoCamBtn" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.07);color:var(--r);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font);text-align:left">📷 Cámara</button>
+          </div>
+        </div>
+        <input type="file" id="ceFotoGal" accept="image/*" multiple style="display:none">
+        <input type="file" id="ceFotoCam" accept="image/*" capture="environment" style="display:none">
+      </div>
+      <div class="fgrp">
         <label>Ubicación</label>
         <div style="display:flex;gap:8px;align-items:stretch">
           <input id="ceDir" placeholder="Dirección o pulsa 📍" style="flex:1">
@@ -4071,7 +3968,7 @@ window.abrirCliExpress=()=>{
       <div class="fgrp">
         <label>Color indicador</label>
         <div class="ind-opts" id="ceIndOpts">
-          <div class="ind-opt ind-r" data-color="rojo"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e53935;margin-right:5px;vertical-align:middle"></span>Rojo</div>
+          <div class="ind-opt ind-r" data-color="rojo"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--r);margin-right:5px;vertical-align:middle"></span>Rojo</div>
           <div class="ind-opt ind-y" data-color="amarillo"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc107;margin-right:5px;vertical-align:middle"></span>Amarillo</div>
           <div class="ind-opt ind-g sel" data-color="verde"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4caf50;margin-right:5px;vertical-align:middle"></span>Verde</div>
         </div>
@@ -4096,6 +3993,24 @@ window.abrirCliExpress=()=>{
     if(saveBtn)saveBtn.addEventListener('click',guardarCliExpress);
     const fullBtn=document.getElementById('btnCliExpressCompleto');
     if(fullBtn)fullBtn.addEventListener('click',()=>{cerrarSB();setTimeout(()=>abrirFCli(),150);});
+    // Foto handlers
+    window._ceFotoFile=null;
+    const handleFotoExpres=async(files)=>{
+      if(!files||!files.length)return;
+      let f=files[0];
+      try{f=await abrirCropModal(f);}catch(e){if(e.message==='cancelled')return;}
+      window._ceFotoFile=f;
+      const prev=document.getElementById('ceFotoPreview');
+      if(prev){const url=URL.createObjectURL(f);prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;}
+    };
+    const galBtn=document.getElementById('ceFotoGalBtn');
+    const camBtn=document.getElementById('ceFotoCamBtn');
+    const galInp=document.getElementById('ceFotoGal');
+    const camInp=document.getElementById('ceFotoCam');
+    if(galBtn)galBtn.addEventListener('click',()=>galInp?.click());
+    if(camBtn)camBtn.addEventListener('click',()=>camInp?.click());
+    if(galInp)galInp.addEventListener('change',e=>handleFotoExpres(e.target.files));
+    if(camInp)camInp.addEventListener('change',e=>handleFotoExpres(e.target.files));
   },0);
 };
 
@@ -4149,14 +4064,29 @@ window.guardarCliExpress=async()=>{
   const latVal=document.getElementById('ceLat')?.value.trim();
   const lngVal=document.getElementById('ceLng')?.value.trim();
   const color=document.getElementById('ceColor')?.value||'verde';
+  const btn=document.getElementById('btnGuardarCliExpress');
+  if(btn){btn.disabled=true;btn.textContent='Guardando...';}
   const data={nombre:nom,direccion:normDir(dir),color,edificio:'',telefono:'',email:'',notas:'',creado:serverTimestamp(),actualizado:serverTimestamp()};
   if(latVal&&lngVal){data.lat=parseFloat(latVal);data.lng=parseFloat(lngVal);}else{data.lat=null;data.lng=null;}
   try{
-    await addDoc(collection(db,'grupos',CGID,'clientes'),data);
+    const ref=await addDoc(collection(db,'grupos',CGID,'clientes'),data);
+    // Subir foto si se seleccionó
+    if(window._ceFotoFile){
+      try{
+        const {url,publicId}=await _subirImgCloudinary(window._ceFotoFile,`joyvi/${CGID}/clientes/${ref.id}`);
+        await addDoc(collection(db,'grupos',CGID,'imagenes'),{
+          clienteId:ref.id,clienteNombre:nom,descripcion:'Foto principal',url,publicId,creado:serverTimestamp()
+        });
+        window._ceFotoFile=null;
+      }catch(e){console.warn('foto express no subida',e);}
+    }
     toast('Cliente añadido ✓','o');
     cerrarSB();
-    try{await registrarLog('nuevo_cli','Nuevo cliente express: '+nom,{clienteId:'nuevo'});}catch(e){}
-  }catch(e){toast('Error al guardar','e');}
+    try{await registrarLog('nuevo_cli','Nuevo cliente express: '+nom,{clienteId:ref.id});}catch(e){}
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent='⚡ Guardar cliente';}
+    toast('Error al guardar','e');
+  }
 };
 
 window.selInd=v=>{
@@ -4432,7 +4362,7 @@ window.verParte=id=>{
       <button class="btn btn-s btn-sm" onclick="abrirFPartePreservandoCli('${id}')">✏️ Editar</button>
       <button class="btn btn-s btn-sm" onclick="clonarParte('${id}')" style="background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.3);color:var(--r)">📋 Clonar</button>
       <button class="btn btn-s btn-sm" onclick="guardarParteComoPlantilla('${id}')">📄 Plantilla</button>
-      <button class="btn btn-p btn-sm" onclick="generarPDF('${id}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</button>
+      <button class="btn btn-p btn-sm kiosk-pdf-btn" style="display:flex" onclick="generarPDF('${id}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</button>
       <button class="btn btn-ok btn-sm" onclick="crearPresupuestoDesdeParteId('${id}')" style="background:linear-gradient(135deg,#1565c0,#1e88e5);color:#fff;border:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Presupuesto</button>
       <button class="btn btn-del btn-sm" onclick="archivarParte('${id}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'/></svg>Archivar</button>
     </div>
@@ -4634,7 +4564,7 @@ window.abrirSelectorParte=async(preCliId)=>{
     const totPl=(parseFloat(pl.importeManoObra)||0)+(parseFloat(pl.importeMateriales)||0)+(parseFloat(pl.importeDesplazamiento)||0);
     const detalles=[pl.materiales?`📦 ${pl.materiales.slice(0,40)}${pl.materiales.length>40?'…':''}`:null,pl.duracion?`⏱ ${pl.duracion}`:null,pl.descripcion?`📝 ${pl.descripcion.slice(0,35)}${pl.descripcion.length>35?'…':''}`:null].filter(Boolean);
     return`
-    <div onclick="window._aplicarPlantillaParteSB('${pl.id}','${preCliId||''}')" style="display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;margin-bottom:8px;transition:.15s" onmouseover="this.style.borderColor='rgba(229,57,53,.5)'" onmouseout="this.style.borderColor='var(--border)'">
+    <div onclick="window._aplicarPlantillaParteSB('${pl.id}','${preCliId||''}')" style="display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;margin-bottom:8px;transition:.15s" onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.5)'" onmouseout="this.style.borderColor='var(--border)'">
       <span style="display:flex;align-items:center;flex-shrink:0;width:22px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:900;color:var(--tx)">${pl.nombre}</div>
@@ -4703,7 +4633,7 @@ window._abrirFParteConPlantilla=(pl,preCliId)=>{
   const chipsTpl=plantillas.map(t=>`<div class="pchip" onclick="document.getElementById('pTit').value='${t}'">${t}</div>`).join('');
   abrirSB(`Desde plantilla: ${pl.nombre}`,`
     <button onclick="window.abrirSelectorParte('${preCliId||''}')" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;color:var(--tx2);font-family:var(--font);cursor:pointer;margin-bottom:14px">‹ Plantillas</button>
-    <div style="background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.25);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Plantilla: <strong>${pl.nombre}</strong> — puedes editar todos los campos</div>
+    <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Plantilla: <strong>${pl.nombre}</strong> — puedes editar todos los campos</div>
     <div class="fsec"><div class="fsec-title">Información general</div>
       <div class="fgrp"><label>Título *</label><input id="pTit" value="${pl.titulo||''}" placeholder="Ej: Reparación bomba sumergible"></div>
       ${chipsTpl?`<div class="plantilla-chips">${chipsTpl}</div>`:''}
@@ -5328,7 +5258,7 @@ window.exportarBackupZIP=async()=>{
           <div style="font-size:10px;color:#999;margin-top:1px">${m.frecuencia?`${m.frecuencia.charAt(0).toUpperCase()+m.frecuencia.slice(1)}`:''}</div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:12px;font-weight:800;color:#e53935">${fecha}</div>
+          <div style="font-size:12px;font-weight:800;color:var(--r)">${fecha}</div>
           <div style="font-size:10px;color:#aaa;margin-top:1px">${completado?'Completado':'Pendiente'}</div>
         </div>
       </div>`;
@@ -5363,7 +5293,7 @@ window.exportarBackupZIP=async()=>{
         <div style="flex:1">
           <div style="font-size:12px;font-weight:800;color:#222">${p.titulo||'Presupuesto'}</div>
           <div style="font-size:10px;color:#aaa;margin-top:2px">${fmtF(p.creado)}</div>
-          <div style="font-size:14px;font-weight:900;color:#e53935;margin-top:2px">${fmtM(tot)}</div>
+          <div style="font-size:14px;font-weight:900;color:var(--r);margin-top:2px">${fmtM(tot)}</div>
           <span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;display:inline-block;margin-top:3px;background:${acep?'#e8f5e9':'#f3e5f5'};color:${acep?'#2e7d32':'#6a1b9a'}">${acep?'Aceptado':'A la espera'}</span>
         </div>
       </div>`;
@@ -5390,7 +5320,7 @@ window.exportarBackupZIP=async()=>{
       <div style="padding:20px 36px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;page-break-inside:avoid">
           <div>
-            <div style="font-size:10px;font-weight:900;color:#e53935;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #e53935">Partes de trabajo (${cPartes.length})</div>
+            <div style="font-size:10px;font-weight:900;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #e53935">Partes de trabajo (${cPartes.length})</div>
             ${cPartes.length===0?'<div style="color:#aaa;font-size:12px;padding:10px 0">Sin partes registrados</div>':''}
             ${cPartes.map(p=>{
               const tot=calcTotal(p);
@@ -5400,12 +5330,12 @@ window.exportarBackupZIP=async()=>{
                   <div style="font-size:12px;font-weight:800">${p.titulo}</div>
                   <div style="font-size:10px;color:#999;margin-top:1px">${fmtF(p.creado)}</div>
                 </div>
-                <div style="font-size:13px;font-weight:900;color:#e53935">${fmtM(tot)}</div>
+                <div style="font-size:13px;font-weight:900;color:var(--r)">${fmtM(tot)}</div>
               </div>`;
             }).join('')}
           </div>
           <div>
-            <div style="font-size:10px;font-weight:900;color:#e53935;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #e53935">Mantenimientos programados (${cMants.length})</div>
+            <div style="font-size:10px;font-weight:900;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #e53935">Mantenimientos programados (${cMants.length})</div>
             ${mantHTML}
           </div>
         </div>
@@ -5440,7 +5370,7 @@ window.exportarBackupZIP=async()=>{
         const iva=p.aplicarIVAMateriales?(parseFloat(p.importeMateriales)||0)*.21:0;
         const hasExtra=!!(p.descripcion||p.materiales);
         return`<div class="parte-compact" style="page-break-inside:avoid;margin-bottom:16px;border:1px solid #eee;border-radius:10px;overflow:hidden">
-          <div style="background:#e53935;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+          <div style="background:var(--r);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
             <div>
               <div style="font-size:13px;font-weight:900">${p.titulo}</div>
               <div style="font-size:10px;opacity:.8">${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div>
@@ -5457,7 +5387,7 @@ window.exportarBackupZIP=async()=>{
               </div>
               <div>
                 ${p.duracion?`<div style="font-size:11px;color:#999;padding:3px 0;border-bottom:1px solid #f5f5f5">Duración: <strong>${p.duracion}</strong></div>`:''}
-                <div style="font-size:14px;font-weight:900;color:#e53935;text-align:right;margin-top:6px">TOTAL: ${fmtM(tot)}</div>
+                <div style="font-size:14px;font-weight:900;color:var(--r);text-align:right;margin-top:6px">TOTAL: ${fmtM(tot)}</div>
               </div>
             </div>
             ${hasExtra?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #f0f0f0">
@@ -5847,8 +5777,8 @@ const renderMantProgramarSelector=async()=>{
 
   const plantsHTML=plantsFull.length
     ? plantsFull.map(p=>`
-      <div onclick="window._abrirMantPlantillaPorId('${p.id}')" style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;margin-bottom:8px;transition:.15s" onmouseover="this.style.borderColor='rgba(229,57,53,.4)';this.style.background='rgba(229,57,53,.04)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">
-        <div style="width:42px;height:42px;border-radius:12px;background:rgba(229,57,53,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div onclick="window._abrirMantPlantillaPorId('${p.id}')" style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;margin-bottom:8px;transition:.15s" onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.4)';this.style.background='rgba(var(--theme-rgb),.04)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">
+        <div style="width:42px;height:42px;border-radius:12px;background:rgba(var(--theme-rgb),.12);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:900;color:var(--tx)">${p.nombre}</div>
           <div style="font-size:11px;color:var(--tx2);margin-top:2px">${p.nombreTrabajo||'–'} · ${p.frecuencia||'Sin recurrencia'}${p.equipos?`<span style="display:block;margin-top:1px">${p.equipos.split('\n').slice(0,2).join(', ')}${p.equipos.split('\n').length>2?'…':''}</span>`:''}</div>
@@ -5880,7 +5810,7 @@ window.renderMantProgramarForm=(plantillaJson)=>{
   const chips=mantPlantillas.map(t=>`<div class="pchip" onclick="document.getElementById('mNom').value='${t}'">${t}</div>`).join('');
   el.innerHTML=`
     <button onclick="renderMantProgramarSelector()" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;color:var(--tx2);font-family:var(--font);cursor:pointer;margin-bottom:14px">‹ Volver a plantillas</button>
-    ${p.nombre?`<div style="display:flex;align-items:center;gap:8px;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.2);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Plantilla: ${p.nombre}</div>`:''}
+    ${p.nombre?`<div style="display:flex;align-items:center;gap:8px;background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:var(--r);font-weight:700">Plantilla: ${p.nombre}</div>`:''}
     <div class="fsec">
       <div class="fgrp"><label>Cliente</label><div id="mCli-wrap"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="mDir" value="${p.clienteDireccion||''}" placeholder="Dirección del cliente"></div>
@@ -6073,7 +6003,7 @@ window.verMant=async(id,_tabFotos)=>{
   const fotosHtml=fotos.length?`<div class="mant-fotos-grid">${fotos.map(f=>`<div class="mant-foto-thumb"><img src="${f.url||f.dataURL||''}" onclick="abrirMantFotoViewer('${id}','${f.id}')"><button class="del-btn" onclick="borrarMantFoto('${id}','${f.id}')">✕</button></div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--tx2);margin-top:8px">Sin fotos aún</div>';
   abrirSB(m.nombreTrabajo,`
     ${_sbReturnCli?_btnVolverCli(_sbReturnCli,allClientes.find(c=>c.id===_sbReturnCli)?.nombre):''}
-    <div style="background:linear-gradient(135deg,rgba(229,57,53,.15),rgba(229,57,53,.05));border-radius:14px;padding:16px;margin-bottom:16px">
+    <div style="background:linear-gradient(135deg,rgba(var(--theme-rgb),.15),rgba(var(--theme-rgb),.05));border-radius:14px;padding:16px;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
         <div style="display:flex;align-items:center;justify-content:center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
         <div>
@@ -7076,7 +7006,7 @@ window.borrarArchivo=async(id)=>{
   modal.innerHTML=`
     <div style="background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 28px;width:100%;max-width:480px;box-shadow:0 -8px 40px rgba(0,0,0,.4)">
       <div style="width:36px;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin:0 auto 20px"></div>
-      <div style="background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.3);border-radius:14px;padding:16px;margin-bottom:18px">
+      <div style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);border-radius:14px;padding:16px;margin-bottom:18px">
         <div style="font-size:15px;font-weight:900;color:#e53935;margin-bottom:6px">⚠️ Eliminación permanente</div>
         <div style="font-size:13px;color:var(--tx2);line-height:1.6">Se eliminará <strong style="color:var(--tx)">${nombre}</strong> y toda su información relacionada (partes, averías, mantenimientos, imágenes, presupuestos).<br>Esta acción <strong>no se puede deshacer</strong>.</div>
       </div>
@@ -7086,7 +7016,7 @@ window.borrarArchivo=async(id)=>{
       </button>
       <button id="_btnSoloElim" style="display:flex;align-items:center;gap:12px;width:100%;background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.3);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font);margin-bottom:10px;transition:.15s">
         <span style="font-size:22px">🗑️</span>
-        <div style="text-align:left"><div style="font-size:13px;font-weight:900;color:#e53935">Eliminar sin descargar</div><div style="font-size:11px;color:var(--tx2);margin-top:1px">Borra todo permanentemente ahora</div></div>
+        <div style="text-align:left"><div style="font-size:13px;font-weight:900;color:var(--r)">Eliminar sin descargar</div><div style="font-size:11px;color:var(--tx2);margin-top:1px">Borra todo permanentemente ahora</div></div>
       </button>
       <button id="_btnCancelElim" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
     </div>`;
@@ -7184,9 +7114,9 @@ window._descargarFichaCliArchivado=async(archId)=>{
       </div>
       <div class="body">
         ${cl.notas?`<div style="background:#fff8e1;border-left:3px solid #ff9800;border-radius:0 8px 8px 0;padding:8px 12px;font-size:12px;color:#555;margin-bottom:14px">${cl.notas}</div>`:''}
-        <div class="total"><div style="font-size:13px;font-weight:800;color:#555">Total facturado (${partesCli.length} partes)</div><div style="font-size:20px;font-weight:900;color:#e53935">${fmtM(facTotal)}</div></div>
+        <div class="total"><div style="font-size:13px;font-weight:800;color:#555">Total facturado (${partesCli.length} partes)</div><div style="font-size:20px;font-weight:900;color:var(--r)">${fmtM(facTotal)}</div></div>
         <div class="sec">🔧 Partes de trabajo (${partesCli.length})</div>
-        ${partesCli.length?partesCli.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)).map(p=>`<div class="row ${p.estado==='completado'?'ok':''}"><div style="flex:1"><div class="rtit">${p.titulo||'–'}</div><div class="rsub">${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div></div><div style="font-size:13px;font-weight:900;color:#e53935">${fmtM(calcTotal(p))}</div></div>`).join(''):'<div style="color:#aaa;font-size:12px">Sin partes</div>'}
+        ${partesCli.length?partesCli.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)).map(p=>`<div class="row ${p.estado==='completado'?'ok':''}"><div style="flex:1"><div class="rtit">${p.titulo||'–'}</div><div class="rsub">${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div></div><div style="font-size:13px;font-weight:900;color:var(--r)">${fmtM(calcTotal(p))}</div></div>`).join(''):'<div style="color:#aaa;font-size:12px">Sin partes</div>'}
         ${mantsCli.length?`<div class="sec">⚙️ Mantenimientos (${mantsCli.length})</div>${mantsCli.map(m=>`<div class="row"><div style="flex:1"><div class="rtit">${m.nombreTrabajo||'–'}</div><div class="rsub">${m.frecuencia||''}${m.fechaProxima?' · Próx: '+m.fechaProxima:''}</div></div></div>`).join('')}`:''}
         ${averiasCli.length?`<div class="sec">⚠️ Averías (${averiasCli.length})</div>${averiasCli.map(a=>`<div class="row ${a.estado==='resuelta'?'ok':''}"><div style="flex:1"><div class="rtit">${a.tipo||'Avería'}</div><div class="rsub">${fmtF(a.creado)}</div></div></div>`).join('')}`:''}
       </div>
@@ -7270,7 +7200,7 @@ const renderImagenes=async()=>{
         const imgsGrupo=porCliente[key];
         html+=`<div class="img-group" data-nombre="${nombre.toLowerCase()}">
           <div style="font-size:12px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px">
-            ${nombre} <span style="background:rgba(229,57,53,.15);color:var(--r);font-size:10px;padding:2px 8px;border-radius:20px">${imgsGrupo.length}</span>
+            ${nombre} <span style="background:rgba(var(--theme-rgb),.15);color:var(--r);font-size:10px;padding:2px 8px;border-radius:20px">${imgsGrupo.length}</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:20px">
             ${imgsGrupo.map(img=>`<div style="position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)" onclick="abrirImgViewer('${img.id}')">
@@ -7421,15 +7351,193 @@ window.abrirImagenesClienteSB=async(cliId)=>{
   abrirSB(`📷 Fotos de ${c.nombre}`,html);
 };
 
+// ════════════════════════════════════════════════════════
+// CROP ENGINE — Recortador de imagen inline (sin libs)
+// ════════════════════════════════════════════════════════
+window._cropState={img:null,ratio:0,sel:{x:0,y:0,w:0,h:0},drag:null,resolve:null,reject:null};
+
+window._setCropRatio=(r)=>{
+  window._cropState.ratio=r;
+  document.querySelectorAll('.crop-ratio-btn').forEach(b=>b.classList.toggle('active',parseFloat(b.dataset.ratio||0)===r||(r===0&&b.dataset.ratio==='0')));
+  if(r>0) _constrainCropRatio();
+  _drawCrop();
+};
+
+const _drawCrop=()=>{
+  const s=window._cropState;
+  const canvas=document.getElementById('cropCanvas');
+  if(!canvas||!s.img)return;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(s.img,0,0,canvas.width,canvas.height);
+  const sel=document.getElementById('cropSel');
+  if(!sel)return;
+  const wrap=canvas.parentElement;
+  const wW=wrap.offsetWidth;const wH=wrap.offsetHeight;
+  const scX=canvas.offsetWidth/canvas.width;const scY=canvas.offsetHeight/canvas.height;
+  const offX=(wW-canvas.offsetWidth)/2;const offY=(wH-canvas.offsetHeight)/2;
+  sel.style.left=(offX+s.sel.x*scX)+'px';
+  sel.style.top=(offY+s.sel.y*scY)+'px';
+  sel.style.width=(s.sel.w*scX)+'px';
+  sel.style.height=(s.sel.h*scY)+'px';
+};
+
+const _constrainCropRatio=()=>{
+  const s=window._cropState;if(!s.ratio)return;
+  const canvas=document.getElementById('cropCanvas');if(!canvas)return;
+  const maxW=canvas.width;const maxH=canvas.height;
+  let w=s.sel.w;let h=w/s.ratio;
+  if(h>maxH){h=maxH;w=h*s.ratio;}
+  if(w>maxW){w=maxW;h=w/s.ratio;}
+  s.sel.w=w;s.sel.h=h;
+  if(s.sel.x+w>maxW)s.sel.x=maxW-w;
+  if(s.sel.y+h>maxH)s.sel.y=maxH-h;
+};
+
+// Abrir el modal de crop dado un File, devuelve Promise<File> con la imagen recortada
+window.abrirCropModal=(file)=>new Promise((resolve,reject)=>{
+  const modal=document.getElementById('cropModal');
+  const canvas=document.getElementById('cropCanvas');
+  if(!modal||!canvas){reject(new Error('crop modal not found'));return;}
+  const img=new Image();
+  const url=URL.createObjectURL(file);
+  img.onload=()=>{
+    URL.revokeObjectURL(url);
+    // Redimensionar canvas al tamaño real de la imagen (máx 1200px)
+    const MAX=1200;
+    let w=img.naturalWidth;let h=img.naturalHeight;
+    if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+    canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0,w,h);
+    // Selección inicial: 80% centrado
+    const sw=Math.round(w*.80);const sh=Math.round(h*.80);
+    window._cropState={img,ratio:0,sel:{x:Math.round((w-sw)/2),y:Math.round((h-sh)/2),w:sw,h:sh},drag:null,resolve,reject};
+    // Reset ratio buttons
+    document.querySelectorAll('.crop-ratio-btn').forEach(b=>b.classList.toggle('active',b.dataset.ratio==='0'));
+    _drawCrop();
+    modal.classList.add('open');
+    _initCropDrag();
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('load failed'));};
+  img.src=url;
+});
+
+const _initCropDrag=()=>{
+  const canvas=document.getElementById('cropCanvas');
+  const sel=document.getElementById('cropSel');
+  const wrap=canvas?.parentElement;
+  if(!canvas||!sel||!wrap)return;
+  // Limpiar listeners anteriores clonando
+  const newSel=sel.cloneNode(true);sel.parentNode.replaceChild(newSel,sel);
+  const newWrap=wrap.cloneNode(false);
+  while(wrap.firstChild)newWrap.appendChild(wrap.firstChild);
+  wrap.parentNode.replaceChild(newWrap,wrap);
+  // Re-obtener referencias
+  const cvs=document.getElementById('cropCanvas');
+  const s=window._cropState;
+
+  const getCanvasCoords=(clientX,clientY)=>{
+    const rect=cvs.getBoundingClientRect();
+    const scX=cvs.width/cvs.offsetWidth;const scY=cvs.height/cvs.offsetHeight;
+    return{x:(clientX-rect.left)*scX,y:(clientY-rect.top)*scY};
+  };
+
+  const clamp=(v,min,max)=>Math.min(Math.max(v,min),max);
+
+  // Drag en selección (mover)
+  const selEl=document.getElementById('cropSel');
+  let dragType=null;let startPos=null;let startSel=null;
+
+  const onDown=(e,type)=>{
+    e.stopPropagation();e.preventDefault();
+    const pt=e.touches?e.touches[0]:e;
+    dragType=type;startPos={x:pt.clientX,y:pt.clientY};
+    startSel={...s.sel};
+  };
+
+  selEl.addEventListener('mousedown',e=>onDown(e,'move'),{passive:false});
+  selEl.addEventListener('touchstart',e=>onDown(e,'move'),{passive:false});
+  selEl.querySelectorAll('.crop-handle').forEach(h=>{
+    h.addEventListener('mousedown',e=>onDown(e,h.dataset.h),{passive:false});
+    h.addEventListener('touchstart',e=>onDown(e,h.dataset.h),{passive:false});
+  });
+
+  const onMove=(e)=>{
+    if(!dragType||!startPos)return;
+    e.preventDefault();
+    const pt=e.touches?e.touches[0]:e;
+    const dx=(pt.clientX-startPos.x)*(cvs.width/cvs.offsetWidth);
+    const dy=(pt.clientY-startPos.y)*(cvs.height/cvs.offsetHeight);
+    const W=cvs.width;const H=cvs.height;
+    if(dragType==='move'){
+      s.sel.x=clamp(startSel.x+dx,0,W-s.sel.w);
+      s.sel.y=clamp(startSel.y+dy,0,H-s.sel.h);
+    }else{
+      let {x,y,w,h}=startSel;
+      const MIN=30;
+      if(dragType==='br'){w=clamp(w+dx,MIN,W-x);h=s.ratio?w/s.ratio:clamp(h+dy,MIN,H-y);}
+      else if(dragType==='bl'){const nw=clamp(w-dx,MIN,x+w);x=x+w-nw;w=nw;h=s.ratio?w/s.ratio:clamp(h+dy,MIN,H-y);}
+      else if(dragType==='tr'){w=clamp(w+dx,MIN,W-x);const nh=s.ratio?w/s.ratio:clamp(h-dy,MIN,y+h);y=y+h-nh;h=nh;}
+      else if(dragType==='tl'){const nw=clamp(w-dx,MIN,x+w);x=x+w-nw;w=nw;const nh=s.ratio?w/s.ratio:clamp(h-dy,MIN,y+h);y=y+h-nh;h=nh;}
+      // Clamp to canvas bounds
+      if(y<0){h+=y;y=0;}if(x<0){w+=x;x=0;}
+      if(y+h>H)h=H-y;if(x+w>W)w=W-x;
+      s.sel={x,y,w,h};
+    }
+    _drawCrop();
+  };
+  const onUp=()=>{dragType=null;};
+  document.addEventListener('mousemove',onMove,{passive:false});
+  document.addEventListener('mouseup',onUp);
+  document.addEventListener('touchmove',onMove,{passive:false});
+  document.addEventListener('touchend',onUp);
+};
+
+window._cropConfirm=()=>{
+  const s=window._cropState;
+  const canvas=document.getElementById('cropCanvas');
+  const modal=document.getElementById('cropModal');
+  if(!s.resolve||!canvas)return;
+  const {x,y,w,h}=s.sel;
+  const out=document.createElement('canvas');
+  out.width=Math.round(w);out.height=Math.round(h);
+  out.getContext('2d').drawImage(canvas,x,y,w,h,0,0,out.width,out.height);
+  out.toBlob(blob=>{
+    if(!blob){s.reject(new Error('toBlob failed'));return;}
+    const file=new File([blob],'crop.jpg',{type:'image/jpeg'});
+    modal.classList.remove('open');
+    s.resolve(file);
+  },'image/jpeg',0.88);
+};
+
+window._cropCancel=()=>{
+  const modal=document.getElementById('cropModal');
+  if(modal)modal.classList.remove('open');
+  if(window._cropState.reject)window._cropState.reject(new Error('cancelled'));
+  window._cropState.resolve=null;window._cropState.reject=null;
+};
+
+// Helper: abre crop si es una sola imagen, lo saltea si son múltiples
+window._cropIfNeeded=async(file)=>{
+  try{return await abrirCropModal(file);}
+  catch(e){if(e.message==='cancelled')throw e;return file;}// si falla el crop devuelve original
+};
+
+
 window.subirFotosCliente=async(cliId,files)=>{
   if(!files||!files.length)return;
   const c=allClientes.find(x=>x.id===cliId);if(!c)return;
-  let subidas=0;
   const desc=document.getElementById('cliImgDesc_'+cliId)?.value.trim()||'';
+  const fileArr=Array.from(files);
+  let subidas=0;
   toast('Subiendo fotos...','i');
-  for(const file of Array.from(files)){
+  for(const file of fileArr){
     try{
-      const {url, publicId} = await _subirImgCloudinary(file, `joyvi/${CGID}/clientes/${cliId}`);
+      // Ofrecer recorte: siempre que sea una imagen individual
+      let finalFile=file;
+      try{finalFile=await abrirCropModal(file);}
+      catch(e){if(e.message==='cancelled')continue;finalFile=file;}
+      const {url, publicId} = await _subirImgCloudinary(finalFile, `joyvi/${CGID}/clientes/${cliId}`);
       await addDoc(collection(db,'grupos',CGID,'imagenes'),{
         clienteId:cliId,clienteNombre:c.nombre,descripcion:desc||file.name,
         url, publicId, creado:serverTimestamp()
@@ -7486,7 +7594,7 @@ window.switchAverTab = (tab) => {
 
 const _averIco = (color) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
 
-const _averPrioConf={normal:{label:'Normal',color:'#4caf50',bg:'rgba(76,175,80,.12)',border:'rgba(76,175,80,.3)'},urgente:{label:'Urgente',color:'#ff9800',bg:'rgba(255,152,0,.12)',border:'rgba(255,152,0,.3)'},critica:{label:'⚡ CRÍTICA',color:'#e53935',bg:'rgba(229,57,53,.12)',border:'rgba(229,57,53,.4)'}};
+const _averPrioConf={normal:{label:'Normal',color:'#4caf50',bg:'rgba(76,175,80,.12)',border:'rgba(76,175,80,.3)'},urgente:{label:'Urgente',color:'#ff9800',bg:'rgba(255,152,0,.12)',border:'rgba(255,152,0,.3)'},critica:{label:'⚡ CRÍTICA',color:'#e53935',bg:'rgba(var(--theme-rgb),.12)',border:'rgba(var(--theme-rgb),.4)'}};
 
 const _averCardHtml = (a, resuelta=false) => {
   const c = allClientes.find(x=>x.id===a.clienteId);
@@ -7699,8 +7807,8 @@ window.abrirAveriaDesdeMantenimiento=(mantId)=>{
 window._setAverPrio=(p)=>{
   const wrap=document.getElementById('avPrioWrap');if(!wrap)return;
   const inp=document.getElementById('avPrio');if(inp)inp.value=p;
-  const cols={normal:'rgba(76,175,80,.15)',urgente:'rgba(255,152,0,.15)',critica:'rgba(229,57,53,.15)'};
-  const borders={normal:'rgba(76,175,80,.5)',urgente:'rgba(255,152,0,.5)',critica:'rgba(229,57,53,.5)'};
+  const cols={normal:'rgba(76,175,80,.15)',urgente:'rgba(255,152,0,.15)',critica:'rgba(var(--theme-rgb),.15)'};
+  const borders={normal:'rgba(76,175,80,.5)',urgente:'rgba(255,152,0,.5)',critica:'rgba(var(--theme-rgb),.5)'};
   const texts={normal:'#4caf50',urgente:'#ff9800',critica:'#e53935'};
   Array.from(wrap.querySelectorAll('button')).forEach((btn,i)=>{
     const prios=['normal','urgente','critica'];
@@ -8739,6 +8847,19 @@ window.restaurarMantCompletado=async(mantId,clienteId)=>{
 const renderNotificaciones=async()=>{
   const el=$('notifContent');
   if(!el)return;
+  // Marcar todas como leídas al visitar la pantalla y limpiar el badge
+  if(CU){
+    try{
+      const snap=await getDocs(query(collection(db,'notificaciones'),where('destinatarios','array-contains',CU.uid),where('leida','==',false)));
+      if(!snap.empty){
+        await Promise.all(snap.docs.map(d=>updateDoc(doc(db,'notificaciones',d.id),{leida:true})));
+        snap.docs.forEach(d=>_programarEliminacion(d.id));
+      }
+    }catch(e){}
+    // Limpiar badge inmediatamente
+    const dot=$('notifDot');
+    if(dot){dot.classList.remove('show');dot.textContent='';}
+  }
   el.innerHTML=`<div style="text-align:center;padding:30px"><div style="display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div style="font-size:13px;color:var(--tx2);margin-top:8px">Cargando notificaciones…</div></div>`;
   if(CGID){
     const qb=document.createElement('div');
@@ -9564,7 +9685,7 @@ const _checkMantProximos=async()=>{
     if(!ini||!ini.classList.contains('active'))return;
     const banner=document.createElement('div');
     banner.id='mantAlertaBanner';
-    banner.style.cssText='position:fixed;bottom:80px;left:12px;right:12px;z-index:9000;background:linear-gradient(135deg,rgba(229,57,53,.95),rgba(198,40,40,.95));border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:fadeIn .3s ease;cursor:pointer';
+    banner.style.cssText='position:fixed;bottom:80px;left:12px;right:12px;z-index:9000;background:linear-gradient(135deg,rgba(var(--theme-rgb),.95),rgba(198,40,40,.95));border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:fadeIn .3s ease;cursor:pointer';
     banner.onclick=()=>{banner.remove();goScreen('grupo');switchGTab&&switchGTab('mant');};
     banner.innerHTML=`<div style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">⚙️</div><div style="flex:1"><div style="font-size:13px;font-weight:900;color:#fff">${n} mantenimiento${n>1?'s':''} próximo${n>1?'s':''}</div><div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">${n===1?cuerpo:'Pulsa para ver el calendario'}</div></div><button onclick="event.stopPropagation();document.getElementById('mantAlertaBanner')?.remove()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>`;
     document.body.appendChild(banner);
@@ -9651,10 +9772,14 @@ _aplicarModoVisualizacion();
 window.activarModoVisualizacion=()=>{
   localStorage.setItem('joyvi_kiosk','1');
   _aplicarModoVisualizacion();
-  toast('🏭 Modo visualización activado','o');
-  // Registrar pantalla kiosk en el mapa de screens
+  toast('🏭 Modo taller activado','o');
   if(!screens['kiosk'])screens['kiosk']='screenKiosk';
-  setTimeout(()=>goScreen('kiosk'),300);
+  setTimeout(()=>{
+    goScreen('kiosk');
+    // Mostrar nombre del grupo en header kiosk
+    const hg=document.getElementById('kioskHeaderGroup');
+    if(hg&&CG?.nombre)hg.textContent=CG.nombre;
+  },300);
   cerrarDrawer&&cerrarDrawer();
 };
 
@@ -9688,35 +9813,56 @@ window._kioskFiltrar = (tipo, q) => {
   el.innerHTML = list.map(item => item._html).join('');
 };
 
+// PDF svg inline para botones kiosk
+const _kioskPdfSvg=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+
+// Mostrar/ocultar FAB de creación en sub-pantallas kiosk
+const _kioskToggleFab=(screenId,show)=>{
+  const fab=document.getElementById('kiosk-fab-'+screenId);
+  if(fab)fab.style.display=show?'flex':'none';
+};
+
 window.kioskIr=async(dest)=>{
   if(!CGID){toast('Selecciona un grupo primero','e');return;}
   if(!CG){
     try{const snap=await getDoc(doc(db,'grupos',CGID));if(snap.exists())CG={id:snap.id,...snap.data()};}catch(e){}
   }
-  // Navegar a pantalla exclusiva según destino
+  // Actualizar nombre grupo en header kiosk
+  const hg=document.getElementById('kioskHeaderGroup');
+  if(hg)hg.textContent=CG?.nombre||'';
+
   if(dest==='grupo'){
     goScreen('kioskCli');
+    _kioskToggleFab('kioskCliContent',true);
     setTimeout(()=>{
       const el=document.getElementById('kioskCliContent');
       if(el)el.innerHTML=typeof renderTabClientes==='function'?renderTabClientes():'<div class="empty"><p>Sin datos</p></div>';
     },80);
   } else if(dest==='partes'){
     goScreen('kioskPartes');
+    _kioskToggleFab('kioskPartesContent',true);
     setTimeout(()=>{
       const el=document.getElementById('kioskPartesContent');
       if(!el)return;
       const partes=(allPartes||[]).filter(p=>!p.archivado).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
       window._kioskData.partes = partes.map(p=>{
-        const c=(allClientes||[]).find(x=>x.id===p.clienteId);
-        const badge=p.estado==='completado'?'<span style="font-size:11px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px">Completado</span>':'<span style="font-size:11px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 8px">Pendiente</span>';
+        const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
+        const esComp=p.estado==='completado';
+        const badge=esComp
+          ?'<span style="font-size:10.5px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 9px">✓ Completado</span>'
+          :'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Pendiente</span>';
         return {
-          _buscar:[p.titulo,p.descripcion,p.operario,p.edificio,p.clienteNombre,c?.nombre].filter(Boolean).join(' '),
-          _html:`<div style="margin-bottom:10px;padding:14px;background:var(--card);border:1px solid var(--border);border-left:4px solid ${p.estado==='completado'?'#4caf50':'#ff9800'};border-radius:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div style="font-size:14px;font-weight:800;color:var(--tx)">${p.titulo||'Parte sin título'}</div>${badge}
+          _buscar:[p.titulo,p.descripcion,p.operario,p.edificio,p.clienteNombre,cli?.nombre].filter(Boolean).join(' '),
+          _html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'#ff9800'}" onclick="verParte('${p.id}')">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+              <div class="kiosk-card-title">${p.titulo||'Parte sin título'}</div>${badge}
             </div>
-            <div style="font-size:12px;color:var(--tx2)">${c?c.nombre:p.clienteNombre||'—'} · ${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div>
-            ${p.descripcion?`<div style="font-size:12px;color:var(--tx2);margin-top:4px">${p.descripcion}</div>`:''}
+            <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'} · ${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div>
+            ${p.descripcion?`<div class="kiosk-card-meta" style="margin-top:3px">${p.descripcion}</div>`:''}
+            <div class="kiosk-card-footer">
+              <div style="font-size:13px;font-weight:900;color:var(--r)">${p.importeManoObra||p.importeMateriales?fmtM(calcTotal(p)):''}</div>
+              <button class="kiosk-pdf-btn" onclick="event.stopPropagation();generarPDF('${p.id}')">${_kioskPdfSvg}PDF</button>
+            </div>
           </div>`
         };
       });
@@ -9725,6 +9871,7 @@ window.kioskIr=async(dest)=>{
     },80);
   } else if(dest==='averias'){
     goScreen('kioskAverias');
+    _kioskToggleFab('kioskAveriasContent',true);
     setTimeout(()=>{
       const el=document.getElementById('kioskAveriasContent');
       if(!el)return;
@@ -9732,18 +9879,21 @@ window.kioskIr=async(dest)=>{
       const avsRes=(_averiasRes||[]);
       const allAvs=[...avsPend.map(a=>({...a,_res:false})),...avsRes.map(a=>({...a,_res:true}))];
       window._kioskData.averias = allAvs.map(a=>{
-        const c=(allClientes||[]).find(x=>x.id===a.clienteId);
-        const color=a._res?'rgba(76,175,80,.08)':'rgba(229,57,53,.08)';
-        const border=a._res?'rgba(76,175,80,.25)':'rgba(229,57,53,.22)';
-        const badge=a._res?'<span style="font-size:11px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px">Resuelta</span>':'<span style="font-size:11px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 8px">Pendiente</span>';
+        const cli=(allClientes||[]).find(x=>x.id===a.clienteId);
+        const esRes=a._res;
+        const cardBg=esRes?'rgba(76,175,80,.05)':'rgba(var(--theme-rgb),.04)';
+        const cardBorder=esRes?'rgba(76,175,80,.2)':'rgba(var(--theme-rgb),.18)';
+        const badge=esRes
+          ?'<span style="font-size:10.5px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 9px">✓ Resuelta</span>'
+          :'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Pendiente</span>';
         return {
-          _buscar:[a.tipo,a.descripcion,a.clienteNombre,c?.nombre].filter(Boolean).join(' '),
-          _html:`<div style="margin-bottom:10px;padding:14px;background:${color};border:1px solid ${border};border-radius:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div style="font-size:14px;font-weight:800;color:var(--tx)">${a.tipo||'Avería'}</div>${badge}
+          _buscar:[a.tipo,a.descripcion,a.clienteNombre,cli?.nombre].filter(Boolean).join(' '),
+          _html:`<div class="kiosk-card" style="background:${cardBg};border-color:${cardBorder}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+              <div class="kiosk-card-title">${a.tipo||'Avería'}</div>${badge}
             </div>
-            <div style="font-size:12px;color:var(--tx2)">${c?c.nombre:a.clienteNombre||'—'} · ${a._res?'Resuelta ':''}${fmtF(a._res?(a.resueltaEn||a.creado):a.creado)}</div>
-            ${a.descripcion?`<div style="font-size:12px;color:var(--tx2);margin-top:4px">${a.descripcion}</div>`:''}
+            <div class="kiosk-card-meta">${cli?cli.nombre:a.clienteNombre||'—'} · ${fmtF(esRes?(a.resueltaEn||a.creado):a.creado)}</div>
+            ${a.descripcion?`<div class="kiosk-card-meta" style="margin-top:3px">${a.descripcion}</div>`:''}
           </div>`
         };
       });
@@ -9757,13 +9907,18 @@ window.kioskIr=async(dest)=>{
       if(!el)return;
       const mants=(allMantenimientos||[]).filter(m=>m.estado!=='completado').sort((a,b)=>(a.fechaProxima||'')>(b.fechaProxima||'')?1:-1);
       window._kioskData.mant = mants.map(m=>{
-        const c=(allClientes||[]).find(x=>x.id===m.clienteId);
+        const cli=(allClientes||[]).find(x=>x.id===m.clienteId);
+        const hoy=new Date().toISOString().split('T')[0];
+        const esUrgente=m.fechaProxima&&m.fechaProxima<=hoy;
         return {
-          _buscar:[m.nombreTrabajo,m.clienteNombre,c?.nombre,m.notas,m.frecuencia].filter(Boolean).join(' '),
-          _html:`<div style="margin-bottom:10px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:14px">
-            <div style="font-size:14px;font-weight:800;color:var(--tx);margin-bottom:4px">${m.nombreTrabajo||m.nombre||'Mantenimiento'}</div>
-            <div style="font-size:12px;color:var(--tx2)">${c?c.nombre:m.clienteNombre||'—'}${m.fechaProxima?' · Próx: '+m.fechaProxima:''}${m.frecuencia?' · '+m.frecuencia:''}</div>
-            ${m.notas?`<div style="font-size:11px;color:var(--tx2);margin-top:3px">${m.notas}</div>`:''}
+          _buscar:[m.nombreTrabajo,m.clienteNombre,cli?.nombre,m.notas,m.frecuencia].filter(Boolean).join(' '),
+          _html:`<div class="kiosk-card" style="${esUrgente?'border-left:3px solid #ff9800':''}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+              <div class="kiosk-card-title">${m.nombreTrabajo||m.nombre||'Mantenimiento'}</div>
+              ${esUrgente?'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Próximo</span>':''}
+            </div>
+            <div class="kiosk-card-meta">${cli?cli.nombre:m.clienteNombre||'—'}${m.frecuencia?' · '+m.frecuencia:''}${m.fechaProxima?' · Próx: '+m.fechaProxima:''}</div>
+            ${m.notas?`<div class="kiosk-card-meta" style="margin-top:3px">${m.notas}</div>`:''}
           </div>`
         };
       });
@@ -9772,22 +9927,29 @@ window.kioskIr=async(dest)=>{
     },80);
   } else if(dest==='presupuestos'){
     goScreen('kioskPresu');
+    _kioskToggleFab('kioskPresuContent',true);
     setTimeout(()=>{
       const el=document.getElementById('kioskPresuContent');
       if(!el)return;
       const allPresu=[...(_presusPend||[]).map(p=>({...p,_comp:false})),...(_presusComp||[]).map(p=>({...p,_comp:true}))];
       window._kioskData.presu = allPresu.map(p=>{
-        const c=(allClientes||[]).find(x=>x.id===p.clienteId);
+        const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
         const total=typeof _calcTotal==='function'?_calcTotal(p):((parseFloat(p.importeManoObra)||0)+(parseFloat(p.importeMateriales)||0)+(parseFloat(p.importeDesplazamiento)||0));
-        const badge=p._comp?'<span style="font-size:11px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px">Completado</span>':'<span style="font-size:11px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 8px">Pendiente</span>';
+        const esComp=p._comp;
+        const badge=esComp
+          ?'<span style="font-size:10.5px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 9px">✓ Aceptado</span>'
+          :'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Pendiente</span>';
         return {
-          _buscar:[p.titulo,p.notas,p.clienteNombre,c?.nombre].filter(Boolean).join(' '),
-          _html:`<div style="margin-bottom:10px;padding:14px;background:var(--card);border:1px solid ${p._comp?'rgba(76,175,80,.25)':'var(--border)'};border-radius:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div style="font-size:14px;font-weight:800;color:var(--tx)">${p.titulo||'Presupuesto'}</div>${badge}
+          _buscar:[p.titulo,p.notas,p.clienteNombre,cli?.nombre].filter(Boolean).join(' '),
+          _html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'rgba(var(--theme-rgb),.4)'}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+              <div class="kiosk-card-title">${p.titulo||'Presupuesto'}</div>${badge}
             </div>
-            <div style="font-size:12px;color:var(--tx2)">${c?c.nombre:p.clienteNombre||'—'} · ${fmtF(p.creado)}</div>
-            ${total?`<div style="font-size:13px;font-weight:800;color:var(--r);margin-top:4px">${fmtM(total)}</div>`:''}
+            <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'} · ${fmtF(p.creado)}</div>
+            <div class="kiosk-card-footer">
+              ${total?`<div style="font-size:14px;font-weight:900;color:var(--r)">${fmtM(total)}</div>`:'<div></div>'}
+              <button class="kiosk-pdf-btn" onclick="event.stopPropagation();exportarPresupuestoPDF('${p.id}')">${_kioskPdfSvg}PDF</button>
+            </div>
           </div>`
         };
       });
