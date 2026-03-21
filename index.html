@@ -28,8 +28,16 @@
 <meta name="apple-mobile-web-app-title" content="Joyvi">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="msapplication-TileColor" content="#111111">
-<meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" id="themeColorMeta" content="#e53935">
+<script>
+// Aplicar theme-color correcto inmediatamente desde localStorage
+(function(){
+  var temas={rojo:'#e53935',azul:'#1976d2',lila:'#8e24aa'};
+  var t=localStorage.getItem('joyvi_theme')||'rojo';
+  var color=temas[t]||'#e53935';
+  document.getElementById('themeColorMeta').content=color;
+})();
+</script>
 <link rel="manifest" href="/JOYVI-APP/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
@@ -10427,9 +10435,9 @@ const _prevScreen=id=>{
 // PERSONALIZACIÓN: TEMA Y MODO CLARO
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _TEMAS={
-  rojo: {r:'#e53935',r2:'#c62828',r3:'#ff5252',r4:'#b71c1c',rgb:'229,57,53',shadow:'0 6px 28px rgba(229,57,53,.28)'},
-  azul: {r:'#1976d2',r2:'#0d47a1',r3:'#42a5f5',r4:'#0a2e6e',rgb:'25,118,210',shadow:'0 6px 28px rgba(25,118,210,.28)'},
-  lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)'},
+  rojo: {r:'#e53935',r2:'#c62828',r3:'#ff5252',r4:'#b71c1c',rgb:'229,57,53',shadow:'0 6px 28px rgba(229,57,53,.28)',tc:'#e53935'},
+  azul: {r:'#1976d2',r2:'#0d47a1',r3:'#42a5f5',r4:'#0a2e6e',rgb:'25,118,210',shadow:'0 6px 28px rgba(25,118,210,.28)',tc:'#1976d2'},
+  lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)',tc:'#8e24aa'},
 };
 
 const _aplicarColorTema=(tema)=>{
@@ -10441,7 +10449,8 @@ const _aplicarColorTema=(tema)=>{
   root.setProperty('--r4',t.r4);
   root.setProperty('--theme-rgb',t.rgb);
   root.setProperty('--shadow2',t.shadow);
-
+  const tm=document.getElementById('themeColorMeta');
+  if(tm)tm.content=t.tc||t.r;
 };
 
 window.cambiarColorTema=(tema)=>{
