@@ -3532,6 +3532,8 @@ window.verCliente=async id=>{
   const col=colorInd(c.color||'verde');
   const colEmo=`<svg width="10" height="10" viewBox="0 0 10 10" style="display:inline-block;vertical-align:middle;margin-left:3px"><circle cx="5" cy="5" r="4.5" fill="${col}"/></svg>`;
 
+  // Guardar cliente activo para el botón Maps
+  window._sbCliActual=c;
   // Mostrar skeleton mientras carga
   abrirSB(c.nombre,`<div class="skel skel-hero"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card" style="width:70%"></div>`);
 
@@ -3743,7 +3745,7 @@ window.verCliente=async id=>{
         ${c.telefono?`<a href="tel:${c.telefono}" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);color:#4caf50;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>`:''}
         ${c.telefono?`<a href="https://wa.me/34${c.telefono.replace(/\s/g,'')}" target="_blank" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">💬 WhatsApp</a>`:''}
         ${c.email?`<a href="mailto:${c.email}" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.15);border:1px solid rgba(66,133,244,.3);color:#4285f4;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">✉️ Email</a>`:''}
-        ${c.direccion?`<button onclick="event.stopPropagation();abrirMapa(c.lat||'',c.lng||'',c.direccion)" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.25);color:#4285f4;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">📍 Maps${c.lat&&c.lng?' 🎯':''}</button>`:''}
+        ${c.direccion?`<button onclick="event.stopPropagation();abrirMapaClienteActual()" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.25);color:#4285f4;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">📍 Maps 🎯</button>`:''}
       </div>`:''}
     </div>
 
@@ -4088,6 +4090,13 @@ window.abrirCliExpress=()=>{
 // ════════════════════════════════════════════════════════
 // SELECTOR DE APP DE MAPAS
 // ════════════════════════════════════════════════════════
+window.abrirMapaClienteActual=()=>{
+  const cli=window._sbCliActual;
+  if(!cli){toast('No hay cliente activo','e');return;}
+  abrirMapa(cli.lat||'',cli.lng||'',cli.direccion||'');
+};
+
+
 window.abrirMapa=(lat,lng,dir)=>{
   const modal=document.getElementById('mapPickerModal');
   const appsEl=document.getElementById('mapPickerApps');
@@ -4149,60 +4158,66 @@ window.cerrarMapPicker=()=>{
 
 // ── Helper geocodificación inversa (Nominatim) ──
 const _geocodificarCoordenadas=async(lat,lng)=>{
-  // ── Intento 1: Nominatim (CORS ok desde browser sin headers prohibidos) ──
+  // Helper: construye dirección legible desde objeto address de Nominatim
+  const _parsearAddressNominatim=(a,displayName)=>{
+    const road=(a.road||a.pedestrian||a.footway||a.cycleway||a.path||a.hamlet||'').trim();
+    const num=(a.house_number||'').trim();
+    const city=(a.city||a.town||a.village||a.municipality||a.suburb||a.county||'').trim();
+    const cp=(a.postcode||'').trim();
+    const streetPart=road+(num?' '+num:'');
+    const cityPart=cp&&city?`${cp} ${city}`:city;
+    if(streetPart&&cityPart)return`${streetPart}, ${cityPart}`;
+    // Fallback: display_name sin país y sin región administrativa de alto nivel
+    if(displayName){
+      const parts=displayName.split(',').map(s=>s.trim())
+        .filter(s=>s&&!/^(España|Spain|Espagne|Region de Murcia|Región de Murcia|Comunidad|Community|Autonomous)$/i.test(s));
+      // Tomar los primeros 4 fragmentos relevantes: calle, número, barrio/ciudad, CP/provincia
+      return parts.slice(0,4).join(', ');
+    }
+    return city||'';
+  };
+
+  // ── Intento 1: Nominatim con zoom 18 (nivel portal) ──
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2&addressdetails=1&zoom=18`);
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18&accept-language=es`);
     if(r.ok){
       const d=await r.json();
-      const a=d.address||{};
-      // Calle: road es el campo principal en Nominatim
-      const road=(a.road||a.pedestrian||a.footway||a.cycleway||a.path||a.street||'').trim();
-      const num=(a.house_number||'').trim();
-      // Localidad: priorizar city sobre town sobre village
-      const locality=(a.city||a.town||a.village||a.municipality||a.suburb||'').trim();
-      // Provincia/estado para ciudades grandes
-      const province=(a.county||a.state||'').trim();
-      const cp=(a.postcode||'').trim();
-      // Construir: "Calle Mayor 12, 30001 Murcia"
-      const streetPart=road+(num?' '+num:'');
-      const cityPart=cp&&locality?`${cp} ${locality}`:locality||province;
-      const parts=[streetPart,cityPart].filter(p=>p.trim());
-      if(parts.length>=2)return parts.join(', ');
-      // Si solo hay calle o solo ciudad, intentar con display_name
-      if(parts.length===1&&d.display_name){
-        const dn=d.display_name.split(',').map(s=>s.trim());
-        // Tomar: calle+num, CP+ciudad (primeros 3-4 tokens relevantes)
-        const relevant=dn.filter(s=>s&&!/^España$|^Spain$/i.test(s)).slice(0,4);
-        return relevant.join(', ');
-      }
-      if(d.display_name)return d.display_name.split(',').map(s=>s.trim()).filter(s=>!/^España$|^Spain$/i.test(s)).slice(0,4).join(', ');
+      const dir=_parsearAddressNominatim(d.address||{},d.display_name);
+      if(dir)return dir;
     }
-  }catch(e1){console.warn('Nominatim err:',e1.message);}
+  }catch(e1){}
 
-  // ── Intento 2: BigDataCloud (CORS abierto, sin API key) ──
+  // ── Intento 2: Nominatim zoom 16 (nivel calle, más tolerante) ──
   try{
-    const r2=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`);
-    if(r2.ok){
-      const d=await r2.json();
-      // BigDataCloud estructura: road → streetName, house_number → streetNumber
-      const road=(d.road||d.streetName||'').trim();
-      const num=(d.houseNumber||d.streetNumber||'').trim();
-      // localityInfo.informative tiene barrio, ciudad, provincia ordenados
-      const infos=(d.localityInfo?.informative||[]).map(i=>i.name).filter(Boolean);
-      const locality=(d.city||d.locality||infos[0]||'').trim();
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=16&accept-language=es`);
+    if(r.ok){
+      const d=await r.json();
+      const dir=_parsearAddressNominatim(d.address||{},d.display_name);
+      if(dir)return dir;
+    }
+  }catch(e2){}
+
+  // ── Intento 3: BigDataCloud (CORS garantizado, sin API key) ──
+  try{
+    const r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`);
+    if(r.ok){
+      const d=await r.json();
+      const road=(d.road||d.streetName||d.street||'').trim();
+      const num=(d.houseNumber||d.streetNumber||d.house_number||'').trim();
+      const city=(d.city||d.locality||d.principalSubdivision||'').trim();
       const cp=(d.postcode||'').trim();
       const streetPart=road+(num?' '+num:'');
-      const cityPart=cp&&locality?`${cp} ${locality}`:locality;
-      const parts=[streetPart,cityPart].filter(p=>p.trim());
-      if(parts.length)return parts.join(', ');
-      // Último recurso con localityInfo
+      const cityPart=cp&&city?`${cp} ${city}`:city;
+      if(streetPart&&cityPart)return`${streetPart}, ${cityPart}`;
+      if(streetPart||cityPart)return streetPart||cityPart;
+      // localityInfo como último recurso
       const admin=(d.localityInfo?.administrative||[]).map(a=>a.name).filter(Boolean);
-      if(admin.length)return admin.slice(0,3).join(', ');
+      if(admin.length>=2)return admin.slice(0,3).join(', ');
     }
-  }catch(e2){console.warn('BigDataCloud err:',e2.message);}
+  }catch(e3){}
 
-  // ── Fallback final: coordenadas legibles ──
-  return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  // ── Fallback final: coordenadas ──
+  return`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 };
 
 // ── Geolocalización para formulario EXPRESS de cliente ──
