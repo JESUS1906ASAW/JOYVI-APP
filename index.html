@@ -4149,25 +4149,60 @@ window.cerrarMapPicker=()=>{
 
 // ── Helper geocodificación inversa (Nominatim) ──
 const _geocodificarCoordenadas=async(lat,lng)=>{
-  // BigDataCloud: gratuito, sin API key, CORS abierto desde navegador
-  // Devuelve dirección en español con localidad y código postal
-  const url=`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`;
-  const res=await fetch(url);
-  if(!res.ok)throw new Error('geocode '+res.status);
-  const d=await res.json();
-  // Construir dirección legible
-  const road=d.street||d.streetName||'';
-  const num=d.streetNumber||'';
-  const locality=d.city||d.locality||d.principalSubdivision||'';
-  const cp=d.postcode||d.localityInfo?.administrative?.[2]?.description||'';
-  const streetPart=road+(num?' '+num:'');
-  const parts=[streetPart,cp?cp+' '+locality:locality].filter(Boolean);
-  // Si no hay datos suficientes usar localityInfo
-  if(!parts.some(Boolean)&&d.localityInfo){
-    const admin=d.localityInfo.administrative||[];
-    return admin.slice(0,3).map(a=>a.name).filter(Boolean).join(', ');
-  }
-  return parts.join(', ')||d.description||`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  // ── Intento 1: Nominatim (CORS ok desde browser sin headers prohibidos) ──
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2&addressdetails=1&zoom=18`);
+    if(r.ok){
+      const d=await r.json();
+      const a=d.address||{};
+      // Calle: road es el campo principal en Nominatim
+      const road=(a.road||a.pedestrian||a.footway||a.cycleway||a.path||a.street||'').trim();
+      const num=(a.house_number||'').trim();
+      // Localidad: priorizar city sobre town sobre village
+      const locality=(a.city||a.town||a.village||a.municipality||a.suburb||'').trim();
+      // Provincia/estado para ciudades grandes
+      const province=(a.county||a.state||'').trim();
+      const cp=(a.postcode||'').trim();
+      // Construir: "Calle Mayor 12, 30001 Murcia"
+      const streetPart=road+(num?' '+num:'');
+      const cityPart=cp&&locality?`${cp} ${locality}`:locality||province;
+      const parts=[streetPart,cityPart].filter(p=>p.trim());
+      if(parts.length>=2)return parts.join(', ');
+      // Si solo hay calle o solo ciudad, intentar con display_name
+      if(parts.length===1&&d.display_name){
+        const dn=d.display_name.split(',').map(s=>s.trim());
+        // Tomar: calle+num, CP+ciudad (primeros 3-4 tokens relevantes)
+        const relevant=dn.filter(s=>s&&!/^España$|^Spain$/i.test(s)).slice(0,4);
+        return relevant.join(', ');
+      }
+      if(d.display_name)return d.display_name.split(',').map(s=>s.trim()).filter(s=>!/^España$|^Spain$/i.test(s)).slice(0,4).join(', ');
+    }
+  }catch(e1){console.warn('Nominatim err:',e1.message);}
+
+  // ── Intento 2: BigDataCloud (CORS abierto, sin API key) ──
+  try{
+    const r2=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`);
+    if(r2.ok){
+      const d=await r2.json();
+      // BigDataCloud estructura: road → streetName, house_number → streetNumber
+      const road=(d.road||d.streetName||'').trim();
+      const num=(d.houseNumber||d.streetNumber||'').trim();
+      // localityInfo.informative tiene barrio, ciudad, provincia ordenados
+      const infos=(d.localityInfo?.informative||[]).map(i=>i.name).filter(Boolean);
+      const locality=(d.city||d.locality||infos[0]||'').trim();
+      const cp=(d.postcode||'').trim();
+      const streetPart=road+(num?' '+num:'');
+      const cityPart=cp&&locality?`${cp} ${locality}`:locality;
+      const parts=[streetPart,cityPart].filter(p=>p.trim());
+      if(parts.length)return parts.join(', ');
+      // Último recurso con localityInfo
+      const admin=(d.localityInfo?.administrative||[]).map(a=>a.name).filter(Boolean);
+      if(admin.length)return admin.slice(0,3).join(', ');
+    }
+  }catch(e2){console.warn('BigDataCloud err:',e2.message);}
+
+  // ── Fallback final: coordenadas legibles ──
+  return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 };
 
 // ── Geolocalización para formulario EXPRESS de cliente ──
@@ -4178,36 +4213,40 @@ window.usarUbicacionExpressCli=()=>{
   if(!navigator.geolocation){toast('GPS no disponible en este dispositivo','e');return;}
   if(btn){btn.innerHTML='⏳';btn.disabled=true;}
   if(info){info.textContent='Obteniendo ubicación...';info.style.color='var(--tx2)';}
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    const lat=pos.coords.latitude;
-    const lng=pos.coords.longitude;
-    // Guardar coords inmediatamente
-    const latEl=document.getElementById('ceLat');
-    const lngEl=document.getElementById('ceLng');
-    const dirEl=document.getElementById('ceDir');
-    if(latEl)latEl.value=String(lat);
-    if(lngEl)lngEl.value=String(lng);
-    // Intentar geocodificación
-    try{
-      const dir=await _geocodificarCoordenadas(lat,lng);
-      if(dirEl&&dir){
-        dirEl.value=dir;
-        dirEl.dispatchEvent(new Event('input',{bubbles:true}));
+  toast('📍 Obteniendo tu ubicación...','i');
+  navigator.geolocation.getCurrentPosition(
+    async pos=>{
+      const lat=pos.coords.latitude;
+      const lng=pos.coords.longitude;
+      const latEl=document.getElementById('ceLat');
+      const lngEl=document.getElementById('ceLng');
+      const dirEl=document.getElementById('ceDir');
+      if(latEl)latEl.value=String(lat);
+      if(lngEl)lngEl.value=String(lng);
+      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
+      try{
+        const dir=await _geocodificarCoordenadas(lat,lng);
+        if(dirEl&&dir){
+          dirEl.value=dir;
+          dirEl.style.borderColor='#4caf50';
+          dirEl.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';
+          setTimeout(()=>{dirEl.style.borderColor='';dirEl.style.boxShadow='';},2500);
+        }
+        if(info)info.innerHTML=`<span style="color:#4caf50">✓ ${dir||lat.toFixed(5)+', '+lng.toFixed(5)}</span>`;
+        toast('✓ Dirección: '+(dir||`${lat.toFixed(4)}, ${lng.toFixed(4)}`),'o');
+      }catch(e){
+        if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`;
+        toast('GPS guardado · sin dirección textual','i');
       }
-      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
-      if(info)info.innerHTML=`<span style="color:#4caf50">✓ ${dir||'GPS: '+lat.toFixed(5)+', '+lng.toFixed(5)}</span>`;
-      toast('Dirección detectada','o');
-    }catch(err){
-      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
-      if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}</span>`;
-      toast('GPS guardado (sin conexión para dirección)','i');
-    }
-  },err=>{
-    if(btn){btn.innerHTML='📍';btn.disabled=false;}
-    if(info){info.textContent='';info.style.color='';}
-    const msgs={1:'Permiso GPS denegado — actívalo en ajustes del navegador',2:'Ubicación no disponible',3:'GPS tardó demasiado, inténtalo de nuevo'};
-    toast(msgs[err.code]||'Error al obtener ubicación','e');
-  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+    },
+    err=>{
+      if(btn){btn.innerHTML='📍';btn.disabled=false;}
+      if(info){info.textContent='';info.style.color='';}
+      const msgs={1:'Permiso GPS denegado',2:'Ubicación no disponible',3:'Tiempo agotado, inténtalo de nuevo'};
+      toast(msgs[err.code]||'Error GPS','e');
+    },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+  );
 };
 
 window.guardarCliExpress=async()=>{
@@ -4289,36 +4328,40 @@ window.guardarCli=async(id)=>{
 window.usarUbicacionActualCliente=()=>{
   const btn=$('btnGeoUbic');
   if(!navigator.geolocation){toast('GPS no disponible en este dispositivo','e');return;}
-  if(btn){btn.innerHTML='⏳';btn.disabled=true;}
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    const lat=pos.coords.latitude;
-    const lng=pos.coords.longitude;
-    // Guardar coords inmediatamente
-    if($('cLat'))$('cLat').value=String(lat);
-    if($('cLng'))$('cLng').value=String(lng);
-    // Intentar geocodificación inversa
-    try{
-      const dir=await _geocodificarCoordenadas(lat,lng);
-      const dirInput=$('cDir');
-      if(dirInput&&dir){
-        dirInput.value=dir;
-        dirInput.dispatchEvent(new Event('input',{bubbles:true}));
-        // Resaltar campo brevemente
-        dirInput.style.borderColor='#4caf50';
-        dirInput.style.boxShadow='0 0 0 3px rgba(76,175,80,.2)';
-        setTimeout(()=>{dirInput.style.borderColor='';dirInput.style.boxShadow='';},2000);
+  if(btn){btn.innerHTML='⏳';btn.disabled=true;btn.title='Obteniendo ubicación...';}
+  toast('📍 Obteniendo tu ubicación...','i');
+  navigator.geolocation.getCurrentPosition(
+    async pos=>{
+      const lat=pos.coords.latitude;
+      const lng=pos.coords.longitude;
+      // Guardar coords ya
+      const latEl=$('cLat'), lngEl=$('cLng'), dirEl=$('cDir');
+      if(latEl)latEl.value=String(lat);
+      if(lngEl)lngEl.value=String(lng);
+      if(btn){btn.innerHTML='🎯';btn.disabled=false;btn.title='GPS guardado';}
+      try{
+        const dir=await _geocodificarCoordenadas(lat,lng);
+        if(dir&&dirEl){
+          dirEl.value=dir;
+          dirEl.focus();
+          dirEl.select();
+          dirEl.style.transition='border-color .3s,box-shadow .3s';
+          dirEl.style.borderColor='#4caf50';
+          dirEl.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';
+          setTimeout(()=>{dirEl.style.borderColor='';dirEl.style.boxShadow='';},2500);
+        }
+        toast('✓ Dirección: '+(dir||`${lat.toFixed(4)}, ${lng.toFixed(4)}`),'o');
+      }catch(e){
+        toast('GPS guardado · sin dirección textual disponible','i');
       }
-      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
-      toast('✓ Dirección detectada y rellenada','o');
-    }catch(err){
-      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
-      toast('GPS guardado — dirección no disponible sin conexión','i');
-    }
-  },err=>{
-    if(btn){btn.innerHTML='📍';btn.disabled=false;}
-    const msgs={1:'Permiso GPS denegado — actívalo en ajustes del navegador',2:'Ubicación no disponible',3:'GPS tardó demasiado, inténtalo de nuevo'};
-    toast(msgs[err.code]||'Error al obtener ubicación','e');
-  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+    },
+    err=>{
+      if(btn){btn.innerHTML='📍';btn.disabled=false;btn.title='Usar mi ubicación';}
+      const msgs={1:'Permiso GPS denegado',2:'Ubicación no disponible',3:'Tiempo agotado, inténtalo de nuevo'};
+      toast(msgs[err.code]||'Error GPS','e');
+    },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+  );
 };
 window.importarContactoAgenda=async()=>{
   if(!('contacts' in navigator)){
