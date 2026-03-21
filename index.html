@@ -24,11 +24,12 @@
 <meta name="twitter:image" content="https://joyvioficial.netlify.app/icon-512.png">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Joyvi">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#e53935">
 <meta name="msapplication-TileColor" content="#111111">
+<meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <link rel="manifest" href="/JOYVI-APP/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
@@ -2433,7 +2434,7 @@ onAuthStateChanged(auth,async user=>{
     $('app').style.display='flex';
     iniciarApp();
     // Comprobar bloqueo DESPUÉS de que la app esté visible
-    setTimeout(_lockInicializar, 800);
+    setTimeout(_lockInicializar, 200);
   }else{
     $('authWrap').style.display='flex';
     $('app').style.display='none';
@@ -10426,9 +10427,9 @@ const _prevScreen=id=>{
 // PERSONALIZACIÓN: TEMA Y MODO CLARO
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _TEMAS={
-  rojo: {r:'#e53935',r2:'#c62828',r3:'#ff5252',r4:'#b71c1c',rgb:'229,57,53',shadow:'0 6px 28px rgba(229,57,53,.28)',bar:'#e53935'},
-  azul: {r:'#1976d2',r2:'#0d47a1',r3:'#42a5f5',r4:'#0a2e6e',rgb:'25,118,210',shadow:'0 6px 28px rgba(25,118,210,.28)',bar:'#1976d2'},
-  lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)',bar:'#8e24aa'},
+  rojo: {r:'#e53935',r2:'#c62828',r3:'#ff5252',r4:'#b71c1c',rgb:'229,57,53',shadow:'0 6px 28px rgba(229,57,53,.28)'},
+  azul: {r:'#1976d2',r2:'#0d47a1',r3:'#42a5f5',r4:'#0a2e6e',rgb:'25,118,210',shadow:'0 6px 28px rgba(25,118,210,.28)'},
+  lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)'},
 };
 
 const _aplicarColorTema=(tema)=>{
@@ -10440,10 +10441,7 @@ const _aplicarColorTema=(tema)=>{
   root.setProperty('--r4',t.r4);
   root.setProperty('--theme-rgb',t.rgb);
   root.setProperty('--shadow2',t.shadow);
-  // Actualizar theme-color del navegador (barra de estado en Android/Chrome)
-  let m=document.querySelector('meta[name="theme-color"]');
-  if(!m){m=document.createElement('meta');m.name='theme-color';document.head.appendChild(m);}
-  m.content=t.bar;
+
 };
 
 window.cambiarColorTema=(tema)=>{
@@ -13007,29 +13005,59 @@ let _lockActiveMode = 'pin'; // qué está mostrando ahora mismo
 const _lockMostrar = () => {
   const el = document.getElementById('lockScreen');
   if(!el) return;
-  // Avatar usuario
+
+  // Rellenar avatar/nombre
   const nom = CUD?.nombre || CU?.email || 'Usuario';
   const ini = nom.trim()[0]?.toUpperCase() || '?';
   const ava = document.getElementById('lockUserAva');
   const nameEl = document.getElementById('lockUserName');
-  if(ava){ ava.textContent=''; const img=ava.querySelector('img');
-    if(window._cliAvatarCache&&CU?.uid){}  // no aplica aquí
-    ava.textContent = ini; }
+  if(ava) ava.textContent = ini;
   if(nameEl) nameEl.textContent = nom;
   document.getElementById('lockError').textContent = '';
-  el.classList.add('active');
-  // Decidir método a mostrar
-  const method = _lockMethod();
-  // Si huella activa, intentar primero
+
+  // Si huella activa: intentar silenciosamente SIN mostrar pantalla primero
   if(_lockFPActive()) {
-    _lockMostrarMetodo('fingerprint');
-    setTimeout(_lockFingerprintIntento, 400);
-  } else {
-    _lockMostrarMetodo(method);
+    _lockFingerprintSilencioso();
+    return;
   }
-  // Mostrar switch si tiene ambos o para alternar
+
+  // Sin huella: mostrar pantalla directamente con el método configurado
+  _lockMostrarPantalla(_lockMethod());
+};
+
+// Intento de huella sin mostrar la pantalla
+const _lockFingerprintSilencioso = async () => {
+  try {
+    const credIdB64 = localStorage.getItem('joyvi_fp_credId');
+    if(!credIdB64) throw new Error('no_cred');
+    const credId = Uint8Array.from(atob(credIdB64), ch=>ch.charCodeAt(0));
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    await navigator.credentials.get({
+      publicKey:{
+        challenge,
+        allowCredentials:[{type:'public-key', id:credId}],
+        userVerification:'required',
+        timeout:30000,
+      }
+    });
+    // Huella OK — desbloquear sin mostrar nada
+    if(navigator.vibrate) navigator.vibrate([12,25,12]);
+    _lockOcultar();
+  } catch(e) {
+    // Falló o canceló → mostrar pantalla con método base
+    _lockMostrarPantalla(_lockMethod());
+  }
+};
+
+// Mostrar la pantalla de bloqueo con un método específico
+const _lockMostrarPantalla = (method) => {
+  const el = document.getElementById('lockScreen');
+  if(!el) return;
+  el.classList.add('active');
+  _lockMostrarMetodo(method);
   _lockActualizarSwitch();
 };
+
 
 const _lockOcultar = () => {
   const el = document.getElementById('lockScreen');
@@ -13059,17 +13087,14 @@ const _lockMostrarMetodo = (modo) => {
 const _lockActualizarSwitch = () => {
   const sw = document.getElementById('lockMethodSwitch');
   if(!sw) return;
-  // Mostrar switch solo si tiene método base configurado y no es el propio modo activo
-  const method = _lockMethod();
-  const hasFp  = _lockFPActive();
-  // Siempre mostrar si huella activa (para poder cambiar a PIN/patrón)
-  sw.style.display = (hasFp || true) ? 'flex' : 'none';
   const pinBtn = document.getElementById('lswPin');
   const patBtn = document.getElementById('lswPattern');
+  // Mostrar el switch siempre que haya al menos un método base (PIN o patrón)
+  const hasBase = _lockHasPin() || _lockHasPattern();
+  sw.style.display = hasBase ? 'flex' : 'none';
+  // Mostrar cada botón solo si ese método está configurado
   if(pinBtn){ pinBtn.style.display = _lockHasPin() ? '' : 'none'; pinBtn.classList.toggle('active', _lockActiveMode==='pin'); }
   if(patBtn){ patBtn.style.display = _lockHasPattern() ? '' : 'none'; patBtn.classList.toggle('active', _lockActiveMode==='pattern'); }
-  // Huella switch inline ya está en el grid de botones del método
-  sw.style.display = (_lockHasPin()&&_lockHasPattern()) || (_lockFPActive()&&_lockHasAny()) ? 'flex' : 'none';
 };
 
 // ══════════════════════════════════════════════
@@ -13638,9 +13663,8 @@ const _lockInicializar = () => {
   if(!_lockHasAny()) return;
   const ts = parseInt(localStorage.getItem(_LOCK_TS)||'0');
   const wasClosed = localStorage.getItem('joyvi_lock_closed') === '1';
-  // Bloquear si: fue cerrado explícitamente, ts=0, o pasó el timeout
   if(wasClosed || ts === 0 || Date.now() - ts > _LOCK_TIMEOUT) {
-    requestAnimationFrame(()=>{ requestAnimationFrame(_lockMostrar); });
+    _lockMostrar();
   }
 };
 
