@@ -2215,10 +2215,10 @@ const _onboardingNuevoUsuario = () => {
 
   // ── Estado compartido ──────────────────────────────
   window._onbColorElegido = null;
-  window._onbModoClaro    = false; // oscuro por defecto
+  window._onbModoClaro    = false;
 
   // ── Helpers visuales ──────────────────────────────
-  const _onbRefreshSwatches = () => {
+  const _onbRefreshSwatches = window._onbRefreshSwatches = () => {
     ['Rojo','Azul','Lila'].forEach(c => {
       const sw = document.getElementById('_onbSw'+c);
       if(!sw) return;
@@ -2232,7 +2232,7 @@ const _onboardingNuevoUsuario = () => {
     }
   };
 
-  const _onbRefreshModo = () => {
+  const _onbRefreshModo = window._onbRefreshModo = () => {
     const btnC = document.getElementById('_onbBtnClaro');
     const btnO = document.getElementById('_onbBtnOscuro');
     if(!btnC || !btnO) return;
@@ -2246,13 +2246,13 @@ const _onboardingNuevoUsuario = () => {
     }
   };
 
-  const _onbCheckPaso1Btn = () => {
+  const _onbCheckPaso1Btn = window._onbCheckPaso1Btn = () => {
     const btn = document.getElementById('_onbNextBtn');
     if(btn){ btn.disabled = !window._onbColorElegido; btn.style.opacity = window._onbColorElegido ? '1' : '.45'; }
   };
 
   // ── PASO 1: Color + Modo ───────────────────────────
-  const _paso1 = () => {
+  const _paso1 = window._paso1 = () => {
     overlay.innerHTML = `
       <div style="max-width:390px;width:100%;background:var(--card);border-radius:24px;padding:28px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
         <div style="text-align:center;margin-bottom:22px">
@@ -2260,7 +2260,6 @@ const _onboardingNuevoUsuario = () => {
           <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:5px">¡Bienvenido/a a Joyvi!</div>
           <div style="font-size:13px;color:var(--tx2);line-height:1.5">Personaliza tu app antes de empezar.</div>
         </div>
-
         <div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Color de la app</div>
         <div style="display:flex;justify-content:center;gap:24px;margin-bottom:24px">
           <div onclick="_onbSelectColor('rojo')" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer">
@@ -2276,13 +2275,11 @@ const _onboardingNuevoUsuario = () => {
             <span style="font-size:11px;font-weight:700;color:var(--tx2)">Lila</span>
           </div>
         </div>
-
         <div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Modo de la interfaz</div>
         <div style="display:flex;gap:10px;margin-bottom:24px">
           <button id="_onbBtnOscuro" onclick="_onbToggleModo(false)">🌙 Oscuro</button>
           <button id="_onbBtnClaro"  onclick="_onbToggleModo(true)">☀️ Claro</button>
         </div>
-
         <button id="_onbNextBtn" onclick="_paso2()" disabled style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--r);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);opacity:.45;transition:.2s">Continuar →</button>
       </div>
     `;
@@ -2307,7 +2304,7 @@ const _onboardingNuevoUsuario = () => {
   };
 
   // ── PASO 2: Seguridad ──────────────────────────────
-  const _paso2 = () => {
+  const _paso2 = window._paso2 = () => {
     window._onbSegElegida = null;
     overlay.innerHTML = `
       <div style="max-width:390px;width:100%;background:var(--card);border-radius:24px;padding:28px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
@@ -2343,15 +2340,12 @@ const _onboardingNuevoUsuario = () => {
     if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
   };
 
-  // ── Configuración de PIN directo (sin pedir contraseña) ──
-  const _onbSetupPIN = (onOk, onBack) => {
-    // Reutilizamos la lógica del bloque de seguridad pero sin step1 (verificar pass)
-    // Lo hacemos directamente: 2 pantallas (nuevo PIN → confirmar)
+  // ── Setup PIN directo (sin pedir contraseña — usuario recién creado) ──
+  const _onbSetupPIN = window._onbSetupPIN = (onOk) => {
     let _pin1 = '';
-    let buf   = '';
 
     const _buildPinUI = (title, sub, fase) => {
-      buf = '';
+      let buf = '';
       overlay.innerHTML = `
         <div style="max-width:320px;width:100%;text-align:center">
           <div style="font-size:18px;font-weight:900;color:var(--tx);margin-bottom:8px">${title}</div>
@@ -2401,8 +2395,8 @@ const _onboardingNuevoUsuario = () => {
     _buildPinUI('Elige un PIN de 4 dígitos','Introduce un PIN seguro','set');
   };
 
-  // ── Configuración de Patrón directo ───────────────
-  const _onbSetupPatron = (onOk, onBack) => {
+  // ── Setup Patrón directo ───────────────────────────
+  const _onbSetupPatron = window._onbSetupPatron = (onOk) => {
     let _pat1 = [];
 
     const _buildPatUI = (title, sub, fase) => {
@@ -2418,7 +2412,6 @@ const _onboardingNuevoUsuario = () => {
           <button onclick="${fase==='set'?'_paso2()':'_onbPatRedo()'}" style="margin-top:14px;background:none;border:none;color:var(--tx2);font-size:12px;font-family:var(--font);cursor:pointer">${fase==='set'?'← Volver':'Volver a intentarlo'}</button>
         </div>
       `;
-
       const grid = document.getElementById('_onbPatGrid');
       for(let i=0;i<9;i++){
         const d=document.createElement('div');
@@ -2426,7 +2419,6 @@ const _onboardingNuevoUsuario = () => {
         d.innerHTML='<div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center"><div class="onbDot" style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.3);transition:background .1s,transform .1s"></div></div>';
         d.dataset.idx=i; grid.appendChild(d);
       }
-
       let seq=[],drawing=false,lastPos=null;
       const wrap = ()=>document.getElementById('_onbPatWrap');
       const getPos=(e)=>{ const t=e.touches?e.touches[0]:e; const r=wrap()?.getBoundingClientRect()||{}; return{x:t.clientX-(r.left||0),y:t.clientY-(r.top||0)}; };
@@ -2449,8 +2441,8 @@ const _onboardingNuevoUsuario = () => {
               onOk();
             });
           }else{
-            const errEl=document.getElementById('_onbPatErr');
             grid.querySelectorAll('.onbDot').forEach(d=>{d.style.background='#e53935';d.style.borderColor='#e53935';});
+            const errEl=document.getElementById('_onbPatErr');
             if(errEl)errEl.textContent='Los patrones no coinciden';
             setTimeout(()=>{ _buildPatUI('Dibuja tu patrón','Desliza entre al menos 4 puntos','set'); },900);
           }
@@ -2463,20 +2455,18 @@ const _onboardingNuevoUsuario = () => {
     _buildPatUI('Dibuja tu patrón','Desliza entre al menos 4 puntos','set');
   };
 
-  // ── Finalizar onboarding con la opción elegida ────
+  // ── Finalizar onboarding ───────────────────────────
   window._onbFinalizar = async () => {
     const seg = window._onbSegElegida;
     if(!seg) return;
-
     if(seg === 'none'){
       overlay.remove(); return;
     }
     if(seg === 'pin'){
-      _onbSetupPIN(()=>{ overlay.remove(); toast('✓ PIN configurado','o'); }, _paso2);
+      _onbSetupPIN(()=>{ overlay.remove(); toast('✓ PIN configurado','o'); });
     } else if(seg === 'pattern'){
-      _onbSetupPatron(()=>{ overlay.remove(); toast('✓ Patrón configurado','o'); }, _paso2);
+      _onbSetupPatron(()=>{ overlay.remove(); toast('✓ Patrón configurado','o'); });
     } else if(seg === 'huella'){
-      // Elegir tipo de respaldo primero
       overlay.innerHTML = `
         <div style="max-width:360px;width:100%;background:var(--card);border-radius:24px;padding:28px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--border)">
           <div style="text-align:center;margin-bottom:20px">
@@ -2496,14 +2486,14 @@ const _onboardingNuevoUsuario = () => {
           const ok = typeof _lockRegistrarHuella==='function' ? await _lockRegistrarHuella() : false;
           overlay.remove();
           toast(ok ? '✓ Huella y PIN configurados' : '✓ PIN configurado (huella no disponible)','o');
-        }, _paso2);
+        });
       };
       window._onbHuellaConPatron = () => {
         _onbSetupPatron(async ()=>{
           const ok = typeof _lockRegistrarHuella==='function' ? await _lockRegistrarHuella() : false;
           overlay.remove();
           toast(ok ? '✓ Huella y Patrón configurados' : '✓ Patrón configurado (huella no disponible)','o');
-        }, _paso2);
+        });
       };
     }
   };
@@ -2511,7 +2501,6 @@ const _onboardingNuevoUsuario = () => {
   document.body.appendChild(overlay);
   _paso1();
 };
-
 window.doReset=async()=>{
   const email=$('lEmail').value.trim();
   if(!email){setAuthErr('Introduce tu email primero.');return}
