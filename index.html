@@ -12974,152 +12974,6 @@ if(typeof window.abrirGrupo === 'function'){
     return res;
   };
 }
-</script>
-
-<!-- ══════════ APRENDIZAJE IA — PANTALLA ══════════ -->
-<div class="screen" id="screenAprendizaje">
-  <div class="scroll-pad" id="aprendizajeScrollPad">
-    <div id="aprendizajeContent"><div class="empty"><div class="empty-ico">🧠</div><p>Cargando...</p></div></div>
-  </div>
-</div>
-
-<!-- ── Historial Mantenimientos Sheet ── -->
-<div id="hmSheet">
-  <div id="hmSheetOverlay" onclick="cerrarHMSheet()"></div>
-  <div id="hmSheetPanel">
-    <div class="hm-head">
-      <h2 id="hmSheetTitle">Historial de mantenimientos</h2>
-      <button class="hm-close" onclick="cerrarHMSheet()">✕</button>
-    </div>
-    <div class="hm-body" id="hmSheetBody"></div>
-    <div id="hmSheetFicha">
-      <div class="hm-head">
-        <button class="hm-back" onclick="cerrarHMFicha()">‹</button>
-        <h2 id="hmFichaTitle"></h2>
-        <button class="hm-close" onclick="cerrarHMSheet()">✕</button>
-      </div>
-      <div class="hm-body" id="hmFichaBody"></div>
-    </div>
-  </div>
-</div>
-
-// ════════════════════════════════════════════════════════
-// PULL TO REFRESH — Solo activo en PWA instalada
-// Comportamiento idéntico a Instagram/YouTube:
-// - Si el scroll-pad activo no está en top → primero sube
-// - Solo si está en top → activa el PTR
-// - Al soltar con suficiente pull → refresca contenido sin recargar página
-// ════════════════════════════════════════════════════════
-(()=>{
-  // Solo activar en modo standalone (PWA instalada)
-  const isStandalone=()=>
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true;
-
-  const THRESHOLD = 72;   // px de pull necesarios para activar
-  const MAX_PULL  = 110;  // px máximo de resistencia visual
-
-  let startY=0, currentY=0, pulling=false, blocked=false;
-  const ind=document.getElementById('ptrIndicator');
-  const lbl=document.getElementById('ptrLabel');
-  if(!ind||!lbl)return;
-
-  // Obtener el scroll-pad de la pantalla activa
-  const getActivePad=()=>{
-    const active=document.querySelector('.screen.active');
-    if(!active)return null;
-    return active.querySelector('.scroll-pad')||null;
-  };
-
-  // Guardar pantalla actual en sessionStorage antes de recargar
-  const _guardarEstado=()=>{
-    const active=document.querySelector('.screen.active');
-    if(!active)return;
-    const id=Object.keys(screens||{}).find(k=>(screens[k]===active.id));
-    if(id){
-      sessionStorage.setItem('joyvi_ptr_screen',id);
-      if(id==='grupo'){
-        const tab=sessionStorage.getItem('joyvi_gtab')||'cli';
-        sessionStorage.setItem('joyvi_ptr_gtab',tab);
-      }
-    }
-  };
-
-  // Refrescar el contenido de la pantalla actual SIN recargar la página
-  const _refrescarPantalla=async()=>{
-    ind.className='loading';
-    lbl.textContent='Actualizando...';
-    try{
-      const active=document.querySelector('.screen.active');
-      if(!active){ind.className='';return;}
-      const id=Object.keys(screens||{}).find(k=>screens[k]===active.id)||'';
-      // Llamar al render de la pantalla activa
-      if(id==='inicio'&&typeof renderInicio==='function')await renderInicio();
-      else if(id==='grupo'&&typeof renderGrupo==='function'){renderGrupo();await new Promise(r=>setTimeout(r,600));}
-      else if(id==='notificaciones'&&typeof renderNotificaciones==='function')await renderNotificaciones();
-      else if(id==='archivos'&&typeof renderArchivos==='function')await renderArchivos();
-      else if(id==='estadisticas'&&typeof renderEstadisticas==='function')await renderEstadisticas();
-      else if(id==='horas'&&typeof renderHoras==='function')await renderHoras();
-      else if(id==='imagenes'&&typeof renderImagenes==='function')await renderImagenes();
-      else if(id==='averias'&&typeof renderAverias==='function')await renderAverias();
-      else if(id==='presupuestos'&&typeof renderPresupuestos==='function')await renderPresupuestos();
-      else if(id==='perfil'&&typeof renderPerfil==='function')renderPerfil();
-      // Feedback
-      lbl.textContent='✓ Actualizado';
-      if(typeof toast==='function')toast('✓ Actualizado','o');
-    }catch(e){
-      lbl.textContent='Error al actualizar';
-    }finally{
-      setTimeout(()=>{ind.className='';},600);
-    }
-  };
-
-  document.addEventListener('touchstart',e=>{
-    if(!isStandalone())return;
-    const pad=getActivePad();
-    if(!pad)return;
-    // Solo iniciar si el pad está en scroll top 0
-    if(pad.scrollTop>0){blocked=true;return;}
-    blocked=false;
-    startY=e.touches[0].clientY;
-    currentY=startY;
-    pulling=false;
-  },{passive:true});
-
-  document.addEventListener('touchmove',e=>{
-    if(!isStandalone()||blocked)return;
-    const pad=getActivePad();
-    if(!pad)return;
-    // Si el pad no está en top, no hacer nada (scroll normal)
-    if(pad.scrollTop>2){blocked=true;return;}
-    currentY=e.touches[0].clientY;
-    const dy=currentY-startY;
-    if(dy<=0)return;
-    pulling=true;
-    // Resistencia logarítmica: sensación física
-    const pull=Math.min(MAX_PULL, dy*0.45);
-    const ready=pull>=THRESHOLD*0.45;
-    ind.className=ready?'releasing':'pulling';
-    lbl.textContent=ready?'Suelta para actualizar':'Arrastra para actualizar';
-    // Rotar spinner según el avance
-    const spinner=ind.querySelector('.ptr-spinner');
-    if(spinner)spinner.style.transform=`rotate(${pull/MAX_PULL*360}deg)`;
-  },{passive:true});
-
-  document.addEventListener('touchend',e=>{
-    if(!isStandalone()||blocked||!pulling){
-      ind.className='';pulling=false;blocked=false;return;
-    }
-    const dy=currentY-startY;
-    const pull=Math.min(MAX_PULL,dy*0.45);
-    pulling=false;blocked=false;
-    if(pull>=THRESHOLD*0.45){
-      _refrescarPantalla();
-    }else{
-      ind.className='';
-    }
-  },{passive:true});
-})();
 
 // ════════════════════════════════════════════════════════════
 // SISTEMA DE BLOQUEO — PIN + PATRÓN + HUELLA
@@ -13767,5 +13621,147 @@ window.addEventListener('pageshow',()=>setTimeout(_lockComprobar,300));
 const _lockInicializar = () => {
   if(_lockHasAny() && Date.now() - parseInt(localStorage.getItem(_LOCK_TS)||'0') > _LOCK_TIMEOUT) _lockMostrar();
 };
+
+(()=>{
+  // Solo activar en modo standalone (PWA instalada)
+  const isStandalone=()=>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  const THRESHOLD = 72;   // px de pull necesarios para activar
+  const MAX_PULL  = 110;  // px máximo de resistencia visual
+
+  let startY=0, currentY=0, pulling=false, blocked=false;
+  const ind=document.getElementById('ptrIndicator');
+  const lbl=document.getElementById('ptrLabel');
+  if(!ind||!lbl)return;
+
+  // Obtener el scroll-pad de la pantalla activa
+  const getActivePad=()=>{
+    const active=document.querySelector('.screen.active');
+    if(!active)return null;
+    return active.querySelector('.scroll-pad')||null;
+  };
+
+  // Guardar pantalla actual en sessionStorage antes de recargar
+  const _guardarEstado=()=>{
+    const active=document.querySelector('.screen.active');
+    if(!active)return;
+    const id=Object.keys(screens||{}).find(k=>(screens[k]===active.id));
+    if(id){
+      sessionStorage.setItem('joyvi_ptr_screen',id);
+      if(id==='grupo'){
+        const tab=sessionStorage.getItem('joyvi_gtab')||'cli';
+        sessionStorage.setItem('joyvi_ptr_gtab',tab);
+      }
+    }
+  };
+
+  // Refrescar el contenido de la pantalla actual SIN recargar la página
+  const _refrescarPantalla=async()=>{
+    ind.className='loading';
+    lbl.textContent='Actualizando...';
+    try{
+      const active=document.querySelector('.screen.active');
+      if(!active){ind.className='';return;}
+      const id=Object.keys(screens||{}).find(k=>screens[k]===active.id)||'';
+      // Llamar al render de la pantalla activa
+      if(id==='inicio'&&typeof renderInicio==='function')await renderInicio();
+      else if(id==='grupo'&&typeof renderGrupo==='function'){renderGrupo();await new Promise(r=>setTimeout(r,600));}
+      else if(id==='notificaciones'&&typeof renderNotificaciones==='function')await renderNotificaciones();
+      else if(id==='archivos'&&typeof renderArchivos==='function')await renderArchivos();
+      else if(id==='estadisticas'&&typeof renderEstadisticas==='function')await renderEstadisticas();
+      else if(id==='horas'&&typeof renderHoras==='function')await renderHoras();
+      else if(id==='imagenes'&&typeof renderImagenes==='function')await renderImagenes();
+      else if(id==='averias'&&typeof renderAverias==='function')await renderAverias();
+      else if(id==='presupuestos'&&typeof renderPresupuestos==='function')await renderPresupuestos();
+      else if(id==='perfil'&&typeof renderPerfil==='function')renderPerfil();
+      // Feedback
+      lbl.textContent='✓ Actualizado';
+      if(typeof toast==='function')toast('✓ Actualizado','o');
+    }catch(e){
+      lbl.textContent='Error al actualizar';
+    }finally{
+      setTimeout(()=>{ind.className='';},600);
+    }
+  };
+
+  document.addEventListener('touchstart',e=>{
+    if(!isStandalone())return;
+    const pad=getActivePad();
+    if(!pad)return;
+    // Solo iniciar si el pad está en scroll top 0
+    if(pad.scrollTop>0){blocked=true;return;}
+    blocked=false;
+    startY=e.touches[0].clientY;
+    currentY=startY;
+    pulling=false;
+  },{passive:true});
+
+  document.addEventListener('touchmove',e=>{
+    if(!isStandalone()||blocked)return;
+    const pad=getActivePad();
+    if(!pad)return;
+    // Si el pad no está en top, no hacer nada (scroll normal)
+    if(pad.scrollTop>2){blocked=true;return;}
+    currentY=e.touches[0].clientY;
+    const dy=currentY-startY;
+    if(dy<=0)return;
+    pulling=true;
+    // Resistencia logarítmica: sensación física
+    const pull=Math.min(MAX_PULL, dy*0.45);
+    const ready=pull>=THRESHOLD*0.45;
+    ind.className=ready?'releasing':'pulling';
+    lbl.textContent=ready?'Suelta para actualizar':'Arrastra para actualizar';
+    // Rotar spinner según el avance
+    const spinner=ind.querySelector('.ptr-spinner');
+    if(spinner)spinner.style.transform=`rotate(${pull/MAX_PULL*360}deg)`;
+  },{passive:true});
+
+  document.addEventListener('touchend',e=>{
+    if(!isStandalone()||blocked||!pulling){
+      ind.className='';pulling=false;blocked=false;return;
+    }
+    const dy=currentY-startY;
+    const pull=Math.min(MAX_PULL,dy*0.45);
+    pulling=false;blocked=false;
+    if(pull>=THRESHOLD*0.45){
+      _refrescarPantalla();
+    }else{
+      ind.className='';
+    }
+  },{passive:true});
+})();
+
+
+</script>
+
+<!-- ══════════ APRENDIZAJE IA — PANTALLA ══════════ -->
+<div class="screen" id="screenAprendizaje">
+  <div class="scroll-pad" id="aprendizajeScrollPad">
+    <div id="aprendizajeContent"><div class="empty"><div class="empty-ico">🧠</div><p>Cargando...</p></div></div>
+  </div>
+</div>
+
+<!-- ── Historial Mantenimientos Sheet ── -->
+<div id="hmSheet">
+  <div id="hmSheetOverlay" onclick="cerrarHMSheet()"></div>
+  <div id="hmSheetPanel">
+    <div class="hm-head">
+      <h2 id="hmSheetTitle">Historial de mantenimientos</h2>
+      <button class="hm-close" onclick="cerrarHMSheet()">✕</button>
+    </div>
+    <div class="hm-body" id="hmSheetBody"></div>
+    <div id="hmSheetFicha">
+      <div class="hm-head">
+        <button class="hm-back" onclick="cerrarHMFicha()">‹</button>
+        <h2 id="hmFichaTitle"></h2>
+        <button class="hm-close" onclick="cerrarHMSheet()">✕</button>
+      </div>
+      <div class="hm-body" id="hmFichaBody"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
