@@ -270,7 +270,7 @@ body.modo-claro .skel{background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(
 .skel-row.w80{width:80%}
 
 /* ── TOPBAR ── */
-#topbar{background:rgba(21,21,21,.92);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);padding:14px 20px;display:flex;align-items:center;border-bottom:1px solid var(--border);z-index:90;flex-shrink:0;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.04),0 2px 16px rgba(0,0,0,.3)}
+#topbar{background:rgba(21,21,21,.92);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);padding:14px 20px;display:flex;align-items:center;border-bottom:1px solid var(--border);border-top:2px solid var(--r);z-index:90;flex-shrink:0;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.04),0 2px 16px rgba(0,0,0,.3)}
 #topbar .logo{font-family:'Anton',sans-serif;font-size:26px;background:linear-gradient(135deg,var(--r) 0%,var(--r3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px;flex:1;filter:drop-shadow(0 0 8px rgba(var(--theme-rgb),.35));transition:.2s}
 .tb-btn{width:40px;height:40px;border-radius:12px;border:none;background:transparent;color:var(--tx);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .12s,color .15s;position:relative;overflow:hidden}
 .tb-btn::after{content:'';position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle,rgba(255,255,255,.2) 0%,transparent 70%);opacity:0;transition:opacity .2s}
@@ -1007,6 +1007,79 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
 <body>
 
 <!-- ═══════════ AUTH WRAP ═══════════ -->
+  <!-- ══ PANTALLA DE BLOQUEO ══ -->
+  <div id="lockScreen">
+    <div class="lock-logo">Joyvi</div>
+    <div class="lock-sub" id="lockSub">Introduce tu PIN para continuar</div>
+    <div class="lock-user">
+      <div class="lock-user-ava" id="lockUserAva">?</div>
+      <span id="lockUserName">Usuario</span>
+    </div>
+
+    <!-- PIN -->
+    <div id="lockPinSection">
+      <div class="pin-display" id="pinDisplay">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-btn" onclick="_lockPinPress('1')"><span>1</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('2')"><span>2</span><span class="pin-btn-sub">ABC</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('3')"><span>3</span><span class="pin-btn-sub">DEF</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('4')"><span>4</span><span class="pin-btn-sub">GHI</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('5')"><span>5</span><span class="pin-btn-sub">JKL</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('6')"><span>6</span><span class="pin-btn-sub">MNO</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('7')"><span>7</span><span class="pin-btn-sub">PQRS</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('8')"><span>8</span><span class="pin-btn-sub">TUV</span></button>
+        <button class="pin-btn" onclick="_lockPinPress('9')"><span>9</span><span class="pin-btn-sub">WXYZ</span></button>
+        <button class="pin-btn" style="opacity:0;pointer-events:none"></button>
+        <button class="pin-btn" onclick="_lockPinPress('0')"><span>0</span></button>
+        <button class="pin-btn pin-btn-del" onclick="_lockPinDel()">⌫</button>
+      </div>
+    </div>
+
+    <!-- PATRÓN -->
+    <div id="lockPatternSection" style="display:none">
+      <div class="pattern-wrap" id="patternWrap">
+        <svg id="patternSvg" width="248" height="248"></svg>
+        <div class="pattern-grid" id="patternGrid">
+          <!-- 9 puntos generados por JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- HUELLA -->
+    <div id="lockFingerprintSection" style="display:none">
+      <div class="lock-fingerprint" id="lockFingerprintUI">
+        <div class="fp-btn" id="fpBtn" onclick="_lockFingerprintIntento()">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C9.52 2 7.27 2.9 5.54 4.43"/>
+            <path d="M12 2c2.48 0 4.73.9 6.46 2.43"/>
+            <path d="M2 12c0-1.85.5-3.58 1.37-5.06"/>
+            <path d="M22 12c0-1.85-.5-3.58-1.37-5.06"/>
+            <path d="M12 8a4 4 0 0 0-4 4c0 2.5.5 5 1.5 7"/>
+            <path d="M12 8a4 4 0 0 1 4 4c0 1-.13 2-.37 2.9"/>
+            <path d="M12 8v0"/>
+          </svg>
+        </div>
+        <div style="font-size:13px;color:var(--tx2);text-align:center" id="fpLabel">Toca para usar huella dactilar</div>
+      </div>
+    </div>
+
+    <div class="lock-error" id="lockError"></div>
+
+    <!-- Cambiar método -->
+    <div class="lock-method-switch" id="lockMethodSwitch" style="display:none">
+      <button class="lock-msw-btn" id="lswPin" onclick="_lockMostrarMetodo('pin')">PIN</button>
+      <button class="lock-msw-btn" id="lswPattern" onclick="_lockMostrarMetodo('pattern')">Patrón</button>
+    </div>
+
+    <button class="lock-forgot" onclick="_lockOlvidado()">¿Olvidaste el PIN? Usar contraseña</button>
+  </div>
+
+
 <div id="authWrap">
   <!-- Login / Registro Trabajador — directo, sin selección de tipo -->
   <div id="loginWrap" style="display:flex">
@@ -1190,77 +1263,6 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
 
   <!-- TOAST -->
   <div id="toastWrap"></div>
-  <!-- ══ PANTALLA DE BLOQUEO ══ -->
-  <div id="lockScreen">
-    <div class="lock-logo">Joyvi</div>
-    <div class="lock-sub" id="lockSub">Introduce tu PIN para continuar</div>
-    <div class="lock-user">
-      <div class="lock-user-ava" id="lockUserAva">?</div>
-      <span id="lockUserName">Usuario</span>
-    </div>
-
-    <!-- PIN -->
-    <div id="lockPinSection">
-      <div class="pin-display" id="pinDisplay">
-        <div class="pin-dot" id="pd0"></div>
-        <div class="pin-dot" id="pd1"></div>
-        <div class="pin-dot" id="pd2"></div>
-        <div class="pin-dot" id="pd3"></div>
-      </div>
-      <div class="pin-pad">
-        <button class="pin-btn" onclick="_lockPinPress('1')"><span>1</span></button>
-        <button class="pin-btn" onclick="_lockPinPress('2')"><span>2</span><span class="pin-btn-sub">ABC</span></button>
-        <button class="pin-btn" onclick="_lockPinPress('3')"><span>3</span><span class="pin-btn-sub">DEF</span></button>
-        <button class="pin-btn" onclick="_lockPinPress('4')"><span>4</span><span class="pin-btn-sub">GHI</span></button>
-        <button class="pin-btn" onclick="_lockPinPress('5')"><span>5</span><span class="pin-btn-sub">JKL</span></button>
-        <button class="pin-btn" onclick="_lockPinPress('6')"><span>6</span><span class="pin-btn-sub">MNO</span></button>
-        <button class="pin-btn" onclick="_lockPinPress('7')"><span>7</span><span class="pin-btn-sub">PQRS</span></button>
-        <button class="pin-btn" onclick="_lockPinPress('8')"><span>8</span><span class="pin-btn-sub">TUV</span></button>
-        <button class="pin-btn" onclick="_lockPinPress('9')"><span>9</span><span class="pin-btn-sub">WXYZ</span></button>
-        <button class="pin-btn" style="opacity:0;pointer-events:none"></button>
-        <button class="pin-btn" onclick="_lockPinPress('0')"><span>0</span></button>
-        <button class="pin-btn pin-btn-del" onclick="_lockPinDel()">⌫</button>
-      </div>
-    </div>
-
-    <!-- PATRÓN -->
-    <div id="lockPatternSection" style="display:none">
-      <div class="pattern-wrap" id="patternWrap">
-        <svg id="patternSvg" width="248" height="248"></svg>
-        <div class="pattern-grid" id="patternGrid">
-          <!-- 9 puntos generados por JS -->
-        </div>
-      </div>
-    </div>
-
-    <!-- HUELLA -->
-    <div id="lockFingerprintSection" style="display:none">
-      <div class="lock-fingerprint" id="lockFingerprintUI">
-        <div class="fp-btn" id="fpBtn" onclick="_lockFingerprintIntento()">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2C9.52 2 7.27 2.9 5.54 4.43"/>
-            <path d="M12 2c2.48 0 4.73.9 6.46 2.43"/>
-            <path d="M2 12c0-1.85.5-3.58 1.37-5.06"/>
-            <path d="M22 12c0-1.85-.5-3.58-1.37-5.06"/>
-            <path d="M12 8a4 4 0 0 0-4 4c0 2.5.5 5 1.5 7"/>
-            <path d="M12 8a4 4 0 0 1 4 4c0 1-.13 2-.37 2.9"/>
-            <path d="M12 8v0"/>
-          </svg>
-        </div>
-        <div style="font-size:13px;color:var(--tx2);text-align:center" id="fpLabel">Toca para usar huella dactilar</div>
-      </div>
-    </div>
-
-    <div class="lock-error" id="lockError"></div>
-
-    <!-- Cambiar método -->
-    <div class="lock-method-switch" id="lockMethodSwitch" style="display:none">
-      <button class="lock-msw-btn" id="lswPin" onclick="_lockMostrarMetodo('pin')">PIN</button>
-      <button class="lock-msw-btn" id="lswPattern" onclick="_lockMostrarMetodo('pattern')">Patrón</button>
-    </div>
-
-    <button class="lock-forgot" onclick="_lockOlvidado()">¿Olvidaste el PIN? Usar contraseña</button>
-  </div>
 
   <!-- PULL TO REFRESH -->
   <div id="ptrIndicator"><div class="ptr-spinner"></div><span class="ptr-label" id="ptrLabel">Suelta para actualizar</span></div>
@@ -2428,10 +2430,10 @@ onAuthStateChanged(auth,async user=>{
     if(snap.exists()){CUD=snap.data()}
     else{CUD={nombre:user.displayName||'Usuario',tipo:'trabajador'}}
     $('authWrap').style.display='none';
-    // Comprobar bloqueo al iniciar sesión
-    setTimeout(_lockInicializar, 500);
     $('app').style.display='flex';
     iniciarApp();
+    // Comprobar bloqueo DESPUÉS de que la app esté visible
+    setTimeout(_lockInicializar, 800);
   }else{
     $('authWrap').style.display='flex';
     $('app').style.display='none';
@@ -10424,9 +10426,9 @@ const _prevScreen=id=>{
 // PERSONALIZACIÓN: TEMA Y MODO CLARO
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const _TEMAS={
-  rojo: {r:'#e53935',r2:'#c62828',r3:'#ff5252',r4:'#b71c1c',rgb:'229,57,53',shadow:'0 6px 28px rgba(229,57,53,.28)',bar:'#1a0a0a'},
-  azul: {r:'#1976d2',r2:'#0d47a1',r3:'#42a5f5',r4:'#0a2e6e',rgb:'25,118,210',shadow:'0 6px 28px rgba(25,118,210,.28)',bar:'#080f1a'},
-  lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)',bar:'#0f0514'},
+  rojo: {r:'#e53935',r2:'#c62828',r3:'#ff5252',r4:'#b71c1c',rgb:'229,57,53',shadow:'0 6px 28px rgba(229,57,53,.28)',bar:'#e53935'},
+  azul: {r:'#1976d2',r2:'#0d47a1',r3:'#42a5f5',r4:'#0a2e6e',rgb:'25,118,210',shadow:'0 6px 28px rgba(25,118,210,.28)',bar:'#1976d2'},
+  lila: {r:'#8e24aa',r2:'#6a1b9a',r3:'#ce93d8',r4:'#4a148c',rgb:'142,36,170',shadow:'0 6px 28px rgba(142,36,170,.28)',bar:'#8e24aa'},
 };
 
 const _aplicarColorTema=(tema)=>{
@@ -12993,7 +12995,7 @@ const _lockHash = async (v) => {
 
 const _lockHasPin     = () => !!localStorage.getItem(_LOCK_PIN_KEY);
 const _lockHasPattern = () => !!localStorage.getItem(_LOCK_PAT_KEY);
-const _lockHasAny     = () => _lockHasPin() || _lockHasPattern();
+const _lockHasAny     = () => _lockHasPin() || _lockHasPattern() || _lockFPActive();
 const _lockMethod     = () => localStorage.getItem(_LOCK_METHOD) || 'pin';
 const _lockFPActive   = () => localStorage.getItem(_LOCK_FP_KEY) === '1';
 
@@ -13611,15 +13613,25 @@ const _lockComprobar = () => {
 };
 
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='hidden'){ if(_lockHasAny())localStorage.setItem(_LOCK_TS,Date.now().toString()); }
-  else { setTimeout(_lockComprobar,300); }
+  if(document.visibilityState==='hidden'){
+    if(_lockHasAny()) localStorage.setItem(_LOCK_TS, Date.now().toString());
+  } else {
+    // Volvió al primer plano — comprobar tras breve delay para que el DOM esté listo
+    setTimeout(_lockComprobar, 500);
+  }
 });
-window.addEventListener('pagehide',()=>{ if(_lockHasAny())localStorage.setItem(_LOCK_TS,Date.now().toString()); });
-window.addEventListener('focus',()=>setTimeout(_lockComprobar,300));
-window.addEventListener('pageshow',()=>setTimeout(_lockComprobar,300));
+window.addEventListener('pagehide', ()=>{ if(_lockHasAny()) localStorage.setItem(_LOCK_TS, Date.now().toString()); });
+window.addEventListener('focus',    ()=>{ if(_lockHasAny()) setTimeout(_lockComprobar, 500); });
+window.addEventListener('pageshow', ()=>{ if(_lockHasAny()) setTimeout(_lockComprobar, 500); });
+window.addEventListener('resume',   ()=>{ if(_lockHasAny()) setTimeout(_lockComprobar, 500); });
 
 const _lockInicializar = () => {
-  if(_lockHasAny() && Date.now() - parseInt(localStorage.getItem(_LOCK_TS)||'0') > _LOCK_TIMEOUT) _lockMostrar();
+  if(!_lockHasAny()) return;
+  const ts = parseInt(localStorage.getItem(_LOCK_TS)||'0');
+  // Si ts es 0 (nunca se registró) o ha pasado el timeout → bloquear
+  if(ts === 0 || Date.now() - ts > _LOCK_TIMEOUT) {
+    _lockMostrar();
+  }
 };
 
 (()=>{
