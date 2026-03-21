@@ -293,9 +293,9 @@ body.modo-claro .skel{background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(
 .drawer-sub{font-size:12px;color:var(--tx2);margin-top:2px}
 .d-section{padding:14px 20px 4px;font-size:10px;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase}
 .d-item{display:flex;align-items:center;gap:12px;padding:11px 20px;font-size:13px;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer;transition:color .15s ease,background .15s ease,border-color .15s ease,padding-left .18s cubic-bezier(.16,1,.3,1);border-left:3px solid transparent}
-.d-item:hover,.d-item.active{color:var(--tx);background:rgba(var(--theme-rgb),.07);border-left-color:var(--r);padding-left:24px}
+.d-item:hover,.d-item.active{color:var(--tx);background:rgba(var(--theme-rgb),.07);border-left-color:#e53935;padding-left:24px}
 .d-icon{font-size:18px;width:24px;text-align:center}
-.d-grupo-label{padding:10px 20px 4px;font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.d-grupo-label{padding:10px 20px 4px;font-size:10px;font-weight:800;color:#e53935;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
 .d-sep{height:1px;background:rgba(255,255,255,.1);margin:10px 20px}
 
 /* ── AUTH ── */
@@ -530,7 +530,9 @@ body.modo-claro .gtab-sm{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.08)
 /* ── CLIENTE CARDS ── */
 .cli-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s ease,background .15s ease,border-color .2s ease;margin-bottom:8px}
 .cli-card:hover{transform:translateY(-2px);background:var(--card2);box-shadow:0 6px 20px rgba(0,0,0,.35);border-color:rgba(255,255,255,.11)}
-.cli-ava{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0}
+.cli-ava{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;flex-shrink:0}
+.cli-ava img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.cli-ava-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;border-radius:50%}
 .cli-info{flex:1;min-width:0}
 .cli-name{font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .cli-sub{font-size:12px;color:var(--tx2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -897,23 +899,37 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
 .hm-det-val{font-size:13px;font-weight:700;color:var(--tx);flex:1}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 /* ── CROP MODAL ── */
-#cropModal{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+#cropModal{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;padding:12px}
 #cropModal.open{display:flex;animation:fadeIn .2s ease}
-.crop-wrap{position:relative;width:100%;max-width:420px;background:#111;border-radius:18px;overflow:hidden;touch-action:none}
-.crop-canvas-wrap{position:relative;width:100%;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
-#cropCanvas{display:block;max-width:100%;max-height:55vh;object-fit:contain;cursor:crosshair}
+.crop-wrap{position:relative;width:100%;max-width:440px;background:#111;border-radius:18px;overflow:hidden;touch-action:none}
+.crop-canvas-wrap{position:relative;width:100%;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;min-height:200px}
+#cropCanvas{display:block;max-width:100%;max-height:58vh;cursor:crosshair;user-select:none;-webkit-user-select:none}
 .crop-overlay{position:absolute;inset:0;pointer-events:none}
-.crop-selection{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.55);box-sizing:border-box}
-.crop-handle{position:absolute;width:18px;height:18px;background:#fff;border-radius:3px;opacity:.9}
-.crop-handle.tl{top:-5px;left:-5px;cursor:nwse-resize}
-.crop-handle.tr{top:-5px;right:-5px;cursor:nesw-resize}
-.crop-handle.bl{bottom:-5px;left:-5px;cursor:nesw-resize}
-.crop-handle.br{bottom:-5px;right:-5px;cursor:nwse-resize}
-.crop-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px;background:#1a1a1a}
-.crop-ratio-btns{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap;background:#1a1a1a}
-.crop-ratio-btn{padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);transition:.15s}
-.crop-ratio-btn.active{background:rgba(var(--theme-rgb),.2);border-color:var(--r);color:var(--r)}
+.crop-selection{position:absolute;box-sizing:border-box;pointer-events:auto;cursor:move}
+.crop-selection::before{content:'';position:absolute;inset:-2px;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none}
+.crop-handle{position:absolute;width:22px;height:22px;background:#fff;border-radius:4px;opacity:.95;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.crop-handle.tl{top:-6px;left:-6px;cursor:nwse-resize}
+.crop-handle.tr{top:-6px;right:-6px;cursor:nesw-resize}
+.crop-handle.bl{bottom:-6px;left:-6px;cursor:nesw-resize}
+.crop-handle.br{bottom:-6px;right:-6px;cursor:nwse-resize}
+.crop-hint{text-align:center;padding:8px 16px 6px;font-size:11px;color:rgba(255,255,255,.45);background:#1a1a1a}
+.crop-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px;background:#1a1a1a}
 
+/* ── SELECTOR DE APP DE MAPAS ── */
+#mapPickerModal{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;padding:0;animation:fadeIn .18s ease}
+#mapPickerModal.open{display:flex}
+.map-picker-sheet{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 calc(env(safe-area-inset-bottom,0px)+12px);box-shadow:0 -8px 40px rgba(0,0,0,.45);animation:slideUp .25s cubic-bezier(.16,1,.3,1)}
+.map-picker-handle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:12px auto 18px}
+.map-picker-title{font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;text-align:center;margin-bottom:14px;padding:0 20px}
+.map-picker-addr{font-size:13px;color:var(--tx2);text-align:center;margin:-10px 20px 16px;padding:8px 12px;background:var(--card2);border-radius:10px;border:1px solid var(--border);line-height:1.4;word-break:break-word}
+.map-picker-apps{display:flex;flex-direction:column;gap:6px;padding:0 14px 4px}
+.map-picker-app{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:14px;background:var(--card2);border:1px solid var(--border);cursor:pointer;transition:background .12s,transform .12s;font-family:var(--font);color:var(--tx);-webkit-tap-highlight-color:transparent;width:100%;text-align:left}
+.map-picker-app:active{transform:scale(.98);background:rgba(var(--theme-rgb),.07)}
+.map-picker-app-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.map-picker-app-name{font-size:14px;font-weight:800;color:var(--tx)}
+.map-picker-app-desc{font-size:11px;color:var(--tx2);margin-top:2px}
+.map-picker-cancel{display:block;width:calc(100% - 28px);margin:10px 14px 0;padding:13px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--tx2);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);text-align:center;transition:.12s}
+.map-picker-cancel:active{background:rgba(255,255,255,.12)}
 </style>
 </head>
 <body>
@@ -1103,18 +1119,24 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
   <!-- TOAST -->
   <div id="toastWrap"></div>
 
+  <!-- SELECTOR DE APP DE MAPAS -->
+  <div id="mapPickerModal" onclick="if(event.target===this)cerrarMapPicker()">
+    <div class="map-picker-sheet">
+      <div class="map-picker-handle"></div>
+      <div class="map-picker-title">Abrir ubicación en…</div>
+      <div class="map-picker-addr" id="mapPickerAddr"></div>
+      <div class="map-picker-apps" id="mapPickerApps"></div>
+      <button class="map-picker-cancel" onclick="cerrarMapPicker()">Cancelar</button>
+    </div>
+  </div>
+
+
   <!-- CROP MODAL -->
   <div id="cropModal">
     <div class="crop-wrap">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#1a1a1a;border-bottom:1px solid rgba(255,255,255,.1)">
         <div style="font-size:14px;font-weight:900;color:#fff">✂️ Recortar imagen</div>
         <button onclick="window._cropCancel()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
-      </div>
-      <div class="crop-ratio-btns" id="cropRatioBtns">
-        <button class="crop-ratio-btn active" onclick="window._setCropRatio(0)" data-ratio="0">Libre</button>
-        <button class="crop-ratio-btn" onclick="window._setCropRatio(1)" data-ratio="1">1:1</button>
-        <button class="crop-ratio-btn" onclick="window._setCropRatio(4/3)" data-ratio="1.333">4:3</button>
-        <button class="crop-ratio-btn" onclick="window._setCropRatio(16/9)" data-ratio="1.778">16:9</button>
       </div>
       <div class="crop-canvas-wrap">
         <canvas id="cropCanvas"></canvas>
@@ -1127,6 +1149,7 @@ body.modo-claro .voz-btn-sec{background:rgba(0,0,0,.04)}
           </div>
         </div>
       </div>
+      <div class="crop-hint">Arrastra la selección · Ajusta las esquinas</div>
       <div class="crop-actions">
         <button class="btn btn-s" onclick="window._cropCancel()" style="padding:12px">Cancelar</button>
         <button class="btn btn-p" onclick="window._cropConfirm()" style="padding:12px">✓ Recortar y usar</button>
@@ -2101,8 +2124,8 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-item" onclick="goScreen('horas');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Control de horas</div>
 
     <div class="d-item" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Administración</div>
-    <div class="d-item" onclick="goScreen('archivos');cerrarDrawer()" style="color:var(--r)"><span class="d-icon" style="color:var(--r)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Clientes clasificados</div>
-    <div class="d-item" onclick="goScreen('aprendizaje');cerrarDrawer()" style="color:rgba(var(--theme-rgb),1)"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Aprendizaje IA <span style="font-size:9px;font-weight:900;background:rgba(var(--theme-rgb),.2);color:rgba(var(--theme-rgb),1);padding:2px 6px;border-radius:20px;margin-left:4px">NUEVO</span></div>
+    <div class="d-item" onclick="goScreen('archivos');cerrarDrawer()" style="color:#e53935"><span class="d-icon" style="color:#e53935"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Clientes clasificados</div>
+    <div class="d-item" onclick="goScreen('aprendizaje');cerrarDrawer()" style="color:#e53935"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Aprendizaje IA <span style="font-size:9px;font-weight:900;background:rgba(229,57,53,.15);color:#e53935;padding:2px 6px;border-radius:20px;margin-left:4px">NUEVO</span></div>
     ${sep}
     ${kioskBtn}
     ${sep}
@@ -2541,6 +2564,8 @@ window.abrirGrupo=async id=>{
   _partePlantillasFull=ppfSnap.docs.map(d=>({id:d.id,...d.data()}));
   // solicitar permiso notificaciones
   setTimeout(()=>{if(Notification.permission==='default')Notification.requestPermission()},500);
+  // Cargar avatares de clientes en background
+  setTimeout(_cargarAvataresCli, 800);
   // Backup automático semanal
   setTimeout(()=>_checkBackupAutomatico(),3000);
   // Alertas proactivas de mantenimientos próximos
@@ -3053,7 +3078,7 @@ const _renderGTabMantenimientos=()=>{
                   <button class="btn btn-s btn-sm" style="color:#ff7043;border-color:rgba(255,112,67,.3)" onclick="abrirAveriaDesdeMantenimiento('${e.id}')">⚡ Avería</button>
                   ${eTel?`<a href="tel:${eTel}" class="btn btn-s btn-sm" style="text-decoration:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>`:''}
                   ${eTel?`<a href="https://wa.me/34${eTel.replace(/\s/g,'')}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">💬</a>`:''}
-                  ${eDir?`<a href="https://maps.google.com/?q=${encodeURIComponent(eDir)}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">📍</a>`:''}
+                  ${eDir?`<button class="btn btn-s btn-sm" onclick="abrirMapa('','',eDir)">📍</button>`:''}
                   <button class="btn btn-s btn-sm" onclick="verMant('${e.id}',true)">📷</button>
                   ${e.frecuencia&&!completadoVisual?`<span style="font-size:11px;color:var(--tx2);background:rgba(255,255,255,.06);border-radius:8px;padding:6px 10px">${e.frecuencia}</span>`:''}
                 </div>
@@ -3361,6 +3386,40 @@ window.desmarcarMantCal3=async(id,fecha,btn)=>{
   }catch(e){toast('Error al desmarcar','e')}
 };
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ── Cache de avatares de cliente (primera imagen por cliente) ──
+window._cliAvatarCache = {}; // { cliId: url }
+
+// Poblar cache desde el snapshot de imagenes del grupo
+const _poblarAvatarCache=(imgDocs)=>{
+  // Ordenar por creado asc para que la más antigua (primera) prevalezca
+  const sorted=[...imgDocs].sort((a,b)=>(a.creado?.seconds||0)-(b.creado?.seconds||0));
+  const seen=new Set(Object.keys(window._cliAvatarCache));
+  sorted.forEach(img=>{
+    const {clienteId,url}=img;
+    if(clienteId&&url&&!window._cliAvatarCache[clienteId]){
+      window._cliAvatarCache[clienteId]=url;
+    }
+  });
+};
+
+// Cargar avatares del grupo en background
+const _cargarAvataresCli=async()=>{
+  if(!CGID)return;
+  try{
+    const snap=await getDocs(collection(db,'grupos',CGID,'imagenes'));
+    const imgs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    window._cliAvatarCache={};
+    _poblarAvatarCache(imgs);
+    // Re-render lista si está visible
+    const lista=document.getElementById('clisList');
+    if(lista){
+      const clis=allClientes.filter(c=>!c.archivado).slice().reverse();
+      lista.innerHTML=htmlListaClis(clis,false);
+    }
+  }catch(e){}
+};
+
+
 const renderTabClientes=()=>{
   const clis=allClientes.filter(c=>!c.archivado);
   const ultimos=clis.slice().reverse();
@@ -3430,7 +3489,14 @@ const htmlListaClis=(clis,preview=false)=>{
     if(c.telefono)subParts.push(c.telefono);
     if(c.edificio)subParts.push(c.edificio);
     if(c.direccion)subParts.push(c.direccion);
+    const avaUrl=(window._cliAvatarCache&&window._cliAvatarCache[c.id])||'';
+    const avaStyle=`background:${col}`;
+    const avaIni=c.nombre?c.nombre.trim()[0].toUpperCase():'?';
+    const avaHtml=avaUrl
+      ?`<img src="${avaUrl}" alt="${c.nombre}" loading="lazy">`
+      :`<div class="cli-ava-initials" style="background:${col}">${avaIni}</div>`;
     return`<div class="cli-card" onclick="verCliente('${c.id}')">
+      <div class="cli-ava" style="${avaUrl?'background:transparent':'background:'+col}">${avaHtml}</div>
       <div class="cli-info">
         <div class="cli-name">${c.nombre} <span>${colEmo}</span></div>
         <div class="cli-sub">${subParts.join(' · ')||'Sin datos de contacto'}</div>
@@ -3673,7 +3739,7 @@ window.verCliente=async id=>{
         ${c.telefono?`<a href="tel:${c.telefono}" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);color:#4caf50;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>`:''}
         ${c.telefono?`<a href="https://wa.me/34${c.telefono.replace(/\s/g,'')}" target="_blank" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">💬 WhatsApp</a>`:''}
         ${c.email?`<a href="mailto:${c.email}" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.15);border:1px solid rgba(66,133,244,.3);color:#4285f4;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">✉️ Email</a>`:''}
-        ${c.direccion?`<a href="${c.lat&&c.lng?`https://maps.google.com/?q=${c.lat},${c.lng}`:`https://maps.google.com/?q=${encodeURIComponent(c.direccion)}`}" target="_blank" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.25);color:#4285f4;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">📍 Maps${c.lat&&c.lng?' 🎯':''}</a>`:''}
+        ${c.direccion?`<button onclick="event.stopPropagation();abrirMapa(c.lat||'',c.lng||'',c.direccion)" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.25);color:#4285f4;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">📍 Maps${c.lat&&c.lng?' 🎯':''}</button>`:''}
       </div>`:''}
     </div>
 
@@ -3921,7 +3987,8 @@ window.abrirFCli=async(id, preData)=>{
     </div>
     <div class="fsec"><div class="fsec-title">Indicador de color</div>
       <div class="ind-opts">
-        <div class="ind-opt ind-r ${(c?.color||'verde')==='rojo'?'sel':''}" onclick="selInd('rojo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--r);margin-right:5px;vertical-align:middle"></span>Rojo</div>
+        <div class="ind-opt ind-r ${(c?.color||'verde')==='rojo'?'sel':''}" onclick="selInd('rojo')">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e53935;margin-right:5px;vertical-align:middle"></span>Rojo</div>
         <div class="ind-opt ind-y ${(c?.color||'verde')==='amarillo'?'sel':''}" onclick="selInd('amarillo')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc107;margin-right:5px;vertical-align:middle"></span>Amarillo</div>
         <div class="ind-opt ind-g ${(c?.color||'verde')==='verde'?'sel':''}" onclick="selInd('verde')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4caf50;margin-right:5px;vertical-align:middle"></span>Verde</div>
       </div>
@@ -3968,7 +4035,7 @@ window.abrirCliExpress=()=>{
       <div class="fgrp">
         <label>Color indicador</label>
         <div class="ind-opts" id="ceIndOpts">
-          <div class="ind-opt ind-r" data-color="rojo"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--r);margin-right:5px;vertical-align:middle"></span>Rojo</div>
+          <div class="ind-opt ind-r" data-color="rojo"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e53935;margin-right:5px;vertical-align:middle"></span>Rojo</div>
           <div class="ind-opt ind-y" data-color="amarillo"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc107;margin-right:5px;vertical-align:middle"></span>Amarillo</div>
           <div class="ind-opt ind-g sel" data-color="verde"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4caf50;margin-right:5px;vertical-align:middle"></span>Verde</div>
         </div>
@@ -4014,45 +4081,127 @@ window.abrirCliExpress=()=>{
   },0);
 };
 
-window.usarUbicacionExpressCli=async()=>{
+// ════════════════════════════════════════════════════════
+// SELECTOR DE APP DE MAPAS
+// ════════════════════════════════════════════════════════
+window.abrirMapa=(lat,lng,dir)=>{
+  const modal=document.getElementById('mapPickerModal');
+  const appsEl=document.getElementById('mapPickerApps');
+  const addrEl=document.getElementById('mapPickerAddr');
+  if(!modal||!appsEl)return;
+  const latF=parseFloat(lat)||0;
+  const lngF=parseFloat(lng)||0;
+  const hasCoords=!!(latF||lngF);
+  const label=dir||(hasCoords?latF.toFixed(5)+', '+lngF.toFixed(5):'Ubicación');
+  if(addrEl)addrEl.textContent=label;
+  const qDir=encodeURIComponent(dir||label);
+  const coordStr=latF+','+lngF;
+  const apps=[
+    {name:'Google Maps',desc:'Navegación y tráfico',ico:'🗺️',bg:'rgba(66,133,244,.15)',
+     url:hasCoords?'https://maps.google.com/?q='+coordStr:'https://maps.google.com/?q='+qDir,
+     intent:hasCoords?'geo:'+coordStr+'?q='+coordStr:'geo:0,0?q='+qDir},
+    {name:'Waze',desc:'Mejor para evitar tráfico',ico:'🚗',bg:'rgba(0,210,150,.15)',
+     url:hasCoords?'https://waze.com/ul?ll='+coordStr+'&navigate=yes':'https://waze.com/ul?q='+qDir+'&navigate=yes',
+     intent:hasCoords?'waze://?ll='+coordStr+'&navigate=yes':'waze://?q='+qDir+'&navigate=yes'},
+    {name:'Apple Maps',desc:'Mapas de Apple',ico:'🍎',bg:'rgba(100,100,255,.12)',
+     url:hasCoords?'https://maps.apple.com/?ll='+coordStr+'&q='+qDir:'https://maps.apple.com/?q='+qDir,
+     intent:hasCoords?'maps://?ll='+coordStr+'&q='+qDir:'maps://?q='+qDir},
+    {name:'Abrir en navegador',desc:'Google Maps web',ico:'🌐',bg:'rgba(255,255,255,.06)',
+     url:hasCoords?'https://www.google.com/maps/search/?api=1&query='+coordStr:'https://www.google.com/maps/search/?api=1&query='+qDir,
+     intent:null},
+  ];
+  appsEl.innerHTML=apps.map((app,i)=>{
+    const id='_mpa'+i+'_'+Date.now();
+    window['_mpaCb'+i]=()=>{cerrarMapPicker();window._abrirMapaApp(app.intent,app.url);};
+    return '<button class="map-picker-app" onclick="window._mpaCb'+i+'()">'+
+      '<div class="map-picker-app-ico" style="background:'+app.bg+'">'+app.ico+'</div>'+
+      '<div style="flex:1;min-width:0"><div class="map-picker-app-name">'+app.name+'</div><div class="map-picker-app-desc">'+app.desc+'</div></div>'+
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--tx3);flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>'+
+      '</button>';
+  }).join('');
+  modal.classList.add('open');
+};
+
+window._abrirMapaApp=(intent,url)=>{
+  if(intent){
+    // Intentar abrir app nativa; si no está instalada, el navegador lo ignora
+    const a=document.createElement('a');
+    a.href=intent;a.style.display='none';
+    document.body.appendChild(a);
+    try{a.click();}catch(e){}
+    document.body.removeChild(a);
+    // Fallback a URL web tras 800ms si la app no se abrió
+    setTimeout(()=>{if(!document.hidden)window.open(url,'_blank','noopener');},800);
+  }else{
+    window.open(url,'_blank','noopener');
+  }
+};
+
+window.cerrarMapPicker=()=>{
+  const modal=document.getElementById('mapPickerModal');
+  if(modal)modal.classList.remove('open');
+};
+
+
+// ── Helper geocodificación inversa (Nominatim) ──
+const _geocodificarCoordenadas=async(lat,lng)=>{
+  // Intentar Nominatim con User-Agent obligatorio
+  const url=`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=es`;
+  const res=await fetch(url,{
+    headers:{
+      'Accept-Language':'es-ES,es;q=0.9',
+      'User-Agent':'JoyviApp/1.0'
+    }
+  });
+  if(!res.ok)throw new Error('Nominatim '+res.status);
+  const data=await res.json();
+  const a=data.address||{};
+  const road=a.road||a.pedestrian||a.footway||a.street||'';
+  const num=a.house_number||'';
+  const city=a.city||a.town||a.village||a.municipality||a.county||a.state||'';
+  const cp=a.postcode||'';
+  const parts=[road+(num?' '+num:''),cp?cp+' '+city:city].filter(Boolean);
+  return parts.join(', ')||data.display_name?.split(',').slice(0,3).join(',').trim()||'';
+};
+
+// ── Geolocalización para formulario EXPRESS de cliente ──
+
+window.usarUbicacionExpressCli=()=>{
   const btn=document.getElementById('btnGeoExpress');
   const info=document.getElementById('ceGeoInfo');
-  if(!navigator.geolocation){toast('GPS no disponible','e');return;}
-  if(btn){btn.textContent='⏳';btn.disabled=true;}
-  if(info)info.textContent='Obteniendo ubicación exacta...';
+  if(!navigator.geolocation){toast('GPS no disponible en este dispositivo','e');return;}
+  if(btn){btn.innerHTML='⏳';btn.disabled=true;}
+  if(info){info.textContent='Obteniendo ubicación...';info.style.color='var(--tx2)';}
   navigator.geolocation.getCurrentPosition(async pos=>{
     const lat=pos.coords.latitude;
     const lng=pos.coords.longitude;
+    // Guardar coords inmediatamente
     const latEl=document.getElementById('ceLat');
     const lngEl=document.getElementById('ceLng');
     const dirEl=document.getElementById('ceDir');
-    if(latEl)latEl.value=lat;
-    if(lngEl)lngEl.value=lng;
+    if(latEl)latEl.value=String(lat);
+    if(lngEl)lngEl.value=String(lng);
+    // Intentar geocodificación
     try{
-      const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,{headers:{'Accept-Language':'es'}});
-      const data=await res.json();
-      const a=data.address||{};
-      const road=a.road||a.pedestrian||a.footway||'';
-      const num=a.house_number||'';
-      const city=a.city||a.town||a.village||a.municipality||a.county||'';
-      const cp=a.postcode||'';
-      const parts=[road+(num?' '+num:''),cp,city].filter(Boolean);
-      const dir=parts.join(', ');
-      if(dirEl)dirEl.value=dir;
-      if(btn){btn.textContent='🎯';btn.disabled=false;}
-      if(info)info.innerHTML='<span style="color:#4caf50">🎯 GPS exacto: '+lat.toFixed(6)+', '+lng.toFixed(6)+'</span>';
-      toast('Ubicación exacta guardada','o');
+      const dir=await _geocodificarCoordenadas(lat,lng);
+      if(dirEl&&dir){
+        dirEl.value=dir;
+        dirEl.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
+      if(info)info.innerHTML=`<span style="color:#4caf50">✓ ${dir||'GPS: '+lat.toFixed(5)+', '+lng.toFixed(5)}</span>`;
+      toast('Dirección detectada','o');
     }catch(err){
-      if(btn){btn.textContent='🎯';btn.disabled=false;}
-      if(info)info.innerHTML='<span style="color:#4caf50">🎯 GPS: '+lat.toFixed(6)+', '+lng.toFixed(6)+'</span>';
-      toast('Coordenadas GPS guardadas','i');
+      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
+      if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}</span>`;
+      toast('GPS guardado (sin conexión para dirección)','i');
     }
   },err=>{
-    if(btn){btn.textContent='📍';btn.disabled=false;}
-    if(info)info.textContent='';
-    const msgs={1:'Permiso de ubicación denegado',2:'Ubicación no disponible',3:'Tiempo de espera agotado'};
+    if(btn){btn.innerHTML='📍';btn.disabled=false;}
+    if(info){info.textContent='';info.style.color='';}
+    const msgs={1:'Permiso GPS denegado — actívalo en ajustes del navegador',2:'Ubicación no disponible',3:'GPS tardó demasiado, inténtalo de nuevo'};
     toast(msgs[err.code]||'Error al obtener ubicación','e');
-  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
 };
 
 window.guardarCliExpress=async()=>{
@@ -4077,6 +4226,9 @@ window.guardarCliExpress=async()=>{
         await addDoc(collection(db,'grupos',CGID,'imagenes'),{
           clienteId:ref.id,clienteNombre:nom,descripcion:'Foto principal',url,publicId,creado:serverTimestamp()
         });
+        // Guardar en cache de avatar inmediatamente
+        if(!window._cliAvatarCache)window._cliAvatarCache={};
+        window._cliAvatarCache[ref.id]=url;
         window._ceFotoFile=null;
       }catch(e){console.warn('foto express no subida',e);}
     }
@@ -4127,42 +4279,40 @@ window.guardarCli=async(id)=>{
   }catch(e){toast('Error al guardar','e')}
 };
 
-// ── Geolocalización para formulario de cliente ──
-window.usarUbicacionActualCliente=async()=>{
+// ── Geolocalización para formulario completo de cliente ──
+window.usarUbicacionActualCliente=()=>{
   const btn=$('btnGeoUbic');
   if(!navigator.geolocation){toast('GPS no disponible en este dispositivo','e');return;}
-  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  if(btn){btn.innerHTML='⏳';btn.disabled=true;}
   navigator.geolocation.getCurrentPosition(async pos=>{
     const lat=pos.coords.latitude;
     const lng=pos.coords.longitude;
-    // Geocodificación inversa con Nominatim (gratuito, sin API key)
+    // Guardar coords inmediatamente
+    if($('cLat'))$('cLat').value=String(lat);
+    if($('cLng'))$('cLng').value=String(lng);
+    // Intentar geocodificación inversa
     try{
-      const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,{headers:{'Accept-Language':'es'}});
-      const data=await res.json();
-      const a=data.address||{};
-      const road=a.road||a.pedestrian||a.footway||'';
-      const num=a.house_number||'';
-      const city=a.city||a.town||a.village||a.municipality||a.county||'';
-      const cp=a.postcode||'';
-      const parts=[road+(num?' '+num:''),cp,city].filter(Boolean);
-      const dir=parts.join(', ');
-      if($('cDir'))$('cDir').value=dir;
-      if($('cLat'))$('cLat').value=lat;
-      if($('cLng'))$('cLng').value=lng;
-      if(btn){btn.textContent='🎯';btn.disabled=false;}
-      toast('Ubicación añadida como dirección','o');
+      const dir=await _geocodificarCoordenadas(lat,lng);
+      const dirInput=$('cDir');
+      if(dirInput&&dir){
+        dirInput.value=dir;
+        dirInput.dispatchEvent(new Event('input',{bubbles:true}));
+        // Resaltar campo brevemente
+        dirInput.style.borderColor='#4caf50';
+        dirInput.style.boxShadow='0 0 0 3px rgba(76,175,80,.2)';
+        setTimeout(()=>{dirInput.style.borderColor='';dirInput.style.boxShadow='';},2000);
+      }
+      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
+      toast('✓ Dirección detectada y rellenada','o');
     }catch(err){
-      // Si falla el geocoder, guardar solo coords
-      if($('cLat'))$('cLat').value=lat;
-      if($('cLng'))$('cLng').value=lng;
-      if(btn){btn.textContent='🎯';btn.disabled=false;}
-      toast('Coordenadas GPS guardadas (sin dirección textual)','i');
+      if(btn){btn.innerHTML='🎯';btn.disabled=false;}
+      toast('GPS guardado — dirección no disponible sin conexión','i');
     }
   },err=>{
-    if(btn){btn.textContent='📍';btn.disabled=false;}
-    const msgs={1:'Permiso de ubicación denegado',2:'Ubicación no disponible',3:'Tiempo de espera agotado'};
+    if(btn){btn.innerHTML='📍';btn.disabled=false;}
+    const msgs={1:'Permiso GPS denegado — actívalo en ajustes del navegador',2:'Ubicación no disponible',3:'GPS tardó demasiado, inténtalo de nuevo'};
     toast(msgs[err.code]||'Error al obtener ubicación','e');
-  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
 };
 window.importarContactoAgenda=async()=>{
   if(!('contacts' in navigator)){
@@ -6016,7 +6166,7 @@ window.verMant=async(id,_tabFotos)=>{
         <button class="btn btn-s btn-sm" onclick="goScreen('grupo');switchGTab('mant');setTimeout(()=>_switchGMantMode('calendario'),100)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Ir al calendario</button>
         ${tel?`<a href="tel:${tel}" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>`:''}
         ${tel?`<a href="https://wa.me/34${tel.replace(/\s/g,'')}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">💬 WhatsApp</a>`:''}
-        ${dir?`<a href="https://maps.google.com/?q=${encodeURIComponent(dir)}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">📍 Maps</a>`:''}
+        ${dir?`<button class="btn btn-s btn-sm" onclick="abrirMapa('','',dir)" style="cursor:pointer">📍 Maps</button>`:''}
       </div>
     </div>
     <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:16px">
@@ -6485,7 +6635,7 @@ const renderCalendario=()=>{
                 <button class="btn btn-s btn-sm" style="color:#ff7043;border-color:rgba(255,112,67,.3)" onclick="abrirAveriaDesdeMantenimiento('${e.id}')">⚡ Avería</button>
                 ${eTel?`<a href="tel:${eTel}" class="btn btn-s btn-sm" style="text-decoration:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>`:''}
                 ${eTel?`<a href="https://wa.me/34${eTel.replace(/\s/g,'')}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">💬</a>`:''}
-                ${eDir?`<a href="https://maps.google.com/?q=${encodeURIComponent(eDir)}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">📍</a>`:''}
+                ${eDir?`<button class="btn btn-s btn-sm" onclick="abrirMapa('','',eDir)">📍</button>`:''}
                 <button class="btn btn-s btn-sm" onclick="verMant('${e.id}',true)">📷</button>
                 ${e.frecuencia&&!completadoVisual?`<span style="font-size:11px;color:var(--tx2);background:rgba(255,255,255,.06);border-radius:8px;padding:6px 10px">${e.frecuencia}</span>`:''}
               </div>
@@ -7354,173 +7504,158 @@ window.abrirImagenesClienteSB=async(cliId)=>{
 // ════════════════════════════════════════════════════════
 // CROP ENGINE — Recortador de imagen inline (sin libs)
 // ════════════════════════════════════════════════════════
-window._cropState={img:null,ratio:0,sel:{x:0,y:0,w:0,h:0},drag:null,resolve:null,reject:null};
+// ── CROP ENGINE v2 — modo libre únicamente ──
+window._cropState={img:null,sel:{x:0,y:0,w:0,h:0},resolve:null,reject:null,_listeners:[]};
 
-window._setCropRatio=(r)=>{
-  window._cropState.ratio=r;
-  document.querySelectorAll('.crop-ratio-btn').forEach(b=>b.classList.toggle('active',parseFloat(b.dataset.ratio||0)===r||(r===0&&b.dataset.ratio==='0')));
-  if(r>0) _constrainCropRatio();
-  _drawCrop();
-};
-
-const _drawCrop=()=>{
+// Actualizar posición visual de la selección sin redibujar el canvas
+const _updateCropSelEl=()=>{
   const s=window._cropState;
-  const canvas=document.getElementById('cropCanvas');
-  if(!canvas||!s.img)return;
-  const ctx=canvas.getContext('2d');
-  ctx.drawImage(s.img,0,0,canvas.width,canvas.height);
+  const cvs=document.getElementById('cropCanvas');
   const sel=document.getElementById('cropSel');
-  if(!sel)return;
-  const wrap=canvas.parentElement;
-  const wW=wrap.offsetWidth;const wH=wrap.offsetHeight;
-  const scX=canvas.offsetWidth/canvas.width;const scY=canvas.offsetHeight/canvas.height;
-  const offX=(wW-canvas.offsetWidth)/2;const offY=(wH-canvas.offsetHeight)/2;
+  if(!cvs||!sel)return;
+  const rect=cvs.getBoundingClientRect();
+  const wrap=cvs.parentElement;
+  const wRect=wrap.getBoundingClientRect();
+  const scX=cvs.offsetWidth/cvs.width;
+  const scY=cvs.offsetHeight/cvs.height;
+  // Offset del canvas dentro del wrap (centrado)
+  const offX=rect.left-wRect.left;
+  const offY=rect.top-wRect.top;
   sel.style.left=(offX+s.sel.x*scX)+'px';
   sel.style.top=(offY+s.sel.y*scY)+'px';
   sel.style.width=(s.sel.w*scX)+'px';
   sel.style.height=(s.sel.h*scY)+'px';
 };
 
-const _constrainCropRatio=()=>{
-  const s=window._cropState;if(!s.ratio)return;
-  const canvas=document.getElementById('cropCanvas');if(!canvas)return;
-  const maxW=canvas.width;const maxH=canvas.height;
-  let w=s.sel.w;let h=w/s.ratio;
-  if(h>maxH){h=maxH;w=h*s.ratio;}
-  if(w>maxW){w=maxW;h=w/s.ratio;}
-  s.sel.w=w;s.sel.h=h;
-  if(s.sel.x+w>maxW)s.sel.x=maxW-w;
-  if(s.sel.y+h>maxH)s.sel.y=maxH-h;
-};
-
 // Abrir el modal de crop dado un File, devuelve Promise<File> con la imagen recortada
 window.abrirCropModal=(file)=>new Promise((resolve,reject)=>{
   const modal=document.getElementById('cropModal');
-  const canvas=document.getElementById('cropCanvas');
-  if(!modal||!canvas){reject(new Error('crop modal not found'));return;}
+  const cvs=document.getElementById('cropCanvas');
+  if(!modal||!cvs){reject(new Error('crop modal not found'));return;}
+  // Limpiar listeners previos
+  (window._cropState._listeners||[]).forEach(([el,ev,fn])=>el.removeEventListener(ev,fn));
+  window._cropState._listeners=[];
+
   const img=new Image();
   const url=URL.createObjectURL(file);
   img.onload=()=>{
     URL.revokeObjectURL(url);
-    // Redimensionar canvas al tamaño real de la imagen (máx 1200px)
     const MAX=1200;
-    let w=img.naturalWidth;let h=img.naturalHeight;
+    let w=img.naturalWidth,h=img.naturalHeight;
     if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
-    canvas.width=w;canvas.height=h;
-    const ctx=canvas.getContext('2d');
-    ctx.drawImage(img,0,0,w,h);
+    cvs.width=w;cvs.height=h;
+    cvs.getContext('2d').drawImage(img,0,0,w,h);
     // Selección inicial: 80% centrado
-    const sw=Math.round(w*.80);const sh=Math.round(h*.80);
-    window._cropState={img,ratio:0,sel:{x:Math.round((w-sw)/2),y:Math.round((h-sh)/2),w:sw,h:sh},drag:null,resolve,reject};
-    // Reset ratio buttons
-    document.querySelectorAll('.crop-ratio-btn').forEach(b=>b.classList.toggle('active',b.dataset.ratio==='0'));
-    _drawCrop();
+    const sw=Math.round(w*.8),sh=Math.round(h*.8);
+    window._cropState={img,sel:{x:Math.round((w-sw)/2),y:Math.round((h-sh)/2),w:sw,h:sh},resolve,reject,_listeners:[]};
     modal.classList.add('open');
-    _initCropDrag();
+    // Esperar a que el modal esté visible antes de posicionar
+    requestAnimationFrame(()=>{ _updateCropSelEl(); _initCropDrag2(); });
   };
   img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('load failed'));};
   img.src=url;
 });
 
-const _initCropDrag=()=>{
-  const canvas=document.getElementById('cropCanvas');
-  const sel=document.getElementById('cropSel');
-  const wrap=canvas?.parentElement;
-  if(!canvas||!sel||!wrap)return;
-  // Limpiar listeners anteriores clonando
-  const newSel=sel.cloneNode(true);sel.parentNode.replaceChild(newSel,sel);
-  const newWrap=wrap.cloneNode(false);
-  while(wrap.firstChild)newWrap.appendChild(wrap.firstChild);
-  wrap.parentNode.replaceChild(newWrap,wrap);
-  // Re-obtener referencias
+const _initCropDrag2=()=>{
   const cvs=document.getElementById('cropCanvas');
-  const s=window._cropState;
-
-  const getCanvasCoords=(clientX,clientY)=>{
-    const rect=cvs.getBoundingClientRect();
-    const scX=cvs.width/cvs.offsetWidth;const scY=cvs.height/cvs.offsetHeight;
-    return{x:(clientX-rect.left)*scX,y:(clientY-rect.top)*scY};
-  };
-
-  const clamp=(v,min,max)=>Math.min(Math.max(v,min),max);
-
-  // Drag en selección (mover)
   const selEl=document.getElementById('cropSel');
-  let dragType=null;let startPos=null;let startSel=null;
+  if(!cvs||!selEl)return;
+  const s=window._cropState;
+  const MIN=30;
 
-  const onDown=(e,type)=>{
+  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+  // Escala: de pixels de pantalla a pixels de canvas
+  const scaleX=()=>cvs.width/cvs.offsetWidth;
+  const scaleY=()=>cvs.height/cvs.offsetHeight;
+
+  let dragType=null,startClient=null,startSel=null;
+
+  const startDrag=(e,type)=>{
     e.stopPropagation();e.preventDefault();
     const pt=e.touches?e.touches[0]:e;
-    dragType=type;startPos={x:pt.clientX,y:pt.clientY};
+    dragType=type;
+    startClient={x:pt.clientX,y:pt.clientY};
     startSel={...s.sel};
   };
 
-  selEl.addEventListener('mousedown',e=>onDown(e,'move'),{passive:false});
-  selEl.addEventListener('touchstart',e=>onDown(e,'move'),{passive:false});
-  selEl.querySelectorAll('.crop-handle').forEach(h=>{
-    h.addEventListener('mousedown',e=>onDown(e,h.dataset.h),{passive:false});
-    h.addEventListener('touchstart',e=>onDown(e,h.dataset.h),{passive:false});
-  });
-
-  const onMove=(e)=>{
-    if(!dragType||!startPos)return;
+  const doDrag=(e)=>{
+    if(!dragType)return;
     e.preventDefault();
     const pt=e.touches?e.touches[0]:e;
-    const dx=(pt.clientX-startPos.x)*(cvs.width/cvs.offsetWidth);
-    const dy=(pt.clientY-startPos.y)*(cvs.height/cvs.offsetHeight);
-    const W=cvs.width;const H=cvs.height;
+    const dx=(pt.clientX-startClient.x)*scaleX();
+    const dy=(pt.clientY-startClient.y)*scaleY();
+    const W=cvs.width,H=cvs.height;
+    let {x,y,w,h}={...startSel};
+
     if(dragType==='move'){
-      s.sel.x=clamp(startSel.x+dx,0,W-s.sel.w);
-      s.sel.y=clamp(startSel.y+dy,0,H-s.sel.h);
-    }else{
-      let {x,y,w,h}=startSel;
-      const MIN=30;
-      if(dragType==='br'){w=clamp(w+dx,MIN,W-x);h=s.ratio?w/s.ratio:clamp(h+dy,MIN,H-y);}
-      else if(dragType==='bl'){const nw=clamp(w-dx,MIN,x+w);x=x+w-nw;w=nw;h=s.ratio?w/s.ratio:clamp(h+dy,MIN,H-y);}
-      else if(dragType==='tr'){w=clamp(w+dx,MIN,W-x);const nh=s.ratio?w/s.ratio:clamp(h-dy,MIN,y+h);y=y+h-nh;h=nh;}
-      else if(dragType==='tl'){const nw=clamp(w-dx,MIN,x+w);x=x+w-nw;w=nw;const nh=s.ratio?w/s.ratio:clamp(h-dy,MIN,y+h);y=y+h-nh;h=nh;}
-      // Clamp to canvas bounds
-      if(y<0){h+=y;y=0;}if(x<0){w+=x;x=0;}
-      if(y+h>H)h=H-y;if(x+w>W)w=W-x;
-      s.sel={x,y,w,h};
+      x=clamp(x+dx,0,W-w);
+      y=clamp(y+dy,0,H-h);
+    } else {
+      // Resize según handle
+      if(dragType==='br'){ w=clamp(w+dx,MIN,W-x); h=clamp(h+dy,MIN,H-y); }
+      else if(dragType==='bl'){ const nw=clamp(w-dx,MIN,x+w); x=x+w-nw; w=nw; h=clamp(h+dy,MIN,H-y); }
+      else if(dragType==='tr'){ w=clamp(w+dx,MIN,W-x); const nh=clamp(h-dy,MIN,y+h); y=y+h-nh; h=nh; }
+      else if(dragType==='tl'){ const nw=clamp(w-dx,MIN,x+w); x=x+w-nw; w=nw; const nh=clamp(h-dy,MIN,y+h); y=y+h-nh; h=nh; }
+      // Evitar salirse del canvas
+      if(x<0){w+=x;x=0;} if(y<0){h+=y;y=0;}
+      if(x+w>W)w=W-x; if(y+h>H)h=H-y;
     }
-    _drawCrop();
+    s.sel={x,y,w,h};
+    _updateCropSelEl();
   };
-  const onUp=()=>{dragType=null;};
-  document.addEventListener('mousemove',onMove,{passive:false});
-  document.addEventListener('mouseup',onUp);
-  document.addEventListener('touchmove',onMove,{passive:false});
-  document.addEventListener('touchend',onUp);
+
+  const endDrag=()=>{ dragType=null; };
+
+  // Bind selección (mover)
+  const addL=(el,ev,fn,opt)=>{
+    el.addEventListener(ev,fn,opt);
+    s._listeners.push([el,ev,fn]);
+  };
+
+  addL(selEl,'mousedown',e=>startDrag(e,'move'),{passive:false});
+  addL(selEl,'touchstart',e=>startDrag(e,'move'),{passive:false});
+
+  // Bind handles (resize)
+  selEl.querySelectorAll('.crop-handle').forEach(h=>{
+    addL(h,'mousedown',e=>startDrag(e,h.dataset.h),{passive:false});
+    addL(h,'touchstart',e=>startDrag(e,h.dataset.h),{passive:false});
+  });
+
+  addL(document,'mousemove',doDrag,{passive:false});
+  addL(document,'mouseup',endDrag,false);
+  addL(document,'touchmove',doDrag,{passive:false});
+  addL(document,'touchend',endDrag,false);
 };
 
 window._cropConfirm=()=>{
   const s=window._cropState;
-  const canvas=document.getElementById('cropCanvas');
+  const cvs=document.getElementById('cropCanvas');
   const modal=document.getElementById('cropModal');
-  if(!s.resolve||!canvas)return;
+  if(!s.resolve||!cvs)return;
   const {x,y,w,h}=s.sel;
   const out=document.createElement('canvas');
   out.width=Math.round(w);out.height=Math.round(h);
-  out.getContext('2d').drawImage(canvas,x,y,w,h,0,0,out.width,out.height);
+  out.getContext('2d').drawImage(cvs,Math.round(x),Math.round(y),Math.round(w),Math.round(h),0,0,out.width,out.height);
   out.toBlob(blob=>{
     if(!blob){s.reject(new Error('toBlob failed'));return;}
-    const file=new File([blob],'crop.jpg',{type:'image/jpeg'});
     modal.classList.remove('open');
-    s.resolve(file);
+    s.resolve(new File([blob],'crop.jpg',{type:'image/jpeg'}));
   },'image/jpeg',0.88);
 };
 
 window._cropCancel=()=>{
   const modal=document.getElementById('cropModal');
   if(modal)modal.classList.remove('open');
+  (window._cropState._listeners||[]).forEach(([el,ev,fn])=>el.removeEventListener(ev,fn));
   if(window._cropState.reject)window._cropState.reject(new Error('cancelled'));
-  window._cropState.resolve=null;window._cropState.reject=null;
+  window._cropState={img:null,sel:{x:0,y:0,w:0,h:0},resolve:null,reject:null,_listeners:[]};
 };
 
-// Helper: abre crop si es una sola imagen, lo saltea si son múltiples
+// Helper: abre crop para una imagen individual
 window._cropIfNeeded=async(file)=>{
   try{return await abrirCropModal(file);}
-  catch(e){if(e.message==='cancelled')throw e;return file;}// si falla el crop devuelve original
+  catch(e){if(e.message==='cancelled')throw e;return file;}
 };
 
 
@@ -7545,7 +7680,12 @@ window.subirFotosCliente=async(cliId,files)=>{
       subidas++;
     }catch(e){console.error(e);toast('Error','e')}
   }
-  if(subidas>0){toast(`${subidas} foto${subidas>1?'s':''} añadida${subidas>1?'s':''}!`,'o');abrirImagenesClienteSB(cliId);}
+  if(subidas>0){
+    toast(`${subidas} foto${subidas>1?'s':''} añadida${subidas>1?'s':''}!`,'o');
+    // Actualizar cache de avatar si no tenía foto
+    if(!window._cliAvatarCache[cliId]){setTimeout(_cargarAvataresCli,500);}
+    abrirImagenesClienteSB(cliId);
+  }
 };
 
 window.abrirImgViewer=async(imgId)=>{
@@ -8662,7 +8802,7 @@ window.abrirHMFicha=(idx)=>{
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       ${tel?'<a href="tel:'+tel+'" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>':''}
-      ${dir?'<a href="https://maps.google.com/?q='+encodeURIComponent(dir)+'" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">📍 Maps</a>':''}
+      ${dir?`<button class="btn btn-s btn-sm" onclick="abrirMapa('','',dir)" style="cursor:pointer">📍 Maps</button>`:''}
       ${esCompletado&&mid&&idc?'<button class="btn btn-s btn-sm" style="color:#ff9800;border-color:rgba(255,152,0,.4)" onclick="window.restaurarMantCompletado(\''+mid+'\',\''+idc+'\')">↩ Restaurar como activo</button>':''}
       ${esHistorial&&mid?'<button class="btn btn-s btn-sm" style="color:#ff9800;border-color:rgba(255,152,0,.4)" onclick="window.restablecerMantHistorial(\''+mid+'\')">↩ Restablecer al calendario</button>':''}
       ${esHistorial&&mid&&idc?'<button class="btn btn-del btn-sm" onclick="window.eliminarHMHistorial(\''+mid+'\',\''+idc+'\')">🗑 Eliminar del historial</button>':''}
@@ -10482,7 +10622,7 @@ const _avProcConsulta = async txt => {
     const dir=cli.direccion||'';
     if(!dir){_avMostrarError(`${cli.nombre} no tiene dirección registrada`);return}
     cerrarAsistenteVoz();
-    setTimeout(()=>window.open('https://maps.google.com/?daddr='+encodeURIComponent(dir),'_blank'),300);
+    setTimeout(()=>abrirMapa('','',dir),300);
     return;
   }
 
@@ -10919,7 +11059,7 @@ window._avElegirCandidato = (cliId,idx) => {
   if(modo==='naveg'){
     const dir=cli.direccion||'';
     if(!dir){_avMostrarError(`${cli.nombre} no tiene dirección registrada`);return}
-    cerrarAsistenteVoz();setTimeout(()=>window.open('https://maps.google.com/?daddr='+encodeURIComponent(dir),'_blank'),300);
+    cerrarAsistenteVoz();setTimeout(()=>abrirMapa('','',dir),300);
     return;
   }
   if(modo==='ficha'){
