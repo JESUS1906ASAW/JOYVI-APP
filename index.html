@@ -72,12 +72,13 @@ body.modo-claro .sb-close{background:rgba(0,0,0,.06);color:rgba(0,0,0,.5)}
 body.modo-claro .sb-back{background:rgba(0,0,0,.06)}
 body.modo-claro .parte-card,body.modo-claro .cli-card,body.modo-claro .notif-card,body.modo-claro .arch-card{background:#ffffff;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 body.modo-claro html,body.modo-claro body{background:#f2f2f7;color:#111}
-body.modo-claro .drawer-name{color:#111}
-body.modo-claro .drawer-sub{color:rgba(0,0,0,.4)}
+body.modo-claro .drawer-name{color:#fff}
+body.modo-claro .drawer-sub{color:rgba(255,255,255,.75)}
 body.modo-claro .d-section{color:rgba(0,0,0,.3)}
 body.modo-claro .d-sep{background:rgba(0,0,0,.08)}
 body.modo-claro .d-item{color:rgba(0,0,0,.5)}
-body.modo-claro .d-item:hover,body.modo-claro .d-item.active{color:#111;background:rgba(var(--theme-rgb),.06)}
+body.modo-claro .d-item:hover{color:#111;background:rgba(var(--theme-rgb),.08)}
+body.modo-claro .d-item.active{color:#c62828;background:rgba(229,57,53,.08);border-left-color:#e53935;font-weight:800}
 body.modo-claro .toast{background:#fff;color:#111;border-color:rgba(0,0,0,.12);box-shadow:0 4px 20px rgba(0,0,0,.15)}
 body.modo-claro .btn-s{background:rgba(0,0,0,.05);color:#111;border-color:rgba(0,0,0,.12)}
 body.modo-claro .btn-s:hover{border-color:var(--r);color:var(--r)}
@@ -346,17 +347,23 @@ body.modo-claro .asist-msg.user{background:linear-gradient(135deg,rgba(var(--the
 #drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1150;display:none;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:overlayFadeIn .3s ease}
 #drawer{position:fixed;right:-300px;left:auto;top:0;bottom:0;width:285px;background:rgba(28,28,28,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-left:1px solid rgba(255,255,255,.1);border-right:none;z-index:1160;transition:right .38s cubic-bezier(.16,1,.3,1),box-shadow .38s ease;overflow-y:auto;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 48px);box-shadow:-20px 0 60px rgba(0,0,0,0)}
 #drawer.open{right:0;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
-.drawer-head{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.12);display:flex;align-items:center;gap:14px;cursor:pointer}
-.drawer-ava{width:52px;height:52px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;font-size:26px;border:3px solid rgba(var(--theme-rgb),.3);flex-shrink:0;overflow:hidden}
+.drawer-head{position:relative;padding:0;border-bottom:1px solid rgba(255,255,255,.1);cursor:pointer;overflow:hidden;min-height:120px;display:flex;flex-direction:column;justify-content:flex-end}
+.drawer-head-banner{position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--theme-rgb),.35) 0%,rgba(229,57,53,.6) 60%,rgba(0,0,0,.7) 100%);z-index:0}
+.drawer-head-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(var(--theme-rgb),.4) 0%,transparent 60%)}
+.drawer-head-content{position:relative;z-index:1;padding:16px 18px 16px;display:flex;align-items:center;gap:13px}
+.drawer-ava{width:52px;height:52px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;font-size:22px;border:2.5px solid rgba(255,255,255,.35);flex-shrink:0;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.4)}
 .drawer-ava img{width:100%;height:100%;object-fit:cover}
-.drawer-name{font-size:15px;font-weight:800;color:var(--tx)}
-.drawer-sub{font-size:12px;color:var(--tx2);margin-top:2px}
-.d-section{padding:14px 20px 4px;font-size:10px;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase}
-.d-item{display:flex;align-items:center;gap:12px;padding:11px 20px;font-size:13px;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer;transition:color .15s ease,background .15s ease,border-color .15s ease,padding-left .18s cubic-bezier(.16,1,.3,1);border-left:3px solid transparent}
-.d-item:hover,.d-item.active{color:var(--tx);background:rgba(var(--theme-rgb),.07);border-left-color:#e53935;padding-left:24px}
-.d-icon{font-size:18px;width:24px;text-align:center}
-.d-grupo-label{padding:10px 20px 4px;font-size:10px;font-weight:800;color:#e53935;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
-.d-sep{height:1px;background:rgba(255,255,255,.1);margin:10px 20px}
+.drawer-head-text{flex:1;min-width:0}
+.drawer-name{font-size:16px;font-weight:900;color:#fff;letter-spacing:.2px;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.drawer-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:3px;display:flex;align-items:center;gap:5px}
+.drawer-sub-arrow{font-size:10px;opacity:.6}
+.d-section{padding:14px 20px 4px;font-size:10px;font-weight:800;color:rgba(255,255,255,.35);letter-spacing:2px;text-transform:uppercase}
+.d-item{display:flex;align-items:center;gap:12px;padding:11px 20px;font-size:13px;font-weight:700;color:rgba(255,255,255,.65);cursor:pointer;transition:color .15s ease,background .15s ease,border-color .15s ease,padding-left .18s cubic-bezier(.16,1,.3,1);border-left:3px solid transparent;border-radius:0 10px 10px 0;margin-right:8px}
+.d-item:hover{color:#fff;background:rgba(var(--theme-rgb),.12);border-left-color:rgba(var(--theme-rgb),.5);padding-left:24px}
+.d-item.active{color:#fff;background:linear-gradient(90deg,rgba(229,57,53,.18),rgba(229,57,53,.06));border-left-color:#e53935;padding-left:24px;font-weight:800}
+.d-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.d-grupo-label{padding:10px 20px 4px;font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.d-sep{height:1px;background:rgba(255,255,255,.08);margin:8px 16px}
 
 /* ── AUTH ── */
 .auth-logo{font-family:'Anton',sans-serif;font-size:68px;background:linear-gradient(135deg,#fff 30%,var(--r3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(var(--theme-rgb),.5));margin-bottom:6px;text-align:center;animation:authLogoIn .6s cubic-bezier(.16,1,.3,1)}
@@ -1227,9 +1234,13 @@ body.offline .dash-offline-bar{display:flex}
   <div id="drawerOverlay" onclick="cerrarDrawer()"></div>
   <div id="drawer">
     <div class="drawer-head" onclick="goScreen('perfil');cerrarDrawer()">
-      <div>
-        <div class="drawer-name" id="drawerName">Usuario</div>
-        <div class="drawer-sub">Ver perfil →</div>
+      <div class="drawer-head-banner"></div>
+      <div class="drawer-head-content">
+        <div class="drawer-ava" id="drawerAva"><span style="font-size:22px">👤</span></div>
+        <div class="drawer-head-text">
+          <div class="drawer-name" id="drawerName">Usuario</div>
+          <div class="drawer-sub">Ver perfil <span class="drawer-sub-arrow">→</span></div>
+        </div>
       </div>
     </div>
     <div id="drawerBody"></div>
@@ -2184,12 +2195,17 @@ window.goScreen=id=>{
 
 // Interceptar botón atrás del navegador / gesto de swipe en móvil
 window.addEventListener('popstate',e=>{
-  // Caso 1: el estado destino tiene sbOpen=true → no hacemos nada especial (ya debería estar abierto)
-  // Caso 2: volvemos de un estado sbOpen=true → cerramos el SB
+  // Cerrar drawer si está abierto
+  if($('drawer')?.classList.contains('open')){
+    cerrarDrawer();
+    return;
+  }
+  // Cerrar SB si está abierto (cubre predictive back gesture Android)
   if($('sb').classList.contains('open')){
-    // Simplemente cerramos el SB sin tocar más el historial
     $('sb').classList.remove('open');
     $('sbOverlay').style.display='none';
+    // Volver a empujar un estado base para que el gesto predictivo no salga de la app
+    history.pushState({screen:_currentScreenId(),sbOpen:false},'',location.href.split('#')[0]+'#'+_currentScreenId());
     return;
   }
   // Caso 3: navegación entre pantallas
@@ -2321,28 +2337,29 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
   // ── CON GRUPO ACTIVO: menú completo ──
   const grupoNombre = (typeof CG !== 'undefined' && CG?.nombre) || 'Grupo';
   const kioskBtn = `<div class="d-item" onclick="activarModoVisualizacion();cerrarDrawer()" style="color:#ff9800"><span class="d-icon">${icoKiosk}</span>Modo gestión</div>`;
+  const cur=_currentScreenId();
+  const act=(id)=>cur===id?' active':'';
 
   return `
     <div class="d-section">Principal</div>
-    <div class="d-item" onclick="drawerIrInicio()"><span class="d-icon">${icoHome}</span>Inicio</div>
-    <div class="d-item" onclick="goScreen('notificaciones');cerrarDrawer()"><span class="d-icon">${icoNotif}</span>Notificaciones</div>
+    <div class="d-item${act('inicio')}" onclick="drawerIrInicio()"><span class="d-icon">${icoHome}</span>Inicio</div>
+    <div class="d-item${act('notificaciones')}" onclick="goScreen('notificaciones');cerrarDrawer()"><span class="d-icon">${icoNotif}</span>Notificaciones</div>
     ${sep}
     <div class="d-grupo-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${grupoNombre}</div>
-    <div class="d-item" onclick="goScreen('grupo');switchGTab('cli');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Clientes</div>
+    <div class="d-item${act('grupo')}" onclick="goScreen('grupo');switchGTab('cli');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Clientes</div>
     <div class="d-item" onclick="goScreen('grupo');switchGTab('part');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>Partes de trabajo</div>
-    <div class="d-item" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
-    <div class="d-item" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
-    <div class="d-item" onclick="goScreen('grupo');switchGTab('presu');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Presupuestos</div>
-    <div class="d-item" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
-    <div class="d-item" onclick="goScreen('rutaDia');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Ruta del día</div>
-    <div class="d-item" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
+    <div class="d-item${act('mantenimiento')}" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
+    <div class="d-item${act('averias')}" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
+    <div class="d-item${act('presupuestos')}" onclick="goScreen('grupo');switchGTab('presu');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Presupuestos</div>
+    <div class="d-item${act('historialGlobal')}" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
+    <div class="d-item${act('rutaDia')}" onclick="goScreen('rutaDia');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Ruta del día</div>
+    <div class="d-item${act('imagenes')}" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
     ${sep}
     <div class="d-section" style="padding-top:6px">Opciones de grupo</div>
-    <div class="d-item" onclick="goScreen('estadisticas');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Estadísticas</div>
-    <div class="d-item" onclick="goScreen('horas');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Control de horas</div>
-
-    <div class="d-item" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Administración</div>
-    <div class="d-item" onclick="goScreen('archivos');cerrarDrawer()" style="color:#e53935"><span class="d-icon" style="color:#e53935"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Clientes clasificados</div>
+    <div class="d-item${act('estadisticas')}" onclick="goScreen('estadisticas');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Estadísticas</div>
+    <div class="d-item${act('horas')}" onclick="goScreen('horas');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Control de horas</div>
+    <div class="d-item${act('administracion')}" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Administración</div>
+    <div class="d-item${act('archivos')}" onclick="goScreen('archivos');cerrarDrawer()" style="color:#e53935"><span class="d-icon" style="color:#e53935"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Clientes clasificados</div>
     ${sep}
     ${kioskBtn}
     ${sep}
@@ -2969,7 +2986,8 @@ const actualizarDrawer=()=>{
   if(!CUD)return;
   const nm=$('drawerName');if(nm)nm.textContent=CUD.nombre||'Usuario';
   const ava=$('drawerAva');if(!ava)return;
-  ava.textContent=CUD?.nombre?CUD.nombre[0].toUpperCase():'?';
+  const letra=CUD?.nombre?CUD.nombre[0].toUpperCase():'?';
+  ava.innerHTML=`<span style="font-size:22px;font-weight:900;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);font-family:var(--font)">${letra}</span>`;
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4277,7 +4295,7 @@ window.verCliente=async id=>{
 
   abrirSB(c.nombre,`
     ${primeraFoto?`<div style="position:relative;width:calc(100% + 40px);margin:-18px -20px 16px -20px;height:180px;overflow:hidden;flex-shrink:0">
-      <img src="${primeraFoto.url||primeraFoto.dataURL||''}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease" onclick="abrirImgViewer('${primeraFoto.id}')" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" style="cursor:pointer">
+      <img src="${primeraFoto.url||primeraFoto.dataURL||''}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease" onclick="abrirImgViewer('${primeraFoto.id}','${id}')" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" style="cursor:pointer">
       <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 50%,rgba(0,0,0,.5) 100%);pointer-events:none"></div>
       <div style="position:absolute;bottom:10px;right:12px;display:flex;align-items:center;gap:6px">
         <button onclick="abrirImagenesClienteDesdeCli('${id}')" style="background:rgba(0,0,0,.55);border:none;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;cursor:pointer;backdrop-filter:blur(4px)">
@@ -5076,34 +5094,27 @@ window.usarUbicacionExpressCli=()=>{
   if(info){info.textContent='Obteniendo ubicación...';info.style.color='var(--tx2)';}
   toast('📍 Obteniendo tu ubicación...','i');
   navigator.geolocation.getCurrentPosition(
-    async pos=>{
+    pos=>{
       const lat=pos.coords.latitude;
       const lng=pos.coords.longitude;
+      const acc=pos.coords.accuracy;
       const latEl=document.getElementById('ceLat');
       const lngEl=document.getElementById('ceLng');
       const dirEl=document.getElementById('ceDir');
       if(latEl)latEl.value=String(lat);
       if(lngEl)lngEl.value=String(lng);
       if(btn){btn.innerHTML='🎯';btn.disabled=false;}
-      try{
-        let road='',num='',cp='',city='',dirFinal='';
-        try{const r=await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=es`);if(r.ok){const d=await r.json();const f=d.features?.[0]?.properties||{};road=(f.street||f.name||'').trim();num=(f.housenumber||'').trim();cp=(f.postcode||'').trim();city=(f.city||f.town||f.village||f.county||'').trim();}}catch(_){}
-        if(!road){try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18`);if(r.ok){const d=await r.json();const a=d.address||{};road=(a.road||a.pedestrian||a.footway||'').trim();num=(a.house_number||'').trim();if(!cp)cp=(a.postcode||'').trim();if(!city)city=(a.city||a.town||a.village||a.municipality||'').trim();}}catch(_){}}
-        const calleNum=road+(num?' '+num:'');
-        dirFinal=calleNum+(cp?' '+cp:'');
-        if(!dirFinal)dirFinal=await _geocodificarCoordenadas(lat,lng);
-        if(dirEl&&dirFinal){
-          dirEl.value=dirFinal;
-          dirEl.style.borderColor='#4caf50';
-          dirEl.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';
-          setTimeout(()=>{dirEl.style.borderColor='';dirEl.style.boxShadow='';},2500);
-        }
-        if(info)info.innerHTML=`<span style="color:#4caf50">✓ ${dirFinal||lat.toFixed(5)+', '+lng.toFixed(5)}</span>`;
-        toast('✓ Dirección: '+(dirFinal||`${lat.toFixed(4)}, ${lng.toFixed(4)}`),'o');
-      }catch(e){
-        if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`;
-        toast('GPS guardado · sin dirección textual','i');
+      // Sin APIs externas: guardar coordenadas directamente
+      const coordStr=`${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      if(dirEl){
+        dirEl.value=coordStr;
+        dirEl.style.borderColor='#4caf50';
+        dirEl.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';
+        setTimeout(()=>{dirEl.style.borderColor='';dirEl.style.boxShadow='';},2500);
       }
+      const precStr=acc<=10?'alta precisión':acc<=30?'buena precisión':`±${Math.round(acc)}m`;
+      if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS (${precStr}) — usar Maps para ver la calle</span>`;
+      toast(`✓ GPS capturado (${precStr})`,'o');
     },
     err=>{
       if(btn){btn.innerHTML='📍';btn.disabled=false;}
@@ -5197,47 +5208,23 @@ window.usarUbicacionActualCliente=()=>{
   if(btn){btn.innerHTML='⏳';btn.disabled=true;btn.title='Obteniendo ubicación...';}
   toast('📍 Obteniendo tu ubicación...','i');
   navigator.geolocation.getCurrentPosition(
-    async pos=>{
+    pos=>{
       const lat=pos.coords.latitude;
       const lng=pos.coords.longitude;
+      const acc=pos.coords.accuracy;
       const latEl=$('cLat'), lngEl=$('cLng'), dirEl=$('cDir');
       if(latEl)latEl.value=String(lat);
       if(lngEl)lngEl.value=String(lng);
       if(btn){btn.innerHTML='🎯';btn.disabled=false;btn.title='GPS guardado';}
-      try{
-        // Intentar obtener campos estructurados para rellenar dirección y población por separado
-        const _flashGreen=el=>{if(!el)return;el.style.transition='border-color .3s,box-shadow .3s';el.style.borderColor='#4caf50';el.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';},2500);};
-        let road='',num='',cp='',city='',dirFinal='';
-        // 1. Photon — mejor cobertura España
-        try{
-          const r=await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=es`);
-          if(r.ok){const d=await r.json();const f=d.features?.[0]?.properties||{};road=(f.street||f.name||'').trim();num=(f.housenumber||'').trim();cp=(f.postcode||'').trim();city=(f.city||f.town||f.village||f.county||'').trim();}
-        }catch(_){}
-        // 2. Nominatim si falta calle
-        if(!road){
-          try{
-            const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18`);
-            if(r.ok){const d=await r.json();const a=d.address||{};road=(a.road||a.pedestrian||a.footway||'').trim();num=(a.house_number||'').trim();if(!cp)cp=(a.postcode||'').trim();if(!city)city=(a.city||a.town||a.village||a.municipality||'').trim();}
-          }catch(_){}
-        }
-        // Construir dirección: calle + número + CP
-        const calleNum=road+(num?' '+num:'');
-        dirFinal=calleNum+(cp?' '+cp:'');
-        if(!dirFinal)dirFinal=await _geocodificarCoordenadas(lat,lng);
-        // Rellenar campo dirección (calle + número + CP)
-        if(dirFinal&&dirEl){dirEl.value=dirFinal;_flashGreen(dirEl);}
-        // Rellenar campo población si existe en el formulario y está vacío
-        const pobEl2=document.getElementById('cPob')||document.getElementById('cPoblacion');
-        if(city&&pobEl2&&!pobEl2.value.trim()){pobEl2.value=city;_flashGreen(pobEl2);}
-        toast('✓ Dirección rellenada desde GPS','o');
-        // Preview visual
-        const _pv=document.getElementById('geoPreviewMini');
-        if(_pv){
-          _pv.style.display='block';
-          _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ GPS capturado — toca para verificar en Maps</a>`;
-        }
-      }catch(e){
-        toast('GPS guardado · sin dirección textual disponible','i');
+      const _flashGreen=el=>{if(!el)return;el.style.transition='border-color .3s,box-shadow .3s';el.style.borderColor='#4caf50';el.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';},2500);};
+      const coordStr=`${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      if(dirEl&&!dirEl.value.trim()){dirEl.value=coordStr;_flashGreen(dirEl);}
+      const precStr=acc<=10?'alta precisión':acc<=30?'buena precisión':`±${Math.round(acc)}m`;
+      toast(`✓ GPS capturado (${precStr})`,'o');
+      const _pv=document.getElementById('geoPreviewMini');
+      if(_pv){
+        _pv.style.display='block';
+        _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ GPS (${precStr}) — toca para ver en Maps</a>`;
       }
     },
     err=>{
@@ -8605,13 +8592,15 @@ window.subirFotosCliente=async(cliId,files)=>{
   }
 };
 
-window.abrirImgViewer=async(imgId)=>{
+window.abrirImgViewer=async(imgId,cliId)=>{
   if(!CGID)return;
   const snap=await getDoc(doc(db,'grupos',CGID,'imagenes',imgId));
   if(!snap.exists())return;
   const img=snap.data();
   const imgSrc=img.url||img.dataURL||'';
-  const savedReturnCli=_sbReturnCli;
+  // Si viene cliId explícito úsalo; si no, preservar el que ya había
+  const returnCli=cliId||_sbReturnCli||img.clienteId||null;
+  if(returnCli) _sbReturnCli=returnCli;
   abrirSB(img.descripcion||'Imagen',`
     <div style="text-align:center">
       <img src="${imgSrc}" style="max-width:100%;border-radius:12px;max-height:60vh;object-fit:contain;display:block;margin:0 auto">
@@ -8622,7 +8611,7 @@ window.abrirImgViewer=async(imgId)=>{
       <button class="btn btn-del" onclick="borrarImagen('${imgId}')">🗑️ Eliminar imagen</button>
     </div>
   `);
-  if(savedReturnCli){_sbReturnCli=savedReturnCli;_sbSetBack();}
+  if(returnCli){_sbReturnCli=returnCli;_sbSetBack();}
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
