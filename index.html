@@ -256,38 +256,12 @@ body.modo-claro{background:#f2f2f7 !important}
 }
 
 /* ── PREDICTIVE BACK GESTURE ── */
-/* El overlay solo actúa como escudo de eventos táctiles durante el gesto */
+/* Escudo táctil durante el gesto */
 #pbg-overlay{
-  position:fixed;inset:0;z-index:1990;pointer-events:none;
-  display:none;
-  background:var(--bg);
+  position:fixed;inset:0;z-index:1990;pointer-events:none;display:none;
 }
-/* Capa de fondo: pantalla de destino escalada/oscurecida */
-#pbg-bg-layer{
-  position:fixed;inset:0;z-index:1991;
-  pointer-events:none;
-  will-change:transform,filter,opacity;
-  transform-origin:center center;
-  transform:scale(0.92);
-  filter:brightness(0.52) blur(5px);
-  opacity:0.35;
-  display:none;
-  overflow:hidden;
-  border-radius:16px;
-  background:var(--bg);
-}
-/* Capa de frente: pantalla actual que se arrastra */
-#pbg-fg-layer{
-  position:fixed;inset:0;z-index:1992;
-  pointer-events:none;
-  will-change:transform,box-shadow,border-radius;
-  transform-origin:center center;
-  border-radius:0;
-  box-shadow:none;
-  display:none;
-  overflow:hidden;
-  background:var(--bg);
-}
+/* bg-layer y fg-layer son ficticios — la magia ocurre en el DOM real */
+#pbg-bg-layer,#pbg-fg-layer{ display:none; }
 
 /* ── SKELETON LOADING ── */
 .skel{background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 75%);background-size:200% 100%;animation:skelAnim 1.4s infinite;border-radius:8px}
@@ -348,8 +322,11 @@ body.modo-claro .asist-msg.user{background:linear-gradient(135deg,rgba(var(--the
 #drawer{position:fixed;right:-300px;left:auto;top:0;bottom:0;width:285px;background:rgba(28,28,28,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-left:1px solid rgba(255,255,255,.1);border-right:none;z-index:1160;transition:right .38s cubic-bezier(.16,1,.3,1),box-shadow .38s ease;overflow-y:auto;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 48px);box-shadow:-20px 0 60px rgba(0,0,0,0)}
 #drawer.open{right:0;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
 .drawer-head{position:relative;padding:0;border-bottom:1px solid rgba(255,255,255,.1);cursor:pointer;overflow:hidden;min-height:120px;display:flex;flex-direction:column;justify-content:flex-end}
-.drawer-head-banner{position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--theme-rgb),.35) 0%,rgba(229,57,53,.6) 60%,rgba(0,0,0,.7) 100%);z-index:0}
-.drawer-head-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(var(--theme-rgb),.4) 0%,transparent 60%)}
+.drawer-head-banner{position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--theme-rgb),.35) 0%,rgba(var(--theme-rgb),.6) 60%,rgba(0,0,0,.7) 100%);z-index:0;transition:background .35s ease,background-image .35s ease}
+.drawer-head-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(var(--theme-rgb),.4) 0%,transparent 60%);pointer-events:none;z-index:1}
+/* Overlay oscuro cuando hay imagen de grupo */
+.drawer-head-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.28) 55%,transparent 100%);pointer-events:none;z-index:2}
+.drawer-head-content{position:relative;z-index:3!important}
 .drawer-head-content{position:relative;z-index:1;padding:16px 18px 16px;display:flex;align-items:center;gap:13px}
 .drawer-ava{width:52px;height:52px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;font-size:22px;border:2.5px solid rgba(255,255,255,.35);flex-shrink:0;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.4)}
 .drawer-ava img{width:100%;height:100%;object-fit:cover}
@@ -2997,6 +2974,23 @@ const actualizarDrawer=()=>{
     const letra=CUD?.nombre?CUD.nombre[0].toUpperCase():'?';
     ava.innerHTML=`<span style="font-size:22px;font-weight:900;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);font-family:var(--font)">${letra}</span>`;
   }
+  // ── Banner: imagen de fondo del grupo activo ──
+  const banner=document.querySelector('.drawer-head-banner');
+  if(banner){
+    const fondo=CG?.fondoImg||'';
+    if(fondo){
+      // Imagen real del grupo como fondo del banner
+      banner.style.backgroundImage=`url('${fondo}')`;
+      banner.style.backgroundSize='cover';
+      banner.style.backgroundPosition='center';
+      // Resetear el background CSS (que traía el gradiente de color)
+      banner.style.background=`url('${fondo}') center/cover no-repeat`;
+    } else {
+      // Sin grupo: gradiente de color del tema
+      banner.style.background='';
+      banner.style.backgroundImage='';
+    }
+  }
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -5119,27 +5113,46 @@ window.usarUbicacionExpressCli=()=>{
   if(info){info.textContent='Obteniendo ubicación...';info.style.color='var(--tx2)';}
   toast('📍 Obteniendo tu ubicación...','i');
   navigator.geolocation.getCurrentPosition(
-    pos=>{
+    async pos=>{
       const lat=pos.coords.latitude;
       const lng=pos.coords.longitude;
       const acc=pos.coords.accuracy;
       const latEl=document.getElementById('ceLat');
       const lngEl=document.getElementById('ceLng');
       const dirEl=document.getElementById('ceDir');
+      // Guardar coordenadas en campos ocultos — solo para Google Maps
       if(latEl)latEl.value=String(lat);
       if(lngEl)lngEl.value=String(lng);
       if(btn){btn.innerHTML='🎯';btn.disabled=false;}
-      // Sin APIs externas: guardar coordenadas directamente
-      const coordStr=`${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-      if(dirEl){
-        dirEl.value=coordStr;
-        dirEl.style.borderColor='#4caf50';
-        dirEl.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';
-        setTimeout(()=>{dirEl.style.borderColor='';dirEl.style.boxShadow='';},2500);
-      }
       const precStr=acc<=10?'alta precisión':acc<=30?'buena precisión':`±${Math.round(acc)}m`;
-      if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS (${precStr}) — usar Maps para ver la calle</span>`;
-      toast(`✓ GPS capturado (${precStr})`,'o');
+      // Mostrar estado buscando mientras geocodifica
+      if(info)info.innerHTML=`<span style="color:var(--tx2)">🔍 Buscando dirección...</span>`;
+      // Geocodificación inversa → calle, número y pueblo (no coordenadas)
+      try{
+        const dir=await _geocodificarCoordenadas(lat,lng);
+        // Solo mostrar dirección real si no son las coordenadas de fallback
+        const esFallbackCoords=/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(dir);
+        if(dirEl){
+          if(!esFallbackCoords){
+            dirEl.value=dir;
+          } else {
+            // No hay calle conocida — dejar vacío para que el usuario escriba
+            dirEl.value='';
+            dirEl.placeholder='Sin calle detectada — escribe la dirección';
+          }
+          dirEl.style.borderColor='#4caf50';
+          dirEl.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';
+          setTimeout(()=>{dirEl.style.borderColor='';dirEl.style.boxShadow='';},2800);
+        }
+        const dirTxt=(!esFallbackCoords&&dir)?`— ${dir}`:'— edita la dirección si no es correcta';
+        if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS (${precStr}) ${dirTxt}</span>`;
+        toast(`✓ Ubicación obtenida (${precStr})`,'o');
+      }catch(e){
+        // Error en geocodificación — dejar campo vacío, coords ya guardadas
+        if(dirEl){dirEl.value='';dirEl.placeholder='No se pudo obtener la calle — escribe manualmente';}
+        if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS (${precStr}) — escribe la dirección manualmente</span>`;
+        toast(`✓ GPS (${precStr}) — dirección manual`,'o');
+      }
     },
     err=>{
       if(btn){btn.innerHTML='📍';btn.disabled=false;}
@@ -5251,12 +5264,19 @@ window.usarUbicacionActualCliente=()=>{
         _delBtn.style.cssText='flex-shrink:0;padding:0 10px;border-radius:10px;border:1.5px solid rgba(229,57,53,.35);background:rgba(229,57,53,.07);color:#e53935;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:38px';
         if(btn&&btn.parentElement) btn.parentElement.appendChild(_delBtn);
       }
-      // Obtener dirección por geocodificación inversa
-      if(dirEl&&!dirEl.value.trim()) dirEl.value=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      // Obtener dirección por geocodificación inversa (nunca poner coords en el campo visible)
       toast('🔍 Buscando dirección...','i');
-      const dir=await _geoInversa(lat,lng);
-      if(dir&&dirEl){dirEl.value=dir;_flashGreen(dirEl);}
-      else if(dirEl) _flashGreen(dirEl);
+      if(dirEl) dirEl.placeholder='Buscando dirección...';
+      const dir=await _geocodificarCoordenadas(lat,lng);
+      const esFallbackCoords=/^-?\d+\.\d+[,\s]+-?\d+\.\d+$/.test((dir||'').trim());
+      if(dir&&!esFallbackCoords&&dirEl){
+        dirEl.value=dir;
+        dirEl.placeholder='Calle, número, ciudad';
+        _flashGreen(dirEl);
+      } else {
+        // Sin calle detectada — limpiar campo para que el usuario escriba
+        if(dirEl){dirEl.value='';dirEl.placeholder='No se detectó calle — escribe la dirección';}
+      }
       // Actualizar indicador GPS
       const ind=$('gpsIndicator');
       if(ind)ind.innerHTML=`<span style="color:#4caf50">🎯 GPS guardado: ${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`;
@@ -5268,11 +5288,12 @@ window.usarUbicacionActualCliente=()=>{
           if(r.ok){const d=await r.json();const a=d.address||{};const city=(a.city||a.town||a.village||a.municipality||'').trim();if(city){pobEl.value=city;_flashGreen(pobEl);}}
         }catch(_){}
       }
-      toast(dir?`✓ ${dir} (${precStr})`:`✓ GPS guardado (${precStr})`,'o');
+      const dirLabel=(!esFallbackCoords&&dir)?dir:'GPS guardado';
+      toast(`✓ ${dirLabel} (${precStr})`,'o');
       const _pv=document.getElementById('geoPreviewMini');
       if(_pv){
         _pv.style.display='block';
-        _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ ${dir||'GPS capturado'} (${precStr})</a>`;
+        _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ ${dirLabel} (${precStr})</a>`;
       }
     },
     err=>{
@@ -8234,7 +8255,6 @@ const renderImagenes=async()=>{
   el.innerHTML=`<div class="empty"><div class="empty-ico">⌛</div><p>Cargando...</p></div>`;
   try{
     const clis=allClientes.filter(c=>!c.archivado);
-    const cliOpts=`<option value="">Sin cliente / General</option>`+clis.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
     const snap=await getDocs(collection(db,'grupos',CGID,'imagenes'));
     const imgs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
     const porCliente={};
@@ -8248,7 +8268,12 @@ const renderImagenes=async()=>{
       <div class="fsec-title">📸 Añadir imágenes</div>
       <div class="fgrp">
         <label>Cliente</label>
-        <select id="imgCli" onchange="toggleNuevoCli(this.value);actualizarBotonesImgCli()">${cliOpts}<option value="__nuevo__">➕ Crear cliente nuevo...</option></select>
+        <div id="imgCli-wrap"></div>
+        <button type="button" id="btnNuevoCliImg"
+          style="margin-top:8px;width:100%;padding:9px 14px;border-radius:10px;border:1px dashed rgba(var(--theme-rgb),.4);background:rgba(var(--theme-rgb),.05);color:var(--r);font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);text-align:left;display:block"
+          onclick="toggleNuevoCli('__nuevo__');actualizarBotonesImgCli()">
+          ➕ Crear cliente nuevo...
+        </button>
       </div>
       <div id="nuevoCli" style="display:none">
         <div class="fgrp"><label>Nombre del nuevo cliente *</label><input id="imgNuevoCli" placeholder="Nombre del cliente"></div>
@@ -8305,6 +8330,18 @@ const renderImagenes=async()=>{
       html+=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><p>Sin imágenes todavía.<br>Añade fotos de tus instalaciones.</p></div>`;
     }
     el.innerHTML=html;
+    // Inicializar custom selector de cliente
+    setTimeout(()=>{
+      if(typeof _buildCliSelect==='function'){
+        _buildCliSelect('imgCli','', (val)=>{
+          // Ocultar botón "Crear nuevo" si hay selección
+          const btnN=document.getElementById('btnNuevoCliImg');
+          if(btnN) btnN.style.display=val?'none':'block';
+          toggleNuevoCli(val);
+          actualizarBotonesImgCli();
+        });
+      }
+    },0);
   }catch(e){el.innerHTML=`<div class="empty"><p>Error al cargar imágenes</p></div>`}
 };
 
@@ -8315,8 +8352,8 @@ window.toggleNuevoCli=val=>{
   $('nuevoCli').style.display=val==='__nuevo__'?'block':'none';
 };
 window.actualizarBotonesImgCli=()=>{
-  const val=$('imgCli')?.value||'';
-  const hasClient=val&&val!=='';
+  const val=(typeof _getCliSelectVal==='function'?_getCliSelectVal('imgCli'):null)||$('imgCli')?.value||'';
+  const hasClient=val&&val!==''&&val!=='__nuevo__';
   const req=$('imgCliRequired');
   const btns=$('imgBotones');
   if(req)req.style.display=hasClient?'none':'block';
@@ -8352,7 +8389,7 @@ window.filtrarGaleriaCliente=v=>{
 window.subirImagenesInstalacion=async()=>{
   if(!CGID){toast('Selecciona un grupo primero','e');return}
   if(!_imgFilesPending.length){toast('Selecciona al menos una imagen','e');return}
-  let cliId=$('imgCli').value;
+  let cliId=(typeof _getCliSelectVal==='function'?_getCliSelectVal('imgCli'):null)||$('imgCli')?.value||'';
   let cli=allClientes.find(c=>c.id===cliId);
   const desc=$('imgDesc').value.trim();
   // Crear nuevo cliente si se eligió esa opción
@@ -13092,364 +13129,248 @@ const _lockInicializar = () => {
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PREDICTIVE BACK GESTURE — DOM-native, sin clones, sin APIs externas
-// Mueve las propias pantallas del DOM como capas reales durante el gesto.
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PREDICTIVE BACK GESTURE — Real DOM layers, sin clones, sin APIs
+// Principio: las pantallas YA existen en el DOM (display:none).
+// Al hacer swipe desde el borde izquierdo:
+//   1. La pantalla destino se pone visible DEBAJO (#app como contexto)
+//   2. La pantalla actual se alza encima con transform
+//   3. El dedo controla cuánto avanza; soltar decide si navega o rebota
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 (()=>{
   'use strict';
 
-  // ── Configuración ──────────────────────────────────────────────
-  const EDGE      = 32;   // px desde borde izq para iniciar el gesto
-  const THRESHOLD = 0.35; // fracción del ancho → confirmar navegación
-  const SCALE_BG  = 0.92; // escala inicial de la pantalla de destino
+  const EDGE      = 34;   // px desde borde izq para activar
+  const THRESHOLD = 0.34; // fracción del ancho para confirmar back
+  const SCALE_BG  = 0.93; // escala inicial pantalla destino
   const SPRING    = 'cubic-bezier(.16,1,.3,1)';
   const EASE_OUT  = 'cubic-bezier(.4,0,.2,1)';
 
-  // ── Estado ─────────────────────────────────────────────────────
-  let tracking  = false;
-  let dragging  = false;
-  let finishing = false;
+  let tracking = false, dragging = false, finishing = false;
   let startX = 0, startY = 0, lastX = 0;
-  let prevKey = null;
-  let raf = null;
+  let prevKey = null, raf = null;
 
-  // ── Nodos permanentes ──────────────────────────────────────────
-  const overlay  = document.getElementById('pbg-overlay');
-  const bgLayer  = document.getElementById('pbg-bg-layer');
-  const fgLayer  = document.getElementById('pbg-fg-layer');
+  // Refs a elementos DOM reales durante el gesto
+  let elFg  = null;  // pantalla actual (frente)
+  let elBg  = null;  // pantalla destino (fondo)
+  let elShield = document.getElementById('pbg-overlay'); // escudo táctil
 
-  if(!overlay || !bgLayer || !fgLayer){
-    console.warn('PBG: capas no encontradas');
-    return;
-  }
-
-  // Refs a los elementos pantalla que estamos manejando
-  let curScreenEl  = null; // pantalla actual (frente)
-  let prevScreenEl = null; // pantalla destino (fondo)
-
-  // ── Obtener key de la pantalla anterior en el historial ─────────
+  // ── Helper: key de la pantalla anterior ─────────────────────
   const getPrevKey = () => {
     if(!window.screenHistory || !screenHistory.length) return null;
-    const curEl = document.querySelector('.screen.active');
-    const curKey = curEl
-      ? Object.keys(screens||{}).find(k => screens[k] === curEl.id) || null
-      : null;
+    const cur = document.querySelector('.screen.active');
+    const curKey = cur ? Object.keys(screens||{}).find(k=>screens[k]===cur.id) : null;
     for(let i = screenHistory.length - 1; i >= 0; i--){
       if(screenHistory[i] !== curKey) return screenHistory[i];
     }
     return null;
   };
 
-  // ── Preparar capas para el gesto ───────────────────────────────
-  const buildLayers = (destKey) => {
-    const W = window.innerWidth;
-    const H = window.innerHeight;
+  // ── Preparar escena ──────────────────────────────────────────
+  const build = (destKey) => {
+    elFg = document.querySelector('.screen.active');
+    elBg = destKey && screens[destKey] ? document.getElementById(screens[destKey]) : null;
+    if(!elFg || !elBg || elFg === elBg) return false;
 
-    curScreenEl  = document.querySelector('.screen.active');
-    prevScreenEl = destKey && screens[destKey]
-      ? document.getElementById(screens[destKey])
-      : null;
+    // Renderizar contenido de la pantalla destino (ya existe en DOM, solo actualizar)
+    try{
+      if(destKey==='inicio')           renderInicio && renderInicio();
+      else if(destKey==='grupo')       renderGrupo && renderGrupo();
+      else if(destKey==='perfil')      renderPerfil && renderPerfil();
+      else if(destKey==='notificaciones') renderNotificaciones && renderNotificaciones();
+      else if(destKey==='estadisticas')   renderStats && renderStats();
+      else if(destKey==='archivos')       renderArchivos && renderArchivos();
+      else if(destKey==='imagenes')       renderImagenes && renderImagenes();
+      else if(destKey==='averias')        renderAverias && renderAverias();
+      else if(destKey==='presupuestos')   renderPresupuestos && renderPresupuestos();
+      else if(destKey==='horas')          renderHoras && renderHoras();
+      else if(destKey==='facturas')       renderFacturas && renderFacturas();
+      else if(destKey==='historialGlobal') renderHistorialGlobal && renderHistorialGlobal();
+      else if(destKey==='rutaDia')         renderRutaDia && renderRutaDia();
+      else if(destKey==='administracion')  renderAdministracion && renderAdministracion();
+      else if(destKey==='calendario')      renderCalendario && renderCalendario();
+    }catch(_){}
 
-    if(!curScreenEl || !prevScreenEl) return false;
-
-    // 1. Renderizar la pantalla destino (sin mostrarla aún):
-    //    la activamos off-screen para que tenga contenido real.
-    prevScreenEl.style.display = 'flex';
-    prevScreenEl.style.visibility = 'hidden'; // invisible pero en layout
-    // Disparar render de contenido si hace falta
-    _renderScreenSilent(destKey);
-
-    // 2. Mover pantalla destino DENTRO de bgLayer como hijo directo
-    //    usando position fijo para que no afecte al layout general
-    bgLayer.style.cssText = `
-      display:block;
-      position:fixed;inset:0;
-      z-index:1991;
-      pointer-events:none;
-      overflow:hidden;
-      background:var(--bg);
-      transform:scale(${SCALE_BG});
-      filter:brightness(0.52) blur(5px);
-      opacity:0.35;
-      border-radius:16px;
-      transition:none;
-      will-change:transform,filter,opacity;
-    `;
-    // Ponemos la pantalla destino visible DENTRO del bgLayer
-    // pero en realidad la pantalla sigue en su sitio en el DOM;
-    // usamos un enfoque de "windowing": clonamos solo el estado visual
-    // actual mediante getComputedStyle y un snapshot del innerHTML
-    // ── Snapshot real del DOM visible ──
-    const bgSnap = prevScreenEl.cloneNode(true);
-    bgSnap.style.cssText = [
-      'position:absolute','inset:0','display:flex','flex-direction:column',
-      'overflow:hidden','width:100%','height:100%',
-      'opacity:1','visibility:visible','pointer-events:none'
+    // Pantalla destino: visible detrás, escalada y oscurecida
+    elBg.style.cssText = [
+      'display:flex',
+      'position:fixed','inset:0',
+      'z-index:1800',
+      'width:100%','height:100%',
+      `transform:scale(${SCALE_BG})`,
+      'transform-origin:center center',
+      'filter:brightness(0.52) blur(4px)',
+      'opacity:0.38',
+      'border-radius:16px',
+      'overflow:hidden',
+      'will-change:transform,filter,opacity',
+      'transition:none',
+      'pointer-events:none',
+      'flex-direction:column',
     ].join(';');
-    bgLayer.innerHTML = '';
-    bgLayer.appendChild(bgSnap);
 
-    // 3. Pantalla actual pasa a fgLayer (también clonada en estado actual)
-    fgLayer.style.cssText = `
-      display:block;
-      position:fixed;inset:0;
-      z-index:1992;
-      pointer-events:none;
-      overflow:hidden;
-      background:var(--bg);
-      transform:translateX(0) scale(1);
-      border-radius:0;
-      box-shadow:none;
-      transition:none;
-      will-change:transform,box-shadow,border-radius;
-    `;
-    const fgSnap = curScreenEl.cloneNode(true);
-    fgSnap.style.cssText = [
-      'position:absolute','inset:0','display:flex','flex-direction:column',
-      'overflow:hidden','width:100%','height:100%',
-      'opacity:1','visibility:visible','pointer-events:none'
+    // Pantalla actual: flota encima, seguirá al dedo
+    elFg.style.cssText = [
+      'display:flex',
+      'position:fixed','inset:0',
+      'z-index:1900',
+      'width:100%','height:100%',
+      'transform:translateX(0) scale(1)',
+      'transform-origin:center center',
+      'border-radius:0',
+      'box-shadow:-6px 0 32px rgba(0,0,0,.38)',
+      'overflow:hidden',
+      'will-change:transform,box-shadow,border-radius',
+      'transition:none',
+      'pointer-events:none',
+      'flex-direction:column',
     ].join(';');
-    fgLayer.innerHTML = '';
-    fgLayer.appendChild(fgSnap);
 
-    // 4. Escudo de eventos (overlay)
-    overlay.style.cssText = `
-      display:block;
-      position:fixed;inset:0;
-      z-index:1993;
-      pointer-events:all;
-      background:transparent;
-    `;
-
-    // 5. Ocultar pantalla real actual (la sustituye fgLayer)
-    curScreenEl.style.visibility = 'hidden';
-    prevScreenEl.style.visibility = 'hidden'; // sigue oculta; la muestra bgLayer
-
+    // Escudo: bloquea eventos a lo que está debajo
+    if(elShield){
+      elShield.style.cssText = 'display:block;position:fixed;inset:0;z-index:1990;pointer-events:all;';
+    }
     return true;
   };
 
-  // Renderizar contenido de una pantalla sin animación ni cambio de historial
-  const _renderScreenSilent = (key) => {
-    try {
-      if(key === 'inicio')      { if(typeof renderInicio==='function')      renderInicio(); }
-      else if(key === 'grupo')  { if(typeof renderGrupo==='function')       renderGrupo(); }
-      else if(key === 'perfil') { if(typeof renderPerfil==='function')      renderPerfil(); }
-      else if(key === 'notificaciones'){ if(typeof renderNotificaciones==='function') renderNotificaciones(); }
-      else if(key === 'administracion'){ if(typeof renderAdministracion==='function') renderAdministracion(); }
-      else if(key === 'estadisticas')  { if(typeof renderStats==='function')         renderStats(); }
-      else if(key === 'archivos')      { if(typeof renderArchivos==='function')       renderArchivos(); }
-      else if(key === 'imagenes')      { if(typeof renderImagenes==='function')       renderImagenes(); }
-      else if(key === 'averias')       { if(typeof renderAverias==='function')        renderAverias(); }
-      else if(key === 'presupuestos')  { if(typeof renderPresupuestos==='function')   renderPresupuestos(); }
-      else if(key === 'horas')         { if(typeof renderHoras==='function')          renderHoras(); }
-      else if(key === 'facturas')      { if(typeof renderFacturas==='function')       renderFacturas(); }
-      else if(key === 'historialGlobal'){ if(typeof renderHistorialGlobal==='function') renderHistorialGlobal(); }
-      else if(key === 'rutaDia')       { if(typeof renderRutaDia==='function')        renderRutaDia(); }
-    } catch(e) { /* silencioso */ }
-  };
-
-  // ── Animar posición durante el arrastre ────────────────────────
+  // ── Animar frame a frame ─────────────────────────────────────
   const applyPos = (dx) => {
-    const W   = window.innerWidth;
-    const prog = Math.min(1, Math.max(0, dx / W));
+    if(!elFg || !elBg) return;
+    const W = window.innerWidth;
+    const p = Math.min(1, Math.max(0, dx / W));
 
-    // Pantalla actual: sigue al dedo con radio y sombra crecientes
-    const radius = Math.round(prog * 28);
-    const scFg   = 1 - prog * 0.04;
-    fgLayer.style.transform      = `translateX(${dx}px) scale(${scFg})`;
-    fgLayer.style.borderRadius   = `${radius}px`;
-    fgLayer.style.boxShadow      = `-${6 + prog*22}px 0 ${32 + prog*30}px rgba(0,0,0,${.35 + prog*.2})`;
+    // Frente: sigue al dedo, se encoge ligeramente y gana radio
+    elFg.style.transform    = `translateX(${dx}px) scale(${1 - p * 0.04})`;
+    elFg.style.borderRadius = `${Math.round(p * 28)}px`;
+    elFg.style.boxShadow    = `-${6 + p*22}px 0 ${32 + p*28}px rgba(0,0,0,${.38 + p*.18})`;
 
-    // Pantalla destino: emerge desde escala reducida y oscura
-    const scBg   = SCALE_BG + (1 - SCALE_BG) * prog;
-    const bri    = 0.52 + 0.48 * prog;
-    const blur   = Math.max(0, 5 * (1 - prog));
-    bgLayer.style.transform = `scale(${scBg})`;
-    bgLayer.style.filter    = `brightness(${bri}) blur(${blur}px)`;
-    bgLayer.style.opacity   = String(0.35 + 0.65 * prog);
+    // Fondo: emerge, se ilumina, pierde blur
+    elBg.style.transform = `scale(${SCALE_BG + (1 - SCALE_BG) * p})`;
+    elBg.style.filter    = `brightness(${0.52 + 0.48 * p}) blur(${Math.max(0, 4*(1-p))}px)`;
+    elBg.style.opacity   = String(0.38 + 0.62 * p);
   };
 
-  // ── Limpiar todo y restaurar estado ───────────────────────────
+  // ── Limpiar todo ─────────────────────────────────────────────
   const cleanup = () => {
     dragging = tracking = finishing = false;
-    prevKey = null;
     if(raf){ cancelAnimationFrame(raf); raf = null; }
-
-    // Ocultar capas
-    overlay.style.cssText = 'display:none;pointer-events:none;';
-    bgLayer.style.display = 'none';
-    fgLayer.style.display = 'none';
-    bgLayer.innerHTML = '';
-    fgLayer.innerHTML = '';
-
-    // Restaurar visibilidad de las pantallas reales
-    if(curScreenEl)  { curScreenEl.style.visibility = ''; }
-    if(prevScreenEl) { prevScreenEl.style.visibility = ''; prevScreenEl.style.display = 'none'; }
-    curScreenEl  = null;
-    prevScreenEl = null;
+    if(elShield) elShield.style.cssText = 'display:none;pointer-events:none;';
+    if(elFg){ elFg.style.cssText = ''; }
+    if(elBg){ elBg.style.cssText = ''; elBg.style.display = 'none'; }
+    elFg = elBg = null;
+    prevKey = null;
   };
 
-  // ── Confirmar navegación (suelta con suficiente avance) ────────
+  // ── Confirmar: animar salida y navegar ───────────────────────
   const commit = () => {
     if(finishing) return;
     finishing = true;
     const W = window.innerWidth;
     if(navigator.vibrate) navigator.vibrate(9);
 
-    // Pantalla actual sale hacia la derecha
-    fgLayer.style.transition = `transform .26s ${EASE_OUT}, border-radius .26s, box-shadow .2s`;
-    fgLayer.style.transform  = `translateX(${W + 20}px) scale(1)`;
-    fgLayer.style.borderRadius = '0';
-    fgLayer.style.boxShadow  = 'none';
+    elFg.style.transition = `transform .25s ${EASE_OUT},border-radius .25s,box-shadow .2s`;
+    elFg.style.transform  = `translateX(${W + 10}px) scale(1)`;
+    elFg.style.borderRadius = '0';
+    elFg.style.boxShadow  = 'none';
 
-    // Pantalla destino llega a pantalla completa
-    bgLayer.style.transition = `transform .26s ${EASE_OUT}, filter .26s, opacity .22s`;
-    bgLayer.style.transform  = 'scale(1)';
-    bgLayer.style.filter     = 'brightness(1) blur(0px)';
-    bgLayer.style.opacity    = '1';
-    bgLayer.style.borderRadius = '0';
+    elBg.style.transition = `transform .25s ${EASE_OUT},filter .25s,opacity .2s,border-radius .2s`;
+    elBg.style.transform  = 'scale(1)';
+    elBg.style.filter     = 'brightness(1) blur(0px)';
+    elBg.style.opacity    = '1';
+    elBg.style.borderRadius = '0';
 
     const dest = prevKey;
     setTimeout(() => {
       cleanup();
-      _navSilentPBG(dest);
-    }, 280);
+      _doNavBack(dest);
+    }, 270);
   };
 
-  // ── Cancelar (rebote al origen) ────────────────────────────────
+  // ── Cancelar: rebote con spring ──────────────────────────────
   const cancel = () => {
     if(finishing) return;
     finishing = true;
 
-    fgLayer.style.transition   = `transform .38s ${SPRING}, border-radius .38s ${SPRING}, box-shadow .32s`;
-    fgLayer.style.transform    = 'translateX(0) scale(1)';
-    fgLayer.style.borderRadius = '0';
-    fgLayer.style.boxShadow    = '-6px 0 32px rgba(0,0,0,.35)';
+    elFg.style.transition   = `transform .4s ${SPRING},border-radius .4s ${SPRING},box-shadow .3s`;
+    elFg.style.transform    = 'translateX(0) scale(1)';
+    elFg.style.borderRadius = '0';
+    elFg.style.boxShadow    = '-6px 0 32px rgba(0,0,0,.35)';
 
-    bgLayer.style.transition = `transform .38s ${SPRING}, filter .38s, opacity .3s`;
-    bgLayer.style.transform  = `scale(${SCALE_BG})`;
-    bgLayer.style.filter     = `brightness(0.52) blur(5px)`;
-    bgLayer.style.opacity    = '0.35';
+    elBg.style.transition = `transform .4s ${SPRING},filter .35s,opacity .3s`;
+    elBg.style.transform  = `scale(${SCALE_BG})`;
+    elBg.style.filter     = 'brightness(0.52) blur(4px)';
+    elBg.style.opacity    = '0.38';
 
-    setTimeout(cleanup, 420);
+    setTimeout(cleanup, 430);
   };
 
-  // ── Navegar a destino sin animación de slide ───────────────────
-  const _navSilentPBG = (key) => {
+  // ── Navegar sin slide-in animation ───────────────────────────
+  const _doNavBack = (key) => {
     if(!key) return;
-    // Limpiar duplicados del historial
-    const el = document.querySelector('.screen.active');
-    const curKey = el
-      ? Object.keys(screens).find(k => screens[k] === el.id)
-      : null;
-    while(screenHistory.length && screenHistory[screenHistory.length-1] === curKey){
+    const curEl = document.querySelector('.screen.active');
+    const curKey = curEl ? Object.keys(screens).find(k=>screens[k]===curEl.id) : null;
+
+    // Limpiar historial
+    while(screenHistory.length && screenHistory[screenHistory.length-1] === curKey)
       screenHistory.pop();
-    }
     const idx = screenHistory.lastIndexOf(key);
     if(idx >= 0) screenHistory.splice(idx, 1);
 
-    // Ocultar actual, mostrar destino
-    if(el){ el.classList.remove('active'); el.style.display = 'none'; el.style.visibility = ''; }
+    // Cambiar pantalla sin animación de slide
+    if(curEl){ curEl.classList.remove('active'); curEl.style.display='none'; curEl.style.cssText=''; }
     const nextEl = document.getElementById(screens[key]);
-    if(nextEl){ nextEl.style.display = 'flex'; nextEl.classList.add('active'); nextEl.style.visibility = ''; }
+    if(nextEl){ nextEl.style.cssText=''; nextEl.style.display='flex'; nextEl.classList.add('active'); }
 
-    // Renderizar contenido
     _navFromPop = true;
     _renderScreen(key);
     _navFromPop = false;
 
-    history.replaceState(
-      {screen: key, sbOpen: false}, '',
-      location.href.split('#')[0] + '#' + key
-    );
+    history.replaceState({screen:key,sbOpen:false},'',location.href.split('#')[0]+'#'+key);
   };
 
-  // ── TOUCHSTART ────────────────────────────────────────────────
+  // ── Touch handlers ───────────────────────────────────────────
   document.addEventListener('touchstart', e => {
     if(finishing || dragging) return;
     const t = e.touches[0];
     if(t.clientX > EDGE) return;
-    // No interferir con paneles abiertos
     if(document.getElementById('sb')?.classList.contains('open')) return;
     if(document.getElementById('drawer')?.classList.contains('open')) return;
     const p = getPrevKey();
     if(!p) return;
-    prevKey = p;
-    startX  = t.clientX;
-    startY  = t.clientY;
-    lastX   = t.clientX;
-    tracking = true;
-    dragging = false;
-  }, {passive: true});
+    prevKey = p; startX = t.clientX; startY = t.clientY; lastX = t.clientX;
+    tracking = true; dragging = false;
+  }, {passive:true});
 
-  // ── TOUCHMOVE ─────────────────────────────────────────────────
   document.addEventListener('touchmove', e => {
     if(finishing || !tracking || !prevKey) return;
-    const t  = e.touches[0];
+    const t = e.touches[0];
     const dx = t.clientX - startX;
     const dy = Math.abs(t.clientY - startY);
     lastX = t.clientX;
 
     if(!dragging){
-      if(Math.abs(dx) < 6) return;          // umbral mínimo
-      if(dy > dx * 1.15){ prevKey = null; tracking = false; return; } // scroll vertical
-      // ── Activar arrastre ──
-      const ok = buildLayers(prevKey);
-      if(!ok){ prevKey = null; tracking = false; return; }
+      if(Math.abs(dx) < 5) return;
+      // Si es más vertical que horizontal → scroll, ignorar
+      if(dy > Math.abs(dx) * 1.1){ prevKey=null; tracking=false; return; }
+      if(!build(prevKey)){ prevKey=null; tracking=false; return; }
       dragging = true;
     }
-
     const realDX = Math.max(0, t.clientX - startX);
     if(raf) cancelAnimationFrame(raf);
     raf = requestAnimationFrame(() => applyPos(realDX));
-  }, {passive: true});
+  }, {passive:true});
 
-  // ── TOUCHEND ──────────────────────────────────────────────────
   document.addEventListener('touchend', () => {
     if(finishing) return;
-    if(!dragging || !prevKey){ tracking = false; prevKey = null; return; }
-    const W = window.innerWidth;
+    if(!dragging || !prevKey){ tracking=false; prevKey=null; return; }
     const finalDX = Math.max(0, lastX - startX);
-    if(finalDX / W >= THRESHOLD){
-      commit();
-    } else {
-      cancel();
-    }
-  }, {passive: true});
+    if(finalDX / window.innerWidth >= THRESHOLD) commit();
+    else cancel();
+  }, {passive:true});
 
-  // ── TOUCHCANCEL ───────────────────────────────────────────────
   document.addEventListener('touchcancel', () => {
-    if(dragging && !finishing) cancel();
-    else cleanup();
-  }, {passive: true});
+    if(dragging && !finishing) cancel(); else cleanup();
+  }, {passive:true});
 
 })();
 
 </script>
-<!-- ── Historial Mantenimientos Sheet ── -->
-<div id="hmSheet">
-  <div id="hmSheetOverlay" onclick="cerrarHMSheet()"></div>
-  <div id="hmSheetPanel">
-    <div class="hm-head">
-      <h2 id="hmSheetTitle">Historial de mantenimientos</h2>
-      <button class="hm-close" onclick="cerrarHMSheet()">✕</button>
-    </div>
-    <div class="hm-body" id="hmSheetBody"></div>
-    <div id="hmSheetFicha">
-      <div class="hm-head">
-        <button class="hm-back" onclick="cerrarHMFicha()">‹</button>
-        <h2 id="hmFichaTitle"></h2>
-        <button class="hm-close" onclick="cerrarHMSheet()">✕</button>
-      </div>
-      <div class="hm-body" id="hmFichaBody"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ── PREDICTIVE BACK GESTURE LAYERS ── -->
-<div id="pbg-overlay"></div>
-<div id="pbg-bg-layer"></div>
-<div id="pbg-fg-layer"></div>
-
-</body>
-</html>
