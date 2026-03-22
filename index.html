@@ -128,11 +128,98 @@ body.modo-claro .stat2-num{color:#111}
 
 /* ── MODO CLARO: FIXES DESKTOP ── */
 @media(min-width:600px){
+  /* ── MODO CLARO ── */
   body.modo-claro .scroll-pad{background:#f2f2f7}
   body.modo-claro #app{box-shadow:0 2px 12px rgba(0,0,0,.08)}
   body.modo-claro .grupos-grid .gtile-name{text-shadow:0 1px 4px rgba(0,0,0,.7)}
   body.modo-claro .cal-semana{box-shadow:0 1px 4px rgba(0,0,0,.06)}
   body.modo-claro .fgrp select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='rgba(0,0,0,.4)'/%3E%3C/svg%3E")}
+
+  /* ── LAYOUT TABLET ── */
+  body{font-size:16px}
+  #topbar{padding:16px 28px;gap:14px}
+  #topbar .logo{font-size:28px}
+  .tb-btn{width:44px;height:44px;border-radius:14px;font-size:22px}
+  .scroll-pad{padding:20px 24px 120px}
+
+  /* ── GRUPOS GRID ── */
+  .grupos-grid{display:grid;gap:16px}
+  .grupos-grid.n1{grid-template-columns:1fr;max-width:480px}
+  .grupos-grid.n1 .gtile{height:220px}
+  .grupos-grid.n2,.grupos-grid.nN{grid-template-columns:1fr 1fr}
+  .grupos-grid.n2 .gtile,.grupos-grid.nN .gtile{width:auto}
+  .gtile{flex-shrink:unset}
+
+  /* ── CARDS ── */
+  .cli-card{padding:16px 20px;border-radius:16px;gap:16px}
+  .parte-card{padding:16px 20px;border-radius:16px;gap:16px}
+  .notif-card{padding:14px 18px;border-radius:16px}
+  .arch-card{padding:14px 18px;border-radius:16px}
+  .tl-card{padding:14px 18px;border-radius:16px}
+
+  /* ── FORMULARIOS ── */
+  .fsec{padding:22px 24px;border-radius:18px}
+  .fgrp{margin-bottom:18px}
+  .fgrp label{font-size:12px}
+  .fgrp input,.fgrp select,.fgrp textarea{padding:13px 16px;font-size:15px;border-radius:12px}
+  .btn{padding:13px 22px;font-size:15px;border-radius:14px}
+  .btn-nuevo{padding:11px 22px;font-size:14px;border-radius:22px}
+
+  /* ── DRAWER ── */
+  #drawer{width:320px}
+  .drawer-head{min-height:140px}
+  .drawer-ava{width:56px;height:56px;border-radius:18px;font-size:24px}
+  .drawer-name{font-size:18px}
+  .d-item{padding:13px 22px;font-size:15px}
+  .d-section{padding:14px 22px 6px;font-size:11px}
+
+  /* ── SLIDE-OVER (SB) ── */
+  #sb{width:min(480px,85vw)}
+  .sb-head{padding:18px 24px}
+  .sb-head h2{font-size:18px}
+  .sb-body{padding:20px 24px 40px}
+
+  /* ── GRUPO HEADER ── */
+  .grupo-header{height:150px;border-radius:22px}
+  .grupo-title{font-size:22px}
+  .gtabs-main{gap:14px}
+  .gtab-big{padding:18px 14px;border-radius:18px}
+  .gtab-big-txt{font-size:13px}
+  .gtabs-sub{gap:10px}
+  .gtab-sm{padding:13px 10px;border-radius:16px}
+  .gtab-sm-txt{font-size:11px}
+
+  /* ── TOPBAR LAYOUT en tabla: App centrada con max-width ── */
+  body{background:#111}
+  #app{max-width:680px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.6)}
+  body.modo-claro{background:#e5e5ea}
+
+  /* ── DASH ITEMS ── */
+  .dash-item{border-radius:18px;padding:18px}
+  .stat2-card{border-radius:18px;padding:18px 20px}
+  .tl-card{border-radius:16px}
+
+  /* ── BOTONES DE ACCIÓN ── */
+  .accion-btn{padding:12px 16px;font-size:13px}
+  .fab{width:62px;height:62px;border-radius:20px;font-size:26px;bottom:32px;right:28px}
+
+  /* ── PARTE/CLI detail ── */
+  .det-row{padding:13px 0}
+  .det-label{font-size:12px}
+  .det-val{font-size:15px}
+
+  /* ── STABS / FTABS ── */
+  .stab{padding:10px 18px;font-size:14px;border-radius:14px}
+  .fbtn{padding:9px 16px;font-size:13px}
+}
+
+/* ── TABLET GRANDE / ESCRITORIO ≥768px ── */
+@media(min-width:768px){
+  #app{max-width:720px}
+  #drawer{width:340px}
+  #sb{width:min(520px,80vw)}
+  .scroll-pad{padding:24px 28px 120px}
+  .fsec{padding:26px 28px}
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -326,11 +413,8 @@ body.modo-claro .asist-msg.user{background:linear-gradient(135deg,rgba(var(--the
 #drawer{position:fixed;right:-300px;left:auto;top:0;bottom:0;width:285px;background:rgba(28,28,28,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-left:1px solid rgba(255,255,255,.1);border-right:none;z-index:1160;transition:right .38s cubic-bezier(.16,1,.3,1),box-shadow .38s ease;overflow-y:auto;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 48px);box-shadow:-20px 0 60px rgba(0,0,0,0)}
 #drawer.open{right:0;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
 .drawer-head{position:relative;padding:0;border-bottom:1px solid rgba(255,255,255,.1);cursor:pointer;overflow:hidden;min-height:120px;display:flex;flex-direction:column;justify-content:flex-end}
-.drawer-head-banner{position:absolute;inset:0;background:linear-gradient(135deg,rgba(var(--theme-rgb),.35) 0%,rgba(var(--theme-rgb),.6) 60%,rgba(0,0,0,.7) 100%);z-index:0;transition:background .35s ease,background-image .35s ease}
-.drawer-head-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(var(--theme-rgb),.4) 0%,transparent 60%);pointer-events:none;z-index:1}
-/* Overlay oscuro cuando hay imagen de grupo */
-.drawer-head-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.28) 55%,transparent 100%);pointer-events:none;z-index:2}
-.drawer-head-content{position:relative;z-index:3!important}
+.drawer-head-banner{position:absolute;inset:0;z-index:0;overflow:hidden;background:linear-gradient(135deg,rgba(var(--theme-rgb),.5) 0%,rgba(var(--theme-rgb),.8) 60%,rgba(0,0,0,.85) 100%)}
+.drawer-head-content{position:relative;z-index:2}
 .drawer-head-content{position:relative;z-index:5;padding:16px 18px 16px;display:flex;align-items:center;gap:13px}
 .drawer-ava{width:52px;height:52px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;font-size:22px;border:2.5px solid rgba(255,255,255,.35);flex-shrink:0;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.4)}
 .drawer-ava img{width:100%;height:100%;object-fit:cover}
@@ -2265,6 +2349,8 @@ window.abrirDrawer=()=>{
   const isKiosk = localStorage.getItem('joyvi_kiosk')==='1';
   const body = document.getElementById('drawerBody');
   if(body) body.innerHTML = _buildDrawerBody(isKiosk, !!CGID);
+  // Actualizar avatar y banner cada vez que se abre
+  if(typeof actualizarDrawer==='function') actualizarDrawer();
   $('drawer').classList.add('open');
   $('drawerOverlay').style.display='block';
 };
@@ -2978,16 +3064,24 @@ const actualizarDrawer=()=>{
     const letra=CUD?.nombre?CUD.nombre[0].toUpperCase():'?';
     ava.innerHTML=`<span style="font-size:22px;font-weight:900;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);font-family:var(--font)">${letra}</span>`;
   }
-  // ── Banner: imagen de fondo del grupo activo ──
+  // ── Banner: imagen real del grupo activo ──
   const banner=document.querySelector('.drawer-head-banner');
   if(banner){
     const fondo=CG?.fondoImg||'';
     if(fondo){
-      // Imagen del grupo + overlay oscuro para legibilidad
-      banner.style.background=`linear-gradient(to bottom,rgba(0,0,0,.18) 0%,rgba(0,0,0,.65) 100%),url('${fondo}') center/cover no-repeat`;
+      // Imagen real con overlay oscuro como hijos del div
+      banner.innerHTML='';
+      banner.style.cssText='position:absolute;inset:0;z-index:0;overflow:hidden;';
+      const imgEl=document.createElement('div');
+      imgEl.style.cssText=`position:absolute;inset:0;background:url('${fondo}') center/cover no-repeat;`;
+      const ovEl=document.createElement('div');
+      ovEl.style.cssText='position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1) 0%,rgba(0,0,0,.7) 100%);';
+      banner.appendChild(imgEl);
+      banner.appendChild(ovEl);
     } else {
-      // Sin grupo activo: gradiente del color de apariencia
-      banner.style.background='';
+      banner.innerHTML='';
+      banner.style.cssText='';
+      // Sin grupo: el CSS del .drawer-head-banner aplica el gradiente de tema
     }
   }
 };
@@ -13170,43 +13264,19 @@ const _lockInicializar = () => {
     const elDest=screens[destKey]?document.getElementById(screens[destKey]):null;
     if(!elCur||!elDest||elCur===elDest) return false;
 
-    // Renderizar destino (off-screen) para que tenga contenido actualizado
+    // Clonar el DOM tal como está — NO llamar renders async
+    // La pantalla destino ya tiene contenido de su última visita
     try{
-      const prev_d=elDest.style.display;
-      const prev_v=elDest.style.visibility;
-      const prev_p=elDest.style.position;
-      elDest.style.position='fixed';
-      elDest.style.visibility='hidden';
+      // Mostrar brevemente el destino para poder hacer snapshot real
+      const prevDisplay=elDest.style.display;
       elDest.style.display='flex';
-      const fn={
-        inicio:()=>typeof renderInicio==='function'&&renderInicio(),
-        grupo:()=>typeof renderGrupo==='function'&&renderGrupo(),
-        perfil:()=>typeof renderPerfil==='function'&&renderPerfil(),
-        notificaciones:()=>typeof renderNotificaciones==='function'&&renderNotificaciones(),
-        estadisticas:()=>typeof renderStats==='function'&&renderStats(),
-        archivos:()=>typeof renderArchivos==='function'&&renderArchivos(),
-        imagenes:()=>typeof renderImagenes==='function'&&renderImagenes(),
-        averias:()=>typeof renderAverias==='function'&&renderAverias(),
-        presupuestos:()=>typeof renderPresupuestos==='function'&&renderPresupuestos(),
-        horas:()=>typeof renderHoras==='function'&&renderHoras(),
-        facturas:()=>typeof renderFacturas==='function'&&renderFacturas(),
-        historialGlobal:()=>typeof renderHistorialGlobal==='function'&&renderHistorialGlobal(),
-        rutaDia:()=>typeof renderRutaDia==='function'&&renderRutaDia(),
-        administracion:()=>typeof renderAdministracion==='function'&&renderAdministracion(),
-        calendario:()=>typeof renderCalendario==='function'&&renderCalendario(),
-      };
-      if(fn[destKey]) try{fn[destKey]();}catch(e){}
-      // Clonar DESPUÉS del render
       const snapBack =snapshot(elDest);
+      elDest.style.display=prevDisplay;
       const snapFront=snapshot(elCur);
-      // Restaurar destino
-      elDest.style.display=prev_d;
-      elDest.style.visibility=prev_v;
-      elDest.style.position=prev_p;
       if(!snapBack||!snapFront) return false;
       pbgBack.innerHTML='';  pbgBack.appendChild(snapBack);
       pbgFront.innerHTML=''; pbgFront.appendChild(snapFront);
-    }catch(e){ return false; }
+    }catch(e){ console.warn('PBG build:',e); return false; }
 
     // Estado inicial capas
     pbgBack.style.cssText=(
