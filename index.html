@@ -1600,7 +1600,7 @@ import {
 import {
   getFirestore, doc, getDoc, getDocFromServer, setDoc, addDoc, updateDoc, deleteDoc,
   collection, query, where, orderBy, onSnapshot, getDocs, getDocsFromServer,
-  serverTimestamp, arrayUnion, arrayRemove, writeBatch
+  serverTimestamp, arrayUnion, arrayRemove, writeBatch, enableIndexedDbPersistence
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import {
   getMessaging, getToken, onMessage
@@ -1608,6 +1608,11 @@ import {
 const fbApp   = initializeApp(FB_CFG);
 const auth    = getAuth(fbApp);
 const db      = getFirestore(fbApp);
+// ── Modo offline: caché IndexedDB persistente ──
+enableIndexedDbPersistence(db,{synchronizeTabs:true}).catch(e=>{
+  // failed-precondition: múltiples pestañas → sin persistencia en esta pestaña (normal)
+  // unimplemented: navegador no compatible → sin persistencia
+});
 let fcmMessaging = null;
 try{ fcmMessaging = getMessaging(fbApp); }catch(e){}
 
@@ -3128,6 +3133,8 @@ window.abrirGrupo=async id=>{
   setTimeout(()=>_checkBackupAutomatico(),3000);
   // Alertas proactivas de mantenimientos próximos
   setTimeout(()=>_checkMantProximos(),4500);
+  // Geo: una única consulta al abrir el grupo para detectar si estás en casa de un cliente
+  setTimeout(()=>{ if(typeof window._geoCheckAlAbrir==='function') window._geoCheckAlAbrir(); },3500);
   // Log
   try{await registrarLog('abrir_grupo',`Grupo abierto: ${CG?.nombre||id}`,{grupoId:id});}catch(e){}
   goScreen('grupo');
@@ -4288,7 +4295,8 @@ window.verCliente=async id=>{
         <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.9)">Ver foto</span>
       </div>
     </div>`:''}
-    <!-- ── TÍTULO / CABECERA CLIENTE ── -->
+
+    <!-- ── CABECERA CLIENTE ── -->
     <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px">
         <div style="flex:1;min-width:0">
@@ -4297,8 +4305,6 @@ window.verCliente=async id=>{
         </div>
         <button onclick="abrirFCliDesdeCli('${id}')" style="flex-shrink:0;background:rgba(255,255,255,.08);color:var(--tx2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;transition:.15s" onmouseover="this.style.borderColor='var(--r)'" onmouseout="this.style.borderColor='var(--border)'">✏️ Editar</button>
       </div>
-
-      <!-- Datos del cliente: tabla de detalle -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:${(c.telefono||c.email||c.direccion)?'12px':'0'}">
         ${c.telefono?`<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:9px 11px"><div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.8px;margin-bottom:2px">TELÉFONO</div><div style="font-size:13px;font-weight:700;color:var(--tx)">${c.telefono}</div></div>`:''}
         ${c.email?`<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:9px 11px"><div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.8px;margin-bottom:2px">EMAIL</div><div style="font-size:13px;font-weight:700;color:var(--tx);word-break:break-all">${c.email}</div></div>`:''}
@@ -4306,8 +4312,6 @@ window.verCliente=async id=>{
         ${c.poblacion?`<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:9px 11px"><div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.8px;margin-bottom:2px">POBLACIÓN</div><div style="font-size:13px;font-weight:700;color:var(--tx)">${c.poblacion}</div></div>`:''}
         ${c.nif?`<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:9px 11px"><div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.8px;margin-bottom:2px">NIF/CIF</div><div style="font-size:13px;font-weight:700;color:var(--tx)">${c.nif}</div></div>`:''}
       </div>
-
-      <!-- Botones de acción: Llamar, WhatsApp, Maps -->
       ${(c.telefono||c.direccion||c.email)?`<div style="display:flex;gap:6px;flex-wrap:wrap">
         ${c.telefono?`<a href="tel:${c.telefono}" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);color:#4caf50;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>`:''}
         ${c.telefono?`<a href="https://wa.me/34${c.telefono.replace(/\s/g,'')}" target="_blank" style="display:flex;align-items:center;gap:6px;flex:1;min-width:90px;justify-content:center;padding:9px 12px;border-radius:10px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:12px;font-weight:800;text-decoration:none;font-family:var(--font)" onclick="event.stopPropagation()">💬 WhatsApp</a>`:''}
@@ -4318,39 +4322,87 @@ window.verCliente=async id=>{
 
     ${c.notas?`<div style="background:rgba(255,255,255,.04);border-left:3px solid var(--r);border-radius:0 8px 8px 0;padding:7px 11px;font-size:12px;color:var(--tx2);margin-bottom:14px;white-space:pre-wrap">${c.notas}</div>`:''}
 
-    <!-- Acciones principales — botón primario + grid secundario -->
-    <button onclick="abrirFParteDesdeCli('${id}')" style="display:flex;align-items:center;gap:12px;width:100%;background:var(--r);border:none;border-radius:14px;padding:15px 18px;cursor:pointer;font-family:var(--font);transition:.15s;margin-bottom:8px" onmouseover="this.style.opacity='.88';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">
-      <span style="display:flex;align-items:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
-      <div style="text-align:left;flex:1">
-        <div style="font-size:14px;font-weight:900;color:#fff">Nuevo parte</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:1px">Crear parte de trabajo</div>
-      </div>
-      <span style="font-size:16px;color:rgba(255,255,255,.5)">›</span>
-    </button>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px">
-      <button onclick="verHistorialMantCliente('${id}')" style="display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px 8px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.4)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'">
-        <span style="display:flex;align-items:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></span>
-        <div style="text-align:center">
-          <div style="font-size:12px;font-weight:800;color:var(--tx)">Mantenimientos</div>
-          <div style="font-size:10px;color:var(--tx2);margin-top:2px">Historial</div>
+    <!-- ── ESTADO ACTUAL: resumen inteligente de pendientes ── -->
+    ${(()=>{
+      const av=avsC.filter(a=>a._src==='pend');
+      const partePend=partesCli.filter(p=>p.estado==='pendiente');
+      const mantVenc=mantsC.filter(m=>m.estado!=='completado'&&m.fechaProxima&&m.fechaProxima<new Date().toISOString().split('T')[0]);
+      const presuEsp=presusCli.filter(p=>p.estado==='espera');
+      const items=[];
+      if(av.length) items.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(229,57,53,.08);border-radius:10px;border:1px solid rgba(229,57,53,.2)"><span style="font-size:16px">⚡</span><div style="flex:1"><div style="font-size:12px;font-weight:900;color:#e53935">${av.length} avería${av.length>1?'s':''} abierta${av.length>1?'s':''}</div><div style="font-size:11px;color:var(--tx2)">${av.map(a=>a.tipo||'Sin tipo').slice(0,2).join(', ')}${av.length>2?'...':''}</div></div></div>`);
+      if(partePend.length) items.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,152,0,.08);border-radius:10px;border:1px solid rgba(255,152,0,.2)"><span style="font-size:16px">📋</span><div style="flex:1"><div style="font-size:12px;font-weight:900;color:#ff9800">${partePend.length} parte${partePend.length>1?'s':''} pendiente${partePend.length>1?'s':''}</div><div style="font-size:11px;color:var(--tx2)">${partePend.map(p=>p.titulo||'Sin título').slice(0,2).join(', ')}${partePend.length>2?'...':''}</div></div></div>`);
+      if(mantVenc.length) items.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,152,0,.08);border-radius:10px;border:1px solid rgba(255,152,0,.2)"><span style="font-size:16px">🔧</span><div style="flex:1"><div style="font-size:12px;font-weight:900;color:#ff9800">${mantVenc.length} mantenimiento${mantVenc.length>1?'s':''} vencido${mantVenc.length>1?'s':''}</div><div style="font-size:11px;color:var(--tx2)">${mantVenc.map(m=>m.nombreTrabajo||'Sin nombre').slice(0,2).join(', ')}</div></div></div>`);
+      if(presuEsp.length) items.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(66,133,244,.08);border-radius:10px;border:1px solid rgba(66,133,244,.2)"><span style="font-size:16px">💶</span><div style="flex:1"><div style="font-size:12px;font-weight:900;color:#4285f4">${presuEsp.length} presupuesto${presuEsp.length>1?'s':''} sin respuesta</div><div style="font-size:11px;color:var(--tx2)">${presuEsp.map(p=>p.titulo||'Sin título').slice(0,2).join(', ')}</div></div></div>`);
+      return items.length?`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">${items.join('')}</div>`:'';
+    })()}
+
+    <!-- ── ACCIÓN PRINCIPAL CONTEXTUAL (deducida del estado) ── -->
+    ${(()=>{
+      const avPend=avsC.filter(a=>a._src==='pend');
+      const partePend=partesCli.filter(p=>p.estado==='pendiente');
+      const mantVenc=mantsC.filter(m=>m.estado!=='completado'&&m.fechaProxima&&m.fechaProxima<new Date().toISOString().split('T')[0]);
+      if(avPend.length){
+        const av=avPend[0];
+        return`<button onclick="_sbReturnCli='${id}';verAveria('${av.id}')" style="display:flex;align-items:center;gap:12px;width:100%;background:linear-gradient(135deg,#c62828,#e53935);border:none;border-radius:14px;padding:15px 18px;cursor:pointer;font-family:var(--font);transition:.15s;margin-bottom:8px;box-shadow:0 4px 16px rgba(229,57,53,.35)" onmouseover="this.style.opacity='.88';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">
+          <span style="font-size:22px">⚡</span>
+          <div style="text-align:left;flex:1">
+            <div style="font-size:14px;font-weight:900;color:#fff">Avería abierta: ${av.tipo||'Ver avería'}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:1px">Toca para continuar con esta avería</div>
+          </div>
+          <span style="font-size:16px;color:rgba(255,255,255,.5)">›</span>
+        </button>`;
+      }
+      if(partePend.length){
+        const p=partePend[0];
+        return`<button onclick="_sbReturnCli='${id}';verParte('${p.id}')" style="display:flex;align-items:center;gap:12px;width:100%;background:linear-gradient(135deg,#e65100,#ff9800);border:none;border-radius:14px;padding:15px 18px;cursor:pointer;font-family:var(--font);transition:.15s;margin-bottom:8px;box-shadow:0 4px 16px rgba(255,152,0,.3)" onmouseover="this.style.opacity='.88';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">
+          <span style="font-size:22px">📋</span>
+          <div style="text-align:left;flex:1">
+            <div style="font-size:14px;font-weight:900;color:#fff">Parte pendiente: ${p.titulo||'Ver parte'}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:1px">Toca para continuar con este parte</div>
+          </div>
+          <span style="font-size:16px;color:rgba(255,255,255,.5)">›</span>
+        </button>`;
+      }
+      if(mantVenc.length){
+        const m=mantVenc[0];
+        return`<button onclick="_sbReturnCli='${id}';abrirFParteDesdeCli('${id}')" style="display:flex;align-items:center;gap:12px;width:100%;background:linear-gradient(135deg,#1565c0,#1e88e5);border:none;border-radius:14px;padding:15px 18px;cursor:pointer;font-family:var(--font);transition:.15s;margin-bottom:8px;box-shadow:0 4px 16px rgba(30,136,229,.3)" onmouseover="this.style.opacity='.88';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">
+          <span style="font-size:22px">🔧</span>
+          <div style="text-align:left;flex:1">
+            <div style="font-size:14px;font-weight:900;color:#fff">Hacer revisión: ${m.nombreTrabajo||'Mantenimiento'}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:1px">Vencido el ${m.fechaProxima} · Crear parte de revisión</div>
+          </div>
+          <span style="font-size:16px;color:rgba(255,255,255,.5)">›</span>
+        </button>`;
+      }
+      return`<button onclick="abrirFParteDesdeCli('${id}')" style="display:flex;align-items:center;gap:12px;width:100%;background:var(--r);border:none;border-radius:14px;padding:15px 18px;cursor:pointer;font-family:var(--font);transition:.15s;margin-bottom:8px" onmouseover="this.style.opacity='.88';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">
+        <span style="display:flex;align-items:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+        <div style="text-align:left;flex:1">
+          <div style="font-size:14px;font-weight:900;color:#fff">Nuevo parte de trabajo</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:1px">Todo en orden — crear parte nuevo</div>
         </div>
+        <span style="font-size:16px;color:rgba(255,255,255,.5)">›</span>
+      </button>`;
+    })()}
+
+    <!-- ── ACCIONES EN CASCADA (crear documentos encadenados) ── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <button onclick="window._crearAveriaRapidaCli('${id}')" style="display:flex;align-items:center;gap:8px;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.2);border-radius:12px;padding:11px 12px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(229,57,53,.14)'" onmouseout="this.style.background='rgba(229,57,53,.08)'">
+        <span style="font-size:18px">⚡</span>
+        <div style="text-align:left"><div style="font-size:12px;font-weight:900;color:var(--tx)">Nueva avería</div><div style="font-size:10px;color:var(--tx2)">Cliente pre-rellenado</div></div>
       </button>
-      <button onclick="verAveriasHistorialCliente('${id}')" style="display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px 8px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.4)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'">
-        <span style="display:flex;align-items:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-        <div style="text-align:center">
-          <div style="font-size:12px;font-weight:800;color:var(--tx)">Averías</div>
-          <div style="font-size:10px;color:var(--tx2);margin-top:2px">Registrar</div>
-        </div>
+      <button onclick="window._crearPresupuestoRapidoCli('${id}')" style="display:flex;align-items:center;gap:8px;background:rgba(66,133,244,.08);border:1px solid rgba(66,133,244,.2);border-radius:12px;padding:11px 12px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(66,133,244,.14)'" onmouseout="this.style.background='rgba(66,133,244,.08)'">
+        <span style="font-size:18px">💶</span>
+        <div style="text-align:left"><div style="font-size:12px;font-weight:900;color:var(--tx)">Nuevo presupuesto</div><div style="font-size:10px;color:var(--tx2)">Cliente pre-rellenado</div></div>
       </button>
-      <button onclick="abrirImagenesClienteDesdeCli('${id}')" style="display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px 8px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.4)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'">
-        <span style="font-size:22px">📷</span>
-        <div style="text-align:center">
-          <div style="font-size:12px;font-weight:800;color:var(--tx)">Fotos</div>
-          <div style="font-size:10px;color:var(--tx2);margin-top:2px">Instalación</div>
-        </div>
+      <button onclick="window._crearMantRapidoCli('${id}')" style="display:flex;align-items:center;gap:8px;background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.2);border-radius:12px;padding:11px 12px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(76,175,80,.14)'" onmouseout="this.style.background='rgba(76,175,80,.08)'">
+        <span style="font-size:18px">🔧</span>
+        <div style="text-align:left"><div style="font-size:12px;font-weight:900;color:var(--tx)">Nuevo mantenimiento</div><div style="font-size:10px;color:var(--tx2)">Cliente pre-rellenado</div></div>
+      </button>
+      <button onclick="abrirImagenesClienteDesdeCli('${id}')" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:11px 12px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.borderColor='rgba(var(--theme-rgb),.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <span style="font-size:18px">📷</span>
+        <div style="text-align:left"><div style="font-size:12px;font-weight:900;color:var(--tx)">Fotos</div><div style="font-size:10px;color:var(--tx2)">Instalación</div></div>
       </button>
     </div>
-    <!-- QR secundario -->
     <button onclick="mostrarQRCliente('${id}')" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;font-family:var(--font);color:var(--tx2);font-size:12px;font-weight:700;margin-bottom:18px;transition:.15s" onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--tx2)'">
       📱 Ver código QR del cliente
     </button>
@@ -4369,6 +4421,201 @@ window.abrirFParteDesdeCli=id=>{ const c=id; cerrarSB(); setTimeout(()=>{ _sbRet
 window.verParteDesdeCliente=(partId,cliId)=>{ _sbReturnCli=cliId; verParte(partId); };
 window.abrirImagenesClienteDesdeCli=id=>{ _sbReturnCli=id; abrirImagenesClienteSB(id); };
 window.verMantDesdeCliente=(mantId,cliId)=>{ _sbReturnCli=cliId; verMant(mantId); };
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ACCIONES EN CASCADA DESDE FICHA CLIENTE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+window._crearAveriaRapidaCli=(cliId)=>{
+  const cli=allClientes.find(c=>c.id===cliId);
+  if(!cli)return;
+  _sbReturnCli=cliId;
+  abrirNuevaAveriaPrerellenada(cliId,'','',{
+    dir:cli.direccion||'',edif:cli.edificio||'',tel:cli.telefono||''
+  });
+};
+
+window._crearPresupuestoRapidoCli=(cliId)=>{
+  const cli=allClientes.find(c=>c.id===cliId);
+  if(!cli){toast('Cliente no encontrado','e');return;}
+  _sbReturnCli=cliId;
+  _partidasPresupuesto=[{desc:'Trabajo',importe:0}];
+  const renderPartidas=()=>_partidasPresupuesto.map((pt,i)=>`
+    <div class="partida-row" id="ptrow${i}">
+      <input class="partida-desc" placeholder="Descripción" value="${pt.desc}" oninput="_partidasPresupuesto[${i}].desc=this.value">
+      <input class="partida-importe" type="number" placeholder="0.00" value="${pt.importe||''}" step="0.01" min="0" oninput="_partidasPresupuesto[${i}].importe=parseFloat(this.value)||0;calcPresuTotal()">
+      <button class="partida-del" onclick="_partidasPresupuesto.splice(${i},1);document.getElementById('partidasWrap').innerHTML=renderPartidas();calcPresuTotal()">✕</button>
+    </div>`).join('');
+  abrirSB(`Nuevo presupuesto — ${cli.nombre}`,`
+    <div style="background:rgba(66,133,244,.08);border:1px solid rgba(66,133,244,.2);border-radius:10px;padding:9px 12px;margin-bottom:14px;font-size:12px;color:#4285f4;font-weight:800">
+      💶 Cliente pre-rellenado: <strong>${cli.nombre}</strong>
+    </div>
+    <div class="fsec">
+      <div class="fgrp"><label>Cliente</label><div id="prCli-wrap"></div></div>
+      <div class="fgrp"><label>Título del trabajo</label><input id="prTitulo" placeholder="Ej: Reparación bomba piso 3"></div>
+    </div>
+    <div class="fsec"><div class="fsec-title">Partidas</div>
+      <div id="partidasWrap">${renderPartidas()}</div>
+      <button class="btn btn-s btn-sm" style="width:100%;margin-top:6px" onclick="_partidasPresupuesto.push({desc:'',importe:0});document.getElementById('partidasWrap').innerHTML=renderPartidas();calcPresuTotal()">+ Añadir partida</button>
+    </div>
+    <div class="fsec">
+      <div class="fgrp"><label>Mano de obra (€)</label><input type="number" id="prMO" placeholder="0.00" min="0" step="0.01" oninput="calcPresuTotal()"></div>
+      <div class="fgrp"><label>Materiales (€)</label><input type="number" id="prMat" placeholder="0.00" min="0" step="0.01" oninput="calcPresuTotal()"></div>
+      <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="prDesp" placeholder="0.00" min="0" step="0.01" oninput="calcPresuTotal()"></div>
+    </div>
+    <div class="card" style="margin:12px 0;padding:14px">
+      <div style="border-top:1px solid var(--border);padding-top:12px">
+        <div class="importe-row"><span class="il">Total</span><span id="prTot">—</span></div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="guardarPresupuesto()">💾 Guardar presupuesto</button>
+  `);
+  setTimeout(()=>_buildCliSelect('prCli',cliId,()=>{}),0);
+  setTimeout(()=>calcPresuTotal(),50);
+};
+
+window._crearMantRapidoCli=(cliId)=>{
+  const cli=allClientes.find(c=>c.id===cliId);
+  if(!cli)return;
+  _sbReturnCli=cliId;
+  _abrirSelectorMantSB(cliId,cli.nombre||'Cliente',allMantPlantillas||[]);
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PUNTO 7 — TRANSICIONES DE ESTADO AUTOMÁTICAS
+// Al completar un parte: cierra averías vinculadas, propone siguiente paso
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+window._transicionesAutoCompletarParte=async(parteId)=>{
+  const p=allPartes.find(x=>x.id===parteId);
+  if(!p||!CGID)return;
+  const cliId=p.clienteId;
+  // 1. Si hay averías abiertas de este cliente, ofrecer cerrarlas
+  try{
+    const avSnap=await getDocs(query(collection(db,'grupos',CGID,'averias'),where('clienteId','==',cliId)));
+    const avAbiertas=avSnap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.estado==='pendiente');
+    if(avAbiertas.length){
+      // Cerrar automáticamente la primera (la más probable de estar relacionada)
+      const av=avAbiertas[0];
+      await addDoc(collection(db,'grupos',CGID,'averias_historial'),{...av,avId:av.id,estado:'resuelta',resueltaEn:serverTimestamp(),cierreAutoPorParte:parteId});
+      await updateDoc(doc(db,'grupos',CGID,'averias',av.id),{estado:'resuelta',resueltaEn:serverTimestamp()});
+      toast(`✅ Avería "${av.tipo||'Sin tipo'}" cerrada automáticamente`,'o');
+    }
+  }catch(e){}
+  // 2. Micro-interacción de cierre satisfactorio
+  _microInteraccionCierre();
+  // 3. Proponer siguiente paso tras un breve delay
+  setTimeout(()=>{
+    const cli=allClientes.find(c=>c.id===cliId);
+    abrirSB('✅ Parte completado',`
+      <div style="text-align:center;padding:12px 0 20px">
+        <div id="_celebIcon" style="font-size:56px;line-height:1;margin-bottom:10px;transform:scale(0);transition:transform .4s cubic-bezier(.16,1,.3,1)">✅</div>
+        <div style="font-size:18px;font-weight:900;color:var(--tx);margin-bottom:4px">${p.titulo||'Parte completado'}</div>
+        <div style="font-size:13px;color:var(--tx2)">${cli?.nombre||''}</div>
+      </div>
+      <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">¿Qué sigue?</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button onclick="cerrarSBTotal();crearPresupuestoDesdeParteId('${parteId}')" style="display:flex;align-items:center;gap:12px;background:rgba(66,133,244,.1);border:1px solid rgba(66,133,244,.25);border-radius:12px;padding:13px 14px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(66,133,244,.18)'" onmouseout="this.style.background='rgba(66,133,244,.1)'">
+          <span style="font-size:20px">💶</span>
+          <div style="text-align:left"><div style="font-size:13px;font-weight:900;color:var(--tx)">Crear presupuesto</div><div style="font-size:11px;color:var(--tx2)">Partidas importadas del parte</div></div>
+          <span style="margin-left:auto;color:var(--tx2)">›</span>
+        </button>
+        <button onclick="cerrarSBTotal();window._crearMantRapidoCli('${cliId}')" style="display:flex;align-items:center;gap:12px;background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.2);border-radius:12px;padding:13px 14px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(76,175,80,.16)'" onmouseout="this.style.background='rgba(76,175,80,.08)'">
+          <span style="font-size:20px">🔧</span>
+          <div style="text-align:left"><div style="font-size:13px;font-weight:900;color:var(--tx)">Programar mantenimiento</div><div style="font-size:11px;color:var(--tx2)">Próxima revisión del equipo</div></div>
+          <span style="margin-left:auto;color:var(--tx2)">›</span>
+        </button>
+        <button onclick="cerrarSBTotal();verCliente('${cliId}')" style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:13px 14px;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.borderColor='var(--r)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:20px">👤</span>
+          <div style="text-align:left"><div style="font-size:13px;font-weight:900;color:var(--tx)">Ver ficha del cliente</div><div style="font-size:11px;color:var(--tx2)">Volver al expediente completo</div></div>
+          <span style="margin-left:auto;color:var(--tx2)">›</span>
+        </button>
+        <button onclick="cerrarSBTotal()" style="padding:12px;background:transparent;border:none;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Cerrar</button>
+      </div>
+    `);
+    // Animar el icono de celebración
+    setTimeout(()=>{const el=document.getElementById('_celebIcon');if(el)el.style.transform='scale(1)';},80);
+  },900);
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PUNTO 12 — MICRO-INTERACCIONES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+window._microInteraccionCierre=()=>{
+  // Partícula de confeti rápida sobre el SB
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:99999;overflow:hidden';
+  const colors=['#e53935','#4caf50','#ff9800','#1e88e5','#9c27b0'];
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div');
+    const x=20+Math.random()*60;
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    const size=5+Math.random()*7;
+    const rot=Math.random()*360;
+    p.style.cssText=`position:absolute;left:${x}%;top:50%;width:${size}px;height:${size}px;background:${col};border-radius:${Math.random()>.5?'50%':'2px'};transform:rotate(${rot}deg);animation:_confettiDrop${i%3} .9s cubic-bezier(.16,1,.3,1) ${i*28}ms forwards`;
+    wrap.appendChild(p);
+  }
+  // Keyframes dinámicos para las partículas
+  if(!document.getElementById('_confettiStyle')){
+    const st=document.createElement('style');
+    st.id='_confettiStyle';
+    st.textContent=`
+      @keyframes _confettiDrop0{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}100%{opacity:0;transform:translateY(-180px) rotate(360deg) scale(.4)}}
+      @keyframes _confettiDrop1{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}100%{opacity:0;transform:translateY(-220px) rotate(-180deg) scale(.3)}}
+      @keyframes _confettiDrop2{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}100%{opacity:0;transform:translateY(-150px) rotate(270deg) scale(.5)}}
+    `;
+    document.head.appendChild(st);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(()=>wrap.remove(),1200);
+  // Haptic doble
+  if(navigator.vibrate)navigator.vibrate([40,60,40]);
+};
+
+// Inyectar micro-interacción en flujoCompletarFirmarPDF → _transicionesAutoCompletarParte
+const _origFlujoCompletar=window.flujoCompletarFirmarPDF;
+window.flujoCompletarFirmarPDF=async(id)=>{
+  if(_origFlujoCompletar) await _origFlujoCompletar(id);
+  // Encadenar transiciones automáticas tras el flujo original
+  setTimeout(()=>window._transicionesAutoCompletarParte(id),200);
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// GEOLOCALIZACIÓN — única consulta al abrir la app
+// Sin GPS continuo. Una sola lectura al cargar el grupo.
+// Si el técnico está a ≤150m de un cliente → abre su ficha directamente.
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const _geoHaversine=(lat1,lng1,lat2,lng2)=>{
+  const R=6371e3,toRad=x=>x*Math.PI/180;
+  const dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+};
+
+// Llamar una sola vez cuando el grupo esté cargado y los clientes disponibles
+window._geoCheckAlAbrir=()=>{
+  if(!navigator.geolocation||!CGID)return;
+  const clisConGPS=(allClientes||[]).filter(c=>c.lat&&c.lng&&!c.archivado);
+  if(!clisConGPS.length)return;
+  // Una única lectura, sin watcher, sin batería continua
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:lat,longitude:lng}=pos.coords;
+    let cercano=null, minDist=Infinity;
+    for(const cli of clisConGPS){
+      const dist=_geoHaversine(lat,lng,parseFloat(cli.lat),parseFloat(cli.lng));
+      if(dist<=150&&dist<minDist){minDist=dist;cercano=cli;}
+    }
+    if(cercano){
+      // Abrir directamente la ficha del cliente más cercano
+      const screen=document.querySelector('.screen.active');
+      if(screen?.id==='screenGrupo'){
+        verCliente(cercano.id);
+      } else {
+        goScreen('grupo');
+        setTimeout(()=>verCliente(cercano.id),320);
+      }
+      toast(`📍 Estás en casa de ${cercano.nombre}`,'o');
+    }
+  },{enableHighAccuracy:true,maximumAge:60000,timeout:8000});
+};
 // Dentro de verParte: editar preserva el retorno al cliente automáticamente (abrirSB lo mantiene)
 window.abrirFPartePreservandoCli=id=>abrirFParte(id);
 
