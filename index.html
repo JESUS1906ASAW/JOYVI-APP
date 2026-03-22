@@ -2338,7 +2338,12 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
   const grupoNombre = (typeof CG !== 'undefined' && CG?.nombre) || 'Grupo';
   const kioskBtn = `<div class="d-item" onclick="activarModoVisualizacion();cerrarDrawer()" style="color:#ff9800"><span class="d-icon">${icoKiosk}</span>Modo gestión</div>`;
   const cur=_currentScreenId();
-  const act=(id)=>cur===id?' active':'';
+  const _gtab=(typeof activeGTab!=='undefined'?activeGTab:'cli');
+  // act(screenId, gtab?): marca activo si estamos en esa pantalla/subpestaña
+  const act=(id,gtab)=>{
+    if(gtab) return (cur==='grupo'&&_gtab===gtab)?' active':'';
+    return cur===id?' active':'';
+  };
 
   return `
     <div class="d-section">Principal</div>
@@ -2346,11 +2351,11 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-item${act('notificaciones')}" onclick="goScreen('notificaciones');cerrarDrawer()"><span class="d-icon">${icoNotif}</span>Notificaciones</div>
     ${sep}
     <div class="d-grupo-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${grupoNombre}</div>
-    <div class="d-item${act('grupo')}" onclick="goScreen('grupo');switchGTab('cli');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Clientes</div>
-    <div class="d-item" onclick="goScreen('grupo');switchGTab('part');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>Partes de trabajo</div>
-    <div class="d-item${act('mantenimiento')}" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
-    <div class="d-item${act('averias')}" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
-    <div class="d-item${act('presupuestos')}" onclick="goScreen('grupo');switchGTab('presu');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Presupuestos</div>
+    <div class="d-item${act('grupo','cli')}" onclick="goScreen('grupo');switchGTab('cli');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Clientes</div>
+    <div class="d-item${act('grupo','part')}" onclick="goScreen('grupo');switchGTab('part');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>Partes de trabajo</div>
+    <div class="d-item${act('grupo','mant')}" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
+    <div class="d-item${act('grupo','aver')}" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
+    <div class="d-item${act('grupo','presu')}" onclick="goScreen('grupo');switchGTab('presu');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Presupuestos</div>
     <div class="d-item${act('historialGlobal')}" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
     <div class="d-item${act('rutaDia')}" onclick="goScreen('rutaDia');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Ruta del día</div>
     <div class="d-item${act('imagenes')}" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
@@ -2986,8 +2991,12 @@ const actualizarDrawer=()=>{
   if(!CUD)return;
   const nm=$('drawerName');if(nm)nm.textContent=CUD.nombre||'Usuario';
   const ava=$('drawerAva');if(!ava)return;
-  const letra=CUD?.nombre?CUD.nombre[0].toUpperCase():'?';
-  ava.innerHTML=`<span style="font-size:22px;font-weight:900;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);font-family:var(--font)">${letra}</span>`;
+  if(CUD.fotoUrl){
+    ava.innerHTML=`<img src="${CUD.fotoUrl}" style="width:100%;height:100%;object-fit:cover">`;
+  } else {
+    const letra=CUD?.nombre?CUD.nombre[0].toUpperCase():'?';
+    ava.innerHTML=`<span style="font-size:22px;font-weight:900;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);font-family:var(--font)">${letra}</span>`;
+  }
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4813,10 +4822,11 @@ window.abrirFCli=async(id, preData)=>{
         <div style="display:flex;gap:8px;align-items:stretch">
           <input id="cDir" value="${vd.direccion||c?.direccion||''}" placeholder="Calle, número, ciudad" style="flex:1">
           <button type="button" onclick="usarUbicacionActualCliente()" id="btnGeoUbic" title="Usar mi ubicación actual" style="flex-shrink:0;padding:0 12px;border-radius:10px;border:1.5px solid rgba(var(--theme-rgb),.4);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:44px">${(vd.lat||c?.lat)?'🎯':'📍'}</button>
+          ${(vd.lat||c?.lat)?`<button type="button" id="btnQuitarGPS" onclick="quitarGPSCliente()" title="Quitar coordenadas GPS (usará la dirección de texto)" style="flex-shrink:0;padding:0 10px;border-radius:10px;border:1.5px solid rgba(229,57,53,.35);background:rgba(229,57,53,.07);color:#e53935;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:38px">✕</button>`:''}
         </div>
         <input type="hidden" id="cLat" value="${vd.lat||c?.lat||''}">
         <input type="hidden" id="cLng" value="${vd.lng||c?.lng||''}">
-        ${(vd.lat||c?.lat)?`<div style="font-size:11px;color:#4caf50;margin-top:4px">🎯 GPS guardado: ${parseFloat(vd.lat||c?.lat).toFixed(5)}, ${parseFloat(vd.lng||c?.lng).toFixed(5)}</div>`:''}
+        ${(vd.lat||c?.lat)?`<div id="gpsIndicator" style="font-size:11px;color:#4caf50;margin-top:4px">🎯 GPS guardado: ${parseFloat(vd.lat||c?.lat).toFixed(5)}, ${parseFloat(vd.lng||c?.lng).toFixed(5)}</div>`:'<div id="gpsIndicator"></div>'}
         <div id="geoPreviewMini" style="display:none;margin-top:5px"></div>
       </div>
       <div class="fgrp"><label>Email</label><input type="email" id="cEmail" value="${vd.email||c?.email||''}" placeholder="cliente@email.com"></div>
@@ -5086,6 +5096,21 @@ const _geocodificarCoordenadas=async(lat,lng)=>{
 
 // ── Geolocalización para formulario EXPRESS de cliente ──
 
+window.quitarGPSCliente=()=>{
+  const latEl=$('cLat'), lngEl=$('cLng'), dirEl=$('cDir');
+  if(latEl) latEl.value='';
+  if(lngEl) lngEl.value='';
+  const btn=$('btnGeoUbic');
+  if(btn){ btn.innerHTML='📍'; btn.title='Usar mi ubicación actual'; }
+  const delBtn=$('btnQuitarGPS');
+  if(delBtn) delBtn.remove();
+  const ind=$('gpsIndicator');
+  if(ind) ind.innerHTML='';
+  const pv=$('geoPreviewMini');
+  if(pv){ pv.style.display='none'; pv.innerHTML=''; }
+  toast('GPS eliminado — se usará la dirección de texto','i');
+};
+
 window.usarUbicacionExpressCli=()=>{
   const btn=document.getElementById('btnGeoExpress');
   const info=document.getElementById('ceGeoInfo');
@@ -5208,7 +5233,7 @@ window.usarUbicacionActualCliente=()=>{
   if(btn){btn.innerHTML='⏳';btn.disabled=true;btn.title='Obteniendo ubicación...';}
   toast('📍 Obteniendo tu ubicación...','i');
   navigator.geolocation.getCurrentPosition(
-    pos=>{
+    async pos=>{
       const lat=pos.coords.latitude;
       const lng=pos.coords.longitude;
       const acc=pos.coords.accuracy;
@@ -5217,14 +5242,37 @@ window.usarUbicacionActualCliente=()=>{
       if(lngEl)lngEl.value=String(lng);
       if(btn){btn.innerHTML='🎯';btn.disabled=false;btn.title='GPS guardado';}
       const _flashGreen=el=>{if(!el)return;el.style.transition='border-color .3s,box-shadow .3s';el.style.borderColor='#4caf50';el.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';},2500);};
-      const coordStr=`${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-      if(dirEl&&!dirEl.value.trim()){dirEl.value=coordStr;_flashGreen(dirEl);}
       const precStr=acc<=10?'alta precisión':acc<=30?'buena precisión':`±${Math.round(acc)}m`;
-      toast(`✓ GPS capturado (${precStr})`,'o');
+      // Mostrar botón quitar GPS si no existe aún
+      if(!document.getElementById('btnQuitarGPS')){
+        const _delBtn=document.createElement('button');
+        _delBtn.type='button';_delBtn.id='btnQuitarGPS';_delBtn.title='Quitar coordenadas GPS';
+        _delBtn.innerHTML='✕';_delBtn.onclick=quitarGPSCliente;
+        _delBtn.style.cssText='flex-shrink:0;padding:0 10px;border-radius:10px;border:1.5px solid rgba(229,57,53,.35);background:rgba(229,57,53,.07);color:#e53935;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:38px';
+        if(btn&&btn.parentElement) btn.parentElement.appendChild(_delBtn);
+      }
+      // Obtener dirección por geocodificación inversa
+      if(dirEl&&!dirEl.value.trim()) dirEl.value=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      toast('🔍 Buscando dirección...','i');
+      const dir=await _geoInversa(lat,lng);
+      if(dir&&dirEl){dirEl.value=dir;_flashGreen(dirEl);}
+      else if(dirEl) _flashGreen(dirEl);
+      // Actualizar indicador GPS
+      const ind=$('gpsIndicator');
+      if(ind)ind.innerHTML=`<span style="color:#4caf50">🎯 GPS guardado: ${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`;
+      // Rellenar población si el formulario la tiene separada y está vacía
+      const pobEl=$('cPob')||$('cPoblacion')||document.getElementById('cPob');
+      if(pobEl&&!pobEl.value.trim()){
+        try{
+          const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=16&accept-language=es`,{headers:{'User-Agent':'Joyvi/1.0'}});
+          if(r.ok){const d=await r.json();const a=d.address||{};const city=(a.city||a.town||a.village||a.municipality||'').trim();if(city){pobEl.value=city;_flashGreen(pobEl);}}
+        }catch(_){}
+      }
+      toast(dir?`✓ ${dir} (${precStr})`:`✓ GPS guardado (${precStr})`,'o');
       const _pv=document.getElementById('geoPreviewMini');
       if(_pv){
         _pv.style.display='block';
-        _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ GPS (${precStr}) — toca para ver en Maps</a>`;
+        _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ ${dir||'GPS capturado'} (${precStr})</a>`;
       }
     },
     err=>{
@@ -5325,25 +5373,23 @@ window.toggleGrupoCliente=(key)=>{
 };
 const renderTabPartes=()=>{
   const partes=allPartes.filter(p=>!p.archivado);
-  const pend=partes.filter(p=>p.estado==='pendiente');
-  const done=partes.filter(p=>p.estado==='completado');
-  let baseList;
-  if(filtroPartes==='pend')baseList=pend;
-  else if(filtroPartes==='done')baseList=done;
-  else baseList=partes;
   const q=(_partesQuery||'').toLowerCase().trim();
-  const list=q?baseList.filter(p=>{
+  const list=q?partes.filter(p=>{
     const cli=allClientes.find(c=>c.id===p.clienteId);
     const hay=[p.titulo,p.descripcion,p.materiales,p.operario,p.edificio,p.clienteNombre,cli?.nombre].filter(Boolean).join(' ').toLowerCase();
     return q.split(' ').every(w=>hay.includes(w));
-  }):baseList;
+  }):partes;
   return`
   <div class="filter-bar">
-    <button class="fbtn ${filtroPartes==='todos'?'active':''}" onclick="setFiltroPartes('todos')">Todos</button>
-    <button class="fbtn ${filtroPartes==='pend'?'active':''}" onclick="setFiltroPartes('pend')">Pdte.</button>
-    <button class="fbtn ${filtroPartes==='done'?'active':''}" onclick="setFiltroPartes('done')">Hechos</button>
-    <button class="fbtn ${_partesVistaAgrupada?'active':''}" onclick="toggleVistaAgrupadaPartes()" title="Agrupar por cliente">👥</button>
-    <button class="btn-nuevo" onclick="abrirSelectorParte()">+ Nuevo</button>
+    <button class="fbtn ${_partesVistaAgrupada?'active':''}" onclick="toggleVistaAgrupadaPartes()" title="Agrupar por cliente">👥 Agrupar</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <button onclick="abrirParteExpress()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 10px;border-radius:12px;border:1.5px solid rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.09);color:var(--r);font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(var(--theme-rgb),.16)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.09)'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>⚡ Express
+    </button>
+    <button onclick="abrirFParte()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 10px;border-radius:12px;border:1.5px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='rgba(255,255,255,.05)'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>✏️ Completo
+    </button>
   </div>
   <input class="sbox" style="margin-bottom:10px" placeholder="🔍 Buscar por cliente, título, operario..." value="${_partesQuery||''}" oninput="_filtrarPartes(this.value)">
   <div id="partesList">${_partesVistaAgrupada?htmlListaPartesAgrupada(list):htmlListaPartes(list)}</div>`;
@@ -5365,10 +5411,7 @@ window._filtrarPartes=(q)=>{
   const listEl=$('partesList');
   if(listEl){
     const q2=q.toLowerCase().trim();
-    const filtroActivo=filtroPartes||'todos';
     let baseList=allPartes.filter(p=>!p.archivado&&!p.esPlantilla);
-    if(filtroActivo==='pend')baseList=baseList.filter(p=>p.estado!=='completado');
-    else if(filtroActivo==='done')baseList=baseList.filter(p=>p.estado==='completado');
     const list=q2?baseList.filter(p=>{
       const cli=allClientes.find(c=>c.id===p.clienteId);
       const hay=[p.titulo,p.descripcion,p.materiales,p.operario,p.edificio,p.clienteNombre,cli?.nombre].filter(Boolean).join(' ').toLowerCase();
@@ -5385,7 +5428,7 @@ const htmlListaPartes=partes=>{
   return partes.map(p=>{
     const tot=calcTotal(p);
     const cli=allClientes.find(c=>c.id===p.clienteId);
-    return`<div class="parte-card ${p.estado==='completado'?'done':'pend'}" style="position:relative" onclick="verParte('${p.id}')">
+    return`<div class="parte-card pend" style="position:relative" onclick="verParte('${p.id}')">
       <div class="parte-ico" style="background:rgba(var(--theme-rgb),.13)">${p.esPlantilla?`<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>`:`<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/></svg>`}</div>
       <div class="parte-info" style="flex:1;min-width:0">
         <div class="parte-title">${p.titulo}</div>
@@ -5406,7 +5449,7 @@ window.verParte=id=>{
       <div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;background:rgba(var(--theme-rgb),.12)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
       <div>
         <div style="font-size:18px;font-weight:900;color:var(--tx)">${p.titulo}</div>
-        <span class="badge ${p.estado==='completado'?'bd':'bp'}">${p.estado==='completado'?'Completado':'Pendiente'}</span>
+
       </div>
     </div>
     <div class="card" style="margin-bottom:14px">
@@ -5483,9 +5526,7 @@ window.abrirFParte=async(id,preCliId,preData)=>{
       </label>
       <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="pDesp" value="${vd.importeDesplazamiento||p?.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0"></div>
     </div>
-    <div class="fsec"><div class="fsec-title">Estado</div>
-      <div class="fgrp"><label>Estado</label><select id="pEst"><option value="pendiente" ${p?.estado==='pendiente'?'selected':''}>Pendiente</option><option value="completado" ${(!p||p?.estado==='completado')?'selected':''}>Completado</option></select></div>
-    </div>
+    <input type="hidden" id="pEst" value="pendiente">
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
       <input type="checkbox" id="pPlant" ${p?.esPlantilla?'checked':''}> Guardar título como plantilla
     </label>
@@ -5654,13 +5695,8 @@ window.abrirParteExpress=(preCliId)=>{
     <div class="fsec">
       <div class="fgrp"><label>Cliente *</label><div id="pCli-wrap"></div></div>
       <div class="fgrp"><label>Título *</label><input id="pTit" placeholder="Ej: Reparación bomba planta baja"></div>
-      <div class="fgrp"><label>Estado</label>
-        <select id="pEst">
-          <option value="pendiente">Pendiente</option>
-          <option value="completado">Completado</option>
-        </select>
-      </div>
     </div>
+    <input type="hidden" id="pEst" value="pendiente">
     <input type="hidden" id="pEdif" value=""><input type="hidden" id="pDir" value=""><input type="hidden" id="pTel" value="">
     <input type="hidden" id="pOpe" value="${CUD?.nombre||''}"><input type="hidden" id="pDesc" value=""><input type="hidden" id="pMat" value="">
     <input type="hidden" id="pDur" value=""><input type="hidden" id="pMO" value="0"><input type="hidden" id="pMatE" value="0">
@@ -5708,9 +5744,7 @@ window._abrirFParteConPlantilla=(pl,preCliId)=>{
       </label>
       <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="pDesp" value="${pl.importeDesplazamiento||''}" placeholder="0.00" step="0.01" min="0"></div>
     </div>
-    <div class="fsec"><div class="fsec-title">Estado</div>
-      <div class="fgrp"><label>Estado</label><select id="pEst"><option value="pendiente" ${pl.estado==='pendiente'?'selected':''}>Pendiente</option><option value="completado" ${(!pl.estado||pl.estado==='completado')?'selected':''}>Completado</option></select></div>
-    </div>
+    <input type="hidden" id="pEst" value="pendiente">
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:8px;cursor:pointer">
       <input type="checkbox" id="pPlant"> Guardar título como plantilla
     </label>
@@ -6002,8 +6036,11 @@ window.limpiarFirma=()=>{
   const c=window._firmaCanvasActivo;
   if(!c)return;
   const ctx=c.getContext('2d');
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
   ctx.fillStyle='#ffffff';
   ctx.fillRect(0,0,c.width,c.height);
+  ctx.restore();
 };
 
 window.generarPDFConFirmaCapturada=(id)=>{
@@ -9153,7 +9190,7 @@ const _presuCard = (p, comp=false) => {
         <div style="font-size:12px;color:var(--tx2)">${c?.nombre||p.clienteNombre||'—'} · ${fmtF(p.creado)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <button onclick="event.stopPropagation();usarPresupuesto('${p.id}')" style="border:none;background:rgba(var(--theme-rgb),.12);color:var(--r);border-radius:10px;padding:5px 8px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--font)">Usar</button>
+
         ${!comp?`<button onclick="event.stopPropagation();_recordarPresupuesto('${p.id}')" style="border:none;background:rgba(37,211,102,.1);color:#25d366;border-radius:10px;padding:5px 8px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--font)">💬</button>`:''}
         <span class="presu-badge ${comp?'aceptado':'espera'}">${comp?'Completado':'Pendiente'}</span>
       </div>
@@ -9378,10 +9415,9 @@ window.guardarPresupuesto=async()=>{
   const mo=parseFloat($('prMO')?.value)||0;
   const mat=parseFloat($('prMat')?.value)||0;
   const desp=parseFloat($('prDesp')?.value)||0;
-  const partRows=[];  // partidas eliminadas del formulario
-  // Aprender
+  const partRows=[];
   try{
-    await addDoc(collection(db,'grupos',CGID,'presupuestos'),{
+    const docRef=await addDoc(collection(db,'grupos',CGID,'presupuestos'),{
       clienteId:cliId,
       clienteNombre:allClientes.find(c=>c.id===cliId)?.nombre||'',
       clienteDireccion:$('prDir')?.value.trim()||'',
@@ -9397,8 +9433,25 @@ window.guardarPresupuesto=async()=>{
       estado:'espera',
       creado:serverTimestamp()
     });
-    cerrarPresuModal();toast('Presupuesto guardado','o');
-    // onSnapshot actualiza automáticamente
+    cerrarPresuModal();
+    // Preguntar qué hacer con el presupuesto
+    const newId=docRef.id;
+    abrirSB('💾 Presupuesto guardado',`
+      <div style="text-align:center;padding:8px 0 16px">
+        <div style="font-size:36px;margin-bottom:8px">✅</div>
+        <div style="font-size:16px;font-weight:900;color:var(--tx);margin-bottom:4px">${titulo}</div>
+        <div style="font-size:13px;color:var(--tx2)">¿Qué deseas hacer ahora?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-p" style="width:100%;padding:14px;font-size:14px" onclick="cerrarSBTotal();exportarPresupuestoPDF('${newId}');toggleEstadoPresupuesto('${newId}','aceptado')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px"><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>
+          Exportar como PDF y marcar completado
+        </button>
+        <button class="btn btn-s" style="width:100%;padding:14px;font-size:14px" onclick="cerrarSBTotal();toast('Presupuesto guardado como pendiente','o')">
+          ⏳ Dejar como pendiente
+        </button>
+      </div>
+    `);
   }catch(e){toast('Error','e')}
 };
 
@@ -9431,8 +9484,11 @@ window.verPresupuesto=async(prId)=>{
       <div style="display:flex;justify-content:space-between;padding:10px 0 0;margin-top:4px"><span style="font-size:14px;font-weight:800;color:var(--tx)">TOTAL</span><span style="font-size:20px;font-weight:900;color:var(--r)">${fmtM(total)}</span></div>
     </div>
     ${p.notas?`<div style="font-size:13px;color:var(--tx2);margin-bottom:14px;padding:10px;background:var(--card2);border-radius:10px">${p.notas}</div>`:''}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
       <button class="btn ${isAcep?'btn-s':'btn-p'}" style="flex:1" onclick="toggleEstadoPresupuesto('${prId}','${isAcep?'espera':'aceptado'}')">${isAcep?'↩️ Marcar como pendiente':'✅ Marcar como completado'}</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn btn-s btn-sm" style="background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.35);color:var(--r);font-weight:900" onclick="usarPresupuesto('${prId}')">📋 Usar como base</button>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-s" style="flex:1" onclick="exportarPresupuestoPDF('${prId}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</button>
@@ -9604,6 +9660,7 @@ window.exportarPresupuestoPDF=async(prId)=>{
     canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;ctx.beginPath();const p=getPos(e);ctx.moveTo(p.x,p.y);},{passive:false});
     canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
     canvas.addEventListener('touchend',()=>drawing=false);
+    window._firmaCanvasActivo=canvas;
   },300);
   window._presuPDFData={p,c,iva,total,grp:CG};
 };
@@ -10217,9 +10274,34 @@ const renderPerfil=()=>{
     if(CGID) html+=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo activo</div>`;
   }
 
-  // ── CUENTA ──
+  // ── FOTO DE PERFIL ──
+  const _fotoPerfil=CUD?.fotoUrl||'';
   html+=`
   <div class="fsec" style="margin-top:4px">
+    <div class="fsec-title">📷 Foto de perfil</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:4px">
+      <div id="pfAvaWrap" style="width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid rgba(var(--theme-rgb),.35);flex-shrink:0;background:rgba(var(--theme-rgb),.12);display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="document.getElementById('pfFotoInput').click()">
+        ${_fotoPerfil
+          ? `<img src="${_fotoPerfil}" style="width:100%;height:100%;object-fit:cover">`
+          : `<span style="font-size:28px;font-weight:900;color:var(--r)">${(CUD?.nombre||'U')[0].toUpperCase()}</span>`}
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <button onclick="document.getElementById('pfGaleriaInput').click()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1.5px solid rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Galería
+        </button>
+        <button onclick="document.getElementById('pfCamaraInput').click()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Cámara
+        </button>
+      </div>
+    </div>
+    <input type="file" id="pfGaleriaInput" accept="image/*" style="display:none" onchange="subirFotoPerfil(this)">
+    <input type="file" id="pfCamaraInput" accept="image/*" capture="user" style="display:none" onchange="subirFotoPerfil(this)">
+    <input type="file" id="pfFotoInput"   accept="image/*" style="display:none" onchange="subirFotoPerfil(this)">
+    ${_fotoPerfil?`<button onclick="borrarFotoPerfil()" style="margin-top:6px;width:100%;padding:9px;border-radius:10px;border:1px solid rgba(229,57,53,.3);background:rgba(229,57,53,.07);color:#e53935;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">🗑️ Eliminar foto</button>`:''}
+  </div>
+
+  <!-- ── CUENTA ── -->
+  <div class="fsec">
     <div class="fsec-title">👤 Cuenta</div>
     <div style="margin-bottom:6px">
       <div style="font-size:13px;font-weight:800;color:var(--tx)">${CUD?.nombre||'Usuario'}</div>
@@ -10307,6 +10389,35 @@ const renderPerfil=()=>{
   $('perfilContent').innerHTML = html;
 
 };;
+
+// ── Subir / borrar foto de perfil ──
+window.subirFotoPerfil=async(input)=>{
+  const file=input?.files?.[0];if(!file)return;
+  input.value='';
+  toast('📤 Subiendo foto...','i');
+  try{
+    const {url}=await _subirImgCloudinary(file,`joyvi/usuarios/${CU.uid}`);
+    await setDoc(doc(db,'usuarios',CU.uid),{fotoUrl:url},{merge:true});
+    CUD={...CUD,fotoUrl:url};
+    actualizarDrawer();
+    toast('✓ Foto de perfil actualizada','o');
+    renderPerfil();
+  }catch(e){
+    toast('Error al subir la foto','e');
+    console.error('subirFotoPerfil',e);
+  }
+};
+
+window.borrarFotoPerfil=async()=>{
+  if(!confirm('¿Eliminar la foto de perfil?'))return;
+  try{
+    await setDoc(doc(db,'usuarios',CU.uid),{fotoUrl:''},{merge:true});
+    CUD={...CUD,fotoUrl:''};
+    actualizarDrawer();
+    toast('Foto eliminada','o');
+    renderPerfil();
+  }catch(e){toast('Error','e');}
+};
 
 window.guardarPerfil=async()=>{
   const inp=document.getElementById('pNom');
