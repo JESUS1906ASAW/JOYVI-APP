@@ -256,47 +256,36 @@ body.modo-claro{background:#f2f2f7 !important}
 
 /* ── PREDICTIVE BACK GESTURE ── */
 #pbg-overlay{
-  position:fixed;inset:0;z-index:1000;pointer-events:none;
+  position:fixed;inset:0;z-index:2000;pointer-events:none;
   display:none;overflow:hidden;
+  /* Cubre topbar y todo el viewport */
 }
 #pbg-prev-snap{
   position:absolute;inset:0;
-  transform-origin:left center;
+  transform-origin:center center;
   will-change:transform,opacity,filter;
   background:var(--bg);
   overflow:hidden;
+  border-radius:16px;
 }
 #pbg-prev-snap-inner{
   position:absolute;inset:0;
-  transform-origin:left center;
   pointer-events:none;
+  overflow:hidden;
 }
 #pbg-current{
   position:absolute;inset:0;
-  will-change:transform,box-shadow;
-  transform-origin:left center;
+  will-change:transform,box-shadow,border-radius;
+  transform-origin:center center;
   background:var(--bg);
   overflow:hidden;
   border-radius:0;
-  box-shadow:-8px 0 40px rgba(0,0,0,.45);
+  box-shadow:-6px 0 32px rgba(0,0,0,.35);
 }
 #pbg-current-inner{
   position:absolute;inset:0;
   pointer-events:none;
-}
-#pbg-cancel-anim{
-  animation:pbgCancel .38s cubic-bezier(.16,1,.3,1) forwards;
-}
-#pbg-commit-anim{
-  animation:pbgCommit .32s cubic-bezier(.4,0,.2,1) forwards;
-}
-@keyframes pbgCancel{
-  0%{transform:var(--pbg-cur-from)}
-  100%{transform:translateX(0) scale(1) translateY(0)}
-}
-@keyframes pbgCommit{
-  0%{transform:var(--pbg-cur-from)}
-  100%{transform:translateX(105%) scale(1) translateY(0)}
+  overflow:hidden;
 }
 
 /* ── SKELETON LOADING ── */
@@ -13003,261 +12992,265 @@ const _lockInicializar = () => {
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PREDICTIVE BACK GESTURE — swipe desde borde izquierdo
-// Imita el comportamiento de Claude app / iOS nativo
+// PREDICTIVE BACK GESTURE
+// Swipe desde borde izquierdo — igual a Claude app / iOS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 (()=>{
-  // ── Configuración
-  const EDGE_ZONE   = 28;   // px desde el borde izq para activar
-  const COMMIT_THR  = 0.38; // fracción del ancho para confirmar
-  const SCALE_PREV  = 0.93; // escala de la pantalla anterior en reposo
-  const DRAG_RESIST = 0.92; // resistencia cuando se arrastra (sensación física)
+  'use strict';
 
-  // ── Estado
-  let _active   = false;
-  let _startX   = 0;
-  let _startY   = 0;
-  let _curX     = 0;
-  let _prevKey  = null;
-  let _prevSnap = null; // canvas/clone de la pantalla anterior
-  let _raf      = null;
-  let _committing = false;
+  // ── Configuración ──────────────────────────────────
+  const EDGE       = 30;    // px desde borde izq para iniciar
+  const THRESHOLD  = 0.36;  // % ancho para confirmar navegación
+  const SCALE_BG   = 0.92;  // escala pantalla anterior en reposo
+  const SPRING     = 'cubic-bezier(.16,1,.3,1)';
+  const EASE_OUT   = 'cubic-bezier(.4,0,.2,1)';
 
-  // ── Nodos
-  const overlay    = document.getElementById('pbg-overlay');
-  const prevPane   = document.getElementById('pbg-prev-snap');
-  const prevInner  = document.getElementById('pbg-prev-snap-inner');
-  const curPane    = document.getElementById('pbg-current');
-  const curInner   = document.getElementById('pbg-current-inner');
+  // ── Estado ─────────────────────────────────────────
+  let tracking  = false;  // tocando borde, esperando dirección
+  let dragging  = false;  // arrastre activo
+  let finishing = false;  // animación final en curso
+  let startX = 0, startY = 0, lastX = 0;
+  let prevKey = null;
+  let raf = null;
 
-  // ── Helper: obtener pantalla anterior sin modificar el historial
-  const _getPrevKey=()=>{
-    if(!screenHistory.length) return null;
+  // ── Nodos ──────────────────────────────────────────
+  const overlay   = document.getElementById('pbg-overlay');
+  const bgPane    = document.getElementById('pbg-prev-snap');
+  const bgInner   = document.getElementById('pbg-prev-snap-inner');
+  const fgPane    = document.getElementById('pbg-current');
+  const fgInner   = document.getElementById('pbg-current-inner');
+
+  if(!overlay){console.warn('PBG: overlay not found');return;}
+
+  // ── Obtener pantalla anterior ──────────────────────
+  const getPrev=()=>{
+    if(!window.screenHistory||!screenHistory.length) return null;
     const curEl=document.querySelector('.screen.active');
-    const curKey=curEl?Object.keys(screens).find(k=>screens[k]===curEl.id):null;
-    // Buscar la última entrada del historial diferente a la actual
+    const curKey=curEl ? (Object.keys(screens||{}).find(k=>screens[k]===curEl.id)||null) : null;
     for(let i=screenHistory.length-1;i>=0;i--){
       if(screenHistory[i]!==curKey) return screenHistory[i];
     }
     return null;
   };
 
-  // ── Renderizar "snapshot" de la pantalla anterior en el panel de fondo.
-  // Usamos cloneNode + scale para no modificar el DOM real.
-  const _buildPrevSnap=(key)=>{
-    prevInner.innerHTML='';
+  // ── Clonar pantalla para mostrar como fondo ─────────
+  const buildBg=(key)=>{
+    bgInner.innerHTML='';
     if(!key||!screens[key]) return false;
-    const el=document.getElementById(screens[key]);
-    if(!el) return false;
-    // Clonar el nodo visible
-    const clone=el.cloneNode(true);
-    clone.style.cssText=`
-      position:absolute;inset:0;display:flex;flex-direction:column;
-      overflow:hidden;pointer-events:none;opacity:1;
-      width:100%;height:100%;
-    `;
-    // Mostrar el clone (puede estar display:none en el original)
-    clone.style.display='flex';
-    prevInner.appendChild(clone);
+    const src=document.getElementById(screens[key]);
+    if(!src) return false;
+    const clone=src.cloneNode(true);
+    // Forzar visible independientemente del estado original
+    clone.style.cssText=[
+      'position:absolute','inset:0','display:flex','flex-direction:column',
+      'overflow:hidden','pointer-events:none','width:100%','height:100%',
+      'opacity:1','visibility:visible'
+    ].join(';');
+    bgInner.appendChild(clone);
     return true;
   };
 
-  // ── Aplicar posiciones durante el drag (en rAF para fluidez)
-  const _applyDrag=(dx)=>{
-    const W=window.innerWidth;
-    // Fracción de progreso [0,1]
-    const prog=Math.min(1,Math.max(0,dx/W));
-
-    // Pantalla actual: se desliza a la derecha siguiendo el dedo
-    // con leve efecto de escala vertical (como iOS)
-    const curTX=dx;
-    const curScale=1 - prog*0.04; // muy sutil
-    const curRadius=Math.min(prog*28, 28); // border-radius creciente
-    curPane.style.transform=`translateX(${curTX}px) scale(${curScale})`;
-    curPane.style.borderRadius=`${curRadius}px`;
-    curPane.style.boxShadow=`-${8+prog*16}px 0 ${40+prog*30}px rgba(0,0,0,${0.35+prog*0.2})`;
-
-    // Pantalla anterior: parte desde escala reducida (SCALE_PREV) y crece hacia 1
-    const prevScale=SCALE_PREV + (1-SCALE_PREV)*prog;
-    const prevBrightness=0.55 + 0.45*prog;
-    const prevBlur=Math.max(0, 6*(1-prog));
-    prevPane.style.transform=`scale(${prevScale})`;
-    prevPane.style.filter=`brightness(${prevBrightness}) blur(${prevBlur}px)`;
-    prevPane.style.opacity=0.4 + 0.6*prog;
+  // ── Clonar pantalla actual para mostrar encima ──────
+  const buildFg=()=>{
+    fgInner.innerHTML='';
+    const curEl=document.querySelector('.screen.active');
+    if(!curEl) return;
+    const clone=curEl.cloneNode(true);
+    clone.style.cssText=[
+      'position:absolute','inset:0','display:flex','flex-direction:column',
+      'overflow:hidden','pointer-events:none','width:100%','height:100%',
+      'opacity:1','visibility:visible'
+    ].join(';');
+    fgInner.appendChild(clone);
+    // Ocultar original mientras el overlay lo sustituye
+    curEl.style.visibility='hidden';
   };
 
-  // ── Limpiar y esconder overlay
-  const _hide=()=>{
-    _active=false;
-    _committing=false;
-    _prevKey=null;
+  // ── Actualizar posiciones visualmente ───────────────
+  const applyPos=(dx)=>{
+    const W=window.innerWidth;
+    const prog=Math.min(1,Math.max(0,dx/W));
+
+    // Pantalla actual: sigue al dedo, borde-radio y sombra creciente
+    const r=Math.round(prog*26);
+    const sc=1-prog*0.035;
+    fgPane.style.cssText=`
+      transform:translateX(${dx}px) scale(${sc});
+      border-radius:${r}px;
+      box-shadow:-${6+prog*20}px 0 ${32+prog*28}px rgba(0,0,0,${.35+prog*.2});
+      transition:none;
+    `;
+
+    // Pantalla anterior: parte oscura/pequeña y se abre conforme avanza
+    const bgSc  = SCALE_BG + (1-SCALE_BG)*prog;
+    const bgBri = 0.52 + 0.48*prog;
+    const bgBlur= Math.max(0, 5*(1-prog));
+    bgPane.style.cssText=`
+      transform:scale(${bgSc});
+      filter:brightness(${bgBri}) blur(${bgBlur}px);
+      opacity:${0.35+0.65*prog};
+      transition:none;
+    `;
+  };
+
+  // ── Limpiar overlay y restaurar estado ──────────────
+  const cleanup=()=>{
+    dragging=tracking=finishing=false;
+    prevKey=null;
     overlay.style.display='none';
-    curPane.style.cssText='';
-    prevPane.style.cssText='';
-    curInner.innerHTML='';
-    prevInner.innerHTML='';
-    // Restaurar la pantalla activa al DOM principal
+    overlay.style.pointerEvents='none';
+    fgPane.style.cssText='';
+    bgPane.style.cssText='';
+    fgInner.innerHTML='';
+    bgInner.innerHTML='';
+    // Restaurar visibilidad de la pantalla activa
     const curEl=document.querySelector('.screen.active');
     if(curEl){curEl.style.visibility='';curEl.style.opacity='';}
   };
 
-  // ── Confirmar navegación atrás con animación de salida
-  const _commit=(fromX)=>{
-    if(_committing)return;
-    _committing=true;
+  // ── Confirmar: animar salida y navegar ───────────────
+  const commit=(fromDX)=>{
+    if(finishing)return;
+    finishing=true;
     const W=window.innerWidth;
-    const fromFrac=fromX/W;
+    if(navigator.vibrate)navigator.vibrate(8);
 
-    // Animar pantalla actual saliendo por la derecha
-    curPane.style.transition='transform .28s cubic-bezier(.4,0,.2,1), border-radius .28s, box-shadow .28s';
-    curPane.style.transform=`translateX(${W}px) scale(1)`;
-    curPane.style.boxShadow='none';
+    // Pantalla actual sale por la derecha
+    fgPane.style.transition=`transform .26s ${EASE_OUT}, border-radius .26s, box-shadow .2s`;
+    fgPane.style.transform=`translateX(${W+10}px) scale(1)`;
+    fgPane.style.borderRadius='0';
+    fgPane.style.boxShadow='none';
 
-    // Animar pantalla anterior entrando (escala 1, blur 0)
-    prevPane.style.transition='transform .28s cubic-bezier(.4,0,.2,1), filter .28s, opacity .28s';
-    prevPane.style.transform='scale(1)';
-    prevPane.style.filter='brightness(1) blur(0px)';
-    prevPane.style.opacity='1';
+    // Pantalla anterior entra a escala 1
+    bgPane.style.transition=`transform .26s ${EASE_OUT}, filter .26s, opacity .22s`;
+    bgPane.style.transform='scale(1)';
+    bgPane.style.filter='brightness(1) blur(0px)';
+    bgPane.style.opacity='1';
 
+    const dest=prevKey;
     setTimeout(()=>{
-      // Ejecutar la navegación real en el sistema
-      if(navigator.vibrate) navigator.vibrate(6);
-      _hide();
-      // Navegar sin animación (ya la hicimos manualmente)
-      const prev=_prevKey;
-      _prevKey=null;
-      // Ejecutar goBack lógico sin animación slide
-      _goBackSilent(prev);
-    }, 290);
+      cleanup();
+      // Navegar silenciosamente a la pantalla anterior
+      navSilent(dest);
+    },270);
   };
 
-  // ── Cancelar con rebote
-  const _cancel=(fromX)=>{
-    curPane.style.transition='transform .38s cubic-bezier(.16,1,.3,1), border-radius .38s, box-shadow .38s';
-    curPane.style.transform='translateX(0) scale(1)';
-    curPane.style.borderRadius='0';
-    curPane.style.boxShadow='-8px 0 40px rgba(0,0,0,.45)';
+  // ── Cancelar: rebote de vuelta ───────────────────────
+  const cancel=()=>{
+    if(finishing)return;
+    finishing=true;
 
-    prevPane.style.transition='transform .38s cubic-bezier(.16,1,.3,1), filter .38s, opacity .38s';
-    prevPane.style.transform=`scale(${SCALE_PREV})`;
-    prevPane.style.filter=`brightness(0.55) blur(6px)`;
-    prevPane.style.opacity='0.4';
+    fgPane.style.transition=`transform .38s ${SPRING}, border-radius .38s ${SPRING}, box-shadow .3s`;
+    fgPane.style.transform='translateX(0) scale(1)';
+    fgPane.style.borderRadius='0';
+    fgPane.style.boxShadow='-6px 0 32px rgba(0,0,0,.35)';
 
-    setTimeout(_hide, 400);
+    bgPane.style.transition=`transform .38s ${SPRING}, filter .38s, opacity .3s`;
+    bgPane.style.transform=`scale(${SCALE_BG})`;
+    bgPane.style.filter=`brightness(0.52) blur(5px)`;
+    bgPane.style.opacity='0.35';
+
+    setTimeout(cleanup,400);
   };
 
-  // ── Navegar atrás sin animación de pantalla (ya está hecha)
-  const _goBackSilent=(prevKey)=>{
-    if(!prevKey) return;
-    // Limpiar entradas duplicadas del historial
+  // ── Navegar sin animación de slide ───────────────────
+  const navSilent=(key)=>{
+    if(!key)return;
+    // Limpiar historial de duplicados de la pantalla actual
     const curEl=document.querySelector('.screen.active');
     const curKey=curEl?Object.keys(screens).find(k=>screens[k]===curEl.id):null;
     while(screenHistory.length&&screenHistory[screenHistory.length-1]===curKey){
       screenHistory.pop();
     }
-    // Eliminar la entrada del prevKey del historial
-    const idx=screenHistory.lastIndexOf(prevKey);
-    if(idx>=0) screenHistory.splice(idx,1);
+    // Quitar la entrada del destino del historial para no duplicar
+    const idx=screenHistory.lastIndexOf(key);
+    if(idx>=0)screenHistory.splice(idx,1);
 
-    // Cambiar pantalla sin animación
-    if(curEl){curEl.classList.remove('active');curEl.style.display='none';}
-    const nextEl=document.getElementById(screens[prevKey]);
-    if(nextEl){
-      nextEl.style.display='flex';
-      nextEl.classList.add('active');
-    }
-    // Renderizar contenido de la pantalla destino
+    // Ocultar pantalla actual, mostrar destino
+    if(curEl){curEl.classList.remove('active');curEl.style.display='none';curEl.style.visibility='';}
+    const nextEl=document.getElementById(screens[key]);
+    if(nextEl){nextEl.style.display='flex';nextEl.classList.add('active');nextEl.style.visibility='';}
+
+    // Renderizar contenido destino
     _navFromPop=true;
-    _renderScreen(prevKey);
+    _renderScreen(key);
     _navFromPop=false;
-    // Actualizar historial del navegador
-    history.replaceState({screen:prevKey,sbOpen:false},'',location.href.split('#')[0]+'#'+prevKey);
+
+    // Sincronizar history API
+    history.replaceState({screen:key,sbOpen:false},'',location.href.split('#')[0]+'#'+key);
   };
 
-  // ── Inicio del gesto
+  // ── TOUCHSTART ────────────────────────────────────────
   document.addEventListener('touchstart',e=>{
-    if(_committing) return;
-    // Solo activar desde el borde izquierdo
+    if(finishing||dragging)return;
     const t=e.touches[0];
-    if(t.clientX>EDGE_ZONE) return;
-    // No activar si hay SB abierto, drawer abierto, o teclado visible
-    if(document.getElementById('sb')?.classList.contains('open')) return;
-    if(document.getElementById('drawer')?.classList.contains('open')) return;
-    // Verificar que hay pantalla anterior
-    const prev=_getPrevKey();
-    if(!prev) return;
-    // No activar en kiosk sin pantalla anterior
-    if(localStorage.getItem('joyvi_kiosk')==='1'&&prev==='kiosk'){} // OK
-    _prevKey=prev;
-    _startX=t.clientX;
-    _startY=t.clientY;
-    _curX=0;
-    _active=false; // se activa cuando el movimiento horizontal supera el vertical
+    // Debe iniciar en el borde izquierdo
+    if(t.clientX>EDGE)return;
+    // No interferir con paneles abiertos
+    if(document.getElementById('sb')?.classList.contains('open'))return;
+    if(document.getElementById('drawer')?.classList.contains('open'))return;
+    // Necesitar pantalla anterior
+    const p=getPrev();
+    if(!p)return;
+    prevKey=p;
+    startX=t.clientX;
+    startY=t.clientY;
+    lastX=t.clientX;
+    tracking=true;
+    dragging=false;
   },{passive:true});
 
+  // ── TOUCHMOVE ─────────────────────────────────────────
   document.addEventListener('touchmove',e=>{
-    if(_committing||!_prevKey) return;
+    if(finishing||!tracking||!prevKey)return;
     const t=e.touches[0];
-    const dx=t.clientX-_startX;
-    const dy=Math.abs(t.clientY-_startY);
+    const dx=t.clientX-startX;
+    const dy=Math.abs(t.clientY-startY);
+    lastX=t.clientX;
 
-    // Discriminar gesto horizontal vs scroll vertical
-    if(!_active){
-      if(dx<4) return; // esperar movimiento mínimo
-      if(dy>dx*1.2){_prevKey=null;return;} // es scroll vertical, cancelar
-      // Activar el gesto
-      _active=true;
-      // Preparar overlay
-      const curEl=document.querySelector('.screen.active');
-      // Capturar pantalla actual en el panel superior
-      if(curEl){
-        const clone=curEl.cloneNode(true);
-        clone.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;pointer-events:none;width:100%;height:100%;';
-        curInner.appendChild(clone);
-        // Ocultar original para evitar doble render visible
-        curEl.style.visibility='hidden';
-      }
-      // Renderizar pantalla anterior en el panel de fondo
-      const ok=_buildPrevSnap(_prevKey);
-      if(!ok){_prevKey=null;return;}
-      // Mostrar overlay
+    if(!dragging){
+      // Esperar umbral mínimo
+      if(Math.abs(dx)<6)return;
+      // Cancelar si es scroll vertical
+      if(dy>dx*1.1){prevKey=null;tracking=false;return;}
+      // ── Activar arrastre ──
+      dragging=true;
+      // Construir clones
+      buildBg(prevKey);
+      buildFg();
+      // Mostrar overlay, bloquear eventos al fondo
       overlay.style.display='block';
-      // Estado inicial: prev a escala reducida, cur a posición 0
-      prevPane.style.transform=`scale(${SCALE_PREV})`;
-      prevPane.style.filter='brightness(0.55) blur(6px)';
-      prevPane.style.opacity='0.4';
-      curPane.style.transform='translateX(0) scale(1)';
-      curPane.style.borderRadius='0';
-      curPane.style.boxShadow='-8px 0 40px rgba(0,0,0,.45)';
-      // Borrar transiciones durante drag
-      curPane.style.transition='none';
-      prevPane.style.transition='none';
+      overlay.style.pointerEvents='all';
+      // Posición inicial
+      fgPane.style.cssText=`transform:translateX(0) scale(1);border-radius:0;box-shadow:-6px 0 32px rgba(0,0,0,.35);transition:none;`;
+      bgPane.style.cssText=`transform:scale(${SCALE_BG});filter:brightness(0.52) blur(5px);opacity:0.35;transition:none;`;
     }
 
-    if(!_active) return;
-    _curX=Math.max(0,dx);
-
-    // rAF para fluidez máxima
-    if(_raf) cancelAnimationFrame(_raf);
-    _raf=requestAnimationFrame(()=>_applyDrag(_curX));
+    if(!dragging)return;
+    const realDX=Math.max(0,t.clientX-startX);
+    if(raf)cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(()=>applyPos(realDX));
   },{passive:true});
 
+  // ── TOUCHEND ──────────────────────────────────────────
   document.addEventListener('touchend',e=>{
-    if(_committing) return;
-    if(!_active||!_prevKey){_prevKey=null;return;}
+    if(finishing)return;
+    if(!dragging||!prevKey){tracking=false;prevKey=null;return;}
     const W=window.innerWidth;
-    const prog=_curX/W;
-    if(prog>=COMMIT_THR){
-      _commit(_curX);
-    } else {
-      _cancel(_curX);
+    const finalDX=Math.max(0,lastX-startX);
+    if(finalDX/W>=THRESHOLD){
+      commit(finalDX);
+    }else{
+      cancel();
     }
   },{passive:true});
 
+  // ── TOUCHCANCEL ───────────────────────────────────────
   document.addEventListener('touchcancel',()=>{
-    if(_active&&!_committing) _cancel(_curX);
-    else if(!_committing){_prevKey=null;_active=false;}
+    if(dragging&&!finishing)cancel();
+    else cleanup();
   },{passive:true});
+
 })();
 
 </script>
