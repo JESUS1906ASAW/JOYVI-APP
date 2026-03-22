@@ -254,6 +254,51 @@ body.modo-claro{background:#f2f2f7 !important}
   100%{opacity:0;transform:translateX(-8%) scale(.98)}
 }
 
+/* ── PREDICTIVE BACK GESTURE ── */
+#pbg-overlay{
+  position:fixed;inset:0;z-index:1000;pointer-events:none;
+  display:none;overflow:hidden;
+}
+#pbg-prev-snap{
+  position:absolute;inset:0;
+  transform-origin:left center;
+  will-change:transform,opacity,filter;
+  background:var(--bg);
+  overflow:hidden;
+}
+#pbg-prev-snap-inner{
+  position:absolute;inset:0;
+  transform-origin:left center;
+  pointer-events:none;
+}
+#pbg-current{
+  position:absolute;inset:0;
+  will-change:transform,box-shadow;
+  transform-origin:left center;
+  background:var(--bg);
+  overflow:hidden;
+  border-radius:0;
+  box-shadow:-8px 0 40px rgba(0,0,0,.45);
+}
+#pbg-current-inner{
+  position:absolute;inset:0;
+  pointer-events:none;
+}
+#pbg-cancel-anim{
+  animation:pbgCancel .38s cubic-bezier(.16,1,.3,1) forwards;
+}
+#pbg-commit-anim{
+  animation:pbgCommit .32s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes pbgCancel{
+  0%{transform:var(--pbg-cur-from)}
+  100%{transform:translateX(0) scale(1) translateY(0)}
+}
+@keyframes pbgCommit{
+  0%{transform:var(--pbg-cur-from)}
+  100%{transform:translateX(105%) scale(1) translateY(0)}
+}
+
 /* ── SKELETON LOADING ── */
 .skel{background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 75%);background-size:200% 100%;animation:skelAnim 1.4s infinite;border-radius:8px}
 body.modo-claro .skel{background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(0,0,0,.13) 50%,rgba(0,0,0,.06) 75%);background-size:200% 100%}
@@ -1276,50 +1321,33 @@ body.offline .dash-offline-bar{display:flex}
         <div class="kiosk-header-logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
         <div class="kiosk-header-title">Modo Gestión</div>
         <div class="kiosk-header-group" id="kioskHeaderGroup"></div>
-        <div class="kiosk-header-sub">Toca una sección para empezar</div>
+        <div class="kiosk-header-sub">Selecciona una sección</div>
       </div>
       <div class="kiosk-grid">
-        <div class="kiosk-section-label">Ver existentes</div>
+        <!-- Clientes -->
         <div class="kiosk-tile" onclick="kioskIr('grupo')">
           <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Clientes</div><div class="kiosk-tile-sub">Fichas y contactos</div></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Clientes</div><div class="kiosk-tile-sub">Ver y crear</div></div>
         </div>
+        <!-- Partes -->
         <div class="kiosk-tile" onclick="kioskIr('partes')">
           <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Partes</div><div class="kiosk-tile-sub">Órdenes de trabajo</div></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Partes</div><div class="kiosk-tile-sub">Ver y crear</div></div>
         </div>
+        <!-- Averías -->
         <div class="kiosk-tile" onclick="kioskIr('averias')">
           <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Averías</div><div class="kiosk-tile-sub">Pendientes y resueltas</div></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Averías</div><div class="kiosk-tile-sub">Ver y crear</div></div>
         </div>
+        <!-- Mantenimientos -->
         <div class="kiosk-tile" onclick="kioskIr('mant')">
           <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Mantenimientos</div><div class="kiosk-tile-sub">Programados</div></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Mantenimientos</div><div class="kiosk-tile-sub">Ver y crear</div></div>
         </div>
+        <!-- Presupuestos — ancho completo -->
         <div class="kiosk-tile kiosk-tile-wide" onclick="kioskIr('presupuestos')">
           <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Presupuestos</div><div class="kiosk-tile-sub">Consultar y exportar</div></div>
-        </div>
-        <div class="kiosk-section-label" style="margin-top:6px">Crear nuevo</div>
-        <div class="kiosk-tile kiosk-tile-crear" onclick="abrirFParte()">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Parte</div><div class="kiosk-tile-sub">Nueva orden</div></div>
-        </div>
-        <div class="kiosk-tile kiosk-tile-crear" onclick="abrirNuevaAveria()">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Avería</div><div class="kiosk-tile-sub">Nueva incidencia</div></div>
-        </div>
-        <div class="kiosk-tile kiosk-tile-crear" onclick="abrirCliExpress()">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Cliente</div><div class="kiosk-tile-sub">Registro rápido</div></div>
-        </div>
-        <div class="kiosk-tile kiosk-tile-crear" onclick="abrirNuevoPresupuesto()">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Presupuesto</div><div class="kiosk-tile-sub">Nueva oferta</div></div>
-        </div>
-        <div class="kiosk-tile kiosk-tile-crear kiosk-tile-wide" onclick="window._abrirMantSBFormNuevo&&window._abrirMantSBFormNuevo()||toast('Selecciona primero un grupo','e')">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">+ Mantenimiento</div><div class="kiosk-tile-sub">Programar revisión periódica</div></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Presupuestos</div><div class="kiosk-tile-sub">Ver y crear</div></div>
         </div>
       </div>
       <button class="kiosk-exit-btn" onclick="salirModoVisualizacion()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Salir del modo gestión</button>
@@ -1369,7 +1397,7 @@ body.offline .dash-offline-bar{display:flex}
       <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, trabajo..." oninput="_kioskFiltrar('mant',this.value)">
       <div id="kioskMantContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
     </div>
-    
+    <button class="kiosk-crear-fab" id="kiosk-fab-kioskMantContent" onclick="window._abrirMantSBFormNuevo&&window._abrirMantSBFormNuevo()||toast('Selecciona primero un grupo','e')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Nuevo mantenimiento</button>
   </div>
   <div class="screen" id="screenKioskPresu">
     <div class="scroll-pad">
@@ -2131,10 +2159,13 @@ window.goScreen=id=>{
   if(cur){
     const key=Object.keys(screens).find(k=>screens[k]===cur.id);
     if(key){
-      screenHistory.push(key);
-      if(key==='grupo'){
-        const sp=cur.querySelector('.scroll-pad');
-        if(sp) sessionStorage.setItem('joyvi_grupo_scroll', sp.scrollTop);
+      // Don't push same screen twice in a row
+      if(key!==id){
+        screenHistory.push(key);
+        if(key==='grupo'){
+          const sp=cur.querySelector('.scroll-pad');
+          if(sp) sessionStorage.setItem('joyvi_grupo_scroll', sp.scrollTop);
+        }
       }
     }
     cur.classList.remove('active');
@@ -2196,22 +2227,32 @@ window.addEventListener('popstate',e=>{
 
 window.goBack=()=>{
   if($('sb').classList.contains('open')){cerrarSB();return;}
-  // En modo gestión: retroceder va a kiosk, nunca fuera del modo
   const isKiosk=localStorage.getItem('joyvi_kiosk')==='1';
   if(isKiosk){
     const kioskScreens=['kiosk','kioskCli','kioskPartes','kioskAverias','kioskMant','kioskPresu'];
     const cur=document.querySelector('.screen.active');
     const curKey=cur?Object.keys(screens).find(k=>screens[k]===cur.id):null;
-    // Si ya estamos en el menú principal del kiosk, no retroceder más
     if(curKey==='kiosk') return;
-    // Si estamos en una sub-pantalla del kiosk, volver al menú del kiosk
     if(kioskScreens.includes(curKey)){ goScreen('kiosk'); return; }
-    // Si venimos de una SB abierta desde kiosk, volver al kiosk
     goScreen('kiosk'); return;
   }
-  if(history.length>1){history.back();}
-  else if(screenHistory.length){goScreen(screenHistory.pop());}
-  else{goScreen('inicio');}
+  const cur=document.querySelector('.screen.active');
+  const curKey=cur?Object.keys(screens).find(k=>screens[k]===cur.id):null;
+  // Drain screenHistory of entries that equal the current screen
+  while(screenHistory.length && screenHistory[screenHistory.length-1]===curKey){
+    screenHistory.pop();
+  }
+  if(screenHistory.length){
+    const prev=screenHistory.pop();
+    goScreen(prev);
+    return;
+  }
+  // Fallback: if browser state has a different screen use history.back(), else go to inicio
+  if(history.state?.screen && history.state.screen!==curKey){
+    history.back();
+  } else {
+    goScreen('inicio');
+  }
 };
 
 window.irAGrupo=()=>goScreen('grupo');
@@ -2980,48 +3021,7 @@ const renderInicio=async()=>{
       }
     }
   }
-
-  // ── Datos para tarjetas (sólo si hay grupo activo) ──
   let summaryHtml='';
-  if(CGID){
-    const hoyIni=new Date(hoyStr+'T00:00:00');
-    const hoyFin=new Date(hoyStr+'T23:59:59');
-    const en7=new Date(hoy); en7.setDate(hoy.getDate()+7);
-    const en7Str=en7.toISOString().split('T')[0];
-
-    const partesHoy=(allPartes||[]).filter(p=>{
-      if(p.archivado||p.estado==='completado')return false;
-      const f=p.fechaVisita||p.creado?.toDate?.()?.toISOString().split('T')[0]||'';
-      return f===hoyStr;
-    }).length;
-    const mantProximos=(allMantenimientos||[]).filter(m=>m.estado!=='completado'&&m.fechaProxima&&m.fechaProxima>=hoyStr&&m.fechaProxima<=en7Str).length;
-    const averiasAbiertas=(_averiasPend||[]).length;
-    const presusPendientes=(_presusPend||[]).length;
-
-    summaryHtml=`
-    <div class="dash-summary">
-      <div class="dash-card${partesHoy>0?' warn':''}" onclick="if(CGID){goScreen('grupo');switchGTab('part')}" title="Partes de hoy">
-        <div class="dash-card-ico">📋</div>
-        <div class="dash-card-num">${partesHoy}</div>
-        <div class="dash-card-lbl">Partes hoy</div>
-      </div>
-      <div class="dash-card${mantProximos>3?' warn':mantProximos>0?'':''}" onclick="if(CGID){goScreen('grupo');switchGTab('mant')}" title="Mantenimientos próximos 7 días">
-        <div class="dash-card-ico">🔧</div>
-        <div class="dash-card-num">${mantProximos}</div>
-        <div class="dash-card-lbl">Mant. esta semana</div>
-      </div>
-      <div class="dash-card${averiasAbiertas>0?' danger':' ok'}" onclick="if(CGID){goScreen('grupo');switchGTab('aver')}" title="Averías abiertas">
-        <div class="dash-card-ico">⚡</div>
-        <div class="dash-card-num">${averiasAbiertas}</div>
-        <div class="dash-card-lbl">Averías abiertas</div>
-      </div>
-      <div class="dash-card${presusPendientes>0?' warn':''}" onclick="if(CGID){goScreen('grupo');switchGTab('presu')}" title="Presupuestos en espera">
-        <div class="dash-card-ico">💶</div>
-        <div class="dash-card-num">${presusPendientes}</div>
-        <div class="dash-card-lbl">Presupuestos pend.</div>
-      </div>
-    </div>`;
-  }
 
   let html=`
   <div class="dash-offline-bar" id="dashOfflineBar">
@@ -8622,6 +8622,7 @@ window.abrirImgViewer=async(imgId)=>{
   if(!snap.exists())return;
   const img=snap.data();
   const imgSrc=img.url||img.dataURL||'';
+  const savedReturnCli=_sbReturnCli;
   abrirSB(img.descripcion||'Imagen',`
     <div style="text-align:center">
       <img src="${imgSrc}" style="max-width:100%;border-radius:12px;max-height:60vh;object-fit:contain;display:block;margin:0 auto">
@@ -8632,6 +8633,7 @@ window.abrirImgViewer=async(imgId)=>{
       <button class="btn btn-del" onclick="borrarImagen('${imgId}')">🗑️ Eliminar imagen</button>
     </div>
   `);
+  if(savedReturnCli){_sbReturnCli=savedReturnCli;_sbSetBack();}
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -10229,8 +10231,13 @@ window.rechazarSolDesdeNotif=async(notifId,uid,nombre,grupoId)=>{
 const renderPerfil=()=>{
   const _esModoSimple = localStorage.getItem('joyvi_kiosk')==='1';
   let html='';
-  if(!_esModoSimple && screenHistory.length) html+=`<div class="volver-btn" onclick="goBack()">‹ Volver</div>`;
-  if(!_esModoSimple && CGID) html+=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo activo</div>`;
+  // Botón volver siempre visible en la parte superior
+  if(_esModoSimple){
+    html+=`<div class="volver-btn" onclick="goScreen('kiosk')" style="margin-bottom:16px">‹ Volver</div>`;
+  } else {
+    html+=`<div class="volver-btn" onclick="goBack()" style="margin-bottom:16px">‹ Volver</div>`;
+    if(CGID) html+=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo activo</div>`;
+  }
 
   // ── CUENTA ──
   html+=`
@@ -12995,6 +13002,264 @@ const _lockInicializar = () => {
 })();
 
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PREDICTIVE BACK GESTURE — swipe desde borde izquierdo
+// Imita el comportamiento de Claude app / iOS nativo
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+(()=>{
+  // ── Configuración
+  const EDGE_ZONE   = 28;   // px desde el borde izq para activar
+  const COMMIT_THR  = 0.38; // fracción del ancho para confirmar
+  const SCALE_PREV  = 0.93; // escala de la pantalla anterior en reposo
+  const DRAG_RESIST = 0.92; // resistencia cuando se arrastra (sensación física)
+
+  // ── Estado
+  let _active   = false;
+  let _startX   = 0;
+  let _startY   = 0;
+  let _curX     = 0;
+  let _prevKey  = null;
+  let _prevSnap = null; // canvas/clone de la pantalla anterior
+  let _raf      = null;
+  let _committing = false;
+
+  // ── Nodos
+  const overlay    = document.getElementById('pbg-overlay');
+  const prevPane   = document.getElementById('pbg-prev-snap');
+  const prevInner  = document.getElementById('pbg-prev-snap-inner');
+  const curPane    = document.getElementById('pbg-current');
+  const curInner   = document.getElementById('pbg-current-inner');
+
+  // ── Helper: obtener pantalla anterior sin modificar el historial
+  const _getPrevKey=()=>{
+    if(!screenHistory.length) return null;
+    const curEl=document.querySelector('.screen.active');
+    const curKey=curEl?Object.keys(screens).find(k=>screens[k]===curEl.id):null;
+    // Buscar la última entrada del historial diferente a la actual
+    for(let i=screenHistory.length-1;i>=0;i--){
+      if(screenHistory[i]!==curKey) return screenHistory[i];
+    }
+    return null;
+  };
+
+  // ── Renderizar "snapshot" de la pantalla anterior en el panel de fondo.
+  // Usamos cloneNode + scale para no modificar el DOM real.
+  const _buildPrevSnap=(key)=>{
+    prevInner.innerHTML='';
+    if(!key||!screens[key]) return false;
+    const el=document.getElementById(screens[key]);
+    if(!el) return false;
+    // Clonar el nodo visible
+    const clone=el.cloneNode(true);
+    clone.style.cssText=`
+      position:absolute;inset:0;display:flex;flex-direction:column;
+      overflow:hidden;pointer-events:none;opacity:1;
+      width:100%;height:100%;
+    `;
+    // Mostrar el clone (puede estar display:none en el original)
+    clone.style.display='flex';
+    prevInner.appendChild(clone);
+    return true;
+  };
+
+  // ── Aplicar posiciones durante el drag (en rAF para fluidez)
+  const _applyDrag=(dx)=>{
+    const W=window.innerWidth;
+    // Fracción de progreso [0,1]
+    const prog=Math.min(1,Math.max(0,dx/W));
+
+    // Pantalla actual: se desliza a la derecha siguiendo el dedo
+    // con leve efecto de escala vertical (como iOS)
+    const curTX=dx;
+    const curScale=1 - prog*0.04; // muy sutil
+    const curRadius=Math.min(prog*28, 28); // border-radius creciente
+    curPane.style.transform=`translateX(${curTX}px) scale(${curScale})`;
+    curPane.style.borderRadius=`${curRadius}px`;
+    curPane.style.boxShadow=`-${8+prog*16}px 0 ${40+prog*30}px rgba(0,0,0,${0.35+prog*0.2})`;
+
+    // Pantalla anterior: parte desde escala reducida (SCALE_PREV) y crece hacia 1
+    const prevScale=SCALE_PREV + (1-SCALE_PREV)*prog;
+    const prevBrightness=0.55 + 0.45*prog;
+    const prevBlur=Math.max(0, 6*(1-prog));
+    prevPane.style.transform=`scale(${prevScale})`;
+    prevPane.style.filter=`brightness(${prevBrightness}) blur(${prevBlur}px)`;
+    prevPane.style.opacity=0.4 + 0.6*prog;
+  };
+
+  // ── Limpiar y esconder overlay
+  const _hide=()=>{
+    _active=false;
+    _committing=false;
+    _prevKey=null;
+    overlay.style.display='none';
+    curPane.style.cssText='';
+    prevPane.style.cssText='';
+    curInner.innerHTML='';
+    prevInner.innerHTML='';
+    // Restaurar la pantalla activa al DOM principal
+    const curEl=document.querySelector('.screen.active');
+    if(curEl){curEl.style.visibility='';curEl.style.opacity='';}
+  };
+
+  // ── Confirmar navegación atrás con animación de salida
+  const _commit=(fromX)=>{
+    if(_committing)return;
+    _committing=true;
+    const W=window.innerWidth;
+    const fromFrac=fromX/W;
+
+    // Animar pantalla actual saliendo por la derecha
+    curPane.style.transition='transform .28s cubic-bezier(.4,0,.2,1), border-radius .28s, box-shadow .28s';
+    curPane.style.transform=`translateX(${W}px) scale(1)`;
+    curPane.style.boxShadow='none';
+
+    // Animar pantalla anterior entrando (escala 1, blur 0)
+    prevPane.style.transition='transform .28s cubic-bezier(.4,0,.2,1), filter .28s, opacity .28s';
+    prevPane.style.transform='scale(1)';
+    prevPane.style.filter='brightness(1) blur(0px)';
+    prevPane.style.opacity='1';
+
+    setTimeout(()=>{
+      // Ejecutar la navegación real en el sistema
+      if(navigator.vibrate) navigator.vibrate(6);
+      _hide();
+      // Navegar sin animación (ya la hicimos manualmente)
+      const prev=_prevKey;
+      _prevKey=null;
+      // Ejecutar goBack lógico sin animación slide
+      _goBackSilent(prev);
+    }, 290);
+  };
+
+  // ── Cancelar con rebote
+  const _cancel=(fromX)=>{
+    curPane.style.transition='transform .38s cubic-bezier(.16,1,.3,1), border-radius .38s, box-shadow .38s';
+    curPane.style.transform='translateX(0) scale(1)';
+    curPane.style.borderRadius='0';
+    curPane.style.boxShadow='-8px 0 40px rgba(0,0,0,.45)';
+
+    prevPane.style.transition='transform .38s cubic-bezier(.16,1,.3,1), filter .38s, opacity .38s';
+    prevPane.style.transform=`scale(${SCALE_PREV})`;
+    prevPane.style.filter=`brightness(0.55) blur(6px)`;
+    prevPane.style.opacity='0.4';
+
+    setTimeout(_hide, 400);
+  };
+
+  // ── Navegar atrás sin animación de pantalla (ya está hecha)
+  const _goBackSilent=(prevKey)=>{
+    if(!prevKey) return;
+    // Limpiar entradas duplicadas del historial
+    const curEl=document.querySelector('.screen.active');
+    const curKey=curEl?Object.keys(screens).find(k=>screens[k]===curEl.id):null;
+    while(screenHistory.length&&screenHistory[screenHistory.length-1]===curKey){
+      screenHistory.pop();
+    }
+    // Eliminar la entrada del prevKey del historial
+    const idx=screenHistory.lastIndexOf(prevKey);
+    if(idx>=0) screenHistory.splice(idx,1);
+
+    // Cambiar pantalla sin animación
+    if(curEl){curEl.classList.remove('active');curEl.style.display='none';}
+    const nextEl=document.getElementById(screens[prevKey]);
+    if(nextEl){
+      nextEl.style.display='flex';
+      nextEl.classList.add('active');
+    }
+    // Renderizar contenido de la pantalla destino
+    _navFromPop=true;
+    _renderScreen(prevKey);
+    _navFromPop=false;
+    // Actualizar historial del navegador
+    history.replaceState({screen:prevKey,sbOpen:false},'',location.href.split('#')[0]+'#'+prevKey);
+  };
+
+  // ── Inicio del gesto
+  document.addEventListener('touchstart',e=>{
+    if(_committing) return;
+    // Solo activar desde el borde izquierdo
+    const t=e.touches[0];
+    if(t.clientX>EDGE_ZONE) return;
+    // No activar si hay SB abierto, drawer abierto, o teclado visible
+    if(document.getElementById('sb')?.classList.contains('open')) return;
+    if(document.getElementById('drawer')?.classList.contains('open')) return;
+    // Verificar que hay pantalla anterior
+    const prev=_getPrevKey();
+    if(!prev) return;
+    // No activar en kiosk sin pantalla anterior
+    if(localStorage.getItem('joyvi_kiosk')==='1'&&prev==='kiosk'){} // OK
+    _prevKey=prev;
+    _startX=t.clientX;
+    _startY=t.clientY;
+    _curX=0;
+    _active=false; // se activa cuando el movimiento horizontal supera el vertical
+  },{passive:true});
+
+  document.addEventListener('touchmove',e=>{
+    if(_committing||!_prevKey) return;
+    const t=e.touches[0];
+    const dx=t.clientX-_startX;
+    const dy=Math.abs(t.clientY-_startY);
+
+    // Discriminar gesto horizontal vs scroll vertical
+    if(!_active){
+      if(dx<4) return; // esperar movimiento mínimo
+      if(dy>dx*1.2){_prevKey=null;return;} // es scroll vertical, cancelar
+      // Activar el gesto
+      _active=true;
+      // Preparar overlay
+      const curEl=document.querySelector('.screen.active');
+      // Capturar pantalla actual en el panel superior
+      if(curEl){
+        const clone=curEl.cloneNode(true);
+        clone.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;pointer-events:none;width:100%;height:100%;';
+        curInner.appendChild(clone);
+        // Ocultar original para evitar doble render visible
+        curEl.style.visibility='hidden';
+      }
+      // Renderizar pantalla anterior en el panel de fondo
+      const ok=_buildPrevSnap(_prevKey);
+      if(!ok){_prevKey=null;return;}
+      // Mostrar overlay
+      overlay.style.display='block';
+      // Estado inicial: prev a escala reducida, cur a posición 0
+      prevPane.style.transform=`scale(${SCALE_PREV})`;
+      prevPane.style.filter='brightness(0.55) blur(6px)';
+      prevPane.style.opacity='0.4';
+      curPane.style.transform='translateX(0) scale(1)';
+      curPane.style.borderRadius='0';
+      curPane.style.boxShadow='-8px 0 40px rgba(0,0,0,.45)';
+      // Borrar transiciones durante drag
+      curPane.style.transition='none';
+      prevPane.style.transition='none';
+    }
+
+    if(!_active) return;
+    _curX=Math.max(0,dx);
+
+    // rAF para fluidez máxima
+    if(_raf) cancelAnimationFrame(_raf);
+    _raf=requestAnimationFrame(()=>_applyDrag(_curX));
+  },{passive:true});
+
+  document.addEventListener('touchend',e=>{
+    if(_committing) return;
+    if(!_active||!_prevKey){_prevKey=null;return;}
+    const W=window.innerWidth;
+    const prog=_curX/W;
+    if(prog>=COMMIT_THR){
+      _commit(_curX);
+    } else {
+      _cancel(_curX);
+    }
+  },{passive:true});
+
+  document.addEventListener('touchcancel',()=>{
+    if(_active&&!_committing) _cancel(_curX);
+    else if(!_committing){_prevKey=null;_active=false;}
+  },{passive:true});
+})();
+
 </script>
 <!-- ── Historial Mantenimientos Sheet ── -->
 <div id="hmSheet">
@@ -13014,6 +13279,12 @@ const _lockInicializar = () => {
       <div class="hm-body" id="hmFichaBody"></div>
     </div>
   </div>
+</div>
+
+<!-- ── PREDICTIVE BACK GESTURE OVERLAY ── -->
+<div id="pbg-overlay">
+  <div id="pbg-prev-snap"><div id="pbg-prev-snap-inner"></div></div>
+  <div id="pbg-current"><div id="pbg-current-inner"></div></div>
 </div>
 
 </body>
