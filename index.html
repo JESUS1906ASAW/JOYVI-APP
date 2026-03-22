@@ -256,37 +256,37 @@ body.modo-claro{background:#f2f2f7 !important}
 }
 
 /* ── PREDICTIVE BACK GESTURE ── */
+/* El overlay solo actúa como escudo de eventos táctiles durante el gesto */
 #pbg-overlay{
-  position:fixed;inset:0;z-index:2000;pointer-events:none;
-  display:none;overflow:hidden;
-  /* Cubre topbar y todo el viewport */
-}
-#pbg-prev-snap{
-  position:absolute;inset:0;
-  transform-origin:center center;
-  will-change:transform,opacity,filter;
+  position:fixed;inset:0;z-index:1990;pointer-events:none;
+  display:none;
   background:var(--bg);
+}
+/* Capa de fondo: pantalla de destino escalada/oscurecida */
+#pbg-bg-layer{
+  position:fixed;inset:0;z-index:1991;
+  pointer-events:none;
+  will-change:transform,filter,opacity;
+  transform-origin:center center;
+  transform:scale(0.92);
+  filter:brightness(0.52) blur(5px);
+  opacity:0.35;
+  display:none;
   overflow:hidden;
   border-radius:16px;
+  background:var(--bg);
 }
-#pbg-prev-snap-inner{
-  position:absolute;inset:0;
+/* Capa de frente: pantalla actual que se arrastra */
+#pbg-fg-layer{
+  position:fixed;inset:0;z-index:1992;
   pointer-events:none;
-  overflow:hidden;
-}
-#pbg-current{
-  position:absolute;inset:0;
   will-change:transform,box-shadow,border-radius;
   transform-origin:center center;
-  background:var(--bg);
-  overflow:hidden;
   border-radius:0;
-  box-shadow:-6px 0 32px rgba(0,0,0,.35);
-}
-#pbg-current-inner{
-  position:absolute;inset:0;
-  pointer-events:none;
+  box-shadow:none;
+  display:none;
   overflow:hidden;
+  background:var(--bg);
 }
 
 /* ── SKELETON LOADING ── */
@@ -13092,264 +13092,336 @@ const _lockInicializar = () => {
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PREDICTIVE BACK GESTURE
-// Swipe desde borde izquierdo — igual a Claude app / iOS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PREDICTIVE BACK GESTURE — DOM-native, sin clones, sin APIs externas
+// Mueve las propias pantallas del DOM como capas reales durante el gesto.
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 (()=>{
   'use strict';
 
-  // ── Configuración ──────────────────────────────────
-  const EDGE       = 30;    // px desde borde izq para iniciar
-  const THRESHOLD  = 0.36;  // % ancho para confirmar navegación
-  const SCALE_BG   = 0.92;  // escala pantalla anterior en reposo
-  const SPRING     = 'cubic-bezier(.16,1,.3,1)';
-  const EASE_OUT   = 'cubic-bezier(.4,0,.2,1)';
+  // ── Configuración ──────────────────────────────────────────────
+  const EDGE      = 32;   // px desde borde izq para iniciar el gesto
+  const THRESHOLD = 0.35; // fracción del ancho → confirmar navegación
+  const SCALE_BG  = 0.92; // escala inicial de la pantalla de destino
+  const SPRING    = 'cubic-bezier(.16,1,.3,1)';
+  const EASE_OUT  = 'cubic-bezier(.4,0,.2,1)';
 
-  // ── Estado ─────────────────────────────────────────
-  let tracking  = false;  // tocando borde, esperando dirección
-  let dragging  = false;  // arrastre activo
-  let finishing = false;  // animación final en curso
+  // ── Estado ─────────────────────────────────────────────────────
+  let tracking  = false;
+  let dragging  = false;
+  let finishing = false;
   let startX = 0, startY = 0, lastX = 0;
   let prevKey = null;
   let raf = null;
 
-  // ── Nodos ──────────────────────────────────────────
-  const overlay   = document.getElementById('pbg-overlay');
-  const bgPane    = document.getElementById('pbg-prev-snap');
-  const bgInner   = document.getElementById('pbg-prev-snap-inner');
-  const fgPane    = document.getElementById('pbg-current');
-  const fgInner   = document.getElementById('pbg-current-inner');
+  // ── Nodos permanentes ──────────────────────────────────────────
+  const overlay  = document.getElementById('pbg-overlay');
+  const bgLayer  = document.getElementById('pbg-bg-layer');
+  const fgLayer  = document.getElementById('pbg-fg-layer');
 
-  if(!overlay){console.warn('PBG: overlay not found');return;}
+  if(!overlay || !bgLayer || !fgLayer){
+    console.warn('PBG: capas no encontradas');
+    return;
+  }
 
-  // ── Obtener pantalla anterior ──────────────────────
-  const getPrev=()=>{
-    if(!window.screenHistory||!screenHistory.length) return null;
-    const curEl=document.querySelector('.screen.active');
-    const curKey=curEl ? (Object.keys(screens||{}).find(k=>screens[k]===curEl.id)||null) : null;
-    for(let i=screenHistory.length-1;i>=0;i--){
-      if(screenHistory[i]!==curKey) return screenHistory[i];
+  // Refs a los elementos pantalla que estamos manejando
+  let curScreenEl  = null; // pantalla actual (frente)
+  let prevScreenEl = null; // pantalla destino (fondo)
+
+  // ── Obtener key de la pantalla anterior en el historial ─────────
+  const getPrevKey = () => {
+    if(!window.screenHistory || !screenHistory.length) return null;
+    const curEl = document.querySelector('.screen.active');
+    const curKey = curEl
+      ? Object.keys(screens||{}).find(k => screens[k] === curEl.id) || null
+      : null;
+    for(let i = screenHistory.length - 1; i >= 0; i--){
+      if(screenHistory[i] !== curKey) return screenHistory[i];
     }
     return null;
   };
 
-  // ── Clonar pantalla para mostrar como fondo ─────────
-  const buildBg=(key)=>{
-    bgInner.innerHTML='';
-    if(!key||!screens[key]) return false;
-    const src=document.getElementById(screens[key]);
-    if(!src) return false;
-    const clone=src.cloneNode(true);
-    // Forzar visible independientemente del estado original
-    clone.style.cssText=[
+  // ── Preparar capas para el gesto ───────────────────────────────
+  const buildLayers = (destKey) => {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    curScreenEl  = document.querySelector('.screen.active');
+    prevScreenEl = destKey && screens[destKey]
+      ? document.getElementById(screens[destKey])
+      : null;
+
+    if(!curScreenEl || !prevScreenEl) return false;
+
+    // 1. Renderizar la pantalla destino (sin mostrarla aún):
+    //    la activamos off-screen para que tenga contenido real.
+    prevScreenEl.style.display = 'flex';
+    prevScreenEl.style.visibility = 'hidden'; // invisible pero en layout
+    // Disparar render de contenido si hace falta
+    _renderScreenSilent(destKey);
+
+    // 2. Mover pantalla destino DENTRO de bgLayer como hijo directo
+    //    usando position fijo para que no afecte al layout general
+    bgLayer.style.cssText = `
+      display:block;
+      position:fixed;inset:0;
+      z-index:1991;
+      pointer-events:none;
+      overflow:hidden;
+      background:var(--bg);
+      transform:scale(${SCALE_BG});
+      filter:brightness(0.52) blur(5px);
+      opacity:0.35;
+      border-radius:16px;
+      transition:none;
+      will-change:transform,filter,opacity;
+    `;
+    // Ponemos la pantalla destino visible DENTRO del bgLayer
+    // pero en realidad la pantalla sigue en su sitio en el DOM;
+    // usamos un enfoque de "windowing": clonamos solo el estado visual
+    // actual mediante getComputedStyle y un snapshot del innerHTML
+    // ── Snapshot real del DOM visible ──
+    const bgSnap = prevScreenEl.cloneNode(true);
+    bgSnap.style.cssText = [
       'position:absolute','inset:0','display:flex','flex-direction:column',
-      'overflow:hidden','pointer-events:none','width:100%','height:100%',
-      'opacity:1','visibility:visible'
+      'overflow:hidden','width:100%','height:100%',
+      'opacity:1','visibility:visible','pointer-events:none'
     ].join(';');
-    bgInner.appendChild(clone);
+    bgLayer.innerHTML = '';
+    bgLayer.appendChild(bgSnap);
+
+    // 3. Pantalla actual pasa a fgLayer (también clonada en estado actual)
+    fgLayer.style.cssText = `
+      display:block;
+      position:fixed;inset:0;
+      z-index:1992;
+      pointer-events:none;
+      overflow:hidden;
+      background:var(--bg);
+      transform:translateX(0) scale(1);
+      border-radius:0;
+      box-shadow:none;
+      transition:none;
+      will-change:transform,box-shadow,border-radius;
+    `;
+    const fgSnap = curScreenEl.cloneNode(true);
+    fgSnap.style.cssText = [
+      'position:absolute','inset:0','display:flex','flex-direction:column',
+      'overflow:hidden','width:100%','height:100%',
+      'opacity:1','visibility:visible','pointer-events:none'
+    ].join(';');
+    fgLayer.innerHTML = '';
+    fgLayer.appendChild(fgSnap);
+
+    // 4. Escudo de eventos (overlay)
+    overlay.style.cssText = `
+      display:block;
+      position:fixed;inset:0;
+      z-index:1993;
+      pointer-events:all;
+      background:transparent;
+    `;
+
+    // 5. Ocultar pantalla real actual (la sustituye fgLayer)
+    curScreenEl.style.visibility = 'hidden';
+    prevScreenEl.style.visibility = 'hidden'; // sigue oculta; la muestra bgLayer
+
     return true;
   };
 
-  // ── Clonar pantalla actual para mostrar encima ──────
-  const buildFg=()=>{
-    fgInner.innerHTML='';
-    const curEl=document.querySelector('.screen.active');
-    if(!curEl) return;
-    const clone=curEl.cloneNode(true);
-    clone.style.cssText=[
-      'position:absolute','inset:0','display:flex','flex-direction:column',
-      'overflow:hidden','pointer-events:none','width:100%','height:100%',
-      'opacity:1','visibility:visible'
-    ].join(';');
-    fgInner.appendChild(clone);
-    // Ocultar original mientras el overlay lo sustituye
-    curEl.style.visibility='hidden';
+  // Renderizar contenido de una pantalla sin animación ni cambio de historial
+  const _renderScreenSilent = (key) => {
+    try {
+      if(key === 'inicio')      { if(typeof renderInicio==='function')      renderInicio(); }
+      else if(key === 'grupo')  { if(typeof renderGrupo==='function')       renderGrupo(); }
+      else if(key === 'perfil') { if(typeof renderPerfil==='function')      renderPerfil(); }
+      else if(key === 'notificaciones'){ if(typeof renderNotificaciones==='function') renderNotificaciones(); }
+      else if(key === 'administracion'){ if(typeof renderAdministracion==='function') renderAdministracion(); }
+      else if(key === 'estadisticas')  { if(typeof renderStats==='function')         renderStats(); }
+      else if(key === 'archivos')      { if(typeof renderArchivos==='function')       renderArchivos(); }
+      else if(key === 'imagenes')      { if(typeof renderImagenes==='function')       renderImagenes(); }
+      else if(key === 'averias')       { if(typeof renderAverias==='function')        renderAverias(); }
+      else if(key === 'presupuestos')  { if(typeof renderPresupuestos==='function')   renderPresupuestos(); }
+      else if(key === 'horas')         { if(typeof renderHoras==='function')          renderHoras(); }
+      else if(key === 'facturas')      { if(typeof renderFacturas==='function')       renderFacturas(); }
+      else if(key === 'historialGlobal'){ if(typeof renderHistorialGlobal==='function') renderHistorialGlobal(); }
+      else if(key === 'rutaDia')       { if(typeof renderRutaDia==='function')        renderRutaDia(); }
+    } catch(e) { /* silencioso */ }
   };
 
-  // ── Actualizar posiciones visualmente ───────────────
-  const applyPos=(dx)=>{
-    const W=window.innerWidth;
-    const prog=Math.min(1,Math.max(0,dx/W));
+  // ── Animar posición durante el arrastre ────────────────────────
+  const applyPos = (dx) => {
+    const W   = window.innerWidth;
+    const prog = Math.min(1, Math.max(0, dx / W));
 
-    // Pantalla actual: sigue al dedo, borde-radio y sombra creciente
-    const r=Math.round(prog*26);
-    const sc=1-prog*0.035;
-    fgPane.style.cssText=`
-      transform:translateX(${dx}px) scale(${sc});
-      border-radius:${r}px;
-      box-shadow:-${6+prog*20}px 0 ${32+prog*28}px rgba(0,0,0,${.35+prog*.2});
-      transition:none;
-    `;
+    // Pantalla actual: sigue al dedo con radio y sombra crecientes
+    const radius = Math.round(prog * 28);
+    const scFg   = 1 - prog * 0.04;
+    fgLayer.style.transform      = `translateX(${dx}px) scale(${scFg})`;
+    fgLayer.style.borderRadius   = `${radius}px`;
+    fgLayer.style.boxShadow      = `-${6 + prog*22}px 0 ${32 + prog*30}px rgba(0,0,0,${.35 + prog*.2})`;
 
-    // Pantalla anterior: parte oscura/pequeña y se abre conforme avanza
-    const bgSc  = SCALE_BG + (1-SCALE_BG)*prog;
-    const bgBri = 0.52 + 0.48*prog;
-    const bgBlur= Math.max(0, 5*(1-prog));
-    bgPane.style.cssText=`
-      transform:scale(${bgSc});
-      filter:brightness(${bgBri}) blur(${bgBlur}px);
-      opacity:${0.35+0.65*prog};
-      transition:none;
-    `;
+    // Pantalla destino: emerge desde escala reducida y oscura
+    const scBg   = SCALE_BG + (1 - SCALE_BG) * prog;
+    const bri    = 0.52 + 0.48 * prog;
+    const blur   = Math.max(0, 5 * (1 - prog));
+    bgLayer.style.transform = `scale(${scBg})`;
+    bgLayer.style.filter    = `brightness(${bri}) blur(${blur}px)`;
+    bgLayer.style.opacity   = String(0.35 + 0.65 * prog);
   };
 
-  // ── Limpiar overlay y restaurar estado ──────────────
-  const cleanup=()=>{
-    dragging=tracking=finishing=false;
-    prevKey=null;
-    overlay.style.display='none';
-    overlay.style.pointerEvents='none';
-    fgPane.style.cssText='';
-    bgPane.style.cssText='';
-    fgInner.innerHTML='';
-    bgInner.innerHTML='';
-    // Restaurar visibilidad de la pantalla activa
-    const curEl=document.querySelector('.screen.active');
-    if(curEl){curEl.style.visibility='';curEl.style.opacity='';}
+  // ── Limpiar todo y restaurar estado ───────────────────────────
+  const cleanup = () => {
+    dragging = tracking = finishing = false;
+    prevKey = null;
+    if(raf){ cancelAnimationFrame(raf); raf = null; }
+
+    // Ocultar capas
+    overlay.style.cssText = 'display:none;pointer-events:none;';
+    bgLayer.style.display = 'none';
+    fgLayer.style.display = 'none';
+    bgLayer.innerHTML = '';
+    fgLayer.innerHTML = '';
+
+    // Restaurar visibilidad de las pantallas reales
+    if(curScreenEl)  { curScreenEl.style.visibility = ''; }
+    if(prevScreenEl) { prevScreenEl.style.visibility = ''; prevScreenEl.style.display = 'none'; }
+    curScreenEl  = null;
+    prevScreenEl = null;
   };
 
-  // ── Confirmar: animar salida y navegar ───────────────
-  const commit=(fromDX)=>{
-    if(finishing)return;
-    finishing=true;
-    const W=window.innerWidth;
-    if(navigator.vibrate)navigator.vibrate(8);
+  // ── Confirmar navegación (suelta con suficiente avance) ────────
+  const commit = () => {
+    if(finishing) return;
+    finishing = true;
+    const W = window.innerWidth;
+    if(navigator.vibrate) navigator.vibrate(9);
 
-    // Pantalla actual sale por la derecha
-    fgPane.style.transition=`transform .26s ${EASE_OUT}, border-radius .26s, box-shadow .2s`;
-    fgPane.style.transform=`translateX(${W+10}px) scale(1)`;
-    fgPane.style.borderRadius='0';
-    fgPane.style.boxShadow='none';
+    // Pantalla actual sale hacia la derecha
+    fgLayer.style.transition = `transform .26s ${EASE_OUT}, border-radius .26s, box-shadow .2s`;
+    fgLayer.style.transform  = `translateX(${W + 20}px) scale(1)`;
+    fgLayer.style.borderRadius = '0';
+    fgLayer.style.boxShadow  = 'none';
 
-    // Pantalla anterior entra a escala 1
-    bgPane.style.transition=`transform .26s ${EASE_OUT}, filter .26s, opacity .22s`;
-    bgPane.style.transform='scale(1)';
-    bgPane.style.filter='brightness(1) blur(0px)';
-    bgPane.style.opacity='1';
+    // Pantalla destino llega a pantalla completa
+    bgLayer.style.transition = `transform .26s ${EASE_OUT}, filter .26s, opacity .22s`;
+    bgLayer.style.transform  = 'scale(1)';
+    bgLayer.style.filter     = 'brightness(1) blur(0px)';
+    bgLayer.style.opacity    = '1';
+    bgLayer.style.borderRadius = '0';
 
-    const dest=prevKey;
-    setTimeout(()=>{
+    const dest = prevKey;
+    setTimeout(() => {
       cleanup();
-      // Navegar silenciosamente a la pantalla anterior
-      navSilent(dest);
-    },270);
+      _navSilentPBG(dest);
+    }, 280);
   };
 
-  // ── Cancelar: rebote de vuelta ───────────────────────
-  const cancel=()=>{
-    if(finishing)return;
-    finishing=true;
+  // ── Cancelar (rebote al origen) ────────────────────────────────
+  const cancel = () => {
+    if(finishing) return;
+    finishing = true;
 
-    fgPane.style.transition=`transform .38s ${SPRING}, border-radius .38s ${SPRING}, box-shadow .3s`;
-    fgPane.style.transform='translateX(0) scale(1)';
-    fgPane.style.borderRadius='0';
-    fgPane.style.boxShadow='-6px 0 32px rgba(0,0,0,.35)';
+    fgLayer.style.transition   = `transform .38s ${SPRING}, border-radius .38s ${SPRING}, box-shadow .32s`;
+    fgLayer.style.transform    = 'translateX(0) scale(1)';
+    fgLayer.style.borderRadius = '0';
+    fgLayer.style.boxShadow    = '-6px 0 32px rgba(0,0,0,.35)';
 
-    bgPane.style.transition=`transform .38s ${SPRING}, filter .38s, opacity .3s`;
-    bgPane.style.transform=`scale(${SCALE_BG})`;
-    bgPane.style.filter=`brightness(0.52) blur(5px)`;
-    bgPane.style.opacity='0.35';
+    bgLayer.style.transition = `transform .38s ${SPRING}, filter .38s, opacity .3s`;
+    bgLayer.style.transform  = `scale(${SCALE_BG})`;
+    bgLayer.style.filter     = `brightness(0.52) blur(5px)`;
+    bgLayer.style.opacity    = '0.35';
 
-    setTimeout(cleanup,400);
+    setTimeout(cleanup, 420);
   };
 
-  // ── Navegar sin animación de slide ───────────────────
-  const navSilent=(key)=>{
-    if(!key)return;
-    // Limpiar historial de duplicados de la pantalla actual
-    const curEl=document.querySelector('.screen.active');
-    const curKey=curEl?Object.keys(screens).find(k=>screens[k]===curEl.id):null;
-    while(screenHistory.length&&screenHistory[screenHistory.length-1]===curKey){
+  // ── Navegar a destino sin animación de slide ───────────────────
+  const _navSilentPBG = (key) => {
+    if(!key) return;
+    // Limpiar duplicados del historial
+    const el = document.querySelector('.screen.active');
+    const curKey = el
+      ? Object.keys(screens).find(k => screens[k] === el.id)
+      : null;
+    while(screenHistory.length && screenHistory[screenHistory.length-1] === curKey){
       screenHistory.pop();
     }
-    // Quitar la entrada del destino del historial para no duplicar
-    const idx=screenHistory.lastIndexOf(key);
-    if(idx>=0)screenHistory.splice(idx,1);
+    const idx = screenHistory.lastIndexOf(key);
+    if(idx >= 0) screenHistory.splice(idx, 1);
 
-    // Ocultar pantalla actual, mostrar destino
-    if(curEl){curEl.classList.remove('active');curEl.style.display='none';curEl.style.visibility='';}
-    const nextEl=document.getElementById(screens[key]);
-    if(nextEl){nextEl.style.display='flex';nextEl.classList.add('active');nextEl.style.visibility='';}
+    // Ocultar actual, mostrar destino
+    if(el){ el.classList.remove('active'); el.style.display = 'none'; el.style.visibility = ''; }
+    const nextEl = document.getElementById(screens[key]);
+    if(nextEl){ nextEl.style.display = 'flex'; nextEl.classList.add('active'); nextEl.style.visibility = ''; }
 
-    // Renderizar contenido destino
-    _navFromPop=true;
+    // Renderizar contenido
+    _navFromPop = true;
     _renderScreen(key);
-    _navFromPop=false;
+    _navFromPop = false;
 
-    // Sincronizar history API
-    history.replaceState({screen:key,sbOpen:false},'',location.href.split('#')[0]+'#'+key);
+    history.replaceState(
+      {screen: key, sbOpen: false}, '',
+      location.href.split('#')[0] + '#' + key
+    );
   };
 
-  // ── TOUCHSTART ────────────────────────────────────────
-  document.addEventListener('touchstart',e=>{
-    if(finishing||dragging)return;
-    const t=e.touches[0];
-    // Debe iniciar en el borde izquierdo
-    if(t.clientX>EDGE)return;
+  // ── TOUCHSTART ────────────────────────────────────────────────
+  document.addEventListener('touchstart', e => {
+    if(finishing || dragging) return;
+    const t = e.touches[0];
+    if(t.clientX > EDGE) return;
     // No interferir con paneles abiertos
-    if(document.getElementById('sb')?.classList.contains('open'))return;
-    if(document.getElementById('drawer')?.classList.contains('open'))return;
-    // Necesitar pantalla anterior
-    const p=getPrev();
-    if(!p)return;
-    prevKey=p;
-    startX=t.clientX;
-    startY=t.clientY;
-    lastX=t.clientX;
-    tracking=true;
-    dragging=false;
-  },{passive:true});
+    if(document.getElementById('sb')?.classList.contains('open')) return;
+    if(document.getElementById('drawer')?.classList.contains('open')) return;
+    const p = getPrevKey();
+    if(!p) return;
+    prevKey = p;
+    startX  = t.clientX;
+    startY  = t.clientY;
+    lastX   = t.clientX;
+    tracking = true;
+    dragging = false;
+  }, {passive: true});
 
-  // ── TOUCHMOVE ─────────────────────────────────────────
-  document.addEventListener('touchmove',e=>{
-    if(finishing||!tracking||!prevKey)return;
-    const t=e.touches[0];
-    const dx=t.clientX-startX;
-    const dy=Math.abs(t.clientY-startY);
-    lastX=t.clientX;
+  // ── TOUCHMOVE ─────────────────────────────────────────────────
+  document.addEventListener('touchmove', e => {
+    if(finishing || !tracking || !prevKey) return;
+    const t  = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+    lastX = t.clientX;
 
     if(!dragging){
-      // Esperar umbral mínimo
-      if(Math.abs(dx)<6)return;
-      // Cancelar si es scroll vertical
-      if(dy>dx*1.1){prevKey=null;tracking=false;return;}
+      if(Math.abs(dx) < 6) return;          // umbral mínimo
+      if(dy > dx * 1.15){ prevKey = null; tracking = false; return; } // scroll vertical
       // ── Activar arrastre ──
-      dragging=true;
-      // Construir clones
-      buildBg(prevKey);
-      buildFg();
-      // Mostrar overlay, bloquear eventos al fondo
-      overlay.style.display='block';
-      overlay.style.pointerEvents='all';
-      // Posición inicial
-      fgPane.style.cssText=`transform:translateX(0) scale(1);border-radius:0;box-shadow:-6px 0 32px rgba(0,0,0,.35);transition:none;`;
-      bgPane.style.cssText=`transform:scale(${SCALE_BG});filter:brightness(0.52) blur(5px);opacity:0.35;transition:none;`;
+      const ok = buildLayers(prevKey);
+      if(!ok){ prevKey = null; tracking = false; return; }
+      dragging = true;
     }
 
-    if(!dragging)return;
-    const realDX=Math.max(0,t.clientX-startX);
-    if(raf)cancelAnimationFrame(raf);
-    raf=requestAnimationFrame(()=>applyPos(realDX));
-  },{passive:true});
+    const realDX = Math.max(0, t.clientX - startX);
+    if(raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => applyPos(realDX));
+  }, {passive: true});
 
-  // ── TOUCHEND ──────────────────────────────────────────
-  document.addEventListener('touchend',e=>{
-    if(finishing)return;
-    if(!dragging||!prevKey){tracking=false;prevKey=null;return;}
-    const W=window.innerWidth;
-    const finalDX=Math.max(0,lastX-startX);
-    if(finalDX/W>=THRESHOLD){
-      commit(finalDX);
-    }else{
+  // ── TOUCHEND ──────────────────────────────────────────────────
+  document.addEventListener('touchend', () => {
+    if(finishing) return;
+    if(!dragging || !prevKey){ tracking = false; prevKey = null; return; }
+    const W = window.innerWidth;
+    const finalDX = Math.max(0, lastX - startX);
+    if(finalDX / W >= THRESHOLD){
+      commit();
+    } else {
       cancel();
     }
-  },{passive:true});
+  }, {passive: true});
 
-  // ── TOUCHCANCEL ───────────────────────────────────────
-  document.addEventListener('touchcancel',()=>{
-    if(dragging&&!finishing)cancel();
+  // ── TOUCHCANCEL ───────────────────────────────────────────────
+  document.addEventListener('touchcancel', () => {
+    if(dragging && !finishing) cancel();
     else cleanup();
-  },{passive:true});
+  }, {passive: true});
 
 })();
 
@@ -13374,11 +13446,10 @@ const _lockInicializar = () => {
   </div>
 </div>
 
-<!-- ── PREDICTIVE BACK GESTURE OVERLAY ── -->
-<div id="pbg-overlay">
-  <div id="pbg-prev-snap"><div id="pbg-prev-snap-inner"></div></div>
-  <div id="pbg-current"><div id="pbg-current-inner"></div></div>
-</div>
+<!-- ── PREDICTIVE BACK GESTURE LAYERS ── -->
+<div id="pbg-overlay"></div>
+<div id="pbg-bg-layer"></div>
+<div id="pbg-fg-layer"></div>
 
 </body>
 </html>
