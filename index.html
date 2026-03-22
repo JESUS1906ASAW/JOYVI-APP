@@ -257,22 +257,14 @@ body.modo-claro{background:#f2f2f7 !important}
 
 /* ── PREDICTIVE BACK GESTURE ── */
 #pbg-wrap{
-  display:none;position:fixed;inset:0;z-index:3000;
+  display:none;position:fixed;inset:0;z-index:4000;
   background:var(--bg);overflow:hidden;
+  touch-action:none;
 }
-/* Capa fondo: pantalla destino, escalada y oscurecida */
-#pbg-back{
+#pbg-back,#pbg-front{
   position:absolute;inset:0;overflow:hidden;
   transform-origin:center center;
-  will-change:transform,filter,opacity;
-  border-radius:16px;
-}
-/* Capa frente: pantalla actual, sigue al dedo */
-#pbg-front{
-  position:absolute;inset:0;overflow:hidden;
-  transform-origin:center center;
-  will-change:transform,box-shadow,border-radius;
-  box-shadow:-6px 0 32px rgba(0,0,0,.45);
+  will-change:transform,filter,opacity,border-radius,box-shadow;
 }
 
 /* ── SKELETON LOADING ── */
@@ -339,7 +331,7 @@ body.modo-claro .asist-msg.user{background:linear-gradient(135deg,rgba(var(--the
 /* Overlay oscuro cuando hay imagen de grupo */
 .drawer-head-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.28) 55%,transparent 100%);pointer-events:none;z-index:2}
 .drawer-head-content{position:relative;z-index:3!important}
-.drawer-head-content{position:relative;z-index:3;padding:16px 18px 16px;display:flex;align-items:center;gap:13px}
+.drawer-head-content{position:relative;z-index:5;padding:16px 18px 16px;display:flex;align-items:center;gap:13px}
 .drawer-ava{width:52px;height:52px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;font-size:22px;border:2.5px solid rgba(255,255,255,.35);flex-shrink:0;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.4)}
 .drawer-ava img{width:100%;height:100%;object-fit:cover}
 .drawer-head-text{flex:1;min-width:0}
@@ -2991,8 +2983,8 @@ const actualizarDrawer=()=>{
   if(banner){
     const fondo=CG?.fondoImg||'';
     if(fondo){
-      // Imagen del grupo con overlay oscuro para que el texto sea legible
-      banner.style.background=`linear-gradient(to bottom,rgba(0,0,0,.2) 0%,rgba(0,0,0,.65) 100%),url('${fondo}') center/cover no-repeat`;
+      // Imagen del grupo + overlay oscuro para legibilidad
+      banner.style.background=`linear-gradient(to bottom,rgba(0,0,0,.18) 0%,rgba(0,0,0,.65) 100%),url('${fondo}') center/cover no-repeat`;
     } else {
       // Sin grupo activo: gradiente del color de apariencia
       banner.style.background='';
@@ -5271,30 +5263,25 @@ window.usarUbicacionActualCliente=()=>{
         _delBtn.style.cssText='flex-shrink:0;padding:0 10px;border-radius:10px;border:1.5px solid rgba(229,57,53,.35);background:rgba(229,57,53,.07);color:#e53935;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:38px';
         if(btn&&btn.parentElement) btn.parentElement.appendChild(_delBtn);
       }
-      // Geocodificación inversa — NUNCA poner coords en campo visible
+      // Geocodificación inversa — coords solo en campos hidden, nunca visibles
       toast('🔍 Buscando dirección...','i');
-      if(dirEl) dirEl.placeholder='Buscando dirección...';
-      let dir='';
-      try{ dir=await _geocodificarCoordenadas(lat,lng); }catch(_){}
-      // Detectar si el resultado es solo coords (fallback)
-      const _esCoords=/^-?[\d.]+[,\s]+-?[\d.]+$/.test((dir||'').trim());
-      if(dir&&!_esCoords&&dirEl){
-        dirEl.value=dir;
-        dirEl.placeholder='Calle, número, ciudad';
-        _flashGreen(dirEl);
-      } else if(dirEl){
-        dirEl.value='';
-        dirEl.placeholder='No se detectó calle — escribe manualmente';
+      if(dirEl){dirEl.value='';dirEl.placeholder='Buscando dirección...';}
+      let _dir='';
+      try{ _dir=await _geocodificarCoordenadas(lat,lng); }catch(e){}
+      const _isCoords=/^-?[\d.]+[,\s]+-?[\d.]+$/.test((_dir||'').trim());
+      const _dirLabel=_dir&&!_isCoords?_dir:'';
+      if(dirEl){
+        dirEl.value=_dirLabel;
+        dirEl.placeholder=_dirLabel?'Calle, número, ciudad':'No se detectó calle — escribe manualmente';
+        if(_dirLabel)_flashGreen(dirEl);
       }
-      // Indicador GPS (solo coords internas, no visibles en el campo)
       const ind=$('gpsIndicator');
-      if(ind)ind.innerHTML=`<span style="color:#4caf50">🎯 GPS guardado (${precStr})${!_esCoords&&dir?' — '+dir:''}</span>`;
-      const _dirLabel=(!_esCoords&&dir)?dir:'GPS guardado';
-      toast(`✓ ${_dirLabel} (${precStr})`,'o');
+      if(ind)ind.innerHTML=`<span style="color:#4caf50">🎯 GPS (${precStr})${_dirLabel?' — '+_dirLabel:''}</span>`;
+      toast(_dirLabel?`✓ ${_dirLabel} (${precStr})`:`✓ GPS guardado (${precStr})`,'o');
       const _pv=document.getElementById('geoPreviewMini');
       if(_pv){
         _pv.style.display='block';
-        _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ ${_dirLabel} (${precStr})</a>`;
+        _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ ${_dirLabel||'GPS capturado'} (${precStr})</a>`;
       }
     },
     err=>{
@@ -13130,23 +13117,12 @@ const _lockInicializar = () => {
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ══════════════════════════════════════════════════════════════════
-// PREDICTIVE BACK GESTURE — Funcionamiento definitivo sin APIs
-//
-// CÓMO FUNCIONA:
-//   #pbg-wrap  = overlay fixed z-index:3000 que cubre todo
-//   #pbg-back  = hijo del wrap, recibe un clon visual de la pantalla destino
-//   #pbg-front = hijo del wrap, recibe un clon visual de la pantalla actual
-//
-//   Los clones se hacen con cloneNode(deep=true) DESPUÉS de que el contenido
-//   esté renderizado. La clave es que los clones no necesitan ser interactivos
-//   — solo deben verse igual. Las imágenes ya cargadas se copian por src.
-//   El scroll se preserva manualmente.
-//
-//   Al soltar:
-//     - Si dx ≥ THRESHOLD → commit: anima salida y navega de verdad
-//     - Si dx < THRESHOLD → cancel: spring back, sin navegar
-// ══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// PREDICTIVE BACK GESTURE
+// Dos divs overlay (#pbg-back / #pbg-front) fijos sobre todo.
+// Clona visualmente la pantalla actual y la destino dentro de ellos.
+// El dedo mueve #pbg-front. Soltar decide: navegar o rebotar.
+// ═══════════════════════════════════════════════════════════════
 (()=>{
   'use strict';
 
@@ -13156,271 +13132,213 @@ const _lockInicializar = () => {
   const SPRING    = 'cubic-bezier(.16,1,.3,1)';
   const EASE_OUT  = 'cubic-bezier(.4,0,.2,1)';
 
-  let tracking = false, dragging = false, finishing = false;
-  let startX = 0, startY = 0, lastX = 0;
-  let prevKey = null, raf = null;
+  let tracking=false, dragging=false, finishing=false;
+  let startX=0, startY=0, lastX=0;
+  let prevKey=null, raf=null;
 
-  const wrap  = document.getElementById('pbg-wrap');
-  const back  = document.getElementById('pbg-back');
-  const front = document.getElementById('pbg-front');
+  const pbgWrap  = document.getElementById('pbg-wrap');
+  const pbgBack  = document.getElementById('pbg-back');
+  const pbgFront = document.getElementById('pbg-front');
+  if(!pbgWrap||!pbgBack||!pbgFront){ console.warn('PBG: divs no encontrados'); return; }
 
-  if(!wrap || !back || !front){
-    console.warn('PBG: elementos no encontrados');
-    return;
-  }
-
-  // ─── key de la pantalla anterior ────────────────────────────
-  const getPrevKey = () => {
-    if(!window.screenHistory || !screenHistory.length) return null;
-    const cur = document.querySelector('.screen.active');
-    const curKey = cur ? Object.keys(screens||{}).find(k => screens[k] === cur.id) : null;
-    for(let i = screenHistory.length - 1; i >= 0; i--)
-      if(screenHistory[i] !== curKey) return screenHistory[i];
+  // ── Key de pantalla anterior ─────────────────────────────
+  const getPrevKey=()=>{
+    if(!window.screenHistory||!screenHistory.length) return null;
+    const cur=document.querySelector('.screen.active');
+    const curKey=cur?Object.keys(screens||{}).find(k=>screens[k]===cur.id):null;
+    for(let i=screenHistory.length-1;i>=0;i--)
+      if(screenHistory[i]!==curKey) return screenHistory[i];
     return null;
   };
 
-  // ─── Clonar pantalla preservando scroll e imágenes ──────────
-  const cloneScreen = (el) => {
+  // ── Clonar pantalla visualmente ──────────────────────────
+  const snapshot=(el)=>{
     if(!el) return null;
-    const clone = el.cloneNode(true);
-    // Preservar scroll de scroll-pad
-    const origPad = el.querySelector('.scroll-pad');
-    const clonePad = clone.querySelector('.scroll-pad');
-    if(origPad && clonePad) clonePad.scrollTop = origPad.scrollTop;
-    // Estilos forzados para llenar el contenedor
-    clone.style.cssText = [
-      'position:absolute','inset:0',
-      'display:flex','flex-direction:column',
-      'width:100%','height:100%',
-      'overflow:hidden','pointer-events:none',
-      'opacity:1','visibility:visible',
-    ].join(';');
-    return clone;
+    const c=el.cloneNode(true);
+    // Restaurar scroll
+    el.querySelectorAll('.scroll-pad').forEach((orig,i)=>{
+      const cl=c.querySelectorAll('.scroll-pad')[i];
+      if(cl) cl.scrollTop=orig.scrollTop;
+    });
+    c.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;pointer-events:none;';
+    return c;
   };
 
-  // ─── Preparar escena visual ──────────────────────────────────
-  const build = (destKey) => {
-    const elCur  = document.querySelector('.screen.active');
-    const elDest = destKey && screens[destKey] ? document.getElementById(screens[destKey]) : null;
-    if(!elCur || !elDest || elCur === elDest) return false;
+  // ── Construir escena ─────────────────────────────────────
+  const build=(destKey)=>{
+    const elCur=document.querySelector('.screen.active');
+    const elDest=screens[destKey]?document.getElementById(screens[destKey]):null;
+    if(!elCur||!elDest||elCur===elDest) return false;
 
-    // Renderizar contenido destino silenciosamente
-    try {
-      // Mostrar temporalmente para poder renderizar
-      const wasDisplay = elDest.style.display;
-      elDest.style.display = 'flex';
-      elDest.style.visibility = 'hidden';
-      elDest.style.position = 'absolute';
-      elDest.style.pointerEvents = 'none';
-
-      const renders = {
-        inicio: ()=>typeof renderInicio==='function'&&renderInicio(),
-        grupo: ()=>typeof renderGrupo==='function'&&renderGrupo(),
-        perfil: ()=>typeof renderPerfil==='function'&&renderPerfil(),
-        notificaciones: ()=>typeof renderNotificaciones==='function'&&renderNotificaciones(),
-        estadisticas: ()=>typeof renderStats==='function'&&renderStats(),
-        archivos: ()=>typeof renderArchivos==='function'&&renderArchivos(),
-        imagenes: ()=>typeof renderImagenes==='function'&&renderImagenes(),
-        averias: ()=>typeof renderAverias==='function'&&renderAverias(),
-        presupuestos: ()=>typeof renderPresupuestos==='function'&&renderPresupuestos(),
-        horas: ()=>typeof renderHoras==='function'&&renderHoras(),
-        facturas: ()=>typeof renderFacturas==='function'&&renderFacturas(),
-        historialGlobal: ()=>typeof renderHistorialGlobal==='function'&&renderHistorialGlobal(),
-        rutaDia: ()=>typeof renderRutaDia==='function'&&renderRutaDia(),
-        administracion: ()=>typeof renderAdministracion==='function'&&renderAdministracion(),
-        calendario: ()=>typeof renderCalendario==='function'&&renderCalendario(),
+    // Renderizar destino (off-screen) para que tenga contenido actualizado
+    try{
+      const prev_d=elDest.style.display;
+      const prev_v=elDest.style.visibility;
+      const prev_p=elDest.style.position;
+      elDest.style.position='fixed';
+      elDest.style.visibility='hidden';
+      elDest.style.display='flex';
+      const fn={
+        inicio:()=>typeof renderInicio==='function'&&renderInicio(),
+        grupo:()=>typeof renderGrupo==='function'&&renderGrupo(),
+        perfil:()=>typeof renderPerfil==='function'&&renderPerfil(),
+        notificaciones:()=>typeof renderNotificaciones==='function'&&renderNotificaciones(),
+        estadisticas:()=>typeof renderStats==='function'&&renderStats(),
+        archivos:()=>typeof renderArchivos==='function'&&renderArchivos(),
+        imagenes:()=>typeof renderImagenes==='function'&&renderImagenes(),
+        averias:()=>typeof renderAverias==='function'&&renderAverias(),
+        presupuestos:()=>typeof renderPresupuestos==='function'&&renderPresupuestos(),
+        horas:()=>typeof renderHoras==='function'&&renderHoras(),
+        facturas:()=>typeof renderFacturas==='function'&&renderFacturas(),
+        historialGlobal:()=>typeof renderHistorialGlobal==='function'&&renderHistorialGlobal(),
+        rutaDia:()=>typeof renderRutaDia==='function'&&renderRutaDia(),
+        administracion:()=>typeof renderAdministracion==='function'&&renderAdministracion(),
+        calendario:()=>typeof renderCalendario==='function'&&renderCalendario(),
       };
-      (renders[destKey]||(() => {}))();
-
+      if(fn[destKey]) try{fn[destKey]();}catch(e){}
       // Clonar DESPUÉS del render
-      const cloneDest = cloneScreen(elDest);
-      const cloneCur  = cloneScreen(elCur);
+      const snapBack =snapshot(elDest);
+      const snapFront=snapshot(elCur);
+      // Restaurar destino
+      elDest.style.display=prev_d;
+      elDest.style.visibility=prev_v;
+      elDest.style.position=prev_p;
+      if(!snapBack||!snapFront) return false;
+      pbgBack.innerHTML='';  pbgBack.appendChild(snapBack);
+      pbgFront.innerHTML=''; pbgFront.appendChild(snapFront);
+    }catch(e){ return false; }
 
-      // Restaurar estado original del destino
-      elDest.style.display = wasDisplay || '';
-      elDest.style.visibility = '';
-      elDest.style.position = '';
-      elDest.style.pointerEvents = '';
-
-      if(!cloneDest || !cloneCur) return false;
-
-      back.innerHTML  = '';
-      front.innerHTML = '';
-      back.appendChild(cloneDest);
-      front.appendChild(cloneCur);
-    } catch(e) {
-      console.warn('PBG build error:', e);
-      return false;
-    }
-
-    // Estado inicial de las capas
-    back.style.cssText = [
-      'position:absolute','inset:0','overflow:hidden',
-      `transform:scale(${SCALE_BG})`,
-      'transform-origin:center center',
-      `filter:brightness(0.52) blur(4px)`,
-      'opacity:0.38',
-      'border-radius:16px',
-      'will-change:transform,filter,opacity',
-      'transition:none',
-    ].join(';');
-
-    front.style.cssText = [
-      'position:absolute','inset:0','overflow:hidden',
-      'transform:translateX(0) scale(1)',
-      'transform-origin:center center',
-      'border-radius:0',
-      'box-shadow:-4px 0 28px rgba(0,0,0,.45)',
-      'will-change:transform,box-shadow,border-radius',
-      'transition:none',
-    ].join(';');
-
-    wrap.style.display = 'block';
+    // Estado inicial capas
+    pbgBack.style.cssText=(
+      'position:absolute;inset:0;overflow:hidden;border-radius:16px;'+
+      `transform:scale(${SCALE_BG});transform-origin:center center;`+
+      'filter:brightness(0.52) blur(4px);opacity:0.38;transition:none;'
+    );
+    pbgFront.style.cssText=(
+      'position:absolute;inset:0;overflow:hidden;border-radius:0;'+
+      'transform:translateX(0) scale(1);transform-origin:center center;'+
+      'box-shadow:-4px 0 28px rgba(0,0,0,.5);transition:none;'
+    );
+    pbgWrap.style.display='block';
     return true;
   };
 
-  // ─── Animar frame ────────────────────────────────────────────
-  const applyPos = (dx) => {
-    const p = Math.min(1, Math.max(0, dx / window.innerWidth));
-
-    front.style.transform    = `translateX(${dx}px) scale(${1 - p * 0.04})`;
-    front.style.borderRadius = `${Math.round(p * 26)}px`;
-    front.style.boxShadow    = `-${4 + p*20}px 0 ${28 + p*28}px rgba(0,0,0,${.45 + p*.15})`;
-
-    back.style.transform = `scale(${SCALE_BG + (1 - SCALE_BG) * p})`;
-    back.style.filter    = `brightness(${0.52 + 0.48*p}) blur(${Math.max(0, 4*(1-p))}px)`;
-    back.style.opacity   = String(0.38 + 0.62*p);
+  // ── Animar ───────────────────────────────────────────────
+  const applyPos=(dx)=>{
+    const p=Math.min(1,Math.max(0,dx/window.innerWidth));
+    pbgFront.style.transform=`translateX(${dx}px) scale(${1-p*0.04})`;
+    pbgFront.style.borderRadius=`${Math.round(p*26)}px`;
+    pbgFront.style.boxShadow=`-${4+p*22}px 0 ${28+p*28}px rgba(0,0,0,${.5+p*.15})`;
+    pbgBack.style.transform=`scale(${SCALE_BG+(1-SCALE_BG)*p})`;
+    pbgBack.style.filter=`brightness(${0.52+0.48*p}) blur(${Math.max(0,4*(1-p))}px)`;
+    pbgBack.style.opacity=String(0.38+0.62*p);
   };
 
-  // ─── Cleanup ─────────────────────────────────────────────────
-  const cleanup = () => {
-    dragging = tracking = finishing = false;
-    prevKey = null;
-    if(raf){ cancelAnimationFrame(raf); raf = null; }
-    wrap.style.display = 'none';
-    back.innerHTML  = '';
-    front.innerHTML = '';
-    back.style.cssText  = '';
-    front.style.cssText = '';
+  // ── Cleanup ──────────────────────────────────────────────
+  const cleanup=()=>{
+    dragging=tracking=finishing=false;
+    prevKey=null;
+    if(raf){cancelAnimationFrame(raf);raf=null;}
+    pbgWrap.style.display='none';
+    pbgBack.innerHTML=''; pbgFront.innerHTML='';
+    pbgBack.style.cssText=''; pbgFront.style.cssText='';
   };
 
-  // ─── Confirmar navegación ────────────────────────────────────
-  const commit = () => {
+  // ── Confirmar navegación ─────────────────────────────────
+  const commit=()=>{
     if(finishing) return;
-    finishing = true;
+    finishing=true;
     if(navigator.vibrate) navigator.vibrate(8);
-    const W = window.innerWidth;
-
-    front.style.transition = `transform .25s ${EASE_OUT},border-radius .22s,box-shadow .2s`;
-    front.style.transform  = `translateX(${W + 10}px) scale(1)`;
-    front.style.borderRadius = '0';
-    front.style.boxShadow  = 'none';
-
-    back.style.transition = `transform .25s ${EASE_OUT},filter .25s,opacity .2s,border-radius .18s`;
-    back.style.transform  = 'scale(1)';
-    back.style.filter     = 'brightness(1) blur(0px)';
-    back.style.opacity    = '1';
-    back.style.borderRadius = '0';
-
-    const dest = prevKey;
-    setTimeout(() => {
-      cleanup();
-      _navBack(dest);
-    }, 270);
+    const W=window.innerWidth;
+    pbgFront.style.transition=`transform .25s ${EASE_OUT},border-radius .22s,box-shadow .2s`;
+    pbgFront.style.transform=`translateX(${W+10}px) scale(1)`;
+    pbgFront.style.borderRadius='0';
+    pbgFront.style.boxShadow='none';
+    pbgBack.style.transition=`transform .25s ${EASE_OUT},filter .25s,opacity .2s,border-radius .18s`;
+    pbgBack.style.transform='scale(1)';
+    pbgBack.style.filter='brightness(1) blur(0px)';
+    pbgBack.style.opacity='1';
+    pbgBack.style.borderRadius='0';
+    const dest=prevKey;
+    setTimeout(()=>{ cleanup(); _navBack(dest); },270);
   };
 
-  // ─── Cancelar — spring back ──────────────────────────────────
-  const cancel = () => {
+  // ── Cancelar con spring ──────────────────────────────────
+  const cancel=()=>{
     if(finishing) return;
-    finishing = true;
-
-    front.style.transition   = `transform .4s ${SPRING},border-radius .4s ${SPRING},box-shadow .3s`;
-    front.style.transform    = 'translateX(0) scale(1)';
-    front.style.borderRadius = '0';
-    front.style.boxShadow    = '-4px 0 28px rgba(0,0,0,.45)';
-
-    back.style.transition = `transform .4s ${SPRING},filter .35s,opacity .3s`;
-    back.style.transform  = `scale(${SCALE_BG})`;
-    back.style.filter     = 'brightness(0.52) blur(4px)';
-    back.style.opacity    = '0.38';
-
-    setTimeout(cleanup, 440);
+    finishing=true;
+    pbgFront.style.transition=`transform .4s ${SPRING},border-radius .4s ${SPRING},box-shadow .3s`;
+    pbgFront.style.transform='translateX(0) scale(1)';
+    pbgFront.style.borderRadius='0';
+    pbgFront.style.boxShadow='-4px 0 28px rgba(0,0,0,.5)';
+    pbgBack.style.transition=`transform .4s ${SPRING},filter .35s,opacity .3s`;
+    pbgBack.style.transform=`scale(${SCALE_BG})`;
+    pbgBack.style.filter='brightness(0.52) blur(4px)';
+    pbgBack.style.opacity='0.38';
+    setTimeout(cleanup,440);
   };
 
-  // ─── Navegar sin slide animation ─────────────────────────────
-  const _navBack = (key) => {
+  // ── Navegar sin slide-in ─────────────────────────────────
+  const _navBack=(key)=>{
     if(!key) return;
-    const cur = document.querySelector('.screen.active');
-    const curKey = cur ? Object.keys(screens).find(k => screens[k] === cur.id) : null;
-
-    while(screenHistory.length && screenHistory[screenHistory.length-1] === curKey)
-      screenHistory.pop();
-    const idx = screenHistory.lastIndexOf(key);
-    if(idx >= 0) screenHistory.splice(idx, 1);
-
-    if(cur){ cur.classList.remove('active'); cur.style.display = 'none'; }
-    const next = document.getElementById(screens[key]);
-    if(next){ next.style.display = 'flex'; next.classList.add('active'); }
-
-    _navFromPop = true;
-    _renderScreen(key);
-    _navFromPop = false;
-
-    history.replaceState({screen:key,sbOpen:false},'', location.href.split('#')[0]+'#'+key);
+    const cur=document.querySelector('.screen.active');
+    const curKey=cur?Object.keys(screens).find(k=>screens[k]===cur.id):null;
+    while(screenHistory.length&&screenHistory[screenHistory.length-1]===curKey) screenHistory.pop();
+    const idx=screenHistory.lastIndexOf(key);
+    if(idx>=0) screenHistory.splice(idx,1);
+    if(cur){cur.classList.remove('active');cur.style.display='none';}
+    const next=document.getElementById(screens[key]);
+    if(next){next.style.display='flex';next.classList.add('active');}
+    _navFromPop=true; _renderScreen(key); _navFromPop=false;
+    history.replaceState({screen:key,sbOpen:false},'',location.href.split('#')[0]+'#'+key);
   };
 
-  // ─── Touch events ────────────────────────────────────────────
-  document.addEventListener('touchstart', e => {
-    if(finishing || dragging) return;
-    const t = e.touches[0];
-    if(t.clientX > EDGE) return;
+  // ── Touch ────────────────────────────────────────────────
+  document.addEventListener('touchstart',e=>{
+    if(finishing||dragging) return;
+    const t=e.touches[0];
+    if(t.clientX>EDGE) return;
     if(document.getElementById('sb')?.classList.contains('open')) return;
     if(document.getElementById('drawer')?.classList.contains('open')) return;
-    const p = getPrevKey();
+    const p=getPrevKey();
     if(!p) return;
-    prevKey = p;
-    startX = lastX = t.clientX;
-    startY = t.clientY;
-    tracking = true;
-    dragging = false;
-  }, {passive:true});
+    prevKey=p; startX=lastX=t.clientX; startY=t.clientY;
+    tracking=true; dragging=false;
+  },{passive:true});
 
-  document.addEventListener('touchmove', e => {
-    if(finishing || !tracking || !prevKey) return;
-    const t  = e.touches[0];
-    const dx = t.clientX - startX;
-    const dy = Math.abs(t.clientY - startY);
-    lastX = t.clientX;
-
+  document.addEventListener('touchmove',e=>{
+    if(finishing||!tracking||!prevKey) return;
+    const t=e.touches[0];
+    const dx=t.clientX-startX;
+    const dy=Math.abs(t.clientY-startY);
+    lastX=t.clientX;
     if(!dragging){
-      if(Math.abs(dx) < 6) return;
-      if(dy > Math.abs(dx) * 1.2){ prevKey = null; tracking = false; return; }
-      if(!build(prevKey)){ prevKey = null; tracking = false; return; }
-      dragging = true;
+      if(Math.abs(dx)<6) return;
+      if(dy>Math.abs(dx)*1.2){prevKey=null;tracking=false;return;}
+      if(!build(prevKey)){prevKey=null;tracking=false;return;}
+      dragging=true;
     }
-
-    const realDX = Math.max(0, t.clientX - startX);
+    const rdx=Math.max(0,t.clientX-startX);
     if(raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => applyPos(realDX));
-  }, {passive:true});
+    raf=requestAnimationFrame(()=>applyPos(rdx));
+  },{passive:true});
 
-  document.addEventListener('touchend', () => {
+  document.addEventListener('touchend',()=>{
     if(finishing) return;
-    if(!dragging || !prevKey){ tracking = false; prevKey = null; return; }
-    const finalDX = Math.max(0, lastX - startX);
-    if(finalDX / window.innerWidth >= THRESHOLD) commit();
+    if(!dragging||!prevKey){tracking=false;prevKey=null;return;}
+    if(Math.max(0,lastX-startX)/window.innerWidth>=THRESHOLD) commit();
     else cancel();
-  }, {passive:true});
+  },{passive:true});
 
-  document.addEventListener('touchcancel', () => {
-    if(dragging && !finishing) cancel(); else cleanup();
-  }, {passive:true});
+  document.addEventListener('touchcancel',()=>{
+    if(dragging&&!finishing) cancel(); else cleanup();
+  },{passive:true});
 
 })();
 
 </script>
 <!-- ── PREDICTIVE BACK GESTURE ── -->
-<div id="pbg-wrap" style="display:none">
+<div id="pbg-wrap">
   <div id="pbg-back"></div>
   <div id="pbg-front"></div>
 </div>
