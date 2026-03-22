@@ -550,8 +550,12 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 .gtab-sm.active .gtab-sm-ico{opacity:1}
 .gtab-sm-txt{font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.3px;text-align:center}
 .gtab-sm.active .gtab-sm-txt{color:var(--tx)}
-body.modo-claro .gtab-big{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.08)}
-body.modo-claro .gtab-sm{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.08)}
+body.modo-claro .gtab-big{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
+body.modo-claro .gtab-big.active{background:linear-gradient(135deg,var(--r2),var(--r));border-color:transparent;box-shadow:0 4px 16px rgba(var(--theme-rgb),.35)}
+body.modo-claro .gtab-sm{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
+body.modo-claro .gtab-sm.active{background:rgba(var(--theme-rgb),.15);border-color:rgba(var(--theme-rgb),.55);box-shadow:0 2px 10px rgba(var(--theme-rgb),.18)}
+body.modo-claro .gtab-sm.active .gtab-sm-txt{color:var(--r);font-weight:900}
+body.modo-claro .gtab-sm.active .gtab-sm-ico{opacity:1}
 
 /* ── CLIENTE CARDS ── */
 .cli-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s ease,background .15s ease,border-color .2s ease;margin-bottom:8px}
@@ -2299,6 +2303,8 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-item" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
     <div class="d-item" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
     <div class="d-item" onclick="goScreen('grupo');switchGTab('presu');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Presupuestos</div>
+    <div class="d-item" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
+    <div class="d-item" onclick="goScreen('rutaDia');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Ruta del día</div>
     <div class="d-item" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
     ${sep}
     <div class="d-section" style="padding-top:6px">Opciones de grupo</div>
@@ -2307,12 +2313,6 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
 
     <div class="d-item" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Administración</div>
     <div class="d-item" onclick="goScreen('archivos');cerrarDrawer()" style="color:#e53935"><span class="d-icon" style="color:#e53935"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Clientes clasificados</div>
-    ${sep}
-    <div class="d-section" style="padding-top:6px">Herramientas</div>
-
-    <div class="d-item" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
-
-    <div class="d-item" onclick="goScreen('rutaDia');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Ruta del día</div>
     ${sep}
     ${kioskBtn}
     ${sep}
@@ -4074,7 +4074,7 @@ const htmlListaClis=(clis,preview=false)=>{
       : `<div class="cli-ava-initials" style="background:${temaColor||col}">${avaIni}</div>`;
     const avaBg=avaUrl?'transparent':(temaColor||col);
     return`<div class="cli-card" onclick="verCliente('${c.id}')">
-      <div class="cli-ava" style="background:${avaBg};border:${avaUrl?'2px solid rgba(var(--theme-rgb),.3)':'none'}">${avaHtml}</div>
+      <div class="cli-ava" style="background:${avaBg}">${avaHtml}</div>
       <div class="cli-info">
         <div class="cli-name">${c.nombre} <span>${colEmo}</span></div>
         <div class="cli-sub">${subParts.join(' · ')||'Sin datos de contacto'}</div>
