@@ -128,98 +128,18 @@ body.modo-claro .stat2-num{color:#111}
 
 /* ── MODO CLARO: FIXES DESKTOP ── */
 @media(min-width:600px){
-  /* ── MODO CLARO ── */
   body.modo-claro .scroll-pad{background:#f2f2f7}
   body.modo-claro #app{box-shadow:0 2px 12px rgba(0,0,0,.08)}
   body.modo-claro .grupos-grid .gtile-name{text-shadow:0 1px 4px rgba(0,0,0,.7)}
   body.modo-claro .cal-semana{box-shadow:0 1px 4px rgba(0,0,0,.06)}
   body.modo-claro .fgrp select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='rgba(0,0,0,.4)'/%3E%3C/svg%3E")}
-
-  /* ── LAYOUT TABLET ── */
-  body{font-size:16px}
-  #topbar{padding:16px 28px;gap:14px}
-  #topbar .logo{font-size:28px}
-  .tb-btn{width:44px;height:44px;border-radius:14px;font-size:22px}
-  .scroll-pad{padding:20px 24px 120px}
-
-  /* ── GRUPOS GRID ── */
-  .grupos-grid{display:grid;gap:16px}
-  .grupos-grid.n1{grid-template-columns:1fr;max-width:480px}
-  .grupos-grid.n1 .gtile{height:220px}
+  /* Grupos grid en tablet igual que móvil */
+  .grupos-grid{display:grid;gap:12px}
+  .grupos-grid.n1{grid-template-columns:1fr}
+  .grupos-grid.n1 .gtile{width:auto;height:200px}
   .grupos-grid.n2,.grupos-grid.nN{grid-template-columns:1fr 1fr}
   .grupos-grid.n2 .gtile,.grupos-grid.nN .gtile{width:auto}
   .gtile{flex-shrink:unset}
-
-  /* ── CARDS ── */
-  .cli-card{padding:16px 20px;border-radius:16px;gap:16px}
-  .parte-card{padding:16px 20px;border-radius:16px;gap:16px}
-  .notif-card{padding:14px 18px;border-radius:16px}
-  .arch-card{padding:14px 18px;border-radius:16px}
-  .tl-card{padding:14px 18px;border-radius:16px}
-
-  /* ── FORMULARIOS ── */
-  .fsec{padding:22px 24px;border-radius:18px}
-  .fgrp{margin-bottom:18px}
-  .fgrp label{font-size:12px}
-  .fgrp input,.fgrp select,.fgrp textarea{padding:13px 16px;font-size:15px;border-radius:12px}
-  .btn{padding:13px 22px;font-size:15px;border-radius:14px}
-  .btn-nuevo{padding:11px 22px;font-size:14px;border-radius:22px}
-
-  /* ── DRAWER ── */
-  #drawer{width:320px}
-  .drawer-head{min-height:140px}
-  .drawer-ava{width:56px;height:56px;border-radius:18px;font-size:24px}
-  .drawer-name{font-size:18px}
-  .d-item{padding:13px 22px;font-size:15px}
-  .d-section{padding:14px 22px 6px;font-size:11px}
-
-  /* ── SLIDE-OVER (SB) ── */
-  #sb{width:min(480px,85vw)}
-  .sb-head{padding:18px 24px}
-  .sb-head h2{font-size:18px}
-  .sb-body{padding:20px 24px 40px}
-
-  /* ── GRUPO HEADER ── */
-  .grupo-header{height:150px;border-radius:22px}
-  .grupo-title{font-size:22px}
-  .gtabs-main{gap:14px}
-  .gtab-big{padding:18px 14px;border-radius:18px}
-  .gtab-big-txt{font-size:13px}
-  .gtabs-sub{gap:10px}
-  .gtab-sm{padding:13px 10px;border-radius:16px}
-  .gtab-sm-txt{font-size:11px}
-
-  /* ── TOPBAR LAYOUT en tabla: App centrada con max-width ── */
-  body{background:#111}
-  #app{max-width:680px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.6)}
-  body.modo-claro{background:#e5e5ea}
-
-  /* ── DASH ITEMS ── */
-  .dash-item{border-radius:18px;padding:18px}
-  .stat2-card{border-radius:18px;padding:18px 20px}
-  .tl-card{border-radius:16px}
-
-  /* ── BOTONES DE ACCIÓN ── */
-  .accion-btn{padding:12px 16px;font-size:13px}
-  .fab{width:62px;height:62px;border-radius:20px;font-size:26px;bottom:32px;right:28px}
-
-  /* ── PARTE/CLI detail ── */
-  .det-row{padding:13px 0}
-  .det-label{font-size:12px}
-  .det-val{font-size:15px}
-
-  /* ── STABS / FTABS ── */
-  .stab{padding:10px 18px;font-size:14px;border-radius:14px}
-  .fbtn{padding:9px 16px;font-size:13px}
-}
-
-/* ── TABLET GRANDE / ESCRITORIO ≥768px ── */
-@media(min-width:768px){
-  #app{max-width:720px}
-  #drawer{width:340px}
-  #sb{width:min(520px,80vw)}
-  .scroll-pad{padding:24px 28px 120px}
-  .fsec{padding:26px 28px}
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -3064,24 +2984,21 @@ const actualizarDrawer=()=>{
     const letra=CUD?.nombre?CUD.nombre[0].toUpperCase():'?';
     ava.innerHTML=`<span style="font-size:22px;font-weight:900;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);font-family:var(--font)">${letra}</span>`;
   }
-  // ── Banner: imagen real del grupo activo ──
+  // ── Banner: imagen real del grupo (divs hijos, no background inline) ──
   const banner=document.querySelector('.drawer-head-banner');
   if(banner){
     const fondo=CG?.fondoImg||'';
+    banner.innerHTML='';
     if(fondo){
-      // Imagen real con overlay oscuro como hijos del div
-      banner.innerHTML='';
-      banner.style.cssText='position:absolute;inset:0;z-index:0;overflow:hidden;';
-      const imgEl=document.createElement('div');
-      imgEl.style.cssText=`position:absolute;inset:0;background:url('${fondo}') center/cover no-repeat;`;
-      const ovEl=document.createElement('div');
-      ovEl.style.cssText='position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1) 0%,rgba(0,0,0,.7) 100%);';
-      banner.appendChild(imgEl);
-      banner.appendChild(ovEl);
+      const img=document.createElement('div');
+      img.style.cssText=`position:absolute;inset:0;background:url('${fondo}') center/cover no-repeat;`;
+      const ov=document.createElement('div');
+      ov.style.cssText='position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.08) 0%,rgba(0,0,0,.72) 100%);';
+      banner.appendChild(img);
+      banner.appendChild(ov);
+      banner.style.background='none';
     } else {
-      banner.innerHTML='';
-      banner.style.cssText='';
-      // Sin grupo: el CSS del .drawer-head-banner aplica el gradiente de tema
+      banner.style.background='';
     }
   }
 };
