@@ -4287,14 +4287,23 @@ window.verCliente=async id=>{
   :`<div class="empty" style="padding:20px"><p>Sin actividad registrada</p></div>`;
 
   abrirSB(c.nombre,`
-    ${primeraFoto?`<div onclick="abrirImgViewer('${primeraFoto.id}')" style="position:relative;width:calc(100% + 40px);margin:-18px -20px 16px -20px;height:180px;cursor:pointer;overflow:hidden;flex-shrink:0">
-      <img src="${primeraFoto.url||primeraFoto.dataURL||''}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 50%,rgba(0,0,0,.5) 100%)"></div>
-      <div style="position:absolute;bottom:10px;right:12px;background:rgba(0,0,0,.45);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.9)">Ver foto</span>
+    ${primeraFoto?`<div style="position:relative;width:calc(100% + 40px);margin:-18px -20px 16px -20px;height:180px;overflow:hidden;flex-shrink:0">
+      <img src="${primeraFoto.url||primeraFoto.dataURL||''}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease" onclick="abrirImgViewer('${primeraFoto.id}')" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" style="cursor:pointer">
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 50%,rgba(0,0,0,.5) 100%);pointer-events:none"></div>
+      <div style="position:absolute;bottom:10px;right:12px;display:flex;align-items:center;gap:6px">
+        <button onclick="abrirImagenesClienteDesdeCli('${id}')" style="background:rgba(0,0,0,.55);border:none;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:5px;cursor:pointer;backdrop-filter:blur(4px)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.9)">Cambiar imagen</span>
+        </button>
       </div>
-    </div>`:''}
+    </div>`:`<div style="position:relative;width:calc(100% + 40px);margin:-18px -20px 16px -20px;overflow:hidden;flex-shrink:0">
+      <button onclick="abrirImagenesClienteDesdeCli('${id}')" style="width:100%;height:80px;background:rgba(var(--theme-rgb),.06);border:2px dashed rgba(var(--theme-rgb),.3);border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(var(--theme-rgb),.12)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.06)'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span style="font-size:13px;font-weight:800;color:var(--r)">Añadir imagen de banner</span>
+      </button>
+    </div>`}
+
+    <!-- ── CABECERA CLIENTE ── -->
 
     <!-- ── CABECERA CLIENTE ── -->
     <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px">
@@ -5088,15 +5097,20 @@ window.usarUbicacionExpressCli=()=>{
       if(lngEl)lngEl.value=String(lng);
       if(btn){btn.innerHTML='🎯';btn.disabled=false;}
       try{
-        const dir=await _geocodificarCoordenadas(lat,lng);
-        if(dirEl&&dir){
-          dirEl.value=dir;
+        let road='',num='',cp='',city='',dirFinal='';
+        try{const r=await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=es`);if(r.ok){const d=await r.json();const f=d.features?.[0]?.properties||{};road=(f.street||f.name||'').trim();num=(f.housenumber||'').trim();cp=(f.postcode||'').trim();city=(f.city||f.town||f.village||f.county||'').trim();}}catch(_){}
+        if(!road){try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18`);if(r.ok){const d=await r.json();const a=d.address||{};road=(a.road||a.pedestrian||a.footway||'').trim();num=(a.house_number||'').trim();if(!cp)cp=(a.postcode||'').trim();if(!city)city=(a.city||a.town||a.village||a.municipality||'').trim();}}catch(_){}}
+        const calleNum=road+(num?' '+num:'');
+        dirFinal=calleNum+(cp?' '+cp:'');
+        if(!dirFinal)dirFinal=await _geocodificarCoordenadas(lat,lng);
+        if(dirEl&&dirFinal){
+          dirEl.value=dirFinal;
           dirEl.style.borderColor='#4caf50';
           dirEl.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';
           setTimeout(()=>{dirEl.style.borderColor='';dirEl.style.boxShadow='';},2500);
         }
-        if(info)info.innerHTML=`<span style="color:#4caf50">✓ ${dir||lat.toFixed(5)+', '+lng.toFixed(5)}</span>`;
-        toast('✓ Dirección: '+(dir||`${lat.toFixed(4)}, ${lng.toFixed(4)}`),'o');
+        if(info)info.innerHTML=`<span style="color:#4caf50">✓ ${dirFinal||lat.toFixed(5)+', '+lng.toFixed(5)}</span>`;
+        toast('✓ Dirección: '+(dirFinal||`${lat.toFixed(4)}, ${lng.toFixed(4)}`),'o');
       }catch(e){
         if(info)info.innerHTML=`<span style="color:#4caf50">✓ GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`;
         toast('GPS guardado · sin dirección textual','i');
@@ -5197,29 +5211,42 @@ window.usarUbicacionActualCliente=()=>{
     async pos=>{
       const lat=pos.coords.latitude;
       const lng=pos.coords.longitude;
-      // Guardar coords ya
       const latEl=$('cLat'), lngEl=$('cLng'), dirEl=$('cDir');
       if(latEl)latEl.value=String(lat);
       if(lngEl)lngEl.value=String(lng);
       if(btn){btn.innerHTML='🎯';btn.disabled=false;btn.title='GPS guardado';}
       try{
-        const dir=await _geocodificarCoordenadas(lat,lng);
-        if(dir&&dirEl){
-          dirEl.value=dir;
-          dirEl.focus();
-          dirEl.select();
-          dirEl.style.transition='border-color .3s,box-shadow .3s';
-          dirEl.style.borderColor='#4caf50';
-          dirEl.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';
-          setTimeout(()=>{dirEl.style.borderColor='';dirEl.style.boxShadow='';},2500);
+        // Intentar obtener campos estructurados para rellenar dirección y población por separado
+        const _flashGreen=el=>{if(!el)return;el.style.transition='border-color .3s,box-shadow .3s';el.style.borderColor='#4caf50';el.style.boxShadow='0 0 0 3px rgba(76,175,80,.25)';setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';},2500);};
+        let road='',num='',cp='',city='',dirFinal='';
+        // 1. Photon — mejor cobertura España
+        try{
+          const r=await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=es`);
+          if(r.ok){const d=await r.json();const f=d.features?.[0]?.properties||{};road=(f.street||f.name||'').trim();num=(f.housenumber||'').trim();cp=(f.postcode||'').trim();city=(f.city||f.town||f.village||f.county||'').trim();}
+        }catch(_){}
+        // 2. Nominatim si falta calle
+        if(!road){
+          try{
+            const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=18`);
+            if(r.ok){const d=await r.json();const a=d.address||{};road=(a.road||a.pedestrian||a.footway||'').trim();num=(a.house_number||'').trim();if(!cp)cp=(a.postcode||'').trim();if(!city)city=(a.city||a.town||a.village||a.municipality||'').trim();}
+          }catch(_){}
         }
-        toast('✓ Dirección: '+(dir||`${lat.toFixed(4)}, ${lng.toFixed(4)}`),'o');
-      // Preview visual con enlace a Google Maps
-      const _pv=document.getElementById('geoPreviewMini');
-      if(_pv){
-        _pv.style.display='block';
-        _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ GPS capturado — toca para verificar en Maps</a>`;
-      }
+        // Construir dirección: calle + número + CP
+        const calleNum=road+(num?' '+num:'');
+        dirFinal=calleNum+(cp?' '+cp:'');
+        if(!dirFinal)dirFinal=await _geocodificarCoordenadas(lat,lng);
+        // Rellenar campo dirección (calle + número + CP)
+        if(dirFinal&&dirEl){dirEl.value=dirFinal;_flashGreen(dirEl);}
+        // Rellenar campo población si existe en el formulario y está vacío
+        const pobEl2=document.getElementById('cPob')||document.getElementById('cPoblacion');
+        if(city&&pobEl2&&!pobEl2.value.trim()){pobEl2.value=city;_flashGreen(pobEl2);}
+        toast('✓ Dirección rellenada desde GPS','o');
+        // Preview visual
+        const _pv=document.getElementById('geoPreviewMini');
+        if(_pv){
+          _pv.style.display='block';
+          _pv.innerHTML=`<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px;font-size:12px;font-weight:700;color:#4caf50;text-decoration:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='10' r='3'/><path d='M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z'/></svg>✅ GPS capturado — toca para verificar en Maps</a>`;
+        }
       }catch(e){
         toast('GPS guardado · sin dirección textual disponible','i');
       }
@@ -10659,6 +10686,10 @@ const renderHoras=async()=>{
         </div>
       </div>
       <span class="ficha-badge ${activa?'activa':'cerrada'}">${activa?'En curso':dur}</span>
+      <div style="display:flex;gap:5px;margin-left:6px;flex-shrink:0">
+        <button onclick="_editarFicha('${f.id}',${f.entrada?.seconds||0},${f.salida?.seconds||0})" title="Editar ficha" style="width:30px;height:30px;border:1px solid var(--border);background:rgba(255,255,255,.05);border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--tx2);transition:.15s" onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--tx2)'">✏️</button>
+        <button onclick="_eliminarFicha('${f.id}')" title="Eliminar ficha" style="width:30px;height:30px;border:1px solid rgba(229,57,53,.25);background:rgba(229,57,53,.06);border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:#e53935;transition:.15s" onmouseover="this.style.background='rgba(229,57,53,.15)'" onmouseout="this.style.background='rgba(229,57,53,.06)'">🗑</button>
+      </div>
     </div>`;}).join(''):`<div class="empty" style="padding:20px"><p>Sin fichas registradas aún</p></div>`}
   </div>
 
@@ -10796,6 +10827,66 @@ window.exportarHorasCSV=async()=>{
     a.click();
     toast('CSV exportado','o');
   }catch(e){toast('Error al exportar','e')}
+};
+
+// ── Editar ficha de horas ──
+window._editarFicha=async(fichaId,entradaSecs,salidaSecs)=>{
+  if(!CGID||!fichaId)return;
+  // Convertir seconds a datetime-local (YYYY-MM-DDTHH:mm)
+  const toLocal=secs=>{
+    if(!secs)return'';
+    const d=new Date(secs*1000);
+    const pad=n=>String(n).padStart(2,'0');
+    return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const entVal=toLocal(entradaSecs);
+  const salVal=toLocal(salidaSecs);
+  abrirSB('Editar ficha',`
+    <div style="background:rgba(var(--theme-rgb),.07);border:1px solid rgba(var(--theme-rgb),.2);border-radius:12px;padding:14px;margin-bottom:18px;font-size:13px;color:var(--tx2)">
+      ✏️ Corrige la hora de entrada y/o salida. Si el trabajador no ha salido aún, deja la salida vacía.
+    </div>
+    <div class="fgrp" style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase">▶ Hora de entrada</label>
+      <input type="datetime-local" id="fichaEditEntrada" value="${entVal}" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--tx);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box">
+    </div>
+    <div class="fgrp" style="margin-bottom:20px">
+      <label style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase">⏹ Hora de salida</label>
+      <input type="datetime-local" id="fichaEditSalida" value="${salVal}" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--tx);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box">
+      <div style="font-size:11px;color:var(--tx2);margin-top:4px">Deja vacío si el turno sigue activo</div>
+    </div>
+    <button onclick="_guardarEdicionFicha('${fichaId}')" class="btn btn-p" style="width:100%;padding:13px">💾 Guardar cambios</button>
+  `);
+};
+
+window._guardarEdicionFicha=async(fichaId)=>{
+  const entEl=document.getElementById('fichaEditEntrada');
+  const salEl=document.getElementById('fichaEditSalida');
+  if(!entEl?.value){toast('La hora de entrada es obligatoria','e');return;}
+  const entDate=new Date(entEl.value);
+  if(isNaN(entDate.getTime())){toast('Hora de entrada inválida','e');return;}
+  const salDate=salEl?.value?new Date(salEl.value):null;
+  if(salDate&&isNaN(salDate.getTime())){toast('Hora de salida inválida','e');return;}
+  if(salDate&&salDate<=entDate){toast('La salida debe ser posterior a la entrada','e');return;}
+  try{
+    const upd={entrada:entDate,actualizado:serverTimestamp()};
+    if(salDate)upd.salida=salDate;
+    else upd.salida=null;
+    await updateDoc(doc(db,'grupos',CGID,'horas',fichaId),upd);
+    toast('Ficha actualizada ✓','o');
+    cerrarSB();
+    await renderHoras();
+  }catch(e){toast('Error al guardar','e');}
+};
+
+// ── Eliminar ficha de horas ──
+window._eliminarFicha=async(fichaId)=>{
+  if(!CGID||!fichaId)return;
+  if(!confirm('¿Eliminar esta ficha de horas? Esta acción no se puede deshacer.'))return;
+  try{
+    await deleteDoc(doc(db,'grupos',CGID,'horas',fichaId));
+    toast('Ficha eliminada','o');
+    await renderHoras();
+  }catch(e){toast('Error al eliminar','e');}
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -12854,6 +12945,8 @@ const _lockInicializar = () => {
 
   document.addEventListener('touchstart',e=>{
     if(!isStandalone())return;
+    // No activar PTR si el drawer está abierto
+    if(document.getElementById('drawer')?.classList.contains('open')){blocked=true;return;}
     const pad=getActivePad();
     if(!pad)return;
     // Solo iniciar si el pad está en scroll top 0
@@ -12866,6 +12959,8 @@ const _lockInicializar = () => {
 
   document.addEventListener('touchmove',e=>{
     if(!isStandalone()||blocked)return;
+    // No activar PTR si el drawer está abierto
+    if(document.getElementById('drawer')?.classList.contains('open')){blocked=true;return;}
     const pad=getActivePad();
     if(!pad)return;
     // Si el pad no está en top, no hacer nada (scroll normal)
