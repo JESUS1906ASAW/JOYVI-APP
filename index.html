@@ -243,19 +243,20 @@ body.modo-claro{background:#f2f2f7 !important}
 .scroll-pad{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 16px 100px;-webkit-overflow-scrolling:touch;min-height:0;overscroll-behavior-y:contain}
 
 /* ── TRANSICIONES SUAVES ENTRE PANTALLAS ── */
-.screen{will-change:opacity,transform}
+/* will-change solo cuando se está animando, no siempre (evita capas GPU innecesarias) */
+.screen{contain:layout style;}
 .screen.active{display:flex}
-.screen.slide-out{animation:slideOutLeft .32s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none}
-.screen.slide-in{animation:slideInRight .36s cubic-bezier(.16,1,.3,1) forwards}
-.screen.exit-left{animation:exitLeft .32s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none}
+.screen.slide-out{will-change:opacity,transform;animation:slideOutLeft .28s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none}
+.screen.slide-in{will-change:opacity,transform;animation:slideInRight .32s cubic-bezier(.16,1,.3,1) forwards}
+.screen.exit-left{will-change:opacity,transform;animation:exitLeft .28s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none}
+/* Sin filter:blur en las animaciones — cuesta ~10x más que opacity+transform */
 @keyframes slideOutLeft{
-  0%{opacity:1;transform:translateX(0) scale(1);filter:blur(0px)}
-  100%{opacity:0;transform:translateX(-12%) scale(.97);filter:blur(2px)}
+  0%{opacity:1;transform:translateX(0) scale(1)}
+  100%{opacity:0;transform:translateX(-10%) scale(.97)}
 }
 @keyframes slideInRight{
-  0%{opacity:0;transform:translateX(16%) scale(.98);filter:blur(2px)}
-  60%{opacity:1;filter:blur(0px)}
-  100%{opacity:1;transform:translateX(0) scale(1);filter:blur(0px)}
+  0%{opacity:0;transform:translateX(14%) scale(.985)}
+  100%{opacity:1;transform:translateX(0) scale(1)}
 }
 @keyframes exitLeft{
   0%{opacity:1;transform:translateX(0) scale(1)}
@@ -270,13 +271,13 @@ body.modo-claro{background:#f2f2f7 !important}
 #pbg-back{
   position:absolute;inset:0;overflow:hidden;
   transform-origin:center center;
-  will-change:transform,filter,opacity,border-radius;
+  will-change:transform,opacity;
   border-radius:18px;
 }
 #pbg-front{
   position:absolute;inset:0;overflow:hidden;
   transform-origin:center center;
-  will-change:transform,border-radius,box-shadow;
+  will-change:transform,border-radius;
 }
 
 /* ── SKELETON LOADING ── */
@@ -2203,13 +2204,16 @@ window.goScreen=id=>{
     history.pushState({screen:id,sbOpen:false},'',location.href.split('#')[0]+'#'+id);
   }
   haptic('light');
-  _renderScreen(id);
+  // Mostrar la pantalla destino antes de _renderScreen para evitar layout thrash
   const next=$(screens[id]);
   if(next){
     next.style.display='flex';
     next.classList.add('active','slide-in');
-    setTimeout(()=>next.classList.remove('slide-in'),420);
+    // Limpiar will-change y clase de animación tras completarse
+    const cleanup=()=>{next.classList.remove('slide-in');};
+    next.addEventListener('animationend',cleanup,{once:true});
   }
+  _renderScreen(id);
 };
 
 // Interceptar botón atrás del navegador / gesto de swipe en móvil
@@ -10139,6 +10143,45 @@ const renderNotificaciones=async()=>{
       </button>
     </div>`;
   }
+
+  // ── BLOQUE RECORDATORIOS LOCALES ──
+  html+=`<div id="recordatoriosBloque" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:900;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:7px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Recordatorios
+      </div>
+      <button onclick="_recToggleForm()" id="recToggleBtn" style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:10px;padding:5px 12px;font-size:11px;font-weight:800;color:var(--r);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo
+      </button>
+    </div>
+    <div id="recFormWrap" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px">
+      <input id="recTexto" type="text" placeholder="Texto del recordatorio…" style="width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--tx);font-size:14px;font-family:var(--font);padding:6px 0 8px;outline:none;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Fecha</div>
+          <input id="recFecha" type="date" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--tx);font-size:13px;font-family:var(--font);padding:7px 10px;outline:none">
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Hora</div>
+          <input id="recHora" type="time" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--tx);font-size:13px;font-family:var(--font);padding:7px 10px;outline:none">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="_recGuardar()" class="btn btn-p" style="flex:1;padding:10px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:5px;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg>
+          Guardar
+        </button>
+        <button onclick="_recToggleForm()" class="btn btn-s" style="padding:10px 14px">Cancelar</button>
+      </div>
+    </div>
+    <div id="recListaWrap"></div>
+  </div>`;
+
+  // Renderizar recordatorios guardados en el DOM (tras inyectar html)
+  // (se llama al final, ver _recRenderLista)
+
   try{
     // Sin orderBy para evitar necesidad de índice compuesto en Firestore
     const snap=await getDocs(query(
@@ -10238,9 +10281,109 @@ const renderNotificaciones=async()=>{
     html+=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p>Error al cargar notificaciones.<br><small style="color:var(--tx3)">${e?.message||''}</small></p></div>`;
   }
   el.innerHTML=html;
+  // Renderizar lista de recordatorios tras inyectar el HTML
+  _recRenderLista();
 };
 
-// ── Navegar a parte desde notificación ──
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SISTEMA DE RECORDATORIOS LOCALES
+// Persisten en localStorage, visibles solo en este dispositivo
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const _REC_KEY='joyvi_recordatorios';
+const _recCargar=()=>{try{return JSON.parse(localStorage.getItem(_REC_KEY)||'[]');}catch{return[];}};
+const _recGuardarLS=(arr)=>{try{localStorage.setItem(_REC_KEY,JSON.stringify(arr));}catch{}};
+
+window._recToggleForm=()=>{
+  const wrap=document.getElementById('recFormWrap');
+  if(!wrap)return;
+  const open=wrap.style.display==='block';
+  wrap.style.display=open?'none':'block';
+  if(!open){
+    // Precumplimentar con la fecha/hora actuales + 1h
+    const now=new Date(Date.now()+3600000);
+    const pad=n=>String(n).padStart(2,'0');
+    const fechaStr=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const horaStr=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const fi=document.getElementById('recFecha');
+    const hi=document.getElementById('recHora');
+    if(fi&&!fi.value)fi.value=fechaStr;
+    if(hi&&!hi.value)hi.value=horaStr;
+    document.getElementById('recTexto')?.focus();
+  }
+};
+
+window._recGuardar=()=>{
+  const texto=(document.getElementById('recTexto')?.value||'').trim();
+  const fecha=document.getElementById('recFecha')?.value||'';
+  const hora=document.getElementById('recHora')?.value||'';
+  if(!texto){toast('Escribe el texto del recordatorio','w');return;}
+  const arr=_recCargar();
+  const rec={id:'rec_'+Date.now(),texto,fecha,hora,creado:Date.now()};
+  arr.unshift(rec);
+  _recGuardarLS(arr);
+  // Ocultar formulario y limpiar
+  const wrap=document.getElementById('recFormWrap');
+  if(wrap)wrap.style.display='none';
+  const ti=document.getElementById('recTexto');
+  if(ti)ti.value='';
+  _recRenderLista();
+  toast('Recordatorio guardado','s');
+  // Intentar programar notificación nativa si hay permisos
+  _recProgramarNotif(rec);
+};
+
+window._recEliminar=(id)=>{
+  const arr=_recCargar().filter(r=>r.id!==id);
+  _recGuardarLS(arr);
+  _recRenderLista();
+  toast('Recordatorio eliminado');
+};
+
+const _recProgramarNotif=(rec)=>{
+  if(!rec.fecha||!rec.hora)return;
+  if(Notification?.permission!=='granted')return;
+  const ts=new Date(`${rec.fecha}T${rec.hora}`).getTime();
+  const diff=ts-Date.now();
+  if(diff<=0)return;
+  // Solo programar si el tiempo es razonable (max 7 días)
+  if(diff>7*24*3600*1000)return;
+  setTimeout(()=>{
+    try{new Notification('⏰ Recordatorio Joyvi',{body:rec.texto,icon:'/icon-192.png',tag:'rec_'+rec.id});}catch{}
+  },diff);
+};
+
+const _recRenderLista=()=>{
+  const wrap=document.getElementById('recListaWrap');
+  if(!wrap)return;
+  const arr=_recCargar();
+  if(!arr.length){
+    wrap.innerHTML=`<div style="text-align:center;padding:14px 0;font-size:12px;color:var(--tx2)">Sin recordatorios. Pulsa <strong>Nuevo</strong> para crear uno.</div>`;
+    return;
+  }
+  const now=Date.now();
+  wrap.innerHTML=arr.map(r=>{
+    const ts=r.fecha&&r.hora?new Date(`${r.fecha}T${r.hora}`).getTime():0;
+    const pasado=ts&&ts<now;
+    const fechaLabel=r.fecha?(()=>{
+      const d=new Date(`${r.fecha}T${r.hora||'00:00'}`);
+      return d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'})+(r.hora?` · ${r.hora}`:'');
+    })():'Sin fecha';
+    return`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);${pasado?'opacity:.45':''}">
+      <div style="width:32px;height:32px;border-radius:10px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:3px;word-break:break-word">${r.texto}</div>
+        <div style="font-size:11px;color:${pasado?'var(--tx3)':'var(--r)'};font-weight:700">${pasado?'⚑ ':''}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${fechaLabel}</div>
+      </div>
+      <button onclick="_recEliminar('${r.id}')" style="background:none;border:none;padding:4px;cursor:pointer;color:var(--tx2);flex-shrink:0;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:.15s" title="Eliminar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+  // Reprogramar notificaciones pendientes al renderizar
+  arr.filter(r=>r.fecha&&r.hora).forEach(_recProgramarNotif);
+};
 window._notifVerParte=async(parteId, grupoId)=>{
   try{
     if(grupoId && grupoId !== CGID){
@@ -13293,8 +13436,19 @@ const _lockInicializar = () => {
       elDest.style.pointerEvents='none';
       // Forzar render de la pantalla destino si tiene función de render
       try{
-        const rMap={inicio:()=>typeof renderInicio==='function'&&renderInicio(),
-                    grupo:()=>typeof renderGrupo==='function'&&renderGrupo()};
+        const rMap={
+          inicio:()=>typeof renderInicio==='function'&&renderInicio(),
+          grupo:()=>typeof renderGrupo==='function'&&renderGrupo(),
+          mantenimiento:()=>typeof renderMantenimiento==='function'&&renderMantenimiento(),
+          averias:()=>typeof renderAverias==='function'&&renderAverias(),
+          presupuestos:()=>typeof renderPresupuestos==='function'&&renderPresupuestos(),
+          calendario:()=>typeof renderCalendario==='function'&&renderCalendario(),
+          notificaciones:()=>typeof renderNotificaciones==='function'&&renderNotificaciones(),
+          horas:()=>typeof renderHoras==='function'&&renderHoras(),
+          estadisticas:()=>typeof renderStats==='function'&&renderStats(),
+          archivos:()=>typeof renderArchivos==='function'&&renderArchivos(),
+          facturas:()=>typeof renderFacturas==='function'&&renderFacturas(),
+        };
         if(rMap[destK]) rMap[destK]();
       }catch(_){}
 
@@ -13334,25 +13488,23 @@ const _lockInicializar = () => {
     wrap.style.display='block';
     back.style.cssText='position:absolute;inset:0;overflow:hidden;border-radius:18px;'
       +'transform:scale('+SCALE_BG+');transform-origin:center;'
-      +'filter:brightness(.52) blur(3px);opacity:.45;transition:none;';
+      +'opacity:.45;transition:none;';
     front.style.cssText='position:absolute;inset:0;overflow:hidden;border-radius:0;'
-      +'transform:translateX(0) scale(1);transform-origin:center;'
-      +'box-shadow:-6px 0 32px rgba(0,0,0,.5);transition:none;';
+      +'transform:translateX(0) scale(1);transform-origin:center;transition:none;';
     return true;
   };
 
   // ── Frame de animación ────────────────────────────
+  // Sin filter:blur — cuesta ~10ms/frame en mobile (drop a 30fps)
   const frame=(dx)=>{
     const p=Math.min(1,Math.max(0,dx/window.innerWidth));
     const tx=Math.max(0,dx);
 
     front.style.transform    =`translateX(${tx}px) scale(${1-p*0.03})`;
     front.style.borderRadius =`${Math.round(p*22)}px`;
-    front.style.boxShadow    =`-${4+p*20}px 0 ${28+p*24}px rgba(0,0,0,${.5+p*.15})`;
 
     const sc=SCALE_BG+(1-SCALE_BG)*p;
     back.style.transform =`scale(${sc})`;
-    back.style.filter    =`brightness(${.52+.48*p}) blur(${Math.max(0,3*(1-p))}px)`;
     back.style.opacity   =String(.45+.55*p);
     back.style.borderRadius=`${Math.round((1-p)*18)}px`;
 
@@ -13377,38 +13529,34 @@ const _lockInicializar = () => {
     done=true;
     if(navigator.vibrate) navigator.vibrate(9);
     const W=window.innerWidth;
-    const T='.25s '+EASE_OUT;
-    front.style.transition=`transform ${T},border-radius .2s,box-shadow .18s`;
+    const T='.22s '+EASE_OUT;
+    front.style.transition=`transform ${T},border-radius .18s`;
     front.style.transform =`translateX(${W+8}px) scale(1)`;
     front.style.borderRadius='0';
-    front.style.boxShadow='none';
-    back.style.transition=`transform ${T},filter ${T},opacity .2s,border-radius .18s`;
+    back.style.transition=`transform ${T},opacity .18s,border-radius .15s`;
     back.style.transform='scale(1)';
-    back.style.filter='brightness(1) blur(0)';
     back.style.opacity='1';
     back.style.borderRadius='0';
-    pill.style.transition='height .18s,opacity .18s';
+    pill.style.transition='height .15s,opacity .15s';
     pill.style.height='0'; pill.style.opacity='0';
     const dest=destKey;
-    setTimeout(()=>{ reset(); _execBack(dest); },260);
+    setTimeout(()=>{ reset(); _execBack(dest); },230);
   };
 
   // ── Cancelar → spring de vuelta ───────────────────
   const cancel=()=>{
     if(done) return;
     done=true;
-    const T='.38s '+SPRING;
-    front.style.transition=`transform ${T},border-radius ${T},box-shadow .28s`;
+    const T='.35s '+SPRING;
+    front.style.transition=`transform ${T},border-radius ${T}`;
     front.style.transform ='translateX(0) scale(1)';
     front.style.borderRadius='0';
-    front.style.boxShadow='-6px 0 32px rgba(0,0,0,.5)';
-    back.style.transition=`transform ${T},filter .32s,opacity .28s`;
+    back.style.transition=`transform ${T},opacity .28s`;
     back.style.transform =`scale(${SCALE_BG})`;
-    back.style.filter='brightness(.52) blur(3px)';
     back.style.opacity='.45';
-    pill.style.transition='height .28s,opacity .28s';
+    pill.style.transition='height .25s,opacity .25s';
     pill.style.height='0'; pill.style.opacity='0';
-    setTimeout(reset,420);
+    setTimeout(reset,380);
   };
 
   // ── Ejecutar la navegación real ───────────────────
