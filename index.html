@@ -1277,6 +1277,27 @@ body.offline .dash-offline-bar{display:flex}
   </div>
 
 
+  <!-- HISTORIAL MANTENIMIENTOS SHEET -->
+  <div id="hmSheet" style="display:none">
+    <div id="hmSheetOverlay" onclick="cerrarHMSheet()"></div>
+    <div id="hmSheetPanel">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid var(--border);flex-shrink:0">
+        <div style="font-size:16px;font-weight:900;color:var(--tx)" id="hmSheetTitle">Historial de mantenimientos</div>
+        <button onclick="cerrarHMSheet()" style="background:rgba(255,255,255,.08);border:none;color:var(--tx2);border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+      </div>
+      <div class="sb-body" id="hmSheetBody" style="overflow-y:auto;flex:1;padding:14px 16px"></div>
+      <!-- Ficha de detalle -->
+      <div id="hmSheetFicha">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 18px 10px;border-bottom:1px solid var(--border);flex-shrink:0">
+          <button onclick="cerrarHMFicha()" style="background:rgba(255,255,255,.08);border:none;color:var(--tx2);border-radius:10px;padding:6px 12px;font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font)">‹ Volver</button>
+          <div style="font-size:15px;font-weight:900;color:var(--tx);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="hmFichaTitle">Detalle</div>
+          <button onclick="cerrarHMSheet()" style="background:rgba(255,255,255,.08);border:none;color:var(--tx2);border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+        </div>
+        <div class="sb-body" id="hmFichaBody" style="overflow-y:auto;flex:1;padding:14px 16px"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- CROP MODAL -->
   <div id="cropModal">
     <div class="crop-wrap">
@@ -2838,6 +2859,8 @@ onAuthStateChanged(auth,async user=>{
     iniciarApp();
     // Comprobar bloqueo DESPUÉS de que la app esté visible
     setTimeout(_lockInicializar, 200);
+    // Backup automático diario (con retraso para que carguen los datos)
+    setTimeout(_checkAutoBackupDiario, 8000);
   }else{
     $('authWrap').style.display='flex';
     $('app').style.display='none';
@@ -3585,6 +3608,12 @@ const _renderGTabMantenimientos=()=>{
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     </button>
   </div>
+  ${_gMantMode==='calendario'?`<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+    <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:4px;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>Imprimir:</div>
+    <button onclick="imprimirCalendario('semana')" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Esta semana</button>
+    <button onclick="imprimirCalendario('mes')" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Este mes</button>
+    <button onclick="imprimirCalendario('todo')" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Completo</button>
+  </div>`:''}
   <div id="mantHistorialPanel" style="display:none"></div>`;
 
   if(_gMantMode==='gestionar'){
@@ -5490,10 +5519,11 @@ const htmlListaPartes=partes=>{
   return partes.map(p=>{
     const tot=calcTotal(p);
     const cli=allClientes.find(c=>c.id===p.clienteId);
+    const pdfBadge=p.pdfGenerado?`<span title="PDF generado el ${p.pdfFecha?new Date(p.pdfFecha).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}" style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#1565c0;background:rgba(21,101,192,.1);border:1px solid rgba(21,101,192,.25);border-radius:6px;padding:2px 6px;margin-left:4px;flex-shrink:0"><svg width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</span>`:'';
     return`<div class="parte-card pend" style="position:relative" onclick="verParte('${p.id}')">
       <div class="parte-ico" style="background:rgba(var(--theme-rgb),.13)">${p.esPlantilla?`<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>`:`<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/></svg>`}</div>
       <div class="parte-info" style="flex:1;min-width:0">
-        <div class="parte-title">${p.titulo}</div>
+        <div class="parte-title" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px">${p.titulo}${pdfBadge}</div>
         <div class="parte-sub">${fmtF(p.creado)} · ${cli?.nombre||p.clienteNombre||'Sin cliente'} · <span class="parte-total">${fmtM(tot)}</span>${p.creadoPor?` · <span style="color:var(--tx3);font-size:10px">${p.creadoPor}</span>`:''}</div>
       </div>
       <button onclick="event.stopPropagation();usarParte('${p.id}')" style="flex-shrink:0;border:none;background:rgba(var(--theme-rgb),.12);color:var(--r);border-radius:10px;padding:6px 9px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--font);white-space:nowrap">Usar</button>
@@ -6120,7 +6150,7 @@ window.generarPDFConFirmaCapturada=(id)=>{
   generarPDFConFirma(id,firmaDataURL);
 };
 
-window.generarPDFConFirma=(id,firmaDataURL)=>{
+window.generarPDFConFirma=async(id,firmaDataURL)=>{
   const p=allPartes.find(x=>x.id===id);if(!p)return;
   const tot=calcTotal(p);
   const iva=p.aplicarIVAMateriales?(parseFloat(p.importeMateriales)||0)*.21:0;
@@ -6128,6 +6158,20 @@ window.generarPDFConFirma=(id,firmaDataURL)=>{
   w.document.write(pdfHTML(p,iva,tot,CG,firmaDataURL||null));
   w.document.close();
   setTimeout(()=>w.print(),700);
+  // Marcar que se ha generado PDF para este parte
+  try{
+    const ahora=new Date().toISOString();
+    await updateDoc(doc(db,'grupos',CGID,'partes',id),{pdfGenerado:true,pdfFecha:ahora});
+    const idx=allPartes.findIndex(x=>x.id===id);
+    if(idx>=0)allPartes[idx]={...allPartes[idx],pdfGenerado:true,pdfFecha:ahora};
+    // Refrescar lista de partes si está visible
+    const listEl=document.getElementById('gPartListArea')||document.getElementById('tabPartContent');
+    if(listEl&&typeof _refreshPartesList==='function')_refreshPartesList();
+    else if(typeof renderTabPartes==='function'){
+      const tc=document.getElementById('tabPartContent');
+      if(tc&&tc.style.display!=='none')tc.innerHTML=renderTabPartes();
+    }
+  }catch(e){console.warn('No se pudo marcar pdfGenerado:',e);}
 };
 
 // ── FACTURA DESDE PARTE ──
@@ -7650,6 +7694,77 @@ const renderCalendario=()=>{
     html+=`</div>`;
   });
   $('calContent').innerHTML=html;
+};
+
+
+// ─── Imprimir calendario de mantenimientos ───
+window.imprimirCalendario=(modo)=>{
+  const mants=allMantenimientos.filter(m=>m.fechaProxima);
+  const hoy=new Date();
+  const hoyStr=hoy.toISOString().split('T')[0];
+  const semanaActual=isoWeek(hoyStr);
+  let desde,limite,tituloRango;
+  if(modo==='semana'){
+    const [yW,wN]=semanaActual.split('-W').map(Number);
+    const jan4=new Date(yW,0,4);
+    const lunes=new Date(jan4);lunes.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(wN-1)*7);
+    const domingo=new Date(lunes);domingo.setDate(lunes.getDate()+6);
+    desde=lunes;limite=domingo;
+    tituloRango='Semana del '+lunes.toLocaleDateString('es-ES',{day:'2-digit',month:'long'})+' al '+domingo.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+  }else if(modo==='mes'){
+    desde=new Date(hoy.getFullYear(),hoy.getMonth(),1);
+    limite=new Date(hoy.getFullYear(),hoy.getMonth()+1,0);
+    tituloRango=hoy.toLocaleDateString('es-ES',{month:'long',year:'numeric'}).toUpperCase();
+  }else{
+    desde=new Date(hoy);desde.setDate(desde.getDate()-7);
+    limite=new Date(hoy);limite.setMonth(limite.getMonth()+12);
+    tituloRango='Calendario completo';
+  }
+  const eventos=[];
+  mants.forEach(m=>{
+    const addEv=(fecha,completado)=>{
+      const d=new Date(fecha+'T00:00:00');
+      if(d<desde||d>limite)return;
+      eventos.push({...m,_fecha:fecha,_completado:completado||false});
+    };
+    if(m.estado==='completado'){
+      if(m.ultimoCompletado)addEv(m.ultimoCompletado,true);
+      else if(m.fechaProxima)addEv(m.fechaProxima,true);
+    }else{
+      addEv(m.fechaProxima,false);
+      if(m.frecuencia&&freqDays[m.frecuencia]){
+        let f=new Date(m.fechaProxima+'T00:00:00');
+        for(let i=0;i<120;i++){
+          f.setDate(f.getDate()+freqDays[m.frecuencia]);
+          if(f>limite)break;
+          addEv(f.toISOString().split('T')[0],false);
+        }
+      }
+    }
+  });
+  eventos.sort((a,b)=>a._fecha.localeCompare(b._fecha));
+  if(!eventos.length){toast('No hay mantenimientos en este período','i');return;}
+  const semanas={};
+  eventos.forEach(e=>{const wk=isoWeek(e._fecha);if(!semanas[wk])semanas[wk]=[];semanas[wk].push(e);});
+  const fmtD=iso=>new Date(iso+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'2-digit',month:'long'});
+  const fmtS=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+  let rowsHTML='';
+  Object.keys(semanas).sort().forEach(wk=>{
+    const [yW,wNum]=wk.split('-W').map(Number);
+    const jan4=new Date(yW,0,4);
+    const lun=new Date(jan4);lun.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(wNum-1)*7);
+    const dom=new Date(lun);dom.setDate(lun.getDate()+6);
+    rowsHTML+='<tr><td colspan="4" style="background:#f5f5f5;font-weight:900;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1.5px;padding:6px 12px;border-bottom:1px solid #e0e0e0">Semana '+wNum+' — '+fmtS(lun)+' al '+fmtS(dom)+'</td></tr>';
+    semanas[wk].forEach(e=>{
+      const estado=e._completado?'<span style="color:#2e7d32;font-weight:800">&#10003; Completado</span>':'<span style="color:#e65100;font-weight:800">Pendiente</span>';
+      rowsHTML+='<tr><td style="padding:8px 12px;font-size:12px;color:#222;border-bottom:1px solid #f0f0f0">'+fmtD(e._fecha)+'</td><td style="padding:8px 12px;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #f0f0f0">'+(e.nombreTrabajo||'—')+'</td><td style="padding:8px 12px;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0">'+(e.clienteNombre||'—')+(e.clienteDireccion?'<br><span style="font-size:11px;color:#888">'+e.clienteDireccion+'</span>':'')+'</td><td style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;text-align:center">'+estado+'</td></tr>';
+    });
+  });
+  const printHTML='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Calendario — '+(CG&&CG.nombre?CG.nombre:'Joyvi')+'</title><style>@import url(\'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap\');*{box-sizing:border-box;margin:0;padding:0}body{font-family:\'Nunito\',sans-serif;background:#fff;color:#222;font-size:13px;padding:16px}@page{margin:12mm;size:A4 portrait}.header{background:linear-gradient(135deg,#c62828,#e53935);color:#fff;padding:20px 24px;display:flex;align-items:flex-start;justify-content:space-between;border-radius:8px;margin-bottom:18px}.header-left h1{font-size:22px;font-weight:900;margin-bottom:4px}.header-left p{font-size:12px;opacity:.8}.header-right{text-align:right;font-size:12px;opacity:.85;line-height:1.7}.stats{display:flex;gap:12px;margin-bottom:18px}.stat{background:#fff5f5;border:1px solid rgba(229,57,53,.15);border-radius:8px;padding:10px 16px;flex:1;text-align:center}.stat-n{font-size:22px;font-weight:900;color:#c62828}.stat-l{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:2px}table{width:100%;border-collapse:collapse;border:1px solid #e0e0e0}thead th{background:#e53935;color:#fff;font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;padding:9px 12px;text-align:left}@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><div class="header"><div class="header-left"><h1>'+(CG&&CG.nombre?CG.nombre:'Joyvi')+'</h1><p>&#128197; Calendario de Mantenimientos &mdash; '+tituloRango+'</p></div><div class="header-right"><div>Generado: '+hoy.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})+'</div><div style="font-size:20px;font-weight:900;margin-top:4px">'+eventos.length+' mantenimiento'+(eventos.length!==1?'s':'')+'</div></div></div><div class="stats"><div class="stat"><div class="stat-n">'+eventos.length+'</div><div class="stat-l">Total</div></div><div class="stat"><div class="stat-n" style="color:#2e7d32">'+eventos.filter(e=>e._completado).length+'</div><div class="stat-l">Completados</div></div><div class="stat"><div class="stat-n" style="color:#e65100">'+eventos.filter(e=>!e._completado).length+'</div><div class="stat-l">Pendientes</div></div><div class="stat"><div class="stat-n" style="color:#1565c0">'+[...new Set(eventos.map(e=>e.clienteId))].length+'</div><div class="stat-l">Clientes</div></div></div><table><thead><tr><th>Fecha</th><th>Trabajo</th><th>Cliente</th><th style="text-align:center">Estado</th></tr></thead><tbody>'+rowsHTML+'</tbody></table></body></html>';
+  const w=window.open('','_blank');
+  w.document.write(printHTML);
+  w.document.close();
+  setTimeout(()=>w.print(),700);
 };
 
 window.toggleSem=el=>{
@@ -10460,7 +10575,31 @@ const renderPerfil=()=>{
       </button>
     </div>`:''}
   </div>
-
+  `;
+  const _autoBackupActive=localStorage.getItem('joyvi_autobackup')==='1';
+  const _autoBackupPath=localStorage.getItem('joyvi_autobackup_path')||'';
+  html+=`
+  <div class="fsec" style="margin-top:8px">
+    <div class="fsec-title">💾 Copia de seguridad automática</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;line-height:1.6">Al activar esta opción, la app generará automáticamente una copia de seguridad de todos tus grupos la primera vez que abras la app cada día. Ideal para dejar activo en el ordenador del trabajo.</div>
+    <div class="toggle-row" style="margin-bottom:10px">
+      <div>
+        <div class="toggle-label">🔄 Backup automático diario</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:220px">Se ejecuta una vez al día al abrir la app.</div>
+      </div>
+      <label class="toggle-sw" style="flex-shrink:0"><input type="checkbox" id="toggleAutoBackup" onchange="toggleAutoBackup(this.checked)" ${_autoBackupActive?'checked':''}><span class="toggle-track"></span></label>
+    </div>
+    ${_autoBackupActive?`
+    <div style="background:rgba(var(--theme-rgb),.06);border:1px solid rgba(var(--theme-rgb),.18);border-radius:12px;padding:12px 14px;margin-top:4px">
+      <div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📁 Ruta de referencia (tus notas)</div>
+      <div style="font-size:11px;color:var(--tx2);margin-bottom:8px;line-height:1.5">El archivo se guardará en la carpeta de Descargas del navegador. Anota aquí la ruta donde mueves los backups para tenerla a mano:</div>
+      <input id="autoBackupPathInput" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box" value="${_autoBackupPath.replace(/"/g,'&quot;')}" placeholder="Ej: C:\\Backups\\Joyvi">
+      <button onclick="guardarRutaBackup()" style="margin-top:8px;width:100%;padding:10px;border-radius:10px;border:none;background:var(--r);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font)">💾 Guardar ruta</button>
+    </div>
+    <div style="margin-top:10px;padding:8px 12px;background:rgba(76,175,80,.07);border:1px solid rgba(76,175,80,.2);border-radius:10px;font-size:11px;color:#4caf50;font-weight:700">✅ Backup automático activo — se ejecutará una vez al día al abrir la app.</div>
+    <button onclick="ejecutarBackupAhoraManual()" style="margin-top:8px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">⚡ Ejecutar backup ahora</button>
+    `:''}
+  </div>
   <button class="btn btn-del" style="margin-top:8px" onclick="doLogout()">🚪 Cerrar sesión</button>`;
 
   $('perfilContent').innerHTML = html;
@@ -10516,6 +10655,93 @@ window.guardarPerfil=async()=>{
     toast('Error al guardar: '+e.message,'e');
     console.error('guardarPerfil',e);
   }
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BACKUP AUTOMÁTICO DIARIO
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+window.toggleAutoBackup=(active)=>{
+  localStorage.setItem('joyvi_autobackup',active?'1':'0');
+  toast(active?'✅ Backup automático activado':'Backup automático desactivado',active?'o':'i');
+  renderPerfil();
+};
+
+window.guardarRutaBackup=()=>{
+  const inp=document.getElementById('autoBackupPathInput');
+  if(!inp)return;
+  localStorage.setItem('joyvi_autobackup_path',inp.value.trim());
+  toast('✓ Ruta guardada','o');
+};
+
+// Ejecutar backup de todos los grupos del usuario de forma silenciosa
+window._ejecutarAutoBackupSilencioso=async()=>{
+  if(!CU)return;
+  try{
+    // Obtener todos los grupos a los que pertenece el usuario
+    const gruposSnap=await getDocs(query(collection(db,'grupos'),where('miembros','array-contains',CU.uid)));
+    // También incluir el grupo actual
+    const grupoIds=new Set(gruposSnap.docs.map(d=>d.id));
+    if(CGID)grupoIds.add(CGID);
+    if(!grupoIds.size)return;
+
+    const fecha=new Date().toISOString().slice(0,10);
+    for(const gid of grupoIds){
+      try{
+        const [cliSnap,partesSnap,mantsSnap,avSnap,avHistSnap,presuSnap,hmSnap,grupoSnap]=await Promise.all([
+          getDocs(collection(db,'grupos',gid,'clientes')),
+          getDocs(collection(db,'grupos',gid,'partes')),
+          getDocs(collection(db,'grupos',gid,'mantenimientos')),
+          getDocs(collection(db,'grupos',gid,'averias')),
+          getDocs(collection(db,'grupos',gid,'averias_historial')),
+          getDocs(collection(db,'grupos',gid,'presupuestos')),
+          getDocs(collection(db,'grupos',gid,'historial_mantenimientos')),
+          getDoc(doc(db,'grupos',gid)),
+        ]);
+        const gData=grupoSnap.exists()?grupoSnap.data():{};
+        const backup={
+          _meta:{version:'1.0',app:'JoyviApp',grupoId:gid,fecha:new Date().toISOString(),grupoNombre:gData.nombre||gid,autoBackup:true},
+          grupo:{nombre:gData.nombre||'',fondoImg:gData.fondoImg||'',adminNombre:gData.adminNombre||''},
+          clientes:cliSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+          partes:partesSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+          mantenimientos:mantsSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+          averias:avSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+          averias_historial:avHistSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+          presupuestos:presuSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+          historial_mantenimientos:hmSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+        };
+        const json=JSON.stringify(backup,null,2);
+        const blob=new Blob([json],{type:'application/json'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;
+        a.download=`autobackup_${(gData.nombre||gid).replace(/[^a-z0-9]/gi,'_')}_${fecha}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        await new Promise(r=>setTimeout(r,400)); // pequeña pausa entre descargas
+      }catch(e){console.warn('Auto-backup error grupo '+gid,e);}
+    }
+    const ruta=localStorage.getItem('joyvi_autobackup_path')||'';
+    toast('✅ Backup automático completado'+(ruta?' — guárdalo en: '+ruta:''),'o');
+  }catch(e){console.warn('Auto-backup error',e);}
+};
+
+window.ejecutarBackupAhoraManual=async()=>{
+  toast('⏳ Generando backup de todos los grupos...','i');
+  await window._ejecutarAutoBackupSilencioso();
+};
+
+// Verificar si se debe ejecutar el backup automático al iniciar la app
+const _checkAutoBackupDiario=async()=>{
+  if(localStorage.getItem('joyvi_autobackup')!=='1')return;
+  if(!CU)return;
+  const hoy=new Date().toISOString().slice(0,10);
+  const KEY='joyvi_autobackup_last_'+CU.uid;
+  if(localStorage.getItem(KEY)===hoy)return; // ya ejecutado hoy
+  localStorage.setItem(KEY,hoy);
+  // Pequeño delay para que carguen los datos del grupo
+  setTimeout(async()=>{
+    try{await window._ejecutarAutoBackupSilencioso();}catch(e){console.warn('Auto-backup diario error',e);}
+  },5000);
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -12083,11 +12309,13 @@ window.kioskIr=async(dest)=>{
         const badge=esComp
           ?'<span style="font-size:10.5px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 9px">✓ Completado</span>'
           :'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Pendiente</span>';
+        const pdfBadgeKiosk=p.pdfGenerado?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#1565c0;background:rgba(21,101,192,.1);border:1px solid rgba(21,101,192,.25);border-radius:6px;padding:2px 6px;flex-shrink:0"><svg width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF ✓</span>`:'';
         return {
           _buscar:[p.titulo,p.descripcion,p.operario,p.edificio,p.clienteNombre,cli?.nombre].filter(Boolean).join(' '),
           _html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'#ff9800'}" onclick="verParte('${p.id}')">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-              <div class="kiosk-card-title">${p.titulo||'Parte sin título'}</div>${badge}
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap">
+              <div class="kiosk-card-title">${p.titulo||'Parte sin título'}</div>
+              <div style="display:flex;gap:4px;flex-shrink:0">${pdfBadgeKiosk}${badge}</div>
             </div>
             <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'} · ${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div>
             ${p.descripcion?`<div class="kiosk-card-meta" style="margin-top:3px">${p.descripcion}</div>`:''}
