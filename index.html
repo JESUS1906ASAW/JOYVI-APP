@@ -1008,7 +1008,7 @@ body.offline .dash-offline-bar{display:flex}
   padding:28px 20px;
   animation:fadeIn .25s ease;
 }
-#lockScreen.active{display:flex}
+#lockScreen.active,#lockScreen.pre-active{display:flex}
 
 /* Fondo con gradiente sutil */
 #lockScreen::before{
@@ -1154,12 +1154,29 @@ body.offline .dash-offline-bar{display:flex}
 .sec-method-card .smc-lbl{font-size:11px;font-weight:800;color:var(--tx2)}
 .sec-method-card.active .smc-lbl{color:var(--r)}
 </style>
+<!-- ══ BLOQUEO INMEDIATO: se ejecuta antes de pintar nada ══ -->
+<script>
+(function(){
+  var PIN_KEY='joyvi_lock_pin', PAT_KEY='joyvi_lock_pat', FP_KEY='joyvi_lock_fp';
+  var METHOD_KEY='joyvi_lock_method', TS_KEY='joyvi_lock_ts', TIMEOUT=5*60*1000;
+  var hasLock = !!(localStorage.getItem(PIN_KEY)||localStorage.getItem(PAT_KEY)||localStorage.getItem(FP_KEY)==='1');
+  var sessionActive = sessionStorage.getItem('joyvi_session_active')==='1';
+  var wasClosed = localStorage.getItem('joyvi_lock_closed')==='1';
+  var ts = parseInt(localStorage.getItem(TS_KEY)||'0');
+  var shouldLock = hasLock && !sessionActive && (wasClosed || ts===0 || Date.now()-ts>TIMEOUT);
+  if(shouldLock){
+    // Marcar para que _lockInicializar lo recoja al iniciar
+    window._JOYVI_LOCK_PENDING = true;
+  }
+})();
+</script>
 </head>
 <body>
 
 <!-- ═══════════ AUTH WRAP ═══════════ -->
   <!-- ══ PANTALLA DE BLOQUEO ══ -->
   <div id="lockScreen">
+  <script>if(window._JOYVI_LOCK_PENDING)document.getElementById('lockScreen').classList.add('pre-active');</script>
     <div class="lock-card">
     <div class="lock-logo">Joyvi</div>
     <div class="lock-sub" id="lockSub">Introduce tu PIN para continuar</div>
@@ -1747,7 +1764,8 @@ import {
   sendPasswordResetEmail, onAuthStateChanged, signOut, updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
-  getFirestore, doc, getDoc, getDocFromServer, setDoc, addDoc, updateDoc, deleteDoc,
+  getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  doc, getDoc, getDocFromServer, setDoc, addDoc, updateDoc, deleteDoc,
   collection, query, where, orderBy, onSnapshot, getDocs, getDocsFromServer,
   serverTimestamp, arrayUnion, arrayRemove, writeBatch, enableIndexedDbPersistence
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -1756,12 +1774,16 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 const fbApp   = initializeApp(FB_CFG);
 const auth    = getAuth(fbApp);
-const db      = getFirestore(fbApp);
-// ── Modo offline: caché IndexedDB persistente ──
-enableIndexedDbPersistence(db,{synchronizeTabs:true}).catch(e=>{
-  // failed-precondition: múltiples pestañas → sin persistencia en esta pestaña (normal)
-  // unimplemented: navegador no compatible → sin persistencia
-});
+// ── Modo offline: caché IndexedDB persistente (API moderna) ──
+let db;
+try {
+  db = initializeFirestore(fbApp, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+} catch(e) {
+  // Ya inicializado (recarga rápida): usar instancia existente
+  db = getFirestore(fbApp);
+}
 let fcmMessaging = null;
 try{ fcmMessaging = getMessaging(fbApp); }catch(e){}
 
@@ -1779,6 +1801,53 @@ const tipoU='trabajador';
 let screenHistory=[];
 let _swReg=null;
 let plantillas=[], mantPlantillas=[], _partePlantillasFull=[], _mantFullPlantillas=[];
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// OFFLINE — INDICADOR GLOBAL + PERSISTENCIA AUTH
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Barra flotante de estado offline (visible en toda la app, no solo en inicio)
+const _offlineBar = (()=>{
+  let bar = null;
+  const show = () => {
+    if(bar) return;
+    bar = document.createElement('div');
+    bar.id = '_globalOfflineBar';
+    bar.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg> Sin conexión`;
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99998;background:rgba(255,152,0,.95);color:#000;font-size:12px;font-weight:700;text-align:center;padding:6px 12px;display:flex;align-items:center;justify-content:center;gap:7px;backdrop-filter:blur(4px);';
+    document.body.appendChild(bar);
+    document.body.classList.add('offline');
+  };
+  const hide = () => {
+    if(bar){ bar.remove(); bar=null; }
+    document.body.classList.remove('offline');
+  };
+  return { show, hide };
+})();
+
+// Escuchar cambios de conectividad desde el arranque
+window.addEventListener('online',  () => { _offlineBar.hide(); });
+window.addEventListener('offline', () => { _offlineBar.show(); });
+if(!navigator.onLine) _offlineBar.show();
+
+// Toast de reconexión: cuando vuelve la red, avisar y re-intentar carga si hace falta
+window.addEventListener('online', ()=>{
+  if(typeof toast === 'function') toast('✓ Conexión restaurada — sincronizando…','o');
+  // Si hay un grupo cargado con datos de caché, forzar recarga desde servidor
+  setTimeout(()=>{
+    if(CGID && CG && typeof renderGrupo === 'function'){
+      // onSnapshot se reconecta automáticamente con Firestore
+      if(document.querySelector('#screenGrupo.active')) renderGrupo();
+    }
+    if(document.querySelector('#screenInicio.active') && typeof renderInicio === 'function'){
+      renderInicio();
+    }
+  }, 1500);
+});
+
+// ── Auth persistente para apertura sin red ──
+// Firebase Auth guarda la sesión en IndexedDB/localStorage automáticamente.
+// onAuthStateChanged funciona offline con la sesión cacheada.
+// Solo necesitamos que Firestore use la caché cuando no hay red (ya configurado arriba).
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PWA — MANIFEST
@@ -2957,14 +3026,20 @@ window.doLogout=async()=>{
 onAuthStateChanged(auth,async user=>{
   if(user){
     CU=user;
-    const snap=await getDoc(doc(db,'usuarios',user.uid));
-    if(snap.exists()){CUD=snap.data()}
-    else{CUD={nombre:user.displayName||'Usuario',tipo:'trabajador'}}
+    // getDoc usa caché automáticamente cuando no hay red (gracias a persistentLocalCache)
+    try {
+      const snap=await getDoc(doc(db,'usuarios',user.uid));
+      if(snap.exists()){CUD=snap.data()}
+      else{CUD={nombre:user.displayName||'Usuario',tipo:'trabajador'}}
+    } catch(e) {
+      // Sin red y sin caché: usar datos mínimos del auth
+      CUD={nombre:user.displayName||user.email?.split('@')[0]||'Usuario',tipo:'trabajador'};
+    }
     $('authWrap').style.display='none';
     $('app').style.display='flex';
     iniciarApp();
-    // Comprobar bloqueo DESPUÉS de que la app esté visible
-    setTimeout(_lockInicializar, 200);
+    // Comprobar bloqueo inmediatamente (sin retardo)
+    _lockInicializar();
     // Backup automático diario (con retraso para que carguen los datos)
     setTimeout(_checkAutoBackupDiario, 8000);
   }else{
@@ -3026,10 +3101,31 @@ const iniciarApp=async()=>{
         if(document.querySelector('#screenGrupo.active')&&activeGTab==='mant')_renderGTabMantenimientos();
       });
     }catch(e){
-      console.warn('Error restaurando grupo:',e);
-      CGID=null; CG=null;
-      sessionStorage.removeItem('joyvi_cgid');
-      sessionStorage.removeItem('joyvi_cg');
+      // Sin conexión: mantener CGID/CG de sessionStorage para renderizar con caché
+      if(!navigator.onLine && CGID && CG){
+        console.info('Offline: usando datos de sessionStorage para el grupo');
+        // onSnapshot funcionará con caché Firestore cuando vuelva la red
+        if(unsubP){unsubP();unsubP=null}
+        if(unsubC){unsubC();unsubC=null}
+        if(unsubM){unsubM();unsubM=null}
+        unsubC = onSnapshot(collection(db,'grupos',CGID,'clientes'),snap=>{
+          allClientes=snap.docs.map(d=>({id:d.id,...d.data()}));
+          if(document.querySelector('#screenGrupo.active'))renderGrupo();
+        });
+        unsubP = onSnapshot(collection(db,'grupos',CGID,'partes'),snap=>{
+          allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+          if(document.querySelector('#screenGrupo.active'))renderGrupo();
+        });
+        unsubM = onSnapshot(collection(db,'grupos',CGID,'mantenimientos'),snap=>{
+          allMantenimientos=snap.docs.map(d=>({id:d.id,...d.data()}));
+          if(document.querySelector('#screenGrupo.active')&&activeGTab==='mant')_renderGTabMantenimientos();
+        });
+      } else {
+        console.warn('Error restaurando grupo:',e);
+        CGID=null; CG=null;
+        sessionStorage.removeItem('joyvi_cgid');
+        sessionStorage.removeItem('joyvi_cg');
+      }
     }
   }
 
@@ -3249,10 +3345,7 @@ const renderInicio=async()=>{
     html+=`</div>`;
   }
   $('inicioContent').innerHTML=html;
-  // Indicador offline
-  window.addEventListener('online', ()=>document.body.classList.remove('offline'));
-  window.addEventListener('offline',()=>document.body.classList.add('offline'));
-  if(!navigator.onLine) document.body.classList.add('offline');
+  // El indicador offline global ya gestiona body.offline — no necesita listeners aquí
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3278,12 +3371,24 @@ const FONDOS=[
 
 window.abrirGrupo=async id=>{
   CGID=id;
-  const snap=await getDoc(doc(db,'grupos',id));
-  if(!snap.exists())return;
-  CG={id,...snap.data()};
+  // Intentar cargar del servidor; si falla (sin red) usar caché de Firestore o sessionStorage
+  let grupoData = null;
+  try {
+    const snap=await getDoc(doc(db,'grupos',id));
+    if(!snap.exists()){ toast('Grupo no encontrado','e'); return; }
+    grupoData = snap.data();
+  } catch(e) {
+    // Sin conexión: intentar datos en sessionStorage
+    const cached = sessionStorage.getItem('joyvi_cg');
+    if(cached && sessionStorage.getItem('joyvi_cgid')===id){
+      try{ grupoData = JSON.parse(cached); }catch(ee){}
+    }
+    if(!grupoData){ toast('Sin conexión y sin datos en caché','e'); return; }
+  }
+  CG={id,...grupoData};
   // Persistir en sessionStorage para restaurar tras F5
   sessionStorage.setItem('joyvi_cgid',id);
-  sessionStorage.setItem('joyvi_cg',JSON.stringify(snap.data()));
+  sessionStorage.setItem('joyvi_cg',JSON.stringify(grupoData));
   // update drawer
   // drawer se actualiza dinámicamente al abrirlo
   // listeners
@@ -13482,6 +13587,10 @@ window.addEventListener('pageshow', ()=>{ if(_lockHasAny()) setTimeout(_lockComp
 window.addEventListener('resume',   ()=>{ if(_lockHasAny()) setTimeout(_lockComprobar, 500); });
 
 const _lockInicializar = () => {
+  // Eliminar la clase pre-active del bloqueo instantáneo
+  const el = document.getElementById('lockScreen');
+  if(el) el.classList.remove('pre-active');
+
   if(!_lockHasAny()) return;
   // Si hay sessionStorage activo → es un reload de página → NO bloquear
   if(sessionStorage.getItem('joyvi_session_active') === '1') return;
