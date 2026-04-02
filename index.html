@@ -4021,21 +4021,7 @@ const _renderGTabMantenimientos=()=>{
     });
 
     // Resumen del período
-    let html=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px">
-      <div style="background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:12px;padding:10px 8px;text-align:center">
-        <div style="font-size:20px;font-weight:900;color:var(--r)">${totalEvs.length}</div>
-        <div style="font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Total</div>
-      </div>
-      <div style="background:rgba(255,152,0,.08);border:1px solid rgba(255,152,0,.2);border-radius:12px;padding:10px 8px;text-align:center">
-        <div style="font-size:20px;font-weight:900;color:#ff9800">${totalPend}</div>
-        <div style="font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Pendientes</div>
-      </div>
-      <div style="background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.2);border-radius:12px;padding:10px 8px;text-align:center">
-        <div style="font-size:20px;font-weight:900;color:#4caf50">${totalComp}</div>
-        <div style="font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Hechos</div>
-      </div>
-    </div>`;
+    let html=``;
 
     Object.entries(meses).forEach(([mes,sems])=>{
       const[y,m]=mes.split('-');
@@ -4137,6 +4123,7 @@ const _renderGTabMantenimientos=()=>{
     el.innerHTML=toggleHtml+html;
   }
 };
+window._renderGTabMantenimientos=_renderGTabMantenimientos;
 
 // Control del sub-estado formulario en tab mant
 window._gMantTabInline=0;
