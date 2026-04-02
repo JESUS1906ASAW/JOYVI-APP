@@ -725,12 +725,13 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .cal-current-tag{font-size:10px;color:var(--r);font-weight:700;background:rgba(var(--theme-rgb),.1);padding:2px 8px;border-radius:10px}
 .cal-tasks{padding:0 14px 14px;display:none}
 .cal-tasks.open{display:block}
-.cal-task{padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);transition:.15s}
+.cal-task{padding:0;border-radius:12px;font-size:13px;margin-bottom:8px;background:var(--card);border:1px solid var(--border);transition:.15s;overflow:hidden}
 .cal-task:last-child{margin-bottom:0}
 .cal-task-name{font-weight:800;color:var(--tx);margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .cal-task-det{color:var(--tx2);font-size:12px;margin-bottom:8px}
-.cal-task.done{background:rgba(76,175,80,.08);border-color:rgba(76,175,80,.25)}
+.cal-task.done{background:rgba(76,175,80,.07);border-color:rgba(76,175,80,.2)}
 .cal-task.done .cal-task-name{color:#81c784}
+.cal-task.overdue{background:rgba(244,67,54,.06);border-color:rgba(244,67,54,.2)}
 .cal-fecha-tag{font-size:11px;color:var(--r);font-weight:700;background:rgba(var(--theme-rgb),.1);padding:2px 8px;border-radius:20px}
 .cal-mes-title{font-size:11px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .cal-mes-title::after{content:'';flex:1;height:1px;background:rgba(var(--theme-rgb),.2)}
@@ -1832,16 +1833,16 @@ if(!navigator.onLine) _offlineBar.show();
 // Toast de reconexión: cuando vuelve la red, avisar y re-intentar carga si hace falta
 window.addEventListener('online', ()=>{
   if(typeof toast === 'function') toast('✓ Conexión restaurada — sincronizando…','o');
-  // Si hay un grupo cargado con datos de caché, forzar recarga desde servidor
+  // Firestore reactivará los onSnapshot automáticamente y subirá escrituras pendientes.
+  // Re-renderizar pantallas activas para mostrar datos frescos.
   setTimeout(()=>{
-    if(CGID && CG && typeof renderGrupo === 'function'){
-      // onSnapshot se reconecta automáticamente con Firestore
-      if(document.querySelector('#screenGrupo.active')) renderGrupo();
+    if(CGID && typeof renderGrupo === 'function' && document.querySelector('#screenGrupo.active')){
+      renderGrupo();
     }
-    if(document.querySelector('#screenInicio.active') && typeof renderInicio === 'function'){
+    if(typeof renderInicio === 'function' && document.querySelector('#screenInicio.active')){
       renderInicio();
     }
-  }, 1500);
+  }, 2000);
 });
 
 // ── Auth persistente para apertura sin red ──
@@ -3101,25 +3102,34 @@ const iniciarApp=async()=>{
         if(document.querySelector('#screenGrupo.active')&&activeGTab==='mant')_renderGTabMantenimientos();
       });
     }catch(e){
-      // Sin conexión: mantener CGID/CG de sessionStorage para renderizar con caché
-      if(!navigator.onLine && CGID && CG){
-        console.info('Offline: usando datos de sessionStorage para el grupo');
-        // onSnapshot funcionará con caché Firestore cuando vuelva la red
+      // Sin conexión: mantener CGID/CG y cargar datos desde localStorage
+      if(CGID && CG){
+        console.info('Offline: cargando datos del grupo desde caché localStorage');
+        allClientes        = _lcLoad('clientes',     CGID) || [];
+        allPartes          = _lcLoad('partes',        CGID) || [];
+        allMantenimientos  = _lcLoad('mantenimientos',CGID) || [];
+        plantillas         = _lcLoad('plantillas',    CGID) || [];
+        mantPlantillas     = _lcLoad('mantPlant',     CGID) || [];
+        _partePlantillasFull=_lcLoad('partePlantFull',CGID) || [];
+        // Arrancar listeners (servirán datos de caché Firestore cuando vuelva la red)
         if(unsubP){unsubP();unsubP=null}
         if(unsubC){unsubC();unsubC=null}
         if(unsubM){unsubM();unsubM=null}
-        unsubC = onSnapshot(collection(db,'grupos',CGID,'clientes'),snap=>{
+        unsubC = onSnapshot(collection(db,'grupos',CGID,'clientes'), snap=>{
           allClientes=snap.docs.map(d=>({id:d.id,...d.data()}));
+          _lcSave('clientes',CGID,allClientes);
           if(document.querySelector('#screenGrupo.active'))renderGrupo();
-        });
-        unsubP = onSnapshot(collection(db,'grupos',CGID,'partes'),snap=>{
+        }, ()=>{});
+        unsubP = onSnapshot(collection(db,'grupos',CGID,'partes'), snap=>{
           allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+          _lcSave('partes',CGID,allPartes);
           if(document.querySelector('#screenGrupo.active'))renderGrupo();
-        });
-        unsubM = onSnapshot(collection(db,'grupos',CGID,'mantenimientos'),snap=>{
+        }, ()=>{});
+        unsubM = onSnapshot(collection(db,'grupos',CGID,'mantenimientos'), snap=>{
           allMantenimientos=snap.docs.map(d=>({id:d.id,...d.data()}));
+          _lcSave('mantenimientos',CGID,allMantenimientos);
           if(document.querySelector('#screenGrupo.active')&&activeGTab==='mant')_renderGTabMantenimientos();
-        });
+        }, ()=>{});
       } else {
         console.warn('Error restaurando grupo:',e);
         CGID=null; CG=null;
@@ -3182,8 +3192,17 @@ const iniciarApp=async()=>{
   history.replaceState({screen:pantallaInicial,sbOpen:false},'',location.href.split('#')[0]+'#'+pantallaInicial);
 
   // ── 3. Listener de grupos (solo actualiza renderInicio si está activa) ──
-  unsubG = onSnapshot(query(collection(db,'grupos'),where('miembros','array-contains',CU.uid)),snap=>{
+  unsubG = onSnapshot(query(collection(db,'grupos'),where('miembros','array-contains',CU.uid)), snap=>{
     allGrupos = snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Guardar en localStorage para acceso offline
+    try{ localStorage.setItem('joyvi_lc_grupos_'+CU.uid, JSON.stringify(allGrupos)); }catch(e){}
+    if(document.querySelector('#screenInicio.active')) renderInicio();
+  }, ()=>{
+    // Sin caché Firestore: cargar desde localStorage
+    try{
+      const cached = localStorage.getItem('joyvi_lc_grupos_'+CU.uid);
+      if(cached){ allGrupos = JSON.parse(cached); }
+    }catch(e){}
     if(document.querySelector('#screenInicio.active')) renderInicio();
   });
 
@@ -3321,6 +3340,14 @@ const renderInicio=async()=>{
     </div>
   </div>`;
 
+  // Si no hay grupos cargados y estamos offline, usar localStorage
+  if(!allGrupos.length && !navigator.onLine && CU){
+    try{
+      const cached = localStorage.getItem('joyvi_lc_grupos_'+CU.uid);
+      if(cached) allGrupos = JSON.parse(cached);
+    }catch(e){}
+  }
+
   if(!allGrupos.length){
     html+=`
     <div class="grupos-empty">
@@ -3369,62 +3396,108 @@ const FONDOS=[
 
 
 
+// ── Helpers caché localStorage para modo offline ──
+const _lcKey = (tipo, gid) => `joyvi_lc_${tipo}_${gid}`;
+const _lcSave = (tipo, gid, data) => {
+  try { localStorage.setItem(_lcKey(tipo,gid), JSON.stringify(data)); } catch(e) {}
+};
+const _lcLoad = (tipo, gid) => {
+  try { const v=localStorage.getItem(_lcKey(tipo,gid)); return v?JSON.parse(v):null; } catch(e) { return null; }
+};
+
 window.abrirGrupo=async id=>{
   CGID=id;
-  // Intentar cargar del servidor; si falla (sin red) usar caché de Firestore o sessionStorage
+
+  // ── 1. Datos del grupo: Firestore (usa caché si offline) → localStorage → sessionStorage ──
   let grupoData = null;
   try {
-    const snap=await getDoc(doc(db,'grupos',id));
-    if(!snap.exists()){ toast('Grupo no encontrado','e'); return; }
-    grupoData = snap.data();
-  } catch(e) {
-    // Sin conexión: intentar datos en sessionStorage
-    const cached = sessionStorage.getItem('joyvi_cg');
-    if(cached && sessionStorage.getItem('joyvi_cgid')===id){
-      try{ grupoData = JSON.parse(cached); }catch(ee){}
+    const snap = await getDoc(doc(db,'grupos',id));
+    if(snap.exists()){
+      grupoData = snap.data();
+      _lcSave('grupo', id, grupoData); // guardar para próxima vez sin red
     }
-    if(!grupoData){ toast('Sin conexión y sin datos en caché','e'); return; }
+  } catch(e) { /* sin red, caemos al fallback */ }
+
+  if(!grupoData){
+    // Firestore caché falló → localStorage
+    grupoData = _lcLoad('grupo', id);
   }
-  CG={id,...grupoData};
-  // Persistir en sessionStorage para restaurar tras F5
-  sessionStorage.setItem('joyvi_cgid',id);
-  sessionStorage.setItem('joyvi_cg',JSON.stringify(grupoData));
-  // update drawer
-  // drawer se actualiza dinámicamente al abrirlo
-  // listeners
+  if(!grupoData){
+    // último recurso: sessionStorage
+    const s = sessionStorage.getItem('joyvi_cg');
+    if(s && sessionStorage.getItem('joyvi_cgid')===id) try{ grupoData=JSON.parse(s); }catch(e){}
+  }
+  if(!grupoData){
+    toast('Sin datos del grupo en caché. Necesitas conexión la primera vez.','e');
+    CGID=null; return;
+  }
+
+  CG = {id,...grupoData};
+  sessionStorage.setItem('joyvi_cgid', id);
+  sessionStorage.setItem('joyvi_cg', JSON.stringify(grupoData));
+
+  // ── 2. Listeners en tiempo real (funcionan con caché Firestore offline) ──
   if(unsubP){unsubP();unsubP=null}
   if(unsubC){unsubC();unsubC=null}
   if(unsubM){unsubM();unsubM=null}
-  unsubC=onSnapshot(collection(db,'grupos',id,'clientes'),snap=>{
-    allClientes=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(document.querySelector('#screenGrupo.active'))renderGrupo();
+
+  unsubC = onSnapshot(collection(db,'grupos',id,'clientes'), snap=>{
+    allClientes = snap.docs.map(d=>({id:d.id,...d.data()}));
+    _lcSave('clientes', id, allClientes);
+    if(document.querySelector('#screenGrupo.active')) renderGrupo();
+  }, ()=>{
+    // Error listener (sin caché Firestore): cargar desde localStorage
+    const cached = _lcLoad('clientes', id);
+    if(cached){ allClientes=cached; if(document.querySelector('#screenGrupo.active')) renderGrupo(); }
   });
-  unsubP=onSnapshot(collection(db,'grupos',id,'partes'),snap=>{
-    allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
-    if(document.querySelector('#screenGrupo.active'))renderGrupo();
+
+  unsubP = onSnapshot(collection(db,'grupos',id,'partes'), snap=>{
+    allPartes = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+    _lcSave('partes', id, allPartes);
+    if(document.querySelector('#screenGrupo.active')) renderGrupo();
+  }, ()=>{
+    const cached = _lcLoad('partes', id);
+    if(cached){ allPartes=cached; if(document.querySelector('#screenGrupo.active')) renderGrupo(); }
   });
-  unsubM=onSnapshot(collection(db,'grupos',id,'mantenimientos'),snap=>{
-    allMantenimientos=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+  unsubM = onSnapshot(collection(db,'grupos',id,'mantenimientos'), snap=>{
+    allMantenimientos = snap.docs.map(d=>({id:d.id,...d.data()}));
+    _lcSave('mantenimientos', id, allMantenimientos);
+    if(document.querySelector('#screenGrupo.active')&&activeGTab==='mant') _renderGTabMantenimientos();
+  }, ()=>{
+    const cached = _lcLoad('mantenimientos', id);
+    if(cached){ allMantenimientos=cached; }
   });
-  // plantillas
-  const pSnap=await getDocs(collection(db,'grupos',id,'plantillas'));
-  plantillas=pSnap.docs.map(d=>d.data().nombre);
-  const mpSnap=await getDocs(collection(db,'grupos',id,'mantPlantillas'));
-  mantPlantillas=mpSnap.docs.map(d=>d.data().nombre);
-  const ppfSnap=await getDocs(collection(db,'grupos',id,'partePlantillasFull'));
-  _partePlantillasFull=ppfSnap.docs.map(d=>({id:d.id,...d.data()}));
-  // solicitar permiso notificaciones
-  setTimeout(()=>{if(Notification.permission==='default')Notification.requestPermission()},500);
-  // Cargar avatares de clientes en background
+
+  // ── 3. Plantillas: Firestore caché → localStorage ──
+  try {
+    const [pSnap, mpSnap, ppfSnap] = await Promise.all([
+      getDocs(collection(db,'grupos',id,'plantillas')),
+      getDocs(collection(db,'grupos',id,'mantPlantillas')),
+      getDocs(collection(db,'grupos',id,'partePlantillasFull')),
+    ]);
+    plantillas          = pSnap.docs.map(d=>d.data().nombre);
+    mantPlantillas      = mpSnap.docs.map(d=>d.data().nombre);
+    _partePlantillasFull= ppfSnap.docs.map(d=>({id:d.id,...d.data()}));
+    // Guardar en localStorage para modo offline
+    _lcSave('plantillas',    id, plantillas);
+    _lcSave('mantPlant',     id, mantPlantillas);
+    _lcSave('partePlantFull',id, _partePlantillasFull);
+  } catch(e) {
+    // Sin red: cargar desde localStorage
+    plantillas           = _lcLoad('plantillas',    id) || [];
+    mantPlantillas       = _lcLoad('mantPlant',     id) || [];
+    _partePlantillasFull = _lcLoad('partePlantFull',id) || [];
+  }
+
+  // ── 4. Tareas secundarias (no bloquean la apertura) ──
+  setTimeout(()=>{if(Notification.permission==='default')Notification.requestPermission();},500);
   setTimeout(_cargarAvataresCli, 800);
-  // Backup automático semanal
   setTimeout(()=>_checkBackupAutomatico(),3000);
-  // Alertas proactivas de mantenimientos próximos
   setTimeout(()=>_checkMantProximos(),4500);
-  // Geo: una única consulta al abrir el grupo para detectar si estás en casa de un cliente
   setTimeout(()=>{ if(typeof window._geoCheckAlAbrir==='function') window._geoCheckAlAbrir(); },3500);
-  // Log
   try{await registrarLog('abrir_grupo',`Grupo abierto: ${CG?.nombre||id}`,{grupoId:id});}catch(e){}
+
   goScreen('grupo');
 };
 
@@ -3794,6 +3867,7 @@ const _renderGTabPresupuestos=()=>{
 // ── Render inline tab: Calendario (calendario completo sincronizado con mantenimientos) ──
 // ─── Estado del toggle dentro del tab Mantenimientos ───
 let _gMantMode='gestionar'; // 'gestionar' | 'calendario'
+let _gCalPeriodo='mes';     // 'semana' | 'mes' | 'trimestre' | 'todo'
 window._switchGMantMode=(mode)=>{
   _gMantMode=mode;
   _renderGTabMantenimientos();
@@ -3819,11 +3893,18 @@ const _renderGTabMantenimientos=()=>{
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     </button>
   </div>
-  ${_gMantMode==='calendario'?`<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
-    <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:4px;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>Imprimir:</div>
-    <button onclick="imprimirCalendario('semana')" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Esta semana</button>
-    <button onclick="imprimirCalendario('mes')" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Este mes</button>
-    <button onclick="imprimirCalendario('todo')" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Completo</button>
+  ${_gMantMode==='calendario'?`
+  <div style="margin-bottom:12px">
+    <div style="display:flex;gap:5px;margin-bottom:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:4px">
+      ${[['semana','Semana'],['mes','Mes'],['trimestre','Trimestre'],['todo','Completo']].map(([v,l])=>`
+      <button onclick="window._gCalPeriodo='${v}';_renderGTabMantenimientos()" style="flex:1;border:none;border-radius:8px;padding:8px 4px;font-family:var(--font);font-size:11px;font-weight:900;cursor:pointer;transition:.15s;${_gCalPeriodo===v?'background:var(--r);color:#fff;box-shadow:0 2px 8px rgba(var(--theme-rgb),.4)':'background:transparent;color:var(--tx2)'}">${l}</button>`).join('')}
+    </div>
+    <div style="display:flex;gap:5px;align-items:center">
+      <span style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>PDF:
+      </span>
+      ${[['semana','Semana'],['mes','Mes'],['trimestre','Trimestre'],['todo','Completo']].map(([v,l])=>`<button onclick="imprimirCalendario('${v}')" style="display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.25);background:rgba(var(--theme-rgb),.07);color:var(--r);font-size:10px;font-weight:800;cursor:pointer;font-family:var(--font);white-space:nowrap">${l}</button>`).join('')}
+    </div>
   </div>`:''}
   <div id="mantHistorialPanel" style="display:none"></div>`;
 
@@ -3860,17 +3941,41 @@ const _renderGTabMantenimientos=()=>{
     if(window._gMantTabInline===1) _renderGMantProgramarSelector();
   } else {
     // ── Vista Calendario ──
-    const mants=allMantenimientos.filter(m=>m.fechaProxima);
-    const hoyStr=new Date().toISOString().split('T')[0];
-    const semanaActual=isoWeek(hoyStr);
-    const eventos={};
     const hoy=new Date();
-    const desde=new Date(hoy);desde.setDate(desde.getDate()-7);
-    const limite=new Date(hoy);limite.setMonth(limite.getMonth()+12);
+    const hoyStr=hoy.toISOString().split('T')[0];
+    const semanaActual=isoWeek(hoyStr);
+
+    // ── Calcular rango según periodo seleccionado ──
+    let desdeFilter, limiteFilter, periodoLabel;
+    if(_gCalPeriodo==='semana'){
+      const [yW,wN]=semanaActual.split('-W').map(Number);
+      const jan4=new Date(yW,0,4);
+      const lunes=new Date(jan4);lunes.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(wN-1)*7);
+      const domingo=new Date(lunes);domingo.setDate(lunes.getDate()+6);
+      desdeFilter=lunes; limiteFilter=domingo;
+      periodoLabel='Semana actual · '+lunes.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})+' – '+domingo.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+    } else if(_gCalPeriodo==='mes'){
+      desdeFilter=new Date(hoy.getFullYear(),hoy.getMonth(),1);
+      limiteFilter=new Date(hoy.getFullYear(),hoy.getMonth()+1,0);
+      periodoLabel=hoy.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+    } else if(_gCalPeriodo==='trimestre'){
+      const trimStart=Math.floor(hoy.getMonth()/3)*3;
+      desdeFilter=new Date(hoy.getFullYear(),trimStart,1);
+      limiteFilter=new Date(hoy.getFullYear(),trimStart+3,0);
+      const trimNames=['1.er trimestre','2.º trimestre','3.er trimestre','4.º trimestre'];
+      periodoLabel=trimNames[Math.floor(hoy.getMonth()/3)]+' '+hoy.getFullYear();
+    } else {
+      desdeFilter=new Date(hoy);desdeFilter.setDate(desdeFilter.getDate()-7);
+      limiteFilter=new Date(hoy);limiteFilter.setMonth(limiteFilter.getMonth()+12);
+      periodoLabel='Próximos 12 meses';
+    }
+
+    const mants=allMantenimientos.filter(m=>m.fechaProxima);
+    const eventos={};
     mants.forEach(m=>{
       const addEv=(fecha,completado)=>{
         const d=new Date(fecha+'T00:00:00');
-        if(d<desde||d>limite)return;
+        if(d<desdeFilter||d>limiteFilter)return;
         const wk=isoWeek(fecha);
         if(!eventos[wk])eventos[wk]=[];
         if(!eventos[wk].find(x=>x.id===m.id&&x._fecha===fecha))
@@ -3883,18 +3988,29 @@ const _renderGTabMantenimientos=()=>{
         addEv(m.fechaProxima,false);
         if(m.frecuencia&&freqDays[m.frecuencia]){
           let f=new Date(m.fechaProxima+'T00:00:00');
-          for(let i=0;i<60;i++){
+          for(let i=0;i<120;i++){
             f.setDate(f.getDate()+freqDays[m.frecuencia]);
-            if(f>limite)break;
+            if(f>limiteFilter)break;
             addEv(f.toISOString().split('T')[0],false);
           }
         }
       }
     });
+
+    // Contar totales para el resumen del periodo
+    const totalEvs=Object.values(eventos).flat();
+    const totalPend=totalEvs.filter(e=>!e._completado).length;
+    const totalComp=totalEvs.filter(e=>e._completado).length;
+
     if(!Object.keys(eventos).length){
-      el.innerHTML=toggleHtml+`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><p>Sin mantenimientos programados</p></div>`;
+      el.innerHTML=toggleHtml+`
+      <div style="background:rgba(var(--theme-rgb),.06);border:1px solid rgba(var(--theme-rgb),.15);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--tx2);font-weight:700">
+        📅 ${periodoLabel}
+      </div>
+      <div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><p>Sin mantenimientos en este período</p></div>`;
       return;
     }
+
     const semanas=Object.keys(eventos).sort();
     const meses={};
     semanas.forEach(wk=>{
@@ -3903,12 +4019,34 @@ const _renderGTabMantenimientos=()=>{
       const mesKey=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}`;
       if(!meses[mesKey])meses[mesKey]=[];meses[mesKey].push(wk);
     });
-    let html='';
+
+    // Resumen del período
+    let html=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px">
+      <div style="background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:12px;padding:10px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:var(--r)">${totalEvs.length}</div>
+        <div style="font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Total</div>
+      </div>
+      <div style="background:rgba(255,152,0,.08);border:1px solid rgba(255,152,0,.2);border-radius:12px;padding:10px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#ff9800">${totalPend}</div>
+        <div style="font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Pendientes</div>
+      </div>
+      <div style="background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.2);border-radius:12px;padding:10px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#4caf50">${totalComp}</div>
+        <div style="font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Hechos</div>
+      </div>
+    </div>`;
+
     Object.entries(meses).forEach(([mes,sems])=>{
       const[y,m]=mes.split('-');
       const nomMes=new Date(parseInt(y),parseInt(m)-1,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
       const totalMes=sems.reduce((a,wk)=>a+(eventos[wk]?.length||0),0);
-      html+=`<div class="cal-mes"><div class="cal-mes-title">${nomMes.toUpperCase()} <span style="font-size:10px;font-weight:700;color:var(--tx2);text-transform:none;letter-spacing:0">${totalMes} mantenimiento${totalMes!==1?'s':''}</span></div>`;
+      const pendMes=sems.reduce((a,wk)=>a+(eventos[wk]?.filter(e=>!e._completado).length||0),0);
+      html+=`<div class="cal-mes">
+        <div class="cal-mes-title">${nomMes.toUpperCase()}
+          <span style="font-size:10px;font-weight:700;color:var(--tx2);text-transform:none;letter-spacing:0;margin-left:4px">${totalMes} trabajo${totalMes!==1?'s':''}</span>
+          ${pendMes>0?`<span style="font-size:10px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.1);border-radius:8px;padding:1px 7px;margin-left:4px">${pendMes} pend.</span>`:'<span style="font-size:10px;font-weight:800;color:#4caf50;margin-left:4px">✓ Todo hecho</span>'}
+        </div>`;
       sems.forEach(wk=>{
         const esCurrent=wk===semanaActual;
         const[yW,wNum]=wk.split('-W').map(Number);
@@ -3917,41 +4055,77 @@ const _renderGTabMantenimientos=()=>{
         const esPasada=sun<hoy&&!esCurrent;
         const evs=eventos[wk];
         const fmt=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
-        const todosCompletados=evs.every(e=>e._completado||e.ultimoCompletado);
+        const pendSem=evs.filter(e=>!e._completado).length;
+        const todosComp=pendSem===0;
         html+=`<div class="cal-semana ${esCurrent?'current':''} ${esPasada?'past':''}">
           <div class="cal-sem-head" onclick="toggleSem(this)">
             <div class="cal-sem-left">
-              <div class="cal-sem-icon">${esCurrent?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z"/></svg>':'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'}</div>
+              <div class="cal-sem-icon">${esCurrent
+                ?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z"/></svg>'
+                :`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${todosComp?'#4caf50':'currentColor'}" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`}
+              </div>
               <div class="cal-sem-info">
-                <div class="cal-sem-label">${esCurrent?'Esta semana':'Sem. '+wNum} <span class="cal-badge ${todosCompletados?'verde':''}">${evs.length}</span> ${esCurrent?'<span class="cal-current-tag">← Ahora</span>':''}</div>
+                <div class="cal-sem-label">
+                  ${esCurrent?'<span style="color:var(--r)">Esta semana</span>':'Sem. '+wNum}
+                  <span class="cal-badge ${todosComp?'verde':''}" style="margin-left:4px">${evs.length}</span>
+                  ${esCurrent?'<span class="cal-current-tag" style="margin-left:4px">← Ahora</span>':''}
+                  ${!todosComp&&pendSem>0?`<span style="font-size:10px;font-weight:800;color:#ff9800;margin-left:4px">${pendSem}⚠</span>`:''}
+                </div>
                 <div class="cal-sem-dates">${fmt(mon)} – ${fmt(sun)}</div>
               </div>
             </div>
-            <span style="color:var(--tx3);font-size:20px;transition:.2s">›</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              ${todosComp?`<span style="font-size:10px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:8px;padding:2px 8px">✓</span>`:''}
+              <span style="color:var(--tx3);font-size:20px;transition:.2s">›</span>
+            </div>
           </div>
-          <div class="cal-tasks open">
+          <div class="cal-tasks ${esCurrent||_gCalPeriodo==='semana'?'open':''}">
             ${evs.map(e=>{
-              const completadoVisual=e._completado||(e.ultimoCompletado&&e.ultimoCompletado===e._fecha)||e._completado;
+              const completadoVisual=e._completado||(e.ultimoCompletado&&e.ultimoCompletado===e._fecha);
               const eCli=allClientes.find(c=>c.id===e.clienteId);
               const eTel=e.clienteTelefono||eCli?.telefono||'';
               const eDir=e.clienteDireccion||eCli?.direccion||'';
-              const _freqLabel=e.frecuencia?`<span style="font-size:10px;color:var(--tx2);background:rgba(255,255,255,.06);border-radius:8px;padding:3px 8px;font-weight:700">${e.frecuencia}</span>`:'';
-              return`<div class="cal-task tipo-mant ${completadoVisual?'done':''}" id="caltask3_${e.id}_${e._fecha}">
-                <div class="cal-task-tipo-badge mant"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg> Mantenimiento ${completadoVisual?'<span style="color:#4caf50;font-size:10px;font-weight:800">✓ Completado</span>':''}</div>
-                <div class="cal-task-cliente" onclick="verMant('${e.id}')" style="cursor:pointer">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                  <strong>${e.clienteNombre||'Sin cliente'}</strong>
-                  <span class="cal-fecha-tag">${new Date(e._fecha+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>
-                  ${_freqLabel}
-                </div>
-                <div class="cal-task-desc" onclick="verMant('${e.id}')" style="cursor:pointer">${e.nombreTrabajo}${eDir?`<br><span style="color:var(--tx2);font-size:11px">📍 ${eDir}</span>`:''}</div>
-                <div class="btn-row-cal" style="display:flex;gap:6px;flex-wrap:wrap">
-                  ${!completadoVisual?`<button class="btn btn-ok btn-sm" style="font-weight:900" onclick="completarMantCal3('${e.id}','${e._fecha}',this)">✅ Completar</button>`:`<button class="btn btn-s btn-sm" onclick="desmarcarMantCal3('${e.id}','${e._fecha}',this)" style="color:var(--tx2)">↩️ Desmarcar</button>`}
-                  <button class="btn btn-s btn-sm" style="color:#ff7043;border-color:rgba(255,112,67,.3)" onclick="abrirAveriaDesdeMantenimiento('${e.id}')">⚡ Avería</button>
-                  ${eTel?`<a href="tel:${eTel}" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Llamar</a>`:''}
-                  ${eTel?`<a href="https://wa.me/34${eTel.replace(/\s/g,'')}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">💬 WhatsApp</a>`:''}
-                  ${eDir?`<button class="btn btn-s btn-sm" onclick="abrirMapa('','','${eDir.replace(/'/g,"\'")}')">📍 Mapa</button>`:''}
-                  <button class="btn btn-s btn-sm" onclick="verMant('${e.id}',true)">📷 Fotos</button>
+              const fechaFmt=new Date(e._fecha+'T00:00:00').toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short'});
+              const esHoy=e._fecha===hoyStr;
+              const esPast=e._fecha<hoyStr;
+              return`<div class="cal-task ${completadoVisual?'done':esPast&&!completadoVisual?'overdue':''}" id="caltask3_${e.id}_${e._fecha}" style="border-radius:12px;padding:0;overflow:hidden;margin-bottom:8px">
+                <div style="display:flex;align-items:stretch;min-height:0">
+                  <!-- Franja lateral de color -->
+                  <div style="width:4px;flex-shrink:0;background:${completadoVisual?'#4caf50':esPast&&!completadoVisual?'#f44336':esHoy?'var(--r)':'#ff9800'};border-radius:4px 0 0 4px"></div>
+                  <div style="flex:1;padding:11px 12px">
+                    <!-- Fila 1: fecha + estado -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <span style="font-size:11px;font-weight:800;color:${completadoVisual?'#4caf50':esPast&&!completadoVisual?'#f44336':esHoy?'var(--r)':'#ff9800'};background:${completadoVisual?'rgba(76,175,80,.1)':esPast&&!completadoVisual?'rgba(244,67,54,.1)':esHoy?'rgba(var(--theme-rgb),.1)':'rgba(255,152,0,.1)'};padding:2px 8px;border-radius:8px">
+                          ${esHoy?'⚡ Hoy':fechaFmt}
+                        </span>
+                        ${e.frecuencia?`<span style="font-size:10px;color:var(--tx2);background:rgba(255,255,255,.06);border-radius:6px;padding:2px 7px;font-weight:700">${e.frecuencia}</span>`:''}
+                      </div>
+                      ${completadoVisual?`<span style="font-size:11px;font-weight:800;color:#4caf50;display:flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Hecho</span>`
+                       :esPast?`<span style="font-size:11px;font-weight:800;color:#f44336">⚠ Atrasado</span>`:``}
+                    </div>
+                    <!-- Fila 2: trabajo -->
+                    <div style="font-size:14px;font-weight:900;color:var(--tx);margin-bottom:4px;cursor:pointer" onclick="verMant('${e.id}')">${e.nombreTrabajo}</div>
+                    <!-- Fila 3: cliente + dirección -->
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+                      <span style="font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                        <strong style="color:var(--tx)">${e.clienteNombre||'Sin cliente'}</strong>
+                      </span>
+                      ${eDir?`<span style="font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${eDir}</span>`:''}
+                    </div>
+                    <!-- Fila 4: botones de acción -->
+                    <div class="btn-row-cal" style="display:flex;gap:5px;flex-wrap:wrap">
+                      ${!completadoVisual
+                        ?`<button class="btn btn-ok btn-sm" style="font-weight:900;flex:1;min-width:90px" onclick="completarMantCal3('${e.id}','${e._fecha}',this)">✅ Completar</button>`
+                        :`<button class="btn btn-s btn-sm" onclick="desmarcarMantCal3('${e.id}','${e._fecha}',this)" style="color:var(--tx2)">↩ Desmarcar</button>`}
+                      <button class="btn btn-s btn-sm" style="color:#ff7043;border-color:rgba(255,112,67,.3)" onclick="abrirAveriaDesdeMantenimiento('${e.id}')">⚡</button>
+                      ${eTel?`<a href="tel:${eTel}" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>`:''}
+                      ${eTel?`<a href="https://wa.me/34${eTel.replace(/\D/g,'')}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">💬</a>`:''}
+                      ${eDir?`<button class="btn btn-s btn-sm" onclick="abrirMapa('','','${eDir.replace(/'/g,"\\'")}')">📍</button>`:''}
+                      <button class="btn btn-s btn-sm" onclick="verMant('${e.id}',true)">📷</button>
+                    </div>
+                  </div>
                 </div>
               </div>`;
             }).join('')}
@@ -7969,23 +8143,34 @@ window.imprimirCalendario=(modo)=>{
   const hoy=new Date();
   const hoyStr=hoy.toISOString().split('T')[0];
   const semanaActual=isoWeek(hoyStr);
-  let desde,limite,tituloRango;
+  let desde,limite,tituloRango,subTitulo;
   if(modo==='semana'){
     const [yW,wN]=semanaActual.split('-W').map(Number);
     const jan4=new Date(yW,0,4);
     const lunes=new Date(jan4);lunes.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(wN-1)*7);
     const domingo=new Date(lunes);domingo.setDate(lunes.getDate()+6);
     desde=lunes;limite=domingo;
-    tituloRango='Semana del '+lunes.toLocaleDateString('es-ES',{day:'2-digit',month:'long'})+' al '+domingo.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+    tituloRango='Semana actual';
+    subTitulo=lunes.toLocaleDateString('es-ES',{day:'2-digit',month:'long'})+' – '+domingo.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
   }else if(modo==='mes'){
     desde=new Date(hoy.getFullYear(),hoy.getMonth(),1);
     limite=new Date(hoy.getFullYear(),hoy.getMonth()+1,0);
-    tituloRango=hoy.toLocaleDateString('es-ES',{month:'long',year:'numeric'}).toUpperCase();
+    tituloRango=hoy.toLocaleDateString('es-ES',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+    subTitulo='Mes completo';
+  }else if(modo==='trimestre'){
+    const trimStart=Math.floor(hoy.getMonth()/3)*3;
+    desde=new Date(hoy.getFullYear(),trimStart,1);
+    limite=new Date(hoy.getFullYear(),trimStart+3,0);
+    const trimNames=['1.er trimestre','2.º trimestre','3.er trimestre','4.º trimestre'];
+    tituloRango=trimNames[Math.floor(hoy.getMonth()/3)]+' '+hoy.getFullYear();
+    subTitulo=desde.toLocaleDateString('es-ES',{day:'2-digit',month:'long'})+' – '+limite.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
   }else{
     desde=new Date(hoy);desde.setDate(desde.getDate()-7);
     limite=new Date(hoy);limite.setMonth(limite.getMonth()+12);
     tituloRango='Calendario completo';
+    subTitulo='Próximos 12 meses';
   }
+
   const eventos=[];
   mants.forEach(m=>{
     const addEv=(fecha,completado)=>{
@@ -8010,27 +8195,182 @@ window.imprimirCalendario=(modo)=>{
   });
   eventos.sort((a,b)=>a._fecha.localeCompare(b._fecha));
   if(!eventos.length){toast('No hay mantenimientos en este período','i');return;}
+
+  const totalComp=eventos.filter(e=>e._completado).length;
+  const totalPend=eventos.filter(e=>!e._completado).length;
+  const totalClis=[...new Set(eventos.map(e=>e.clienteId||e.clienteNombre))].length;
+
+  // Agrupar por semanas
   const semanas={};
   eventos.forEach(e=>{const wk=isoWeek(e._fecha);if(!semanas[wk])semanas[wk]=[];semanas[wk].push(e);});
-  const fmtD=iso=>new Date(iso+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'2-digit',month:'long'});
-  const fmtS=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+
+  const fmtLong=iso=>{
+    const d=new Date(iso+'T00:00:00');
+    return d.toLocaleDateString('es-ES',{weekday:'long',day:'2-digit',month:'long'});
+  };
+  const fmtShort=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+
+  // Construir filas del body — agrupadas por semana con separadores de mes
+  let prevMes='';
   let rowsHTML='';
   Object.keys(semanas).sort().forEach(wk=>{
-    const [yW,wNum]=wk.split('-W').map(Number);
+    const[yW,wNum]=wk.split('-W').map(Number);
     const jan4=new Date(yW,0,4);
     const lun=new Date(jan4);lun.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(wNum-1)*7);
     const dom=new Date(lun);dom.setDate(lun.getDate()+6);
-    rowsHTML+='<tr><td colspan="4" style="background:#f5f5f5;font-weight:900;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1.5px;padding:6px 12px;border-bottom:1px solid #e0e0e0">Semana '+wNum+' — '+fmtS(lun)+' al '+fmtS(dom)+'</td></tr>';
-    semanas[wk].forEach(e=>{
-      const estado=e._completado?'<span style="color:#2e7d32;font-weight:800">&#10003; Completado</span>':'<span style="color:#e65100;font-weight:800">Pendiente</span>';
-      rowsHTML+='<tr><td style="padding:8px 12px;font-size:12px;color:#222;border-bottom:1px solid #f0f0f0">'+fmtD(e._fecha)+'</td><td style="padding:8px 12px;font-size:12px;font-weight:700;color:#222;border-bottom:1px solid #f0f0f0">'+(e.nombreTrabajo||'—')+'</td><td style="padding:8px 12px;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0">'+(e.clienteNombre||'—')+(e.clienteDireccion?'<br><span style="font-size:11px;color:#888">'+e.clienteDireccion+'</span>':'')+'</td><td style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;text-align:center">'+estado+'</td></tr>';
+    const mesKey=`${lun.getFullYear()}-${String(lun.getMonth()+1).padStart(2,'0')}`;
+    // Cabecera de mes cuando cambia
+    if(mesKey!==prevMes){
+      prevMes=mesKey;
+      const nomMes=lun.toLocaleDateString('es-ES',{month:'long',year:'numeric'}).toUpperCase();
+      rowsHTML+=`<tr><td colspan="5" class="mes-header">${nomMes}</td></tr>`;
+    }
+    // Cabecera de semana
+    const esCurSem=wk===semanaActual;
+    rowsHTML+=`<tr><td colspan="5" class="sem-header ${esCurSem?'sem-current':''}">
+      <span class="sem-num">Semana ${wNum}</span>
+      <span class="sem-rango">${fmtShort(lun)} – ${fmtShort(dom)}</span>
+      ${esCurSem?'<span class="sem-tag-now">← Esta semana</span>':''}
+    </td></tr>`;
+    // Filas de eventos
+    semanas[wk].forEach((e,i)=>{
+      const esPast=e._fecha<hoyStr;
+      const esHoy=e._fecha===hoyStr;
+      const estadoClass=e._completado?'estado-comp':esPast?'estado-atras':'estado-pend';
+      const estadoTxt=e._completado?'✓ Completado':esPast?'⚠ Atrasado':'Pendiente';
+      const rowClass=e._completado?'row-comp':esPast&&!e._completado?'row-atras':i%2===0?'row-even':'row-odd';
+      rowsHTML+=`<tr class="${rowClass}">
+        <td class="td-fecha ${esHoy?'td-hoy':''}">${fmtLong(e._fecha)}${esHoy?'<br><span class="tag-hoy">HOY</span>':''}</td>
+        <td class="td-trabajo">${e.nombreTrabajo||'—'}</td>
+        <td class="td-cliente">
+          <span class="cli-nombre">${e.clienteNombre||'—'}</span>
+          ${e.clienteDireccion?`<span class="cli-dir">${e.clienteDireccion}</span>`:''}
+          ${e.clienteTelefono?`<span class="cli-tel">${e.clienteTelefono}</span>`:''}
+        </td>
+        <td class="td-frec">${e.frecuencia||'—'}</td>
+        <td class="td-estado"><span class="${estadoClass}">${estadoTxt}</span></td>
+      </tr>`;
     });
   });
-  const printHTML='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Calendario — '+(CG&&CG.nombre?CG.nombre:'Joyvi')+'</title><style>@import url(\'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap\');*{box-sizing:border-box;margin:0;padding:0}body{font-family:\'Nunito\',sans-serif;background:#fff;color:#222;font-size:13px;padding:16px}@page{margin:12mm;size:A4 portrait}.header{background:linear-gradient(135deg,#c62828,#e53935);color:#fff;padding:20px 24px;display:flex;align-items:flex-start;justify-content:space-between;border-radius:8px;margin-bottom:18px}.header-left h1{font-size:22px;font-weight:900;margin-bottom:4px}.header-left p{font-size:12px;opacity:.8}.header-right{text-align:right;font-size:12px;opacity:.85;line-height:1.7}.stats{display:flex;gap:12px;margin-bottom:18px}.stat{background:#fff5f5;border:1px solid rgba(229,57,53,.15);border-radius:8px;padding:10px 16px;flex:1;text-align:center}.stat-n{font-size:22px;font-weight:900;color:#c62828}.stat-l{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-top:2px}table{width:100%;border-collapse:collapse;border:1px solid #e0e0e0}thead th{background:#e53935;color:#fff;font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;padding:9px 12px;text-align:left}@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><div class="header"><div class="header-left"><h1>'+(CG&&CG.nombre?CG.nombre:'Joyvi')+'</h1><p>&#128197; Calendario de Mantenimientos &mdash; '+tituloRango+'</p></div><div class="header-right"><div>Generado: '+hoy.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})+'</div><div style="font-size:20px;font-weight:900;margin-top:4px">'+eventos.length+' mantenimiento'+(eventos.length!==1?'s':'')+'</div></div></div><div class="stats"><div class="stat"><div class="stat-n">'+eventos.length+'</div><div class="stat-l">Total</div></div><div class="stat"><div class="stat-n" style="color:#2e7d32">'+eventos.filter(e=>e._completado).length+'</div><div class="stat-l">Completados</div></div><div class="stat"><div class="stat-n" style="color:#e65100">'+eventos.filter(e=>!e._completado).length+'</div><div class="stat-l">Pendientes</div></div><div class="stat"><div class="stat-n" style="color:#1565c0">'+[...new Set(eventos.map(e=>e.clienteId))].length+'</div><div class="stat-l">Clientes</div></div></div><table><thead><tr><th>Fecha</th><th>Trabajo</th><th>Cliente</th><th style="text-align:center">Estado</th></tr></thead><tbody>'+rowsHTML+'</tbody></table></body></html>';
+
+  const accentColor='#c62828';
+  const printHTML=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Calendario — ${CG?.nombre||'Joyvi'}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{margin:12mm 10mm;size:A4 portrait}
+
+/* ── Encabezado ── */
+.page-header{background:linear-gradient(135deg,#b71c1c,${accentColor} 40%,#d32f2f);color:#fff;padding:18px 22px 16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0}
+.ph-brand{font-size:26px;font-weight:900;letter-spacing:-1px;opacity:.25;line-height:1}
+.ph-title{font-size:18px;font-weight:900;margin-bottom:2px}
+.ph-sub{font-size:11px;opacity:.8;font-weight:500}
+.ph-meta{text-align:right;font-size:11px;opacity:.8;line-height:1.8}
+.ph-meta strong{font-size:14px;font-weight:800;opacity:1}
+
+/* ── KPIs ── */
+.kpis{display:flex;gap:0;margin-bottom:16px;border:1px solid #e0e0e0;border-top:3px solid ${accentColor};border-radius:0 0 8px 8px;overflow:hidden}
+.kpi{flex:1;text-align:center;padding:10px 8px;border-right:1px solid #f0f0f0}
+.kpi:last-child{border-right:none}
+.kpi-n{font-size:22px;font-weight:900;line-height:1;margin-bottom:3px}
+.kpi-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888}
+.kpi-total .kpi-n{color:${accentColor}}
+.kpi-pend .kpi-n{color:#e65100}
+.kpi-comp .kpi-n{color:#2e7d32}
+.kpi-clis .kpi-n{color:#1565c0}
+
+/* ── Tabla ── */
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{background:${accentColor};color:#fff;font-weight:700;font-size:9.5px;text-transform:uppercase;letter-spacing:1.2px;padding:8px 10px;text-align:left}
+thead th:last-child{text-align:center}
+
+/* Cabeceras de agrupación */
+.mes-header{background:#f5f5f5;font-weight:900;font-size:10px;color:#555;text-transform:uppercase;letter-spacing:2px;padding:7px 10px;border-top:2px solid #e0e0e0;border-bottom:1px solid #e0e0e0}
+.sem-header{background:#fafafa;padding:5px 10px;border-bottom:1px solid #ececec;font-size:10px;color:#666}
+.sem-header.sem-current{background:#fff3e0;border-left:3px solid #e65100}
+.sem-num{font-weight:800;color:#333;margin-right:8px}
+.sem-rango{color:#888}
+.sem-tag-now{background:#e65100;color:#fff;font-size:9px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:8px}
+
+/* Filas de datos */
+.row-even{background:#fff}
+.row-odd{background:#fafafa}
+.row-comp{background:#f1f8e9}
+.row-atras{background:#fff8f6}
+td{padding:7px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+
+.td-fecha{font-size:11px;color:#333;font-weight:500;white-space:nowrap;min-width:110px}
+.td-hoy{font-weight:700;color:${accentColor}}
+.tag-hoy{display:inline-block;background:${accentColor};color:#fff;font-size:8px;font-weight:800;padding:1px 6px;border-radius:6px;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.td-trabajo{font-weight:700;color:#111;font-size:11.5px}
+.td-cliente{}
+.cli-nombre{display:block;font-weight:600;color:#222;font-size:11px}
+.cli-dir{display:block;font-size:10px;color:#888;margin-top:1px}
+.cli-tel{display:block;font-size:10px;color:#888}
+.td-frec{font-size:10px;color:#888;font-weight:500;white-space:nowrap}
+.td-estado{text-align:center;white-space:nowrap}
+.estado-comp{background:#e8f5e9;color:#1b5e20;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid #c8e6c9;display:inline-block}
+.estado-pend{background:#fff3e0;color:#e65100;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid #ffe0b2;display:inline-block}
+.estado-atras{background:#fce4ec;color:#b71c1c;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid #f8bbd0;display:inline-block}
+
+/* ── Pie de página ── */
+.page-footer{margin-top:14px;padding-top:8px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;font-size:9px;color:#aaa}
+
+@media print{
+  .page-header,.kpis,.mes-header,.sem-header.sem-current{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div>
+    <div class="ph-brand">J</div>
+    <div class="ph-title">${CG?.nombre||'Joyvi'}</div>
+    <div class="ph-sub">📅 ${tituloRango} &mdash; ${subTitulo}</div>
+  </div>
+  <div class="ph-meta">
+    <div>Generado el ${hoy.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}</div>
+    <div><strong>${eventos.length} mantenimiento${eventos.length!==1?'s':''}</strong></div>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi kpi-total"><div class="kpi-n">${eventos.length}</div><div class="kpi-l">Total</div></div>
+  <div class="kpi kpi-pend"><div class="kpi-n">${totalPend}</div><div class="kpi-l">Pendientes</div></div>
+  <div class="kpi kpi-comp"><div class="kpi-n">${totalComp}</div><div class="kpi-l">Completados</div></div>
+  <div class="kpi kpi-clis"><div class="kpi-n">${totalClis}</div><div class="kpi-l">Clientes</div></div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Trabajo</th>
+      <th>Cliente</th>
+      <th>Frecuencia</th>
+      <th style="text-align:center">Estado</th>
+    </tr>
+  </thead>
+  <tbody>${rowsHTML}</tbody>
+</table>
+
+<div class="page-footer">
+  <span>Joyvi · Gestión de Mantenimientos</span>
+  <span>${CG?.nombre||''} · ${tituloRango}</span>
+</div>
+</body>
+</html>`;
+
   const w=window.open('','_blank');
+  if(!w){toast('Activa las ventanas emergentes para imprimir','e');return;}
   w.document.write(printHTML);
   w.document.close();
-  setTimeout(()=>w.print(),700);
+  setTimeout(()=>w.print(),800);
 };
 
 window.toggleSem=el=>{
