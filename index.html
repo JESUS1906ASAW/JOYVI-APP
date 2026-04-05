@@ -1484,8 +1484,27 @@ body.offline .dash-offline-bar{display:flex}
           <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
           <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Presupuestos</div><div class="kiosk-tile-sub">Ver y crear</div></div>
         </div>
+        <!-- Notificaciones — ancho completo -->
+        <div class="kiosk-tile kiosk-tile-wide" onclick="goScreen('notificaciones')" style="position:relative">
+          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Notificaciones</div><div class="kiosk-tile-sub">Ver avisos y alertas</div></div>
+          <span class="notif-dot" id="notifDotKiosk" style="top:10px;right:10px"></span>
+        </div>
       </div>
-      <button class="kiosk-exit-btn" onclick="salirModoVisualizacion()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Salir del modo gestión</button>
+
+      <!-- ── DOCUMENTOS DE HOY ── -->
+      <div style="margin-top:24px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span style="font-size:10.5px;font-weight:900;color:var(--r);letter-spacing:1.8px;text-transform:uppercase">Documentos de hoy</span>
+          <span id="kioskHoyFecha" style="font-size:11px;font-weight:700;color:var(--tx2);margin-left:auto"></span>
+        </div>
+        <div id="kioskDocsHoy">
+          <div class="empty" style="padding:20px 0"><div class="empty-ico" style="font-size:28px">📋</div><p>Cargando…</p></div>
+        </div>
+      </div>
+
+      <button class="kiosk-exit-btn" onclick="salirModoVisualizacion()" style="margin-top:28px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Salir del modo gestión</button>
     </div>
   </div>
 
@@ -1673,7 +1692,7 @@ body.offline .dash-offline-bar{display:flex}
   <!-- ─── PANTALLA: NOTIFICACIONES ─── -->
   <div class="screen" id="screenNotificaciones">
     <div class="scroll-pad">
-      <div class="volver-btn" onclick="goScreen('grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</div><div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:16px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notificaciones</div>
+      <div class="volver-btn" id="notifVolverBtn" onclick="goScreen(document.body.classList.contains('modo-visualizacion')?'kiosk':'grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span id="notifVolverTxt">Inicio</span></div><div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:16px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notificaciones</div>
       <div id="notifContent"></div>
     </div>
   </div>
@@ -2367,6 +2386,7 @@ const _renderScreen=id=>{
   else if(id==='facturas')renderFacturas();
   else if(id==='historialGlobal')renderHistorialGlobal();
   else if(id==='rutaDia')renderRutaDia();
+  else if(id==='kiosk')setTimeout(()=>window.renderKioskDocsHoy&&window.renderKioskDocsHoy(),150);
 };
 
 window.goScreen=id=>{
@@ -3221,6 +3241,9 @@ const iniciarApp=async()=>{
     if(count>0){
       dot.classList.add('show');
       dot.textContent=count>9?'9+':count;
+      // Sincronizar badge kiosk
+      const dotK=document.getElementById('notifDotKiosk');
+      if(dotK){dotK.className=dot.className;dotK.textContent=dot.textContent;}
       snap.docChanges().forEach(change=>{
         if(change.type==='added'){
           const d=change.doc.data();
@@ -3233,7 +3256,11 @@ const iniciarApp=async()=>{
           toast(`${titulo}`,'i');
         }
       });
-    }else dot.classList.remove('show');
+    }else{
+      dot.classList.remove('show');
+      const dotK=document.getElementById('notifDotKiosk');
+      if(dotK)dotK.classList.remove('show');
+    }
   });
 
   // ── 5. Renderizar pantalla restaurada ──
@@ -10818,26 +10845,32 @@ const renderNotificaciones=async()=>{
     try{
       const snap=await getDocs(query(collection(db,'notificaciones'),where('destinatarios','array-contains',CU.uid),where('leida','==',false)));
       if(!snap.empty){
-        await Promise.all(snap.docs.map(d=>updateDoc(doc(db,'notificaciones',d.id),{leida:true})));
-        snap.docs.forEach(d=>_programarEliminacion(d.id));
+        await Promise.all(snap.docs.map(d=>updateDoc(doc(db,'notificaciones',d.id),{leida:true,leidaEn:serverTimestamp()})));
+        snap.docs.forEach(d=>_programarEliminacion(d.id,d.data().creado?.seconds));
       }
     }catch(e){}
     // Limpiar badge inmediatamente
     const dot=$('notifDot');
     if(dot){dot.classList.remove('show');dot.textContent='';}
   }
+  // Adaptar botón volver según modo
+  const esKiosk=document.body.classList.contains('modo-visualizacion');
+  const volverTxt=document.getElementById('notifVolverTxt');
+  if(volverTxt)volverTxt.textContent=esKiosk?'Modo Gestión':'Inicio';
+
   el.innerHTML=`<div style="text-align:center;padding:30px"><div style="display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div style="font-size:13px;color:var(--tx2);margin-top:8px">Cargando notificaciones…</div></div>`;
-  if(CGID){
+  // Quick-back al grupo solo en modo normal
+  if(CGID&&!esKiosk){
     const qb=document.createElement('div');
     qb.className='quick-back';qb.setAttribute('onclick',`goScreen('grupo')`);
     qb.textContent=`← Volver al grupo: ${CG?.nombre||''}`;
     el.prepend(qb);
   }
   let html='';
-  if(CGID)html=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo: ${CG?.nombre||''}</div>`;
+  if(CGID&&!esKiosk)html=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo: ${CG?.nombre||''}</div>`;
 
-  // ── BLOQUE ENVIAR AVISO ──
-  if(CGID){
+  // ── BLOQUE ENVIAR AVISO (solo modo normal) ──
+  if(CGID&&!esKiosk){
     html+=`<div style="background:linear-gradient(135deg,rgba(var(--theme-rgb),.1),rgba(var(--theme-rgb),.04));border:1px solid rgba(var(--theme-rgb),.2);border-radius:14px;padding:14px 16px;margin-bottom:20px">
       <div style="font-size:12px;font-weight:900;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -10859,10 +10892,23 @@ const renderNotificaciones=async()=>{
     ));
     const notifs=snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
-    const leidasViejas=snap.docs.filter(d=>d.data().leida===true&&!(window._notifDeleteTimers&&window._notifDeleteTimers.has(d.id)));
+    const ahora=Date.now();
+    const UN_DIA_S=86400; // segundos
+    // Eliminar automáticamente solo notificaciones leídas con más de 24h
+    const leidasViejas=snap.docs.filter(d=>{
+      const dat=d.data();
+      if(!dat.leida)return false;
+      const antigS=(ahora/1000)-(dat.creado?.seconds||0);
+      return antigS>UN_DIA_S;
+    });
     leidasViejas.forEach(d=>deleteDoc(doc(db,'notificaciones',d.id)).catch(()=>{}));
     const noLeidas=notifs.filter(n=>!n.leida);
-    const leidas=notifs.filter(n=>n.leida&&(window._notifDeleteTimers&&window._notifDeleteTimers.has(n.id))).slice(0,15);
+    // Mostrar todas las leídas de las últimas 24h
+    const leidas=notifs.filter(n=>{
+      if(!n.leida)return false;
+      const antigS=(ahora/1000)-(n.creado?.seconds||0);
+      return antigS<=UN_DIA_S;
+    }).slice(0,20);
 
     if(!notifs.length){
       html+=`<div class="empty"><div class="empty-ico" style="font-size:36px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>Sin notificaciones</p></div>`;
@@ -10969,25 +11015,31 @@ window._notifVerParte=async(parteId, grupoId)=>{
 
 if(!window._notifDeleteTimers)window._notifDeleteTimers=new Map();
 const _eliminarNotif=async(id)=>{
-  try{await updateDoc(doc(db,'notificaciones',id),{leida:true,leidaEn:serverTimestamp()});renderNotificaciones();}catch(e){}
+  try{await deleteDoc(doc(db,'notificaciones',id));}catch(e){}
 };
-const _programarEliminacion=(id)=>{
+const _programarEliminacion=(id,creadoSeconds)=>{
   if(window._notifDeleteTimers.has(id))return;
-  const t=setTimeout(()=>{window._notifDeleteTimers.delete(id);_eliminarNotif(id);},60000);
+  // Calcular ms restantes hasta cumplir 24h desde la creación
+  const creadoMs=(creadoSeconds||0)*1000;
+  const expiresAt=creadoMs+86400000; // +24h
+  const delay=Math.max(0,expiresAt-Date.now());
+  const t=setTimeout(()=>{window._notifDeleteTimers.delete(id);_eliminarNotif(id);},delay);
   window._notifDeleteTimers.set(id,t);
 };
 window.marcarTodasLeidas=async()=>{
   try{
     const snap=await getDocs(query(collection(db,'notificaciones'),where('destinatarios','array-contains',CU.uid),where('leida','==',false)));
-    await Promise.all(snap.docs.map(d=>updateDoc(doc(db,'notificaciones',d.id),{leida:true})));
-    snap.docs.forEach(d=>_programarEliminacion(d.id));
+    await Promise.all(snap.docs.map(d=>updateDoc(doc(db,'notificaciones',d.id),{leida:true,leidaEn:serverTimestamp()})));
+    snap.docs.forEach(d=>_programarEliminacion(d.id,d.data().creado?.seconds));
     renderNotificaciones();
   }catch(e){}
 };
 window.marcarLeida=async(id)=>{
   try{
-    await updateDoc(doc(db,'notificaciones',id),{leida:true});
-    _programarEliminacion(id);
+    const snap=await getDoc(doc(db,'notificaciones',id));
+    const creadoS=snap.exists()?snap.data().creado?.seconds:0;
+    await updateDoc(doc(db,'notificaciones',id),{leida:true,leidaEn:serverTimestamp()});
+    _programarEliminacion(id,creadoS);
     renderNotificaciones();
   }catch(e){}
 };
@@ -13070,6 +13122,7 @@ window.activarModoVisualizacion=()=>{
     history.replaceState({screen:'kiosk',sbOpen:false},'','#kiosk');
     const hg=document.getElementById('kioskHeaderGroup');
     if(hg&&CG?.nombre)hg.textContent=CG.nombre;
+    setTimeout(()=>window.renderKioskDocsHoy&&window.renderKioskDocsHoy(),300);
   },300);
 };
 
@@ -13251,6 +13304,100 @@ window.kioskIr=async(dest)=>{
   } else {
     goScreen(dest);
   }
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// DOCUMENTOS DE HOY (Modo Gestión)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+window.renderKioskDocsHoy=()=>{
+  const el=document.getElementById('kioskDocsHoy');
+  const fechaEl=document.getElementById('kioskHoyFecha');
+  if(!el)return;
+
+  const ahora=Date.now();
+  const hoy=new Date();
+  const hoyStr=hoy.toISOString().split('T')[0];
+  const hoyIniS=new Date(hoyStr+'T00:00:00').getTime()/1000;
+  const hoyFinS=hoyIniS+86400;
+
+  if(fechaEl){
+    fechaEl.textContent=hoy.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  }
+
+  const esHoy=ts=>{const s=ts?.seconds||0;return s>=hoyIniS&&s<hoyFinS;};
+
+  let items=[];
+
+  // ── Partes de hoy ──
+  (allPartes||[]).filter(p=>!p.archivado&&esHoy(p.creado)).forEach(p=>{
+    const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
+    const esComp=p.estado==='completado';
+    const pdfBadge=p.pdfGenerado?`<span style="font-size:10px;font-weight:800;color:#1565c0;background:rgba(21,101,192,.1);border:1px solid rgba(21,101,192,.22);border-radius:6px;padding:2px 6px;flex-shrink:0">PDF ✓</span>`:'';
+    items.push({ts:p.creado?.seconds||0,html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'#ff9800'};cursor:pointer" onclick="verParte('${p.id}')">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+        <span style="font-size:10px;font-weight:900;color:#fff;background:var(--r);border-radius:5px;padding:2px 7px;flex-shrink:0">PARTE</span>
+        <span class="kiosk-card-title" style="margin:0;flex:1;min-width:0">${p.titulo||'Sin título'}</span>
+        ${pdfBadge}
+        ${esComp?'<span style="font-size:10px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px;flex-shrink:0">✓ Completado</span>':'<span style="font-size:10px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 8px;flex-shrink:0">Pendiente</span>'}
+      </div>
+      <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'}${p.operario?' · '+p.operario:''}</div>
+      ${p.descripcion?`<div class="kiosk-card-meta" style="margin-top:2px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.descripcion}</div>`:''}
+      <div class="kiosk-card-footer">
+        <div style="font-size:13px;font-weight:900;color:var(--r)">${(p.importeManoObra||p.importeMateriales)?fmtM(calcTotal(p)):''}</div>
+        <button class="kiosk-pdf-btn" onclick="event.stopPropagation();generarPDF('${p.id}')">${_kioskPdfSvg}PDF</button>
+      </div>
+    </div>`});
+  });
+
+  // ── Averías de hoy ──
+  const todasAverias=[...(_averiasPend||[]).map(a=>({...a,_res:false})),...(_averiasRes||[]).map(a=>({...a,_res:true}))];
+  todasAverias.filter(a=>esHoy(a.creado)).forEach(a=>{
+    const cli=(allClientes||[]).find(x=>x.id===a.clienteId);
+    const esRes=a._res;
+    items.push({ts:a.creado?.seconds||0,html:`<div class="kiosk-card" style="border-left:3px solid ${esRes?'#4caf50':'#e53935'}">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+        <span style="font-size:10px;font-weight:900;color:#fff;background:#e53935;border-radius:5px;padding:2px 7px;flex-shrink:0">AVERÍA</span>
+        <span class="kiosk-card-title" style="margin:0;flex:1;min-width:0">${a.tipo||'Avería'}</span>
+        ${esRes?'<span style="font-size:10px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px;flex-shrink:0">✓ Resuelta</span>':'<span style="font-size:10px;font-weight:800;color:#e53935;background:rgba(229,57,53,.08);border-radius:20px;padding:2px 8px;flex-shrink:0">Pendiente</span>'}
+      </div>
+      <div class="kiosk-card-meta">${cli?cli.nombre:a.clienteNombre||'—'}</div>
+      ${a.descripcion?`<div class="kiosk-card-meta" style="margin-top:2px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.descripcion}</div>`:''}
+    </div>`});
+  });
+
+  // ── Presupuestos de hoy ──
+  const todosPresu=[...(_presusPend||[]).map(p=>({...p,_comp:false})),...(_presusComp||[]).map(p=>({...p,_comp:true}))];
+  todosPresu.filter(p=>esHoy(p.creado)).forEach(p=>{
+    const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
+    const esComp=p._comp;
+    const total=(parseFloat(p.importeManoObra)||0)+(parseFloat(p.importeMateriales)||0)+(parseFloat(p.importeDesplazamiento)||0);
+    items.push({ts:p.creado?.seconds||0,html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'#1e88e5'}">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+        <span style="font-size:10px;font-weight:900;color:#fff;background:#1e88e5;border-radius:5px;padding:2px 7px;flex-shrink:0">PRESUP.</span>
+        <span class="kiosk-card-title" style="margin:0;flex:1;min-width:0">${p.titulo||'Presupuesto'}</span>
+        ${esComp?'<span style="font-size:10px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px;flex-shrink:0">✓ Aceptado</span>':'<span style="font-size:10px;font-weight:800;color:#1e88e5;background:rgba(30,136,229,.09);border-radius:20px;padding:2px 8px;flex-shrink:0">Pendiente</span>'}
+      </div>
+      <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'}</div>
+      <div class="kiosk-card-footer">
+        ${total?`<div style="font-size:13px;font-weight:900;color:var(--r)">${fmtM(total)}</div>`:'<div></div>'}
+        <button class="kiosk-pdf-btn" onclick="event.stopPropagation();exportarPresupuestoPDF('${p.id}')">${_kioskPdfSvg}PDF</button>
+      </div>
+    </div>`});
+  });
+
+  // Más reciente primero
+  items.sort((a,b)=>b.ts-a.ts);
+
+  if(!items.length){
+    el.innerHTML=`<div class="empty" style="padding:18px 0"><div class="empty-ico" style="font-size:28px">📋</div><p style="font-size:13px;color:var(--tx2)">Ningún documento creado hoy todavía</p></div>`;
+    return;
+  }
+  el.innerHTML=items.map(i=>i.html).join('');
+
+  // Sincronizar badge de notificaciones del kiosk con el normal
+  const dotK=document.getElementById('notifDotKiosk');
+  const dot=document.getElementById('notifDot');
+  if(dotK&&dot){dotK.className=dot.className;dotK.textContent=dot.textContent;}
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
