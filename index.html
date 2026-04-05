@@ -11174,26 +11174,34 @@ const renderPerfil=()=>{
   </div>
   `;
   const _autoBackupActive=localStorage.getItem('joyvi_autobackup')==='1';
+  const _autoBackupDirName=localStorage.getItem('joyvi_autobackup_dir_name')||'';
+  const _fsa='showDirectoryPicker' in window;
+  const _opfsSupported='storage' in navigator;
   html+=`
   <div class="fsec" style="margin-top:8px">
     <div class="fsec-title">💾 Copia de seguridad automática</div>
     <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;line-height:1.6">
-      Al activar, la app descarga automáticamente un backup JSON al abrir la app (una vez al día), sin ninguna confirmación.
-      El archivo se nombra con la fecha del día: <code style="font-size:10px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">joyvi_backup_GRUPO_AAAA-MM-DD.json</code>
+      El backup se guarda automáticamente <strong style="color:var(--tx)">dentro de la app</strong> (sin permisos, sin diálogos) y también en la <strong style="color:var(--tx)">carpeta que elijas</strong> si hay permiso activo.
+      Nombre: <code style="font-size:10px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">joyvi_backup_GRUPO_AAAA-MM-DD.json</code>
     </div>
     <div class="toggle-row" style="margin-bottom:10px">
       <div>
         <div class="toggle-label">🔄 Backup automático diario</div>
-        <div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:220px">Descarga silenciosa al iniciar la app.</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:220px">Se ejecuta una vez al día al abrir la app.</div>
       </div>
       <label class="toggle-sw" style="flex-shrink:0"><input type="checkbox" id="toggleAutoBackup" onchange="toggleAutoBackup(this.checked)" ${_autoBackupActive?'checked':''}><span class="toggle-track"></span></label>
     </div>
     ${_autoBackupActive?`
-    <div style="margin-top:6px;padding:10px 14px;background:rgba(76,175,80,.07);border:1px solid rgba(76,175,80,.2);border-radius:10px;font-size:11px;color:#4caf50;font-weight:700;line-height:1.7">
-      ✅ Backup activo — se descarga automáticamente cada día al abrir la app.<br>
-      <span style="color:var(--tx2);font-weight:600">📂 Se guarda en tu carpeta <strong style="color:var(--tx)">Descargas</strong> del dispositivo.</span>
+    <div style="margin-top:6px;padding:10px 14px;background:rgba(76,175,80,.07);border:1px solid rgba(76,175,80,.2);border-radius:10px;font-size:11px;color:#4caf50;font-weight:700;line-height:1.8">
+      ✅ Backup activo — se guarda automáticamente cada día sin ningún diálogo.<br>
+      <span style="color:var(--tx2);font-weight:600">💾 Almacenamiento interno: <strong style="color:var(--tx)">siempre disponible</strong></span><br>
+      ${_autoBackupDirName?`<span style="color:var(--tx2);font-weight:600">📂 Copia en carpeta: <strong style="color:var(--tx)">${_autoBackupDirName}</strong></span>`:'<span style="color:var(--tx2);font-weight:600">📂 Sin carpeta configurada — elige una abajo para tener copia extra</span>'}
     </div>
-    <button onclick="ejecutarBackupAhoraManual()" style="margin-top:8px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">⚡ Descargar backup ahora</button>
+    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+      ${_fsa?`<button onclick="cambiarCarpetaBackup()" style="flex:1;min-width:120px;padding:9px;border-radius:10px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.07);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)">📁 ${_autoBackupDirName?'Cambiar carpeta':'Elegir carpeta'}</button>`:''}
+      <button onclick="ejecutarBackupAhoraManual()" style="flex:1;min-width:120px;padding:9px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)">⚡ Ejecutar ahora</button>
+    </div>
+    <button onclick="verBackupsGuardados()" style="margin-top:6px;width:100%;padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:transparent;color:var(--tx2);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">📋 Ver backups guardados en la app</button>
     `:''}
   </div>
   <button class="btn btn-del" style="margin-top:8px" onclick="doLogout()">🚪 Cerrar sesión</button>`;
@@ -11256,55 +11264,26 @@ window.guardarPerfil=async()=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // BACKUP AUTOMÁTICO DIARIO
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ── Toggle backup automático ──
-window.toggleAutoBackup=async(active)=>{
-  localStorage.setItem('joyvi_autobackup',active?'1':'0');
-  if(active){
-    // Intentar solicitar permiso File System Access API si el navegador lo soporta
-    // Esto permite guardar en carpeta elegida por el usuario en Chrome/Edge de escritorio
-    if('showDirectoryPicker' in window){
-      try{
-        const dirHandle=await window.showDirectoryPicker({mode:'readwrite',startIn:'downloads'});
-        // Serializar el nombre del directorio (no podemos guardar el handle entre sesiones sin Storage Access)
-        localStorage.setItem('joyvi_autobackup_dir_name',dirHandle.name);
-        // Guardar handle via indexedDB para reutilizarlo sin re-pedir permiso
-        await _saveBackupDirHandle(dirHandle);
-        toast('✅ Carpeta seleccionada: '+dirHandle.name,'o');
-      }catch(err){
-        if(err.name!=='AbortError'){
-          console.warn('File System Access no disponible:',err);
-        }
-        // Si cancela o falla, seguimos con descarga normal a Descargas
-        toast('✅ Backup activo — se guardará en Descargas','o');
-      }
-    } else {
-      toast('✅ Backup automático activado — se guardará en Descargas','o');
-    }
-  } else {
-    // Limpiar handle guardado
-    _clearBackupDirHandle();
-    toast('Backup automático desactivado','i');
-  }
-  renderPerfil();
-};
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BACKUP AUTOMÁTICO
+// Estrategia dual: OPFS (siempre silencioso) + carpeta usuario (cuando hay permiso)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-// ── IndexedDB helpers para guardar el FileSystemDirectoryHandle ──
+// ── IndexedDB: guardar/recuperar FileSystemDirectoryHandle ──
 const _IDB_BACKUP='joyvi_backup_store';
-const _saveBackupDirHandle=async(handle)=>{
-  return new Promise((res,rej)=>{
-    const req=indexedDB.open(_IDB_BACKUP,1);
-    req.onupgradeneeded=e=>e.target.result.createObjectStore('handles');
-    req.onsuccess=e=>{
-      const db2=e.target.result;
-      const tx=db2.transaction('handles','readwrite');
-      tx.objectStore('handles').put(handle,'backupDir');
-      tx.oncomplete=()=>{db2.close();res();};
-      tx.onerror=()=>{db2.close();rej(tx.error);};
-    };
-    req.onerror=()=>rej(req.error);
-  });
-};
-const _getBackupDirHandle=()=>new Promise((res)=>{
+const _saveBackupDirHandle=async(handle)=>new Promise((res,rej)=>{
+  const req=indexedDB.open(_IDB_BACKUP,1);
+  req.onupgradeneeded=e=>e.target.result.createObjectStore('handles');
+  req.onsuccess=e=>{
+    const db2=e.target.result;
+    const tx=db2.transaction('handles','readwrite');
+    tx.objectStore('handles').put(handle,'backupDir');
+    tx.oncomplete=()=>{db2.close();res();};
+    tx.onerror=()=>{db2.close();rej(tx.error);};
+  };
+  req.onerror=()=>rej(req.error);
+});
+const _getBackupDirHandle=()=>new Promise(res=>{
   const req=indexedDB.open(_IDB_BACKUP,1);
   req.onupgradeneeded=e=>e.target.result.createObjectStore('handles');
   req.onsuccess=e=>{
@@ -11324,8 +11303,132 @@ const _clearBackupDirHandle=()=>{
   };
 };
 
-// ── Generar y descargar backup de un grupo ──
-const _descargarBackupGrupo=async(gid)=>{
+// ── OPFS: Origin Private File System ──
+// Es almacenamiento interno del navegador. No pide permisos nunca.
+// Los archivos NO son visibles en el sistema de ficheros del usuario directamente,
+// pero se pueden leer/exportar desde la app en cualquier momento.
+const _opfsGuardarBackup=async(fileName,json)=>{
+  try{
+    const root=await navigator.storage.getDirectory();
+    const dir=await root.getDirectoryHandle('joyvi_backups',{create:true});
+    const fh=await dir.getFileHandle(fileName,{create:true});
+    const w=await fh.createWritable();
+    await w.write(json);
+    await w.close();
+    console.log('[Backup] ✓ OPFS guardado:',fileName);
+    // Mantener solo los 30 últimos backups para no ocupar demasiado
+    _opfsLimpiarAntiguos(dir);
+    return true;
+  }catch(e){console.warn('[Backup] OPFS error:',e);return false;}
+};
+const _opfsLimpiarAntiguos=async(dir)=>{
+  try{
+    const entries=[];
+    for await(const [name] of dir.entries())entries.push(name);
+    entries.sort();
+    if(entries.length>30){
+      for(const old of entries.slice(0,entries.length-30))
+        await dir.removeEntry(old).catch(()=>{});
+    }
+  }catch(_){}
+};
+// Listar backups guardados en OPFS
+window._opfsListarBackups=async()=>{
+  try{
+    const root=await navigator.storage.getDirectory();
+    const dir=await root.getDirectoryHandle('joyvi_backups',{create:true});
+    const entries=[];
+    for await(const [name,handle] of dir.entries()){
+      const file=await handle.getFile();
+      entries.push({name,size:file.size,fecha:file.lastModified});
+    }
+    return entries.sort((a,b)=>b.fecha-a.fecha);
+  }catch(_){return[];}
+};
+// Exportar un backup concreto de OPFS al sistema de ficheros del usuario
+window._opfsExportarBackup=async(fileName)=>{
+  try{
+    const root=await navigator.storage.getDirectory();
+    const dir=await root.getDirectoryHandle('joyvi_backups');
+    const fh=await dir.getFileHandle(fileName);
+    const file=await fh.getFile();
+    const text=await file.text();
+    const blob=new Blob([text],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=fileName;a.style.display='none';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+  }catch(e){toast('Error al exportar: '+e.message,'e');}
+};
+
+// ── Intentar escribir en carpeta del usuario (FSA, sin diálogo si ya hay permiso) ──
+const _fsaEscribirEnCarpeta=async(dirHandle,json,fileName,conGesto)=>{
+  let perm=await dirHandle.queryPermission({mode:'readwrite'});
+  if(perm==='prompt'){
+    // Solo pedir permiso si hay gesto de usuario (clic) — en automático el navegador lo bloquea
+    if(!conGesto)return false;
+    perm=await dirHandle.requestPermission({mode:'readwrite'});
+  }
+  if(perm!=='granted')return false;
+  const fileHandle=await dirHandle.getFileHandle(fileName,{create:true});
+  const writable=await fileHandle.createWritable();
+  await writable.write(json);
+  await writable.close();
+  console.log('[Backup] ✓ FSA guardado en carpeta:',dirHandle.name+'/'+fileName);
+  return true;
+};
+
+// ── Toggle backup en el perfil ──
+window.cambiarCarpetaBackup=async()=>{
+  if(!('showDirectoryPicker' in window))return;
+  try{
+    toast('📁 Elige la carpeta de backup...','i');
+    const dirHandle=await window.showDirectoryPicker({mode:'readwrite',startIn:'downloads'});
+    await _saveBackupDirHandle(dirHandle);
+    localStorage.setItem('joyvi_autobackup_dir_name',dirHandle.name);
+    toast('✅ Carpeta cambiada a "'+dirHandle.name+'"','o');
+    renderPerfil();
+  }catch(err){
+    if(err.name!=='AbortError')toast('Error al cambiar carpeta','e');
+  }
+};
+
+window.toggleAutoBackup=async(active)=>{
+  localStorage.setItem('joyvi_autobackup',active?'1':'0');
+  if(active){
+    if('showDirectoryPicker' in window){
+      try{
+        toast('📁 Elige la carpeta donde copiar los backups...','i');
+        // Chrome 122+ mostrará prompt de 3 opciones: "Esta vez" / "Permitir siempre" / "No permitir"
+        // El usuario debe elegir "Permitir siempre" para que funcione sin preguntar en futuras sesiones
+        const dirHandle=await window.showDirectoryPicker({mode:'readwrite',startIn:'downloads'});
+        await _saveBackupDirHandle(dirHandle);
+        localStorage.setItem('joyvi_autobackup_dir_name',dirHandle.name);
+        toast('✅ Carpeta "'+dirHandle.name+'" configurada','o');
+      }catch(err){
+        if(err.name==='AbortError'){
+          localStorage.setItem('joyvi_autobackup','0');
+          toast('Backup no activado — debes elegir una carpeta','i');
+          renderPerfil();
+          return;
+        }
+        console.warn('[Backup] showDirectoryPicker:',err);
+        toast('✅ Backup activo — se usará el almacenamiento interno de la app','o');
+      }
+    } else {
+      toast('✅ Backup activo','o');
+    }
+  } else {
+    _clearBackupDirHandle();
+    localStorage.removeItem('joyvi_autobackup_dir_name');
+    toast('Backup automático desactivado','i');
+  }
+  renderPerfil();
+};
+
+// ── Construir datos del backup de un grupo ──
+const _buildBackupData=async(gid)=>{
   const [cliSnap,partesSnap,mantsSnap,avSnap,avHistSnap,presuSnap,hmSnap,grupoSnap]=await Promise.all([
     getDocs(collection(db,'grupos',gid,'clientes')),
     getDocs(collection(db,'grupos',gid,'partes')),
@@ -11338,12 +11441,12 @@ const _descargarBackupGrupo=async(gid)=>{
   ]);
   const gData=grupoSnap.exists()?grupoSnap.data():{};
   const ahora=new Date();
-  // Nombre con fecha: joyvi_backup_GRUPO_YYYY-MM-DD.json
-  const fechaStr=ahora.toLocaleDateString('es-ES',{year:'numeric',month:'2-digit',day:'2-digit'})
-    .split('/').reverse().join('-'); // YYYY-MM-DD
+  const y=ahora.getFullYear();
+  const m=String(ahora.getMonth()+1).padStart(2,'0');
+  const d=String(ahora.getDate()).padStart(2,'0');
+  const fechaStr=`${y}-${m}-${d}`;
   const nombreGrupo=(gData.nombre||gid).replace(/[^a-z0-9áéíóúüñ]/gi,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
   const fileName=`joyvi_backup_${nombreGrupo}_${fechaStr}.json`;
-
   const backup={
     _meta:{version:'1.0',app:'JoyviApp',grupoId:gid,fecha:ahora.toISOString(),grupoNombre:gData.nombre||gid,autoBackup:true},
     grupo:{nombre:gData.nombre||'',fondoImg:gData.fondoImg||'',adminNombre:gData.adminNombre||''},
@@ -11355,89 +11458,122 @@ const _descargarBackupGrupo=async(gid)=>{
     presupuestos:presuSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
     historial_mantenimientos:hmSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
   };
-  const json=JSON.stringify(backup,null,2);
+  return {json:JSON.stringify(backup,null,2),fileName,gData};
+};
 
-  // Intentar guardar en carpeta elegida (File System Access API)
-  let guardadoEnCarpeta=false;
-  try{
-    const dirHandle=await _getBackupDirHandle();
-    if(dirHandle){
-      // Verificar que aún tenemos permiso (puede haber caducado)
-      const perm=await dirHandle.queryPermission({mode:'readwrite'});
-      if(perm==='granted'){
-        const fileHandle=await dirHandle.getFileHandle(fileName,{create:true});
-        const writable=await fileHandle.createWritable();
-        await writable.write(json);
-        await writable.close();
-        guardadoEnCarpeta=true;
-        console.log('[Backup] Guardado en carpeta:',dirHandle.name+'/'+fileName);
-      } else if(perm==='prompt'){
-        // Intentar re-pedir permiso
-        const newPerm=await dirHandle.requestPermission({mode:'readwrite'});
-        if(newPerm==='granted'){
-          const fileHandle=await dirHandle.getFileHandle(fileName,{create:true});
-          const writable=await fileHandle.createWritable();
-          await writable.write(json);
-          await writable.close();
-          guardadoEnCarpeta=true;
-          console.log('[Backup] Guardado en carpeta:',dirHandle.name+'/'+fileName);
+// ── Guardar backup de un grupo (estrategia dual) ──
+// conGesto: true=iniciado por clic del usuario, false=automático al abrir app
+const _descargarBackupGrupo=async(gid,conGesto)=>{
+  const {json,fileName}=await _buildBackupData(gid);
+
+  // 1️⃣ SIEMPRE guardar en OPFS (100% silencioso, sin permisos, sin diálogos)
+  await _opfsGuardarBackup(fileName,json);
+
+  // 2️⃣ Intentar también copiar a la carpeta del usuario (File System Access API)
+  //    Solo funciona sin diálogo si el permiso sigue activo (misma sesión de Chrome)
+  //    En Chrome 122+ el usuario puede elegir "Permitir siempre" para que persista entre sesiones
+  if('showDirectoryPicker' in window){
+    try{
+      const dirHandle=await _getBackupDirHandle();
+      if(dirHandle){
+        const ok=await _fsaEscribirEnCarpeta(dirHandle,json,fileName,conGesto);
+        if(ok)return; // ✅ guardado en carpeta del usuario además del OPFS
+        // Permiso caducado en modo automático → el OPFS ya lo tiene guardado, informar
+        if(!conGesto){
+          console.log('[Backup] Permiso FSA caducado — backup guardado en OPFS interno');
+          return; // El OPFS ya está guardado, no hacer nada más
         }
+        // Con gesto pero permiso denegado → pedir carpeta de nuevo
+        toast('📁 Elige de nuevo la carpeta de backup...','i');
+        const newHandle=await window.showDirectoryPicker({mode:'readwrite',startIn:'downloads'});
+        await _saveBackupDirHandle(newHandle);
+        localStorage.setItem('joyvi_autobackup_dir_name',newHandle.name);
+        await _fsaEscribirEnCarpeta(newHandle,json,fileName,true);
       }
+    }catch(fsErr){
+      if(fsErr.name==='AbortError')return;
+      console.warn('[Backup] FSA error:',fsErr);
     }
-  }catch(fsErr){
-    console.warn('[Backup] File System Access falló, usando descarga normal:',fsErr);
   }
+  // Si no hay FSA o no hay carpeta configurada: el OPFS ya lo tiene, no hacer descarga extra
+};
 
-  // Fallback: descarga normal al navegador (Descargas del sistema)
-  if(!guardadoEnCarpeta){
-    const blob=new Blob([json],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),2000);
+// ── Ejecutar backup de todos los grupos ──
+const _runBackupAllGroups=async(conGesto)=>{
+  if(!CU)return;
+  const gruposSnap=await getDocs(query(collection(db,'grupos'),where('miembros','array-contains',CU.uid)));
+  const grupoIds=new Set(gruposSnap.docs.map(d=>d.id));
+  if(CGID)grupoIds.add(CGID);
+  if(!grupoIds.size)return;
+  for(const gid of grupoIds){
+    try{
+      await _descargarBackupGrupo(gid,conGesto);
+      if(grupoIds.size>1)await new Promise(r=>setTimeout(r,500));
+    }catch(e){console.warn('[Backup] Error grupo '+gid,e);}
   }
 };
 
-// ── Ejecutar backup silencioso de todos los grupos ──
+// ── API pública ──
 window._ejecutarAutoBackupSilencioso=async()=>{
-  if(!CU)return;
   try{
-    const gruposSnap=await getDocs(query(collection(db,'grupos'),where('miembros','array-contains',CU.uid)));
-    const grupoIds=new Set(gruposSnap.docs.map(d=>d.id));
-    if(CGID)grupoIds.add(CGID);
-    if(!grupoIds.size)return;
-    for(const gid of grupoIds){
-      try{
-        await _descargarBackupGrupo(gid);
-        if(grupoIds.size>1)await new Promise(r=>setTimeout(r,600));
-      }catch(e){console.warn('[Backup] Error grupo '+gid,e);}
-    }
-    toast('✅ Backup guardado correctamente','o');
-  }catch(e){console.warn('[Backup] Error general',e);}
+    await _runBackupAllGroups(false);
+    toast('✅ Backup guardado','o');
+  }catch(e){console.warn('[Backup] Error',e);}
 };
 
 window.ejecutarBackupAhoraManual=async()=>{
   toast('⏳ Generando backup...','i');
-  await window._ejecutarAutoBackupSilencioso();
+  try{
+    await _runBackupAllGroups(true);
+    toast('✅ Backup guardado correctamente','o');
+  }catch(e){
+    if(e.name!=='AbortError')toast('Error al generar backup: '+e.message,'e');
+  }
 };
 
-// ── Comprobar si toca ejecutar el backup automático al abrir la app ──
+// ── Comprobar si toca backup automático al abrir la app ──
 const _checkAutoBackupDiario=async()=>{
   if(localStorage.getItem('joyvi_autobackup')!=='1')return;
   if(!CU)return;
   const hoy=new Date().toISOString().slice(0,10);
   const KEY='joyvi_autobackup_last_'+CU.uid;
-  if(localStorage.getItem(KEY)===hoy)return; // ya ejecutado hoy
+  if(localStorage.getItem(KEY)===hoy)return;
   localStorage.setItem(KEY,hoy);
-  // Esperar a que carguen los datos del grupo antes de hacer el backup
   setTimeout(async()=>{
-    try{await window._ejecutarAutoBackupSilencioso();}
-    catch(e){console.warn('[Backup] Error diario',e);}
+    try{
+      await _runBackupAllGroups(false); // Sin gesto → OPFS siempre funciona, FSA solo si tiene permiso activo
+      toast('✅ Backup diario guardado','o');
+    }catch(e){console.warn('[Backup] Error diario',e);}
   },6000);
+};
+
+// ── Ver backups guardados en OPFS ──
+window.verBackupsGuardados=async()=>{
+  const lista=await window._opfsListarBackups();
+  if(!lista.length){
+    toast('No hay backups guardados aún en la app','i');
+    return;
+  }
+  // Mostrar en un bottom-sheet simple reutilizando el sistema de SB existente
+  const sbBody=document.getElementById('sbBody');
+  const sbTitle=document.getElementById('sbTitle');
+  if(!sbBody||!sbTitle)return;
+  sbTitle.textContent='📋 Backups guardados en la app';
+  sbBody.innerHTML=`
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:14px;line-height:1.5">
+      Estos backups se guardan automáticamente dentro de la app. Pulsa uno para descargarlo a tu dispositivo.
+    </div>
+    ${lista.map(b=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;background:rgba(255,255,255,.03)">
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--tx)">${b.name}</div>
+          <div style="font-size:10px;color:var(--tx2);margin-top:2px">${new Date(b.fecha).toLocaleString('es-ES')} · ${(b.size/1024).toFixed(1)} KB</div>
+        </div>
+        <button onclick="_opfsExportarBackup('${b.name}')" style="padding:7px 12px;border-radius:8px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;margin-left:10px">⬇ Exportar</button>
+      </div>
+    `).join('')}
+  `;
+  abrirSB();
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
