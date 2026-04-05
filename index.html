@@ -3872,6 +3872,10 @@ window._switchGMantMode=(mode)=>{
   _gMantMode=mode;
   _renderGTabMantenimientos();
 };
+window._setGCalPeriodo=(v)=>{
+  _gCalPeriodo=v;
+  _renderGTabMantenimientos();
+};
 
 const _renderGTabMantenimientos=()=>{
   const el=$('tabMantContent');if(!el)return;
@@ -3897,7 +3901,7 @@ const _renderGTabMantenimientos=()=>{
   <div style="margin-bottom:12px">
     <div style="display:flex;gap:5px;margin-bottom:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:4px">
       ${[['semana','Semana'],['mes','Mes'],['trimestre','Trimestre'],['todo','Completo']].map(([v,l])=>`
-      <button onclick="window._gCalPeriodo='${v}';_renderGTabMantenimientos()" style="flex:1;border:none;border-radius:8px;padding:8px 4px;font-family:var(--font);font-size:11px;font-weight:900;cursor:pointer;transition:.15s;${_gCalPeriodo===v?'background:var(--r);color:#fff;box-shadow:0 2px 8px rgba(var(--theme-rgb),.4)':'background:transparent;color:var(--tx2)'}">${l}</button>`).join('')}
+      <button onclick="_setGCalPeriodo('${v}')" style="flex:1;border:none;border-radius:8px;padding:8px 4px;font-family:var(--font);font-size:11px;font-weight:900;cursor:pointer;transition:.15s;${_gCalPeriodo===v?'background:var(--r);color:#fff;box-shadow:0 2px 8px rgba(var(--theme-rgb),.4)':'background:transparent;color:var(--tx2)'}">${l}</button>`).join('')}
     </div>
     <div style="display:flex;gap:5px;align-items:center">
       <span style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap">
@@ -11170,27 +11174,26 @@ const renderPerfil=()=>{
   </div>
   `;
   const _autoBackupActive=localStorage.getItem('joyvi_autobackup')==='1';
-  const _autoBackupPath=localStorage.getItem('joyvi_autobackup_path')||'';
   html+=`
   <div class="fsec" style="margin-top:8px">
     <div class="fsec-title">💾 Copia de seguridad automática</div>
-    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;line-height:1.6">Al activar esta opción, la app generará automáticamente una copia de seguridad de todos tus grupos la primera vez que abras la app cada día. Ideal para dejar activo en el ordenador del trabajo.</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;line-height:1.6">
+      Al activar, la app descarga automáticamente un backup JSON al abrir la app (una vez al día), sin ninguna confirmación.
+      El archivo se nombra con la fecha del día: <code style="font-size:10px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px">joyvi_backup_GRUPO_AAAA-MM-DD.json</code>
+    </div>
     <div class="toggle-row" style="margin-bottom:10px">
       <div>
         <div class="toggle-label">🔄 Backup automático diario</div>
-        <div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:220px">Se ejecuta una vez al día al abrir la app.</div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:220px">Descarga silenciosa al iniciar la app.</div>
       </div>
       <label class="toggle-sw" style="flex-shrink:0"><input type="checkbox" id="toggleAutoBackup" onchange="toggleAutoBackup(this.checked)" ${_autoBackupActive?'checked':''}><span class="toggle-track"></span></label>
     </div>
     ${_autoBackupActive?`
-    <div style="background:rgba(var(--theme-rgb),.06);border:1px solid rgba(var(--theme-rgb),.18);border-radius:12px;padding:12px 14px;margin-top:4px">
-      <div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📁 Ruta de referencia (tus notas)</div>
-      <div style="font-size:11px;color:var(--tx2);margin-bottom:8px;line-height:1.5">El archivo se guardará en la carpeta de Descargas del navegador. Anota aquí la ruta donde mueves los backups para tenerla a mano:</div>
-      <input id="autoBackupPathInput" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box" value="${_autoBackupPath.replace(/"/g,'&quot;')}" placeholder="Ej: C:\\Backups\\Joyvi">
-      <button onclick="guardarRutaBackup()" style="margin-top:8px;width:100%;padding:10px;border-radius:10px;border:none;background:var(--r);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font)">💾 Guardar ruta</button>
+    <div style="margin-top:6px;padding:10px 14px;background:rgba(76,175,80,.07);border:1px solid rgba(76,175,80,.2);border-radius:10px;font-size:11px;color:#4caf50;font-weight:700;line-height:1.7">
+      ✅ Backup activo — se descarga automáticamente cada día al abrir la app.<br>
+      <span style="color:var(--tx2);font-weight:600">📂 Se guarda en tu carpeta <strong style="color:var(--tx)">Descargas</strong> del dispositivo.</span>
     </div>
-    <div style="margin-top:10px;padding:8px 12px;background:rgba(76,175,80,.07);border:1px solid rgba(76,175,80,.2);border-radius:10px;font-size:11px;color:#4caf50;font-weight:700">✅ Backup automático activo — se ejecutará una vez al día al abrir la app.</div>
-    <button onclick="ejecutarBackupAhoraManual()" style="margin-top:8px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">⚡ Ejecutar backup ahora</button>
+    <button onclick="ejecutarBackupAhoraManual()" style="margin-top:8px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font)">⚡ Descargar backup ahora</button>
     `:''}
   </div>
   <button class="btn btn-del" style="margin-top:8px" onclick="doLogout()">🚪 Cerrar sesión</button>`;
@@ -11253,77 +11256,176 @@ window.guardarPerfil=async()=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // BACKUP AUTOMÁTICO DIARIO
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-window.toggleAutoBackup=(active)=>{
+// ── Toggle backup automático ──
+window.toggleAutoBackup=async(active)=>{
   localStorage.setItem('joyvi_autobackup',active?'1':'0');
-  toast(active?'✅ Backup automático activado':'Backup automático desactivado',active?'o':'i');
+  if(active){
+    // Intentar solicitar permiso File System Access API si el navegador lo soporta
+    // Esto permite guardar en carpeta elegida por el usuario en Chrome/Edge de escritorio
+    if('showDirectoryPicker' in window){
+      try{
+        const dirHandle=await window.showDirectoryPicker({mode:'readwrite',startIn:'downloads'});
+        // Serializar el nombre del directorio (no podemos guardar el handle entre sesiones sin Storage Access)
+        localStorage.setItem('joyvi_autobackup_dir_name',dirHandle.name);
+        // Guardar handle via indexedDB para reutilizarlo sin re-pedir permiso
+        await _saveBackupDirHandle(dirHandle);
+        toast('✅ Carpeta seleccionada: '+dirHandle.name,'o');
+      }catch(err){
+        if(err.name!=='AbortError'){
+          console.warn('File System Access no disponible:',err);
+        }
+        // Si cancela o falla, seguimos con descarga normal a Descargas
+        toast('✅ Backup activo — se guardará en Descargas','o');
+      }
+    } else {
+      toast('✅ Backup automático activado — se guardará en Descargas','o');
+    }
+  } else {
+    // Limpiar handle guardado
+    _clearBackupDirHandle();
+    toast('Backup automático desactivado','i');
+  }
   renderPerfil();
 };
 
-window.guardarRutaBackup=()=>{
-  const inp=document.getElementById('autoBackupPathInput');
-  if(!inp)return;
-  localStorage.setItem('joyvi_autobackup_path',inp.value.trim());
-  toast('✓ Ruta guardada','o');
+// ── IndexedDB helpers para guardar el FileSystemDirectoryHandle ──
+const _IDB_BACKUP='joyvi_backup_store';
+const _saveBackupDirHandle=async(handle)=>{
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(_IDB_BACKUP,1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore('handles');
+    req.onsuccess=e=>{
+      const db2=e.target.result;
+      const tx=db2.transaction('handles','readwrite');
+      tx.objectStore('handles').put(handle,'backupDir');
+      tx.oncomplete=()=>{db2.close();res();};
+      tx.onerror=()=>{db2.close();rej(tx.error);};
+    };
+    req.onerror=()=>rej(req.error);
+  });
+};
+const _getBackupDirHandle=()=>new Promise((res)=>{
+  const req=indexedDB.open(_IDB_BACKUP,1);
+  req.onupgradeneeded=e=>e.target.result.createObjectStore('handles');
+  req.onsuccess=e=>{
+    const db2=e.target.result;
+    const tx=db2.transaction('handles','readonly');
+    const get=tx.objectStore('handles').get('backupDir');
+    get.onsuccess=()=>{db2.close();res(get.result||null);};
+    get.onerror=()=>{db2.close();res(null);};
+  };
+  req.onerror=()=>res(null);
+});
+const _clearBackupDirHandle=()=>{
+  const req=indexedDB.open(_IDB_BACKUP,1);
+  req.onsuccess=e=>{
+    const db2=e.target.result;
+    try{const tx=db2.transaction('handles','readwrite');tx.objectStore('handles').delete('backupDir');tx.oncomplete=()=>db2.close();}catch(_){db2.close();}
+  };
 };
 
-// Ejecutar backup de todos los grupos del usuario de forma silenciosa
+// ── Generar y descargar backup de un grupo ──
+const _descargarBackupGrupo=async(gid)=>{
+  const [cliSnap,partesSnap,mantsSnap,avSnap,avHistSnap,presuSnap,hmSnap,grupoSnap]=await Promise.all([
+    getDocs(collection(db,'grupos',gid,'clientes')),
+    getDocs(collection(db,'grupos',gid,'partes')),
+    getDocs(collection(db,'grupos',gid,'mantenimientos')),
+    getDocs(collection(db,'grupos',gid,'averias')),
+    getDocs(collection(db,'grupos',gid,'averias_historial')),
+    getDocs(collection(db,'grupos',gid,'presupuestos')),
+    getDocs(collection(db,'grupos',gid,'historial_mantenimientos')),
+    getDoc(doc(db,'grupos',gid)),
+  ]);
+  const gData=grupoSnap.exists()?grupoSnap.data():{};
+  const ahora=new Date();
+  // Nombre con fecha: joyvi_backup_GRUPO_YYYY-MM-DD.json
+  const fechaStr=ahora.toLocaleDateString('es-ES',{year:'numeric',month:'2-digit',day:'2-digit'})
+    .split('/').reverse().join('-'); // YYYY-MM-DD
+  const nombreGrupo=(gData.nombre||gid).replace(/[^a-z0-9áéíóúüñ]/gi,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const fileName=`joyvi_backup_${nombreGrupo}_${fechaStr}.json`;
+
+  const backup={
+    _meta:{version:'1.0',app:'JoyviApp',grupoId:gid,fecha:ahora.toISOString(),grupoNombre:gData.nombre||gid,autoBackup:true},
+    grupo:{nombre:gData.nombre||'',fondoImg:gData.fondoImg||'',adminNombre:gData.adminNombre||''},
+    clientes:cliSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+    partes:partesSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+    mantenimientos:mantsSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+    averias:avSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+    averias_historial:avHistSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+    presupuestos:presuSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+    historial_mantenimientos:hmSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
+  };
+  const json=JSON.stringify(backup,null,2);
+
+  // Intentar guardar en carpeta elegida (File System Access API)
+  let guardadoEnCarpeta=false;
+  try{
+    const dirHandle=await _getBackupDirHandle();
+    if(dirHandle){
+      // Verificar que aún tenemos permiso (puede haber caducado)
+      const perm=await dirHandle.queryPermission({mode:'readwrite'});
+      if(perm==='granted'){
+        const fileHandle=await dirHandle.getFileHandle(fileName,{create:true});
+        const writable=await fileHandle.createWritable();
+        await writable.write(json);
+        await writable.close();
+        guardadoEnCarpeta=true;
+        console.log('[Backup] Guardado en carpeta:',dirHandle.name+'/'+fileName);
+      } else if(perm==='prompt'){
+        // Intentar re-pedir permiso
+        const newPerm=await dirHandle.requestPermission({mode:'readwrite'});
+        if(newPerm==='granted'){
+          const fileHandle=await dirHandle.getFileHandle(fileName,{create:true});
+          const writable=await fileHandle.createWritable();
+          await writable.write(json);
+          await writable.close();
+          guardadoEnCarpeta=true;
+          console.log('[Backup] Guardado en carpeta:',dirHandle.name+'/'+fileName);
+        }
+      }
+    }
+  }catch(fsErr){
+    console.warn('[Backup] File System Access falló, usando descarga normal:',fsErr);
+  }
+
+  // Fallback: descarga normal al navegador (Descargas del sistema)
+  if(!guardadoEnCarpeta){
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+  }
+};
+
+// ── Ejecutar backup silencioso de todos los grupos ──
 window._ejecutarAutoBackupSilencioso=async()=>{
   if(!CU)return;
   try{
-    // Obtener todos los grupos a los que pertenece el usuario
     const gruposSnap=await getDocs(query(collection(db,'grupos'),where('miembros','array-contains',CU.uid)));
-    // También incluir el grupo actual
     const grupoIds=new Set(gruposSnap.docs.map(d=>d.id));
     if(CGID)grupoIds.add(CGID);
     if(!grupoIds.size)return;
-
-    const fecha=new Date().toISOString().slice(0,10);
     for(const gid of grupoIds){
       try{
-        const [cliSnap,partesSnap,mantsSnap,avSnap,avHistSnap,presuSnap,hmSnap,grupoSnap]=await Promise.all([
-          getDocs(collection(db,'grupos',gid,'clientes')),
-          getDocs(collection(db,'grupos',gid,'partes')),
-          getDocs(collection(db,'grupos',gid,'mantenimientos')),
-          getDocs(collection(db,'grupos',gid,'averias')),
-          getDocs(collection(db,'grupos',gid,'averias_historial')),
-          getDocs(collection(db,'grupos',gid,'presupuestos')),
-          getDocs(collection(db,'grupos',gid,'historial_mantenimientos')),
-          getDoc(doc(db,'grupos',gid)),
-        ]);
-        const gData=grupoSnap.exists()?grupoSnap.data():{};
-        const backup={
-          _meta:{version:'1.0',app:'JoyviApp',grupoId:gid,fecha:new Date().toISOString(),grupoNombre:gData.nombre||gid,autoBackup:true},
-          grupo:{nombre:gData.nombre||'',fondoImg:gData.fondoImg||'',adminNombre:gData.adminNombre||''},
-          clientes:cliSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
-          partes:partesSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
-          mantenimientos:mantsSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
-          averias:avSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
-          averias_historial:avHistSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
-          presupuestos:presuSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
-          historial_mantenimientos:hmSnap.docs.map(d=>({_id:d.id,..._serializeTimestamps(d.data())})),
-        };
-        const json=JSON.stringify(backup,null,2);
-        const blob=new Blob([json],{type:'application/json'});
-        const url=URL.createObjectURL(blob);
-        const a=document.createElement('a');
-        a.href=url;
-        a.download=`autobackup_${(gData.nombre||gid).replace(/[^a-z0-9]/gi,'_')}_${fecha}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        await new Promise(r=>setTimeout(r,400)); // pequeña pausa entre descargas
-      }catch(e){console.warn('Auto-backup error grupo '+gid,e);}
+        await _descargarBackupGrupo(gid);
+        if(grupoIds.size>1)await new Promise(r=>setTimeout(r,600));
+      }catch(e){console.warn('[Backup] Error grupo '+gid,e);}
     }
-    const ruta=localStorage.getItem('joyvi_autobackup_path')||'';
-    toast('✅ Backup automático completado'+(ruta?' — guárdalo en: '+ruta:''),'o');
-  }catch(e){console.warn('Auto-backup error',e);}
+    toast('✅ Backup guardado correctamente','o');
+  }catch(e){console.warn('[Backup] Error general',e);}
 };
 
 window.ejecutarBackupAhoraManual=async()=>{
-  toast('⏳ Generando backup de todos los grupos...','i');
+  toast('⏳ Generando backup...','i');
   await window._ejecutarAutoBackupSilencioso();
 };
 
-// Verificar si se debe ejecutar el backup automático al iniciar la app
+// ── Comprobar si toca ejecutar el backup automático al abrir la app ──
 const _checkAutoBackupDiario=async()=>{
   if(localStorage.getItem('joyvi_autobackup')!=='1')return;
   if(!CU)return;
@@ -11331,10 +11433,11 @@ const _checkAutoBackupDiario=async()=>{
   const KEY='joyvi_autobackup_last_'+CU.uid;
   if(localStorage.getItem(KEY)===hoy)return; // ya ejecutado hoy
   localStorage.setItem(KEY,hoy);
-  // Pequeño delay para que carguen los datos del grupo
+  // Esperar a que carguen los datos del grupo antes de hacer el backup
   setTimeout(async()=>{
-    try{await window._ejecutarAutoBackupSilencioso();}catch(e){console.warn('Auto-backup diario error',e);}
-  },5000);
+    try{await window._ejecutarAutoBackupSilencioso();}
+    catch(e){console.warn('[Backup] Error diario',e);}
+  },6000);
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
