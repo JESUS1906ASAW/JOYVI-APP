@@ -3526,6 +3526,7 @@ window.abrirGrupo=async id=>{
   setTimeout(()=>{if(Notification.permission==='default')Notification.requestPermission();},500);
   setTimeout(_cargarAvataresCli, 800);
   setTimeout(()=>_checkBackupAutomatico(),3000);
+  setTimeout(()=>_avanzarMantsAtrasados(),3200);
   setTimeout(()=>_checkMantProximos(),4500);
   setTimeout(()=>{ if(typeof window._geoCheckAlAbrir==='function') window._geoCheckAlAbrir(); },3500);
   try{await registrarLog('abrir_grupo',`Grupo abierto: ${CG?.nombre||id}`,{grupoId:id});}catch(e){}
@@ -4122,21 +4123,25 @@ const _renderGTabMantenimientos=()=>{
               const fechaFmt=new Date(e._fecha+'T00:00:00').toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short'});
               const esHoy=e._fecha===hoyStr;
               const esPast=e._fecha<hoyStr;
+              const esAtrasado=!!e.atrasado; // movido automáticamente desde semana pasada
               return`<div class="cal-task ${completadoVisual?'done':esPast&&!completadoVisual?'overdue':''}" id="caltask3_${e.id}_${e._fecha}" style="border-radius:12px;padding:0;overflow:hidden;margin-bottom:8px">
                 <div style="display:flex;align-items:stretch;min-height:0">
                   <!-- Franja lateral de color -->
-                  <div style="width:4px;flex-shrink:0;background:${completadoVisual?'#4caf50':esPast&&!completadoVisual?'#f44336':esHoy?'var(--r)':'#ff9800'};border-radius:4px 0 0 4px"></div>
+                  <div style="width:4px;flex-shrink:0;background:${completadoVisual?'#4caf50':esAtrasado?'#ff9800':esPast&&!completadoVisual?'#f44336':esHoy?'var(--r)':'#ff9800'};border-radius:4px 0 0 4px"></div>
                   <div style="flex:1;padding:11px 12px">
                     <!-- Fila 1: fecha + estado -->
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                       <div style="display:flex;align-items:center;gap:6px">
-                        <span style="font-size:11px;font-weight:800;color:${completadoVisual?'#4caf50':esPast&&!completadoVisual?'#f44336':esHoy?'var(--r)':'#ff9800'};background:${completadoVisual?'rgba(76,175,80,.1)':esPast&&!completadoVisual?'rgba(244,67,54,.1)':esHoy?'rgba(var(--theme-rgb),.1)':'rgba(255,152,0,.1)'};padding:2px 8px;border-radius:8px">
+                        <span style="font-size:11px;font-weight:800;color:${completadoVisual?'#4caf50':esAtrasado?'#ff9800':esPast&&!completadoVisual?'#f44336':esHoy?'var(--r)':'#ff9800'};background:${completadoVisual?'rgba(76,175,80,.1)':esAtrasado?'rgba(255,152,0,.1)':esPast&&!completadoVisual?'rgba(244,67,54,.1)':esHoy?'rgba(var(--theme-rgb),.1)':'rgba(255,152,0,.1)'};padding:2px 8px;border-radius:8px">
                           ${esHoy?'⚡ Hoy':fechaFmt}
                         </span>
                         ${e.frecuencia?`<span style="font-size:10px;color:var(--tx2);background:rgba(255,255,255,.06);border-radius:6px;padding:2px 7px;font-weight:700">${e.frecuencia}</span>`:''}
                       </div>
-                      ${completadoVisual?`<span style="font-size:11px;font-weight:800;color:#4caf50;display:flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Hecho</span>`
-                       :esPast?`<span style="font-size:11px;font-weight:800;color:#f44336">⚠ Atrasado</span>`:``}
+                      ${completadoVisual
+                        ?`<span style="font-size:11px;font-weight:800;color:#4caf50;display:flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Hecho</span>`
+                        :esAtrasado
+                          ?`<span style="font-size:11px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);padding:2px 8px;border-radius:8px;display:flex;align-items:center;gap:3px">⏰ Atrasado${e.fechaOriginal?`<span style="font-weight:600;opacity:.75"> · era ${new Date(e.fechaOriginal+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>`:''}</span>`
+                          :esPast?`<span style="font-size:11px;font-weight:800;color:#f44336">⚠ Atrasado</span>`:``}
                     </div>
                     <!-- Fila 2: trabajo -->
                     <div style="font-size:14px;font-weight:900;color:var(--tx);margin-bottom:4px;cursor:pointer" onclick="verMant('${e.id}')">${e.nombreTrabajo}</div>
@@ -8481,7 +8486,7 @@ window._completarMantCalConfirmado=async(id,fecha)=>{
       prox.setDate(prox.getDate()+freqDays[m.frecuencia]);
       const fp=prox.toISOString().split('T')[0];
       await updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{
-        fechaProxima:fp, ultimoCompletado:fecha
+        fechaProxima:fp, ultimoCompletado:fecha, atrasado:false, fechaOriginal:null
       });
       toast(`Completado — próximo: ${fp}`,'o');
     }else{
@@ -12363,6 +12368,57 @@ window._eliminarFicha=async(fichaId)=>{
 // ALERTAS PROACTIVAS DE MANTENIMIENTOS
 // Notifica al abrir la app si hay mantenimientos en los próximos N días
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ── Auto-avance de mantenimientos atrasados ──────────────────────────────────
+// Si un mantenimiento tiene fechaProxima en una semana ISO ya pasada y no está
+// completado, se mueve al lunes de la semana actual y se marca como atrasado:true.
+// Solo se ejecuta una vez por semana por dispositivo (usando localStorage).
+const _avanzarMantsAtrasados=async()=>{
+  if(!CGID||!CU||!allMantenimientos.length)return;
+
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const hoyStr=hoy.toISOString().split('T')[0];
+  const semanaActual=isoWeek(hoyStr);
+
+  // Lunes de la semana actual
+  const [yW,wN]=semanaActual.split('-W').map(Number);
+  const jan4=new Date(yW,0,4);
+  const lunesActual=new Date(jan4);
+  lunesActual.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(wN-1)*7);
+  const lunesStr=lunesActual.toISOString().split('T')[0];
+
+  // Clave para no ejecutar más de una vez por semana
+  const KEY=`joyvi_avance_atras_${CGID}_${semanaActual}`;
+  if(localStorage.getItem(KEY))return;
+
+  const atrasados=allMantenimientos.filter(m=>{
+    if(m.estado==='completado')return false;
+    if(!m.fechaProxima)return false;
+    // Solo los que caen en una semana PASADA (no simplemente ayer)
+    return isoWeek(m.fechaProxima)<semanaActual;
+  });
+
+  if(!atrasados.length){ localStorage.setItem(KEY,'1'); return; }
+
+  const batch=writeBatch(db);
+  atrasados.forEach(m=>{
+    const ref=doc(db,'grupos',CGID,'mantenimientos',m.id);
+    batch.update(ref,{ fechaProxima:lunesStr, atrasado:true, fechaOriginal:m.fechaProxima });
+  });
+  try{
+    await batch.commit();
+    // Actualizar cache local
+    atrasados.forEach(m=>{
+      const idx=allMantenimientos.findIndex(x=>x.id===m.id);
+      if(idx>=0) allMantenimientos[idx]={...allMantenimientos[idx], fechaProxima:lunesStr, atrasado:true, fechaOriginal:m.fechaOriginal||m.fechaProxima};
+    });
+    localStorage.setItem(KEY,'1');
+    const n=atrasados.length;
+    toast(`⏰ ${n} mantenimiento${n>1?'s':''} atrasado${n>1?'s':''} movido${n>1?'s':''} a esta semana`,'i');
+    // Re-render si el calendario está visible
+    if(document.getElementById('tabMantContent')) _renderGTabMantenimientos();
+  }catch(e){ console.warn('Error al avanzar mantenimientos atrasados:',e); }
+};
+
 const _checkMantProximos=async()=>{
   if(!CGID||!CU||!allMantenimientos.length)return;
   const hoy=new Date();hoy.setHours(0,0,0,0);
