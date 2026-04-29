@@ -9667,7 +9667,7 @@ window.abrirNuevaAveriaPrerellenada=(cliId,tipo,desc,contacto)=>{
   const cliOpts=allClientes.filter(c=>!c.archivado).map(c=>`<option value="${c.id}" data-dir="${(c.direccion||'').replace(/"/g,'&quot;')}" data-edif="${(c.edificio||'').replace(/"/g,'&quot;')}" data-tel="${(c.telefono||'').replace(/"/g,'&quot;')}" ${c.id===cliId?'selected':''}>${c.nombre}</option>`).join('');
   abrirSB('Nueva avería',`
     <div class="fsec">
-      <div class="fgrp"><label>Cliente</label><div id="avCli-wrap"></div></div>
+      <div class="fgrp"><label>Cliente</label><div id="avCli-wrap"><input type="hidden" id="avCli" value="${cliId||''}"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="avDir" value="${_preDir}" placeholder="Dirección del cliente"></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="avEdif" value="${_preEdif}" placeholder="Edificio o comunidad"></div>
       <div class="fgrp"><label>Teléfono</label><input id="avTel" value="${_preTel}" placeholder="Teléfono de contacto" type="tel"></div>
@@ -9677,10 +9677,12 @@ window.abrirNuevaAveriaPrerellenada=(cliId,tipo,desc,contacto)=>{
       <button class="btn btn-p" style="width:100%" onclick="guardarAveria()">Guardar avería</button>
     </div>
   `);
-  setTimeout(()=>_buildCliSelect('avCli',cliId,id=>{
-    const c=allClientes.find(x=>x.id===id);
-    if(c){const d=$('avDir'),e=$('avEdif'),t=$('avTel');if(d&&c.direccion)d.value=c.direccion;if(e&&c.edificio)e.value=c.edificio;if(t&&c.telefono)t.value=c.telefono;}
-  }),0);
+  setTimeout(()=>{
+    if(document.getElementById('avCli-wrap')) _buildCliSelect('avCli',cliId,id=>{
+      const c=allClientes.find(x=>x.id===id);
+      if(c){const d=$('avDir'),e=$('avEdif'),t=$('avTel');if(d&&c.direccion)d.value=c.direccion;if(e&&c.edificio)e.value=c.edificio;if(t&&c.telefono)t.value=c.telefono;}
+    });
+  },80);
 };
 
 window.abrirNuevaAveria=()=>{
@@ -9737,9 +9739,10 @@ window._setAverPrio=(p)=>{
 };
 
 window.guardarAveria=async()=>{
-  const cliId=$('avCli').value;
-  const tipo=$('avTipo').value.trim();
-  if(!cliId||!tipo){toast('Selecciona cliente y tipo de avería','e');return}
+  const cliEl=$('avCli');
+  const cliId=cliEl?.value||'';
+  const tipo=($('avTipo')?.value||'').trim();
+  if(!cliId||!tipo){toast('Selecciona cliente y tipo de avería','e');return;}
   // Aprender
   try{
     await addDoc(collection(db,'grupos',CGID,'averias'),{
@@ -11794,12 +11797,7 @@ window.verBackupsGuardados=async()=>{
     toast('No hay backups guardados aún en la app','i');
     return;
   }
-  // Mostrar en un bottom-sheet simple reutilizando el sistema de SB existente
-  const sbBody=document.getElementById('sbBody');
-  const sbTitle=document.getElementById('sbTitle');
-  if(!sbBody||!sbTitle)return;
-  sbTitle.textContent='📋 Backups guardados en la app';
-  sbBody.innerHTML=`
+  abrirSB('📋 Backups guardados en la app',`
     <div style="font-size:11px;color:var(--tx2);margin-bottom:14px;line-height:1.5">
       Estos backups se guardan automáticamente dentro de la app. Pulsa uno para descargarlo a tu dispositivo.
     </div>
@@ -11812,8 +11810,7 @@ window.verBackupsGuardados=async()=>{
         <button onclick="_opfsExportarBackup('${b.name}')" style="padding:7px 12px;border-radius:8px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;margin-left:10px">⬇ Exportar</button>
       </div>
     `).join('')}
-  `;
-  abrirSB();
+  `);
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
