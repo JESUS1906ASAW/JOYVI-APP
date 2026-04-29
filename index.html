@@ -581,6 +581,8 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 .gtab-sm.active .gtab-sm-ico{opacity:1}
 .gtab-sm-txt{font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.3px;text-align:center}
 .gtab-sm.active .gtab-sm-txt{color:var(--tx)}
+.gtab-sm#tabAvis.active .gtab-sm-ico svg{stroke:#ab47bc}
+.gtab-sm#tabAvis.active{border-color:rgba(171,71,188,.5);box-shadow:0 2px 10px rgba(171,71,188,.2)}
 body.modo-claro .gtab-big{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
 body.modo-claro .gtab-big.active{background:linear-gradient(135deg,var(--r2),var(--r));border-color:transparent;box-shadow:0 4px 16px rgba(var(--theme-rgb),.35)}
 body.modo-claro .gtab-sm{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
@@ -2594,6 +2596,7 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-item${act('grupo','mant')}" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
     <div class="d-item${act('grupo','aver')}" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
     <div class="d-item${act('grupo','presu')}" onclick="goScreen('grupo');switchGTab('presu');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Presupuestos</div>
+    <div class="d-item${act('grupo','avis')}" onclick="goScreen('grupo');switchGTab('avis');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Avisos</div>
     <div class="d-item${act('historialGlobal')}" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
     <div class="d-item${act('rutaDia')}" onclick="goScreen('rutaDia');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Ruta del día</div>
     <div class="d-item${act('imagenes')}" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
@@ -3029,6 +3032,8 @@ window.doLogout=async()=>{
   if(unsubC){unsubC();unsubC=null}
   if(unsubG){unsubG();unsubG=null}
   if(unsubN){unsubN();unsubN=null}
+  if(window._unsubNotifScreen){try{window._unsubNotifScreen();}catch(_){}window._unsubNotifScreen=null;}
+  _limpiarAvisosSubs();
   if(unsubM){unsubM();unsubM=null}
   CU=null;CUD=null;CGID=null;CG=null;
   allGrupos=[];allClientes=[];allPartes=[];allMantenimientos=[];
@@ -3571,12 +3576,17 @@ const renderGrupo=()=>{
       <div class="gtab-sm-ico" style="color:#ff9800"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></div>
       <div class="gtab-sm-txt">Mantenimientos</div>
     </button>
+    <button class="gtab-sm" id="tabAvis" onclick="switchGTab('avis')">
+      <div class="gtab-sm-ico" style="color:#ab47bc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="gtab-sm-txt">Avisos</div>
+    </button>
   </div>
   <div id="tabCliContent">${renderTabClientes()}</div>
   <div id="tabPartContent" style="display:none">${renderTabPartes()}</div>
   <div id="tabAverContent" style="display:none"></div>
   <div id="tabPresuContent" style="display:none"></div>
-  <div id="tabMantContent" style="display:none"></div>`;
+  <div id="tabMantContent" style="display:none"></div>
+  <div id="tabAvisContent" style="display:none"></div>`;
   $('grupoContent').innerHTML=html;
   // Restaurar tab activo (tras F5 o navegación)
   const savedTab=sessionStorage.getItem('joyvi_gtab')||'cli';
@@ -3604,6 +3614,12 @@ const renderGrupo=()=>{
     $('tabCliContent').style.display='none';
     $('tabMantContent').style.display='block';
     _renderGTabMantenimientos();
+  } else if(savedTab==='avis'){
+    $('tabCli')?.classList.remove('active');
+    $('tabAvis')?.classList.add('active');
+    $('tabCliContent').style.display='none';
+    $('tabAvisContent').style.display='block';
+    _renderGTabAvisos();
   }
   // Restaurar posición de scroll guardada al navegar de vuelta
   const _savedGrupoScroll=sessionStorage.getItem('joyvi_grupo_scroll');
@@ -3622,9 +3638,9 @@ window.switchGTab=tab=>{
     _renderVentanaExclusiva(tab);
     return;
   }
-  const tabs=['cli','part','aver','presu','mant'];
-  const tabIds={cli:'tabCli',part:'tabPart',aver:'tabAver',presu:'tabPresu',mant:'tabMant'};
-  const contentIds={cli:'tabCliContent',part:'tabPartContent',aver:'tabAverContent',presu:'tabPresuContent',mant:'tabMantContent'};
+  const tabs=['cli','part','aver','presu','mant','avis'];
+  const tabIds={cli:'tabCli',part:'tabPart',aver:'tabAver',presu:'tabPresu',mant:'tabMant',avis:'tabAvis'};
+  const contentIds={cli:'tabCliContent',part:'tabPartContent',aver:'tabAverContent',presu:'tabPresuContent',mant:'tabMantContent',avis:'tabAvisContent'};
   tabs.forEach(t=>{
     const tabEl=$(tabIds[t]);
     const conEl=$(contentIds[t]);
@@ -3637,10 +3653,11 @@ window.switchGTab=tab=>{
   if(tab==='aver') _renderGTabAverias();
   else if(tab==='presu') _renderGTabPresupuestos();
   else if(tab==='mant') _renderGTabMantenimientos();
+  else if(tab==='avis') _renderGTabAvisos();
 };
 
 // ── Ventana exclusiva (modo simple): muestra solo la sección seleccionada ──
-const _labelTab={cli:'👷 Clientes',part:'🔧 Partes',aver:'⚠️ Averías',presu:'💶 Presupuestos',mant:'⚙️ Mantenimientos'};
+const _labelTab={cli:'👷 Clientes',part:'🔧 Partes',aver:'⚠️ Averías',presu:'💶 Presupuestos',mant:'⚙️ Mantenimientos',avis:'💬 Avisos'};
 const _renderVentanaExclusiva = (tab) => {
   const el=$('grupoContent');if(!el)return;
   // Contenedor con botón volver y sección exclusiva
@@ -10840,7 +10857,11 @@ window.restaurarMantCompletado=async(mantId,clienteId)=>{
 const renderNotificaciones=async()=>{
   const el=$('notifContent');
   if(!el)return;
-  // Marcar todas como leídas al visitar la pantalla y limpiar el badge
+
+  // Cancelar listener previo de esta pantalla
+  if(window._unsubNotifScreen){try{window._unsubNotifScreen();}catch(_){}window._unsubNotifScreen=null;}
+
+  // Marcar todas como leídas y limpiar badge
   if(CU){
     try{
       const snap=await getDocs(query(collection(db,'notificaciones'),where('destinatarios','array-contains',CU.uid),where('leida','==',false)));
@@ -10849,29 +10870,21 @@ const renderNotificaciones=async()=>{
         snap.docs.forEach(d=>_programarEliminacion(d.id,d.data().creado?.seconds));
       }
     }catch(e){}
-    // Limpiar badge inmediatamente
     const dot=$('notifDot');
     if(dot){dot.classList.remove('show');dot.textContent='';}
   }
-  // Adaptar botón volver según modo
+
+  // Adaptar botón volver
   const esKiosk=document.body.classList.contains('modo-visualizacion');
   const volverTxt=document.getElementById('notifVolverTxt');
   if(volverTxt)volverTxt.textContent=esKiosk?'Modo Gestión':'Inicio';
 
-  el.innerHTML=`<div style="text-align:center;padding:30px"><div style="display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div style="font-size:13px;color:var(--tx2);margin-top:8px">Cargando notificaciones…</div></div>`;
-  // Quick-back al grupo solo en modo normal
-  if(CGID&&!esKiosk){
-    const qb=document.createElement('div');
-    qb.className='quick-back';qb.setAttribute('onclick',`goScreen('grupo')`);
-    qb.textContent=`← Volver al grupo: ${CG?.nombre||''}`;
-    el.prepend(qb);
-  }
-  let html='';
-  if(CGID&&!esKiosk)html=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo: ${CG?.nombre||''}</div>`;
-
-  // ── BLOQUE ENVIAR AVISO (solo modo normal) ──
-  if(CGID&&!esKiosk){
-    html+=`<div style="background:linear-gradient(135deg,rgba(var(--theme-rgb),.1),rgba(var(--theme-rgb),.04));border:1px solid rgba(var(--theme-rgb),.2);border-radius:14px;padding:14px 16px;margin-bottom:20px">
+  // Renderizar cabecera + formulario envío
+  const buildHeader=()=>{
+    let h='';
+    if(CGID&&!esKiosk)h=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo: ${CG?.nombre||''}</div>`;
+    if(CGID&&!esKiosk){
+      h+=`<div style="background:linear-gradient(135deg,rgba(var(--theme-rgb),.1),rgba(var(--theme-rgb),.04));border:1px solid rgba(var(--theme-rgb),.2);border-radius:14px;padding:14px 16px;margin-bottom:20px">
       <div style="font-size:12px;font-weight:900;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         Enviar aviso al grupo
@@ -10883,119 +10896,122 @@ const renderNotificaciones=async()=>{
         Enviar aviso
       </button>
     </div>`;
-  }
-  try{
-    // Sin orderBy para evitar necesidad de índice compuesto en Firestore
-    const snap=await getDocs(query(
-      collection(db,'notificaciones'),
-      where('destinatarios','array-contains',CU.uid)
-    ));
-    const notifs=snap.docs.map(d=>({id:d.id,...d.data()}))
-      .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+    }
+    return h;
+  };
+
+  const nIco={
+    solicitud:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+    solicitud_aceptada:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    solicitud_rechazada:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    resumen_semanal:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+    mant_completado:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M19.07 4.93l-1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41"/></svg>`,
+    nuevo_parte:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+    aviso_grupo:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="12" y1="2" x2="12" y2="4"/></svg>`,
+  };
+  const defaultIco=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
+  const nLabel={solicitud:'Solicitud de acceso',solicitud_aceptada:'Acceso aceptado',solicitud_rechazada:'Acceso denegado',resumen_semanal:'Resumen semanal',mant_completado:'Mantenimiento completado',nuevo_parte:'Nuevo parte de trabajo',aviso_grupo:'📣 Aviso del grupo'};
+  const nColor={solicitud_aceptada:'#4caf50',solicitud_rechazada:'#e53935',resumen_semanal:'#1e88e5',mant_completado:'#ff9800',nuevo_parte:'var(--r)',aviso_grupo:'var(--r)'};
+
+  const renderNotif=(n)=>{
+    const tipo=n.tipo||'';
+    const ico=nIco[tipo]||defaultIco;
+    const label=nLabel[tipo]||'Notificación';
+    const color=nColor[tipo]||'var(--r)';
+    let accionHTML='';
+    let clickAction='';
+    if(tipo==='solicitud'&&n.grupoId){
+      accionHTML=`<div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-ok btn-sm" onclick="aceptarSolDesdeNotif('${n.id}','${n.solicitanteUid||''}','${(n.solicitanteNombre||'').replace(/'/g,"\\'")}','${n.grupoId}')">Aceptar</button>
+        <button class="btn btn-del btn-sm" onclick="rechazarSolDesdeNotif('${n.id}','${n.solicitanteUid||''}','${(n.solicitanteNombre||'').replace(/'/g,"\\'")}','${n.grupoId}')">Rechazar</button>
+      </div>`;
+    } else if(tipo==='solicitud_aceptada'&&n.grupoId){
+      accionHTML=`<button class="btn btn-p btn-sm" style="margin-top:10px" onclick="abrirGrupo('${n.grupoId}');marcarLeida('${n.id}')">Abrir grupo →</button>`;
+      clickAction=`abrirGrupo('${n.grupoId}');marcarLeida('${n.id}')`;
+    } else if(tipo==='resumen_semanal'){
+      const lineas=(n.cuerpo||'').split('\n').map(l=>l.trim()).filter(Boolean);
+      accionHTML=`<div style="background:rgba(30,136,229,.08);border:1px solid rgba(30,136,229,.2);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:12px;color:var(--tx2);line-height:1.8">${lineas.map(l=>`<div>${l}</div>`).join('')}</div>`;
+    } else if(tipo==='nuevo_parte'&&n.parteId){
+      accionHTML=`<button class="btn btn-p btn-sm" style="margin-top:10px" onclick="_notifVerParte('${n.parteId}','${n.grupoId||''}');marcarLeida('${n.id}')">Ver parte →</button>`;
+      clickAction=`_notifVerParte('${n.parteId}','${n.grupoId||''}');marcarLeida('${n.id}')`;
+    } else if(tipo==='mant_completado'&&n.grupoId){
+      clickAction=`abrirGrupo('${n.grupoId}');marcarLeida('${n.id}')`;
+    }
+    const hasClick=!!clickAction;
+    return`<div class="notif-card" style="border-left:4px solid ${color};${n.leida?'opacity:.55':''}${hasClick?';cursor:pointer':''}" ${hasClick?`onclick="${clickAction}"`:''}">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="line-height:1;margin-top:2px;flex-shrink:0;color:${color}">${ico}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+            <span class="notif-title" style="flex:1;min-width:0">${n.titulo||label}</span>
+            ${!n.leida?`<span style="width:8px;height:8px;border-radius:50%;background:var(--r);flex-shrink:0;display:inline-block"></span>`:''}
+          </div>
+          <div style="font-size:10px;font-weight:800;color:${color};letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">${label} · ${fmtF(n.creado)}</div>
+          ${tipo!=='resumen_semanal'&&n.cuerpo?`<div class="notif-sub">${n.cuerpo}</div>`:''}
+          ${accionHTML}
+          ${!n.leida&&!hasClick?`<button class="btn btn-s btn-sm" style="margin-top:10px" onclick="marcarLeida('${n.id}')">✓ Leída</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  };
+
+  const buildList=(notifs)=>{
     const ahora=Date.now();
-    const UN_DIA_S=86400; // segundos
-    // Eliminar automáticamente solo notificaciones leídas con más de 24h
-    const leidasViejas=snap.docs.filter(d=>{
-      const dat=d.data();
-      if(!dat.leida)return false;
-      const antigS=(ahora/1000)-(dat.creado?.seconds||0);
-      return antigS>UN_DIA_S;
-    });
-    leidasViejas.forEach(d=>deleteDoc(doc(db,'notificaciones',d.id)).catch(()=>{}));
+    const UN_DIA_S=86400;
     const noLeidas=notifs.filter(n=>!n.leida);
-    // Mostrar todas las leídas de las últimas 24h
     const leidas=notifs.filter(n=>{
       if(!n.leida)return false;
-      const antigS=(ahora/1000)-(n.creado?.seconds||0);
-      return antigS<=UN_DIA_S;
+      return ((ahora/1000)-(n.creado?.seconds||0))<=UN_DIA_S;
     }).slice(0,20);
-
-    if(!notifs.length){
-      html+=`<div class="empty"><div class="empty-ico" style="font-size:36px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>Sin notificaciones</p></div>`;
-    } else {
-      const nIco={
-        solicitud:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-        solicitud_aceptada:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-        solicitud_rechazada:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
-        resumen_semanal:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-        mant_completado:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M19.07 4.93l-1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41"/></svg>`,
-        nuevo_parte:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
-        aviso_grupo:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="12" y1="2" x2="12" y2="4"/></svg>`,
-      };
-      const defaultIco=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
-      const nLabel={
-        solicitud:'Solicitud de acceso', solicitud_aceptada:'Acceso aceptado',
-        solicitud_rechazada:'Acceso denegado', resumen_semanal:'Resumen semanal',
-        mant_completado:'Mantenimiento completado', nuevo_parte:'Nuevo parte de trabajo',
-        aviso_grupo:'📣 Aviso del grupo'
-      };
-      const nColor={
-        solicitud_aceptada:'#4caf50', solicitud_rechazada:'#e53935',
-        resumen_semanal:'#1e88e5', mant_completado:'#ff9800', nuevo_parte:'var(--r)',
-        aviso_grupo:'var(--r)'
-      };
-
-      const renderNotif=(n)=>{
-        const tipo=n.tipo||'';
-        const ico=nIco[tipo]||defaultIco;
-        const label=nLabel[tipo]||'Notificación';
-        const color=nColor[tipo]||'var(--r)';
-        let accionHTML='';
-        let clickAction='';
-        if(tipo==='solicitud'&&n.grupoId){
-          accionHTML=`<div style="display:flex;gap:8px;margin-top:10px">
-            <button class="btn btn-ok btn-sm" onclick="aceptarSolDesdeNotif('${n.id}','${n.solicitanteUid||''}','${(n.solicitanteNombre||'').replace(/'/g,"\\'")}','${n.grupoId}')">Aceptar</button>
-            <button class="btn btn-del btn-sm" onclick="rechazarSolDesdeNotif('${n.id}','${n.solicitanteUid||''}','${(n.solicitanteNombre||'').replace(/'/g,"\\'")}','${n.grupoId}')">Rechazar</button>
-          </div>`;
-        } else if(tipo==='solicitud_aceptada'&&n.grupoId){
-          accionHTML=`<button class="btn btn-p btn-sm" style="margin-top:10px" onclick="abrirGrupo('${n.grupoId}');marcarLeida('${n.id}')">Abrir grupo →</button>`;
-          clickAction=`abrirGrupo('${n.grupoId}');marcarLeida('${n.id}')`;
-        } else if(tipo==='resumen_semanal'){
-          const lineas=(n.cuerpo||'').split('\n').map(l=>l.trim()).filter(Boolean);
-          accionHTML=`<div style="background:rgba(30,136,229,.08);border:1px solid rgba(30,136,229,.2);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:12px;color:var(--tx2);line-height:1.8">
-            ${lineas.map(l=>`<div>${l}</div>`).join('')}
-          </div>`;
-        } else if(tipo==='nuevo_parte'&&n.parteId){
-          accionHTML=`<button class="btn btn-p btn-sm" style="margin-top:10px" onclick="_notifVerParte('${n.parteId}','${n.grupoId||''}');marcarLeida('${n.id}')">Ver parte →</button>`;
-          clickAction=`_notifVerParte('${n.parteId}','${n.grupoId||''}');marcarLeida('${n.id}')`;
-        } else if(tipo==='mant_completado'&&n.grupoId){
-          clickAction=`abrirGrupo('${n.grupoId}');marcarLeida('${n.id}')`;
-        }
-        const hasClick=!!clickAction;
-        return`<div class="notif-card" style="border-left:4px solid ${color};${n.leida?'opacity:.55':''}${hasClick?';cursor:pointer':''}" ${hasClick?`onclick="${clickAction}"`:''}">
-          <div style="display:flex;align-items:flex-start;gap:10px">
-            <div style="line-height:1;margin-top:2px;flex-shrink:0;color:${color}">${ico}</div>
-            <div style="flex:1;min-width:0">
-              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-                <span class="notif-title" style="flex:1;min-width:0">${n.titulo||label}</span>
-                ${!n.leida?`<span style="width:8px;height:8px;border-radius:50%;background:var(--r);flex-shrink:0;display:inline-block"></span>`:''}
-              </div>
-              <div style="font-size:10px;font-weight:800;color:${color};letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">${label} · ${fmtF(n.creado)}</div>
-              ${tipo!=='resumen_semanal'&&n.cuerpo?`<div class="notif-sub">${n.cuerpo}</div>`:''}
-              ${accionHTML}
-              ${!n.leida&&!hasClick?`<button class="btn btn-s btn-sm" style="margin-top:10px" onclick="marcarLeida('${n.id}')">✓ Leída</button>`:''}
-            </div>
-          </div>
-        </div>`;
-      };
-
-      if(noLeidas.length){
-        html+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase">Sin leer (${noLeidas.length})</div>
-          ${noLeidas.length>1?`<button class="btn btn-s btn-sm" style="padding:4px 10px;font-size:11px" onclick="marcarTodasLeidas()">✓ Todas leídas</button>`:''}
-        </div>`;
-        html+=noLeidas.map(renderNotif).join('');
-      }
-      if(leidas.length){
-        html+=`<div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin:${noLeidas.length?'20px':'0'} 0 10px">Leídas recientes</div>`;
-        html+=leidas.map(renderNotif).join('');
-      }
+    if(!notifs.length)
+      return`<div class="empty"><div class="empty-ico" style="font-size:36px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>Sin notificaciones</p></div>`;
+    let lh='';
+    if(noLeidas.length){
+      lh+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase">Sin leer (${noLeidas.length})</div>
+        ${noLeidas.length>1?`<button class="btn btn-s btn-sm" style="padding:4px 10px;font-size:11px" onclick="marcarTodasLeidas()">✓ Todas leídas</button>`:''}
+      </div>`;
+      lh+=noLeidas.map(renderNotif).join('');
     }
-  }catch(e){
-    console.error('renderNotificaciones error:',e);
-    html+=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><p>Error al cargar notificaciones.<br><small style="color:var(--tx3)">${e?.message||''}</small></p></div>`;
-  }
-  el.innerHTML=html;
+    if(leidas.length){
+      lh+=`<div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin:${noLeidas.length?'20px':'0'} 0 10px">Leídas recientes</div>`;
+      lh+=leidas.map(renderNotif).join('');
+    }
+    return lh;
+  };
+
+  // Spinner inicial
+  el.innerHTML=buildHeader()+`<div style="text-align:center;padding:30px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div style="font-size:13px;color:var(--tx2);margin-top:8px">Cargando…</div></div>`;
+
+  // Listener en tiempo real — la pantalla se actualiza automáticamente al recibir nuevas notificaciones
+  window._unsubNotifScreen=onSnapshot(
+    query(collection(db,'notificaciones'),where('destinatarios','array-contains',CU.uid)),
+    snap=>{
+      const el3=$('notifContent');
+      if(!el3){// pantalla ya no está visible, cancelar
+        if(window._unsubNotifScreen){window._unsubNotifScreen();window._unsubNotifScreen=null;}
+        return;
+      }
+      // Eliminar automáticamente notificaciones leídas con más de 24h
+      const ahora2=Date.now();
+      snap.docs.forEach(d=>{
+        const dat=d.data();
+        if(dat.leida&&((ahora2/1000)-(dat.creado?.seconds||0))>86400)
+          deleteDoc(doc(db,'notificaciones',d.id)).catch(()=>{});
+      });
+      const notifs=snap.docs.map(d=>({id:d.id,...d.data()}))
+        .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+      // Preservar el textarea si el usuario está escribiendo
+      const msgActual=document.getElementById('avisoMsgInput')?.value||'';
+      el3.innerHTML=buildHeader()+buildList(notifs);
+      if(msgActual&&document.getElementById('avisoMsgInput'))
+        document.getElementById('avisoMsgInput').value=msgActual;
+    },
+    err=>{
+      const el3=$('notifContent');
+      if(el3)el3.innerHTML=buildHeader()+`<div class="empty"><p>Error al cargar notificaciones.<br><small>${err?.message||''}</small></p></div>`;
+    }
+  );
 };
 
 // ── Navegar a parte desde notificación ──
@@ -11051,8 +11067,9 @@ window.enviarAvisoGrupo=async()=>{
   const msg=(inputEl?.value||'').trim();
   if(!msg){toast('Escribe un mensaje para el aviso','e');inputEl?.focus();return;}
   const miembros=CG?.miembros||[];
-  const destinos=miembros.filter(uid=>uid&&uid!==CU?.uid);
-  if(!destinos.length){toast('No hay otros miembros en el grupo','i');return;}
+  // Incluir al propio emisor: el aviso le debe aparecer también a él
+  const destinos=[...new Set(miembros.filter(uid=>uid))];
+  if(!destinos.length){toast('No hay miembros en el grupo','i');return;}
   const btn=document.querySelector('[onclick="enviarAvisoGrupo()"]');
   if(btn){btn.disabled=true;btn.textContent='Enviando…';}
   try{
@@ -11064,6 +11081,8 @@ window.enviarAvisoGrupo=async()=>{
     );
     if(inputEl)inputEl.value='';
     toast('✅ Aviso enviado al grupo','o');
+    // El onSnapshot de la pantalla lo actualiza automáticamente, pero forzamos por si acaso
+    setTimeout(()=>{if($('notifContent'))renderNotificaciones();},600);
   }catch(e){
     toast('Error al enviar el aviso','e');
     console.error(e);
@@ -11316,6 +11335,174 @@ window.guardarPerfil=async()=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // BACKUP AUTOMÁTICO DIARIO
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AVISOS — pestaña principal
+// Colección: grupos/{gid}/avisos
+// Campos: descripcion(str), clienteId(str|null), creadoPor(uid), creadoPorNombre(str),
+//         creado(timestamp), estado('pendiente'|'resuelto'), resueltaEn(timestamp|null)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+let _unsubAvisPend=null, _unsubAvisRes=null;
+let _avisosPend=[], _avisosRes=[];
+let _avisTab='pend'; // 'pend' | 'res'
+
+// ── Render principal del tab ──
+const _renderGTabAvisos=()=>{
+  const el=$('tabAvisContent');
+  if(!el)return;
+  el.innerHTML=`
+    <button class="btn btn-p" style="width:100%;margin-bottom:14px" onclick="abrirNuevoAviso()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nuevo aviso
+    </button>
+    <div class="stabs" style="margin-bottom:12px">
+      <button class="stab active" id="avisTabPend" onclick="switchAvisTab('pend')">💬 Pendientes <span id="avisBadgePend" style="margin-left:4px;background:rgba(171,71,188,.15);color:#ab47bc;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
+      <button class="stab" id="avisTabRes" onclick="switchAvisTab('res')">✅ Resueltos <span id="avisBadgeRes" style="margin-left:4px;background:rgba(76,175,80,.15);color:#4caf50;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
+    </div>
+    <div id="avisBody"></div>`;
+  _suscribirAvisos();
+};
+
+const _suscribirAvisos=()=>{
+  if(!CGID)return;
+  if(!_unsubAvisPend){
+    _unsubAvisPend=onSnapshot(
+      query(collection(db,'grupos',CGID,'avisos'),where('estado','==','pendiente')),
+      snap=>{
+        _avisosPend=snap.docs.map(d=>({id:d.id,...d.data()}))
+          .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+        _renderAvisBody();
+      }
+    );
+  } else { _renderAvisBody(); }
+  if(!_unsubAvisRes){
+    _unsubAvisRes=onSnapshot(
+      query(collection(db,'grupos',CGID,'avisos'),where('estado','==','resuelto')),
+      snap=>{
+        _avisosRes=snap.docs.map(d=>({id:d.id,...d.data()}))
+          .sort((a,b)=>(b.resueltaEn?.seconds||0)-(a.resueltaEn?.seconds||0));
+        _renderAvisBody();
+      }
+    );
+  }
+};
+
+window.switchAvisTab=(tab)=>{
+  _avisTab=tab;
+  document.getElementById('avisTabPend')?.classList.toggle('active',tab==='pend');
+  document.getElementById('avisTabRes')?.classList.toggle('active',tab==='res');
+  _renderAvisBody();
+};
+
+const _avisIco=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+
+const _renderAvisBody=()=>{
+  const body=document.getElementById('avisBody');if(!body)return;
+  const bP=document.getElementById('avisBadgePend');
+  const bR=document.getElementById('avisBadgeRes');
+  if(bP)bP.textContent=_avisosPend.length||'';
+  if(bR)bR.textContent=_avisosRes.length||'';
+
+  const lista=_avisTab==='pend'?_avisosPend:_avisosRes;
+  if(!lista.length){
+    body.innerHTML=`<div class="empty"><p>${_avisTab==='pend'?'Sin avisos pendientes ✅':'Sin avisos resueltos'}</p></div>`;
+    return;
+  }
+  body.innerHTML=lista.map(a=>{
+    const cli=allClientes.find(x=>x.id===a.clienteId);
+    const esResuelto=a.estado==='resuelto';
+    return`<div class="averia-card${esResuelto?' resuelta':''}" style="border-left:4px solid ${esResuelto?'#4caf50':'#ab47bc'}">
+      <div class="averia-header" style="align-items:flex-start">
+        <div class="averia-ico" style="color:${esResuelto?'#4caf50':'#ab47bc'}">${_avisIco}</div>
+        <div style="flex:1;min-width:0">
+          <div class="averia-title" style="white-space:normal;line-height:1.4">${a.descripcion||'Sin descripción'}</div>
+          <div class="averia-sub" style="margin-top:4px">
+            ${cli?`<span style="color:var(--r);font-weight:700">👤 ${cli.nombre}</span> · `:''}
+            ${a.creadoPorNombre||'Técnico'} · ${fmtF(a.creado)}
+            ${esResuelto?` · <span style="color:#4caf50;font-weight:700">Resuelto ${fmtF(a.resueltaEn)}</span>`:''}
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+            ${!esResuelto?`<button class="btn btn-ok btn-sm" onclick="resolverAviso('${a.id}')">✅ Marcar resuelto</button>`:''}
+            <button class="btn btn-del btn-sm" onclick="eliminarAviso('${a.id}')">🗑 Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+// ── Abrir bottom-sheet para nuevo aviso ──
+window.abrirNuevoAviso=()=>{
+  const cliOpts=allClientes.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  const sbBody=document.getElementById('sbBody');
+  const sbTitle=document.getElementById('sbTitle');
+  if(!sbBody||!sbTitle)return;
+  sbTitle.textContent='💬 Nuevo aviso';
+  sbBody.innerHTML=`
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Descripción</label>
+      <textarea id="avisDescInput" placeholder="Describe el aviso que quieres dejar reflejado…"
+        style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--tx);font-size:14px;font-family:var(--font);padding:10px 12px;min-height:90px;resize:none;outline:none"></textarea>
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Cliente (opcional)</label>
+      <select id="avisCliSelect" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--tx);font-size:14px;font-family:var(--font);outline:none">
+        <option value="">— Sin cliente —</option>
+        ${cliOpts}
+      </select>
+    </div>
+    <button class="btn btn-p" style="width:100%" onclick="guardarNuevoAviso()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg>
+      Guardar aviso
+    </button>`;
+  abrirSB();
+};
+
+window.guardarNuevoAviso=async()=>{
+  const desc=(document.getElementById('avisDescInput')?.value||'').trim();
+  const cliId=document.getElementById('avisCliSelect')?.value||'';
+  // Ambos campos son opcionales, pero al menos uno debería tener contenido
+  if(!desc&&!cliId){toast('Escribe una descripción o elige un cliente','i');return;}
+  try{
+    await addDoc(collection(db,'grupos',CGID,'avisos'),{
+      descripcion:desc,
+      clienteId:cliId||null,
+      creadoPor:CU.uid,
+      creadoPorNombre:CUD?.nombre||CU.email||'Técnico',
+      creado:serverTimestamp(),
+      estado:'pendiente',
+      resueltaEn:null
+    });
+    cerrarSB();
+    toast('✅ Aviso guardado','o');
+  }catch(e){toast('Error al guardar aviso: '+e.message,'e');}
+};
+
+window.resolverAviso=async(id)=>{
+  try{
+    await updateDoc(doc(db,'grupos',CGID,'avisos',id),{
+      estado:'resuelto',
+      resueltaEn:serverTimestamp()
+    });
+    toast('✅ Aviso marcado como resuelto','o');
+  }catch(e){toast('Error: '+e.message,'e');}
+};
+
+window.eliminarAviso=async(id)=>{
+  if(!confirm('¿Eliminar este aviso? Esta acción no tiene vuelta atrás.'))return;
+  try{
+    await deleteDoc(doc(db,'grupos',CGID,'avisos',id));
+    toast('Aviso eliminado','i');
+  }catch(e){toast('Error: '+e.message,'e');}
+};
+
+// Limpiar suscripciones al salir del grupo
+const _limpiarAvisosSubs=()=>{
+  if(_unsubAvisPend){_unsubAvisPend();_unsubAvisPend=null;}
+  if(_unsubAvisRes){_unsubAvisRes();_unsubAvisRes=null;}
+  _avisosPend=[];_avisosRes=[];
+};
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // BACKUP AUTOMÁTICO
 // Estrategia dual: OPFS (siempre silencioso) + carpeta usuario (cuando hay permiso)
