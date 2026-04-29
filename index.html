@@ -11438,29 +11438,25 @@ const _renderAvisBody=()=>{
 
 // ── Abrir bottom-sheet para nuevo aviso ──
 window.abrirNuevoAviso=()=>{
-  const cliOpts=allClientes.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
-  const sbBody=document.getElementById('sbBody');
-  const sbTitle=document.getElementById('sbTitle');
-  if(!sbBody||!sbTitle)return;
-  sbTitle.textContent='💬 Nuevo aviso';
-  sbBody.innerHTML=`
-    <div style="margin-bottom:14px">
-      <label style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Descripción</label>
-      <textarea id="avisDescInput" placeholder="Describe el aviso que quieres dejar reflejado…"
-        style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--tx);font-size:14px;font-family:var(--font);padding:10px 12px;min-height:90px;resize:none;outline:none"></textarea>
-    </div>
-    <div style="margin-bottom:20px">
-      <label style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Cliente (opcional)</label>
-      <select id="avisCliSelect" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--tx);font-size:14px;font-family:var(--font);outline:none">
-        <option value="">— Sin cliente —</option>
-        ${cliOpts}
-      </select>
-    </div>
-    <button class="btn btn-p" style="width:100%" onclick="guardarNuevoAviso()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg>
-      Guardar aviso
-    </button>`;
-  abrirSB();
+  const cliOpts=allClientes.filter(c=>!c.archivado).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  abrirSB('💬 Nuevo aviso',`
+    <div class="fsec">
+      <div class="fgrp">
+        <label>Descripción del aviso</label>
+        <textarea id="avisDescInput" rows="4" placeholder="Describe el aviso que quieres dejar reflejado…"></textarea>
+      </div>
+      <div class="fgrp">
+        <label>Cliente vinculado <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label>
+        <select id="avisCliSelect">
+          <option value="">— Sin cliente —</option>
+          ${cliOpts}
+        </select>
+      </div>
+      <button class="btn btn-p" style="width:100%" onclick="guardarNuevoAviso()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg>
+        Guardar aviso
+      </button>
+    </div>`);
 };
 
 window.guardarNuevoAviso=async()=>{
