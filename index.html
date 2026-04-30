@@ -1789,7 +1789,7 @@ import {
   getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
   doc, getDoc, getDocFromServer, setDoc, addDoc, updateDoc, deleteDoc,
   collection, query, where, orderBy, onSnapshot, getDocs, getDocsFromServer,
-  serverTimestamp, arrayUnion, arrayRemove, writeBatch, enableIndexedDbPersistence
+  serverTimestamp, arrayUnion, arrayRemove, writeBatch, enableIndexedDbPersistence, Timestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import {
   getMessaging, getToken, onMessage
@@ -2093,7 +2093,7 @@ const calcTotal=p=>{
 };
 const isoWeek=d=>{const dt=new Date(d);const day=dt.getDay()||7;dt.setDate(dt.getDate()+4-day);const y=dt.getFullYear();const w=Math.ceil(((dt-new Date(y,0,1))/86400000+1)/7);return`${y}-W${String(w).padStart(2,'0')}`};
 const weekDates=wk=>{const[y,w]=wk.split('-W').map(Number);const jan4=new Date(y,0,4);const mon=new Date(jan4);mon.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(w-1)*7);const sun=new Date(mon);sun.setDate(mon.getDate()+6);const fmt=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});return`${fmt(mon)} – ${fmt(sun)}`};
-const freqDays={semanal:7,quincenal:14,mensual:30,bimestral:60,trimestral:90,semestral:180};
+const freqDays={semanal:7,quincenal:14,mensual:30,bimestral:60,trimestral:90,cuatrimestral:120,semestral:180};
 const audioCtx=()=>{try{return new(window.AudioContext||window.webkitAudioContext)()}catch{return null}};
 const beep=()=>{const ac=audioCtx();if(!ac)return;const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=880;g.gain.setValueAtTime(.3,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.5);o.start();o.stop(ac.currentTime+.5)};
 
@@ -4248,6 +4248,7 @@ window._renderGMantProgramarForm=(plantillaJson)=>{
           <option value="mensual" ${p.frecuencia==='mensual'?'selected':''}>Mensual (30 días)</option>
           <option value="bimestral" ${p.frecuencia==='bimestral'?'selected':''}>Bimestral (60 días)</option>
           <option value="trimestral" ${p.frecuencia==='trimestral'?'selected':''}>Trimestral (90 días)</option>
+          <option value="cuatrimestral" ${p.frecuencia==='cuatrimestral'?'selected':''}>Cuatrimestral (120 días)</option>
           <option value="semestral" ${p.frecuencia==='semestral'?'selected':''}>Semestral (180 días)</option>
         </select>
       </div>
@@ -4354,6 +4355,7 @@ window._abrirMantSBFormNuevo = (plantilla) => {
           <option value="mensual" ${p.frecuencia==='mensual'?'selected':''}>Mensual (30 días)</option>
           <option value="bimestral" ${p.frecuencia==='bimestral'?'selected':''}>Bimestral (60 días)</option>
           <option value="trimestral" ${p.frecuencia==='trimestral'?'selected':''}>Trimestral (90 días)</option>
+          <option value="cuatrimestral" ${p.frecuencia==='cuatrimestral'?'selected':''}>Cuatrimestral (120 días)</option>
           <option value="semestral" ${p.frecuencia==='semestral'?'selected':''}>Semestral (180 días)</option>
         </select>
       </div>
@@ -4438,7 +4440,7 @@ window.completarMantCal3=async(id,fecha,btn)=>{
   const taskEl=document.getElementById('caltask3_'+id+'_'+fecha);
   if(taskEl){taskEl.classList.add('done');const brow=taskEl.querySelector('.btn-row-cal');if(brow)brow.innerHTML=`<button class="btn btn-s btn-sm" style="color:var(--tx2)" disabled>↩️ Desmarcando…</button>`;}
   try{
-    const freqDays2={semanal:7,quincenal:14,mensual:30,bimestral:60,trimestral:90,semestral:180};
+    const freqDays2={semanal:7,quincenal:14,mensual:30,bimestral:60,trimestral:90,cuatrimestral:120,semestral:180};
     if(m.frecuencia&&freqDays2[m.frecuencia]){
       const sig=new Date(fecha+'T00:00:00');sig.setDate(sig.getDate()+freqDays2[m.frecuencia]);
       await updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{ultimoCompletado:fecha,fechaProxima:sig.toISOString().split('T')[0]});
@@ -5242,6 +5244,7 @@ window._abrirFormMantSB=(cliId,cliNom,plantilla)=>{
           <option value="mensual" ${p.frecuencia==='mensual'?'selected':''}>Mensual (30 días)</option>
           <option value="bimestral" ${p.frecuencia==='bimestral'?'selected':''}>Bimestral (60 días)</option>
           <option value="trimestral" ${p.frecuencia==='trimestral'?'selected':''}>Trimestral (90 días)</option>
+          <option value="cuatrimestral" ${p.frecuencia==='cuatrimestral'?'selected':''}>Cuatrimestral (120 días)</option>
           <option value="semestral" ${p.frecuencia==='semestral'?'selected':''}>Semestral (180 días)</option>
         </select>
       </div>
@@ -5973,7 +5976,7 @@ window.verParte=id=>{
       <div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="det-label">Cliente</div><div class="det-val">${p.clienteNombre||'Sin cliente'}</div></div></div>
       ${p.edificio?`<div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><line x1="9" y1="15" x2="9.01" y2="15"/><line x1="15" y1="15" x2="15.01" y2="15"/></svg></div><div><div class="det-label">Edificio / Comunidad</div><div class="det-val">${p.edificio}</div></div></div>`:''}
       ${p.operario?`<div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="det-label">Operario</div><div class="det-val">${p.operario}</div></div></div>`:''}
-      <div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="det-label">Fecha</div><div class="det-val">${fmtF(p.creado)}</div></div></div>
+      <div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="det-label">Fecha</div><div class="det-val">${p.fechaParte||fmtF(p.creado)}</div></div></div>
     </div>
     ${p.descripcion?`<div class="card" style="margin-bottom:14px"><div class="fsec-title">Descripción</div><p style="font-size:14px;color:var(--tx2)">${p.descripcion}</p></div>`:''}
     ${p.materiales||p.duracion?`<div class="card" style="margin-bottom:14px"><div class="fsec-title">Trabajo realizado</div>
@@ -6023,6 +6026,7 @@ window.abrirFParte=async(id,preCliId,preData)=>{
       <div class="fgrp"><label>Edificio / Comunidad <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="pEdif" value="${edificioInicial}" placeholder="Se rellena automáticamente si el cliente lo tiene"></div>
       <div class="fgrp"><label>Dirección <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="pDir" value="${direccionInicial}" placeholder="Se rellena automáticamente desde la ficha del cliente"></div>
       <div class="fgrp"><label>Teléfono <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="pTel" value="${telefonoInicial}" placeholder="Se rellena automáticamente desde la ficha del cliente" type="tel"></div>
+      <div class="fgrp"><label>Fecha del parte</label><input type="date" id="pFecha" value="${(()=>{if(p?.fechaParte)return p.fechaParte;if(p?.creado?.seconds){const d=new Date(p.creado.seconds*1000);return d.toISOString().split('T')[0];}return new Date().toISOString().split('T')[0];})()}"></div>
       <div class="fgrp"><label>Operario</label><input id="pOpe" value="${vd.operario||p?.operario||CUD?.nombre||''}" placeholder="Nombre operario"></div>
       <div class="fgrp"><label>Descripción</label><textarea id="pDesc" placeholder="Descripción del trabajo...">${vd.descripcion||p?.descripcion||''}</textarea></div>
     </div>
@@ -6131,12 +6135,14 @@ window.guardarParte=async(id)=>{
   const edificioParte=$('pEdif')?.value.trim()||'';
   const direccionParte=$('pDir')?.value.trim()||'';
   const telefonoParte=$('pTel')?.value.trim()||'';
-  const data={titulo:tit,clienteId:cliId,clienteNombre:cliNom,edificio:edificioParte,clienteDireccion:direccionParte,clienteTelefono:telefonoParte,operario:$('pOpe').value.trim()||CUD?.nombre||'',creadoPor:CUD?.nombre||CU?.email||'',descripcion:$('pDesc').value.trim(),materiales:$('pMat').value.trim(),duracion:$('pDur').value.trim(),importeManoObra:parseFloat($('pMO').value)||0,importeMateriales:parseFloat($('pMatE').value)||0,importeDesplazamiento:parseFloat($('pDesp').value)||0,aplicarIVAMateriales:$('pIVA')?.checked||false,estado:$('pEst').value,esPlantilla:esPlant,actualizado:serverTimestamp()};
+  const fechaParteVal=$('pFecha')?.value||new Date().toISOString().split('T')[0];
+  const data={titulo:tit,clienteId:cliId,clienteNombre:cliNom,edificio:edificioParte,clienteDireccion:direccionParte,clienteTelefono:telefonoParte,operario:$('pOpe').value.trim()||CUD?.nombre||'',creadoPor:CUD?.nombre||CU?.email||'',descripcion:$('pDesc').value.trim(),materiales:$('pMat').value.trim(),duracion:$('pDur').value.trim(),importeManoObra:parseFloat($('pMO').value)||0,importeMateriales:parseFloat($('pMatE').value)||0,importeDesplazamiento:parseFloat($('pDesp').value)||0,aplicarIVAMateriales:$('pIVA')?.checked||false,estado:$('pEst').value,esPlantilla:esPlant,fechaParte:fechaParteVal,actualizado:serverTimestamp()};
   try{
     let parteId=id;
     if(id)await updateDoc(doc(db,'grupos',CGID,'partes',id),data);
     else{
-      const ref=await addDoc(collection(db,'grupos',CGID,'partes'),{...data,creado:serverTimestamp()});
+      const fechaCreado=fechaParteVal?new Date(fechaParteVal+'T12:00:00'):new Date();
+      const ref=await addDoc(collection(db,'grupos',CGID,'partes'),{...data,creado:Timestamp.fromDate(fechaCreado)});
       parteId=ref.id;
       // Notificación a TODOS los miembros del grupo (incluido quien lo crea)
       try{
@@ -6212,6 +6218,7 @@ window.abrirParteExpress=(preCliId)=>{
     <div class="fsec">
       <div class="fgrp"><label>Cliente *</label><div id="pCli-wrap"></div></div>
       <div class="fgrp"><label>Título *</label><input id="pTit" placeholder="Ej: Reparación bomba planta baja"></div>
+      <div class="fgrp"><label>Fecha del parte</label><input type="date" id="pFecha" value="${new Date().toISOString().split('T')[0]}"></div>
     </div>
     <input type="hidden" id="pEst" value="pendiente">
     <input type="hidden" id="pEdif" value=""><input type="hidden" id="pDir" value=""><input type="hidden" id="pTel" value="">
@@ -6246,6 +6253,7 @@ window._abrirFParteConPlantilla=(pl,preCliId)=>{
       ${chipsTpl?`<div class="plantilla-chips">${chipsTpl}</div>`:''}
       <div class="fgrp"><label>Cliente</label><div id="pCli-wrap"></div></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="pEdif" value="${edificioInicial}" placeholder="Se rellena automáticamente si el cliente lo tiene"></div>
+      <div class="fgrp"><label>Fecha del parte</label><input type="date" id="pFecha" value="${new Date().toISOString().split('T')[0]}"></div>
       <div class="fgrp"><label>Operario</label><input id="pOpe" value="${pl.operario||CUD?.nombre||''}" placeholder="Nombre operario"></div>
       <div class="fgrp"><label>Descripción</label><textarea id="pDesc" placeholder="Descripción del trabajo...">${pl.descripcion||''}</textarea></div>
     </div>
@@ -7503,6 +7511,7 @@ window.renderMantProgramarForm=(plantillaJson)=>{
           <option value="mensual" ${p.frecuencia==='mensual'?'selected':''}>Mensual (30 días)</option>
           <option value="bimestral" ${p.frecuencia==='bimestral'?'selected':''}>Bimestral (60 días)</option>
           <option value="trimestral" ${p.frecuencia==='trimestral'?'selected':''}>Trimestral (90 días)</option>
+          <option value="cuatrimestral" ${p.frecuencia==='cuatrimestral'?'selected':''}>Cuatrimestral (120 días)</option>
           <option value="semestral" ${p.frecuencia==='semestral'?'selected':''}>Semestral (180 días)</option>
         </select>
       </div>
@@ -7716,6 +7725,7 @@ window.verMant=async(id,_tabFotos)=>{
           <option value="mensual" ${m.frecuencia==='mensual'?'selected':''}>Mensual (30 días)</option>
           <option value="bimestral" ${m.frecuencia==='bimestral'?'selected':''}>Bimestral (60 días)</option>
           <option value="trimestral" ${m.frecuencia==='trimestral'?'selected':''}>Trimestral (90 días)</option>
+          <option value="cuatrimestral" ${m.frecuencia==='cuatrimestral'?'selected':''}>Cuatrimestral (120 días)</option>
           <option value="semestral" ${m.frecuencia==='semestral'?'selected':''}>Semestral (180 días)</option>
         </select>
       </div>
