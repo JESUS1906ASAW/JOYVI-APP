@@ -11578,51 +11578,24 @@ let _unsubAvisPend=null, _unsubAvisRes=null;
 let _avisosPend=[], _avisosRes=[];
 let _avisTab='pend'; // 'pend' | 'res'
 
-// ── Render principal del tab ──
-const _renderGTabAvisos=()=>{
-  const el=$('tabAvisContent');
-  if(!el)return;
-  el.innerHTML=`
-    <button class="btn btn-p" style="width:100%;margin-bottom:14px" onclick="abrirNuevoAviso()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nuevo aviso
-    </button>
-    <div class="stabs" style="margin-bottom:12px">
-      <button class="stab active" id="avisTabPend" onclick="switchAvisTab('pend')">💬 Pendientes <span id="avisBadgePend" style="margin-left:4px;background:rgba(171,71,188,.15);color:#ab47bc;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
-      <button class="stab" id="avisTabRes" onclick="switchAvisTab('res')">✅ Resueltos <span id="avisBadgeRes" style="margin-left:4px;background:rgba(76,175,80,.15);color:#4caf50;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
-    </div>
-    <div id="avisBody"></div>`;
-  _suscribirAvisos();
+const _avisIco=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+
+const _avisPrioConf={normal:{label:'Normal',color:'#ab47bc',bg:'rgba(171,71,188,.12)',border:'#ab47bc'},alta:{label:'🔶 Alta',color:'#ff9800',bg:'rgba(255,152,0,.15)',border:'#ff9800'},urgente:{label:'🔴 Urgente',color:'#e53935',bg:'rgba(229,57,53,.12)',border:'#e53935'}};
+
+// Actualizar indicador del tab — definida ANTES de _renderAvisBody y _suscribirAvisos
+const _actualizarAvisTabDot=()=>{
+  const dot=document.getElementById('avisTabDot');if(!dot)return;
+  const hoy=new Date().toISOString().split('T')[0];
+  const alertasHoy=(_avisosPend||[]).filter(a=>{
+    if(a.prioridad==='urgente')return true;
+    if(a.fechaAlerta&&a.fechaAlerta<=hoy)return true;
+    return false;
+  });
+  if(alertasHoy.length>0){dot.textContent=alertasHoy.length;dot.style.display='flex';}
+  else{dot.style.display='none';}
 };
 
-const _suscribirAvisos=()=>{
-  if(!CGID)return;
-  if(!_unsubAvisPend){
-    _unsubAvisPend=onSnapshot(
-      query(collection(db,'grupos',CGID,'avisos'),where('estado','==','pendiente')),
-      snap=>{
-        _avisosPend=snap.docs.map(d=>({id:d.id,...d.data()}))
-          .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
-        _renderAvisBody();
-        _actualizarAvisTabDot();
-        // Comprobar alertas del día
-        _checkAvisosAlertas();
-      }
-    );
-  } else { _renderAvisBody(); }
-  if(!_unsubAvisRes){
-    _unsubAvisRes=onSnapshot(
-      query(collection(db,'grupos',CGID,'avisos'),where('estado','==','resuelto')),
-      snap=>{
-        _avisosRes=snap.docs.map(d=>({id:d.id,...d.data()}))
-          .sort((a,b)=>(b.resueltaEn?.seconds||0)-(a.resueltaEn?.seconds||0));
-        _renderAvisBody();
-      }
-    );
-  }
-};
-
-window._preguntarFirmaParte=_preguntarFirmaParte;
+// Comprobar alertas del día — definida ANTES de _suscribirAvisos
 const _checkAvisosAlertas=()=>{
   const hoy=new Date().toISOString().split('T')[0];
   const KEY=`joyvi_avis_alerta_${CGID}_${hoy}`;
@@ -11635,31 +11608,7 @@ const _checkAvisosAlertas=()=>{
   setTimeout(()=>notifLocal('🔔 Avisos de hoy',alertasHoy.map(a=>a.descripcion||'Aviso').slice(0,3).join(', ')),800);
 };
 
-window.switchAvisTab=(tab)=>{
-  _avisTab=tab;
-  document.getElementById('avisTabPend')?.classList.toggle('active',tab==='pend');
-  document.getElementById('avisTabRes')?.classList.toggle('active',tab==='res');
-  _renderAvisBody();
-};
-
-const _avisIco=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
-
-const _avisPrioConf={normal:{label:'Normal',color:'#ab47bc',bg:'rgba(171,71,188,.12)',border:'#ab47bc'},alta:{label:'🔶 Alta',color:'#ff9800',bg:'rgba(255,152,0,.15)',border:'#ff9800'},urgente:{label:'🔴 Urgente',color:'#e53935',bg:'rgba(229,57,53,.12)',border:'#e53935'}};
-
-// Actualizar indicador numérico del tab Avisos
-const _actualizarAvisTabDot=()=>{
-  const dot=document.getElementById('avisTabDot');if(!dot)return;
-  const hoy=new Date().toISOString().split('T')[0];
-  // Alertas de hoy + avisos urgentes
-  const alertasHoy=(_avisosPend||[]).filter(a=>{
-    if(a.prioridad==='urgente')return true;
-    if(a.fechaAlerta&&a.fechaAlerta<=hoy)return true;
-    return false;
-  });
-  if(alertasHoy.length>0){dot.textContent=alertasHoy.length;dot.style.display='flex';}
-  else{dot.style.display='none';}
-};
-
+// Render de la lista — definida ANTES de _suscribirAvisos
 const _renderAvisBody=()=>{
   const body=document.getElementById('avisBody');if(!body)return;
   const bP=document.getElementById('avisBadgePend');
@@ -11667,12 +11616,9 @@ const _renderAvisBody=()=>{
   if(bP)bP.textContent=_avisosPend.length||'';
   if(bR)bR.textContent=_avisosRes.length||'';
   _actualizarAvisTabDot();
-
   const hoy=new Date().toISOString().split('T')[0];
-
   const lista=_avisTab==='pend'
     ? [..._avisosPend].sort((a,b)=>{
-        // Urgentes primero, luego alta, luego normal; dentro de cada grupo por fecha
         const pOrd={urgente:0,alta:1,normal:2};
         const pA=pOrd[a.prioridad||'normal']??2;
         const pB=pOrd[b.prioridad||'normal']??2;
@@ -11680,7 +11626,6 @@ const _renderAvisBody=()=>{
         return (b.creado?.seconds||0)-(a.creado?.seconds||0);
       })
     : _avisosRes;
-
   if(!lista.length){
     body.innerHTML=`<div class="empty"><p>${_avisTab==='pend'?'Sin avisos pendientes ✅':'Sin avisos resueltos'}</p></div>`;
     return;
@@ -11691,7 +11636,7 @@ const _renderAvisBody=()=>{
     const prio=a.prioridad||'normal';
     const pc=_avisPrioConf[prio]||_avisPrioConf.normal;
     const alertaHoy=a.fechaAlerta&&a.fechaAlerta<=hoy&&!esResuelto;
-    const alertaFmt=a.fechaAlerta?new Date(a.fechaAlerta+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'';
+    const alertaFmt=a.fechaAlerta?new Date(a.fechaAlerta+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'';;
     return`<div class="averia-card${esResuelto?' resuelta':''} aviso-prio-${prio}" style="border-left:4px solid ${esResuelto?'#4caf50':pc.color}">
       <div class="averia-header" style="align-items:flex-start">
         <div class="averia-ico" style="color:${esResuelto?'#4caf50':pc.color}">${_avisIco}</div>
@@ -11715,6 +11660,58 @@ const _renderAvisBody=()=>{
     </div>`;
   }).join('');
 };
+
+const _suscribirAvisos=()=>{
+  if(!CGID)return;
+  if(!_unsubAvisPend){
+    _unsubAvisPend=onSnapshot(
+      query(collection(db,'grupos',CGID,'avisos'),where('estado','==','pendiente')),
+      snap=>{
+        _avisosPend=snap.docs.map(d=>({id:d.id,...d.data()}))
+          .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+        _renderAvisBody();
+        _actualizarAvisTabDot();
+        _checkAvisosAlertas();
+      }
+    );
+  } else { _renderAvisBody(); }
+  if(!_unsubAvisRes){
+    _unsubAvisRes=onSnapshot(
+      query(collection(db,'grupos',CGID,'avisos'),where('estado','==','resuelto')),
+      snap=>{
+        _avisosRes=snap.docs.map(d=>({id:d.id,...d.data()}))
+          .sort((a,b)=>(b.resueltaEn?.seconds||0)-(a.resueltaEn?.seconds||0));
+        _renderAvisBody();
+      }
+    );
+  }
+};
+
+// ── Render principal del tab ──
+const _renderGTabAvisos=()=>{
+  const el=$('tabAvisContent');
+  if(!el)return;
+  el.innerHTML=`
+    <button class="btn btn-p" style="width:100%;margin-bottom:14px" onclick="abrirNuevoAviso()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nuevo aviso
+    </button>
+    <div class="stabs" style="margin-bottom:12px">
+      <button class="stab active" id="avisTabPend" onclick="switchAvisTab('pend')">💬 Pendientes <span id="avisBadgePend" style="margin-left:4px;background:rgba(171,71,188,.15);color:#ab47bc;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
+      <button class="stab" id="avisTabRes" onclick="switchAvisTab('res')">✅ Resueltos <span id="avisBadgeRes" style="margin-left:4px;background:rgba(76,175,80,.15);color:#4caf50;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
+    </div>
+    <div id="avisBody"></div>`;
+  _suscribirAvisos();
+};
+
+window.switchAvisTab=(tab)=>{
+  _avisTab=tab;
+  document.getElementById('avisTabPend')?.classList.toggle('active',tab==='pend');
+  document.getElementById('avisTabRes')?.classList.toggle('active',tab==='res');
+  _renderAvisBody();
+};
+
+window._preguntarFirmaParte=_preguntarFirmaParte;
 
 // ── Abrir bottom-sheet para nuevo aviso ──
 window.abrirNuevoAviso=()=>{
