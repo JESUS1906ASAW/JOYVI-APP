@@ -1156,6 +1156,20 @@ body.offline .dash-offline-bar{display:flex}
 .sec-method-card .smc-ico{font-size:24px}
 .sec-method-card .smc-lbl{font-size:11px;font-weight:800;color:var(--tx2)}
 .sec-method-card.active .smc-lbl{color:var(--r)}
+
+/* ── Indicador "pendiente de sincronizar" ── */
+.sync-pending-badge {
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:800;color:#ff9800;
+  background:rgba(255,152,0,.15);border:1px solid rgba(255,152,0,.3);
+  border-radius:20px;padding:2px 7px;margin-left:6px;vertical-align:middle;
+  animation:syncPulse 2s ease-in-out infinite;
+}
+@keyframes syncPulse {
+  0%,100%{opacity:1} 50%{opacity:.5}
+}
+.sync-pending-badge svg { flex-shrink:0; }
+
 </style>
 <!-- ══ BLOQUEO INMEDIATO: se ejecuta antes de pintar nada ══ -->
 <script>
@@ -3518,30 +3532,104 @@ const _lcLoad = (tipo, gid) => {
   try { const v=localStorage.getItem(_lcKey(tipo,gid)); return v?JSON.parse(v):null; } catch(e) { return null; }
 };
 
+// ── Offline sync engine ──
+// Guarda IDs temporales en localStorage y los elimina cuando Firestore confirma
+const _PENDING_KEY = 'joyvi_pending_sync';
+const _getPending = () => { try{return JSON.parse(localStorage.getItem(_PENDING_KEY)||'[]')}catch{return[]} };
+const _addPending = (tempId, col) => {
+  const p = _getPending().filter(x=>x.id!==tempId);
+  p.push({id:tempId, col, ts:Date.now()});
+  localStorage.setItem(_PENDING_KEY, JSON.stringify(p));
+  _renderPendingBadges();
+};
+const _removePending = (tempId) => {
+  const p = _getPending().filter(x=>x.id!==tempId);
+  localStorage.setItem(_PENDING_KEY, JSON.stringify(p));
+  _renderPendingBadges();
+};
+const _isPending = (id) => _getPending().some(x=>x.id===id);
+const _renderPendingBadges = () => {
+  const pending = _getPending();
+  // Actualizar badge en tab de partes
+  document.querySelectorAll('[data-sync-id]').forEach(el => {
+    const id = el.dataset.syncId;
+    const badge = el.querySelector('.sync-pending-badge');
+    if(pending.some(p=>p.id===id)) {
+      if(!badge) el.insertAdjacentHTML('beforeend','<span class="sync-pending-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg> Sync</span>');
+    } else {
+      badge?.remove();
+    }
+  });
+};
+window._syncPendingCount = () => _getPending().length;
+
+// fire-and-forget con ID local + registro en pending
+const _offlineSave = (colRef, data, onLocalId) => {
+  const tempId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  if(onLocalId) onLocalId(tempId);
+  const colPath = colRef.path || colRef._query?.path?.segments?.join('/') || 'unknown';
+  _addPending(tempId, colPath);
+  addDoc(colRef, data)
+    .then(ref => {
+      // Firestore confirmó: reemplazar ID temporal en arrays locales
+      _removePending(tempId);
+      // partes
+      const pi = allPartes.findIndex(x=>x.id===tempId);
+      if(pi>=0){ allPartes[pi]={...allPartes[pi],id:ref.id}; _lcSave('partes',CGID,allPartes); }
+      // mantenimientos
+      const mi = allMantenimientos.findIndex(x=>x.id===tempId);
+      if(mi>=0){ allMantenimientos[mi]={...allMantenimientos[mi],id:ref.id}; _lcSave('mantenimientos',CGID,allMantenimientos); }
+      // averias
+      if(_averiasPend){ const ai=_averiasPend.findIndex(x=>x.id===tempId); if(ai>=0){_averiasPend[ai]={..._averiasPend[ai],id:ref.id};_lcSave('averias_pend',CGID,_averiasPend);} }
+      // presupuestos
+      if(_presusPend){ const pri=_presusPend.findIndex(x=>x.id===tempId); if(pri>=0){_presusPend[pri]={..._presusPend[pri],id:ref.id};_lcSave('presus_pend',CGID,_presusPend);} }
+    })
+    .catch(()=>{ /* Firestore lo reintentará automáticamente cuando haya red */ });
+  return tempId;
+};
+
+
 window.abrirGrupo=async id=>{
   CGID=id;
+  const offline = !navigator.onLine;
 
-  // ── 1. Datos del grupo: Firestore (usa caché si offline) → localStorage → sessionStorage ──
+  // ── 0. Pre-cargar caché localStorage inmediatamente (antes de cualquier await) ──
+  // Garantiza que el grupo se abra offline sin esperar red
+  const lcGrupo = _lcLoad('grupo', id);
+  if(lcGrupo){
+    CG = {id,...lcGrupo};
+    sessionStorage.setItem('joyvi_cgid', id);
+    sessionStorage.setItem('joyvi_cg', JSON.stringify(lcGrupo));
+    allClientes          = _lcLoad('clientes',     id) || allClientes || [];
+    allPartes            = _lcLoad('partes',        id) || allPartes   || [];
+    allMantenimientos    = _lcLoad('mantenimientos',id) || allMantenimientos || [];
+    _averiasPend         = _lcLoad('averias_pend',  id) || _averiasPend || [];
+    _averiasRes          = _lcLoad('averias_res',   id) || _averiasRes  || [];
+    _presusPend          = _lcLoad('presus_pend',   id) || _presusPend  || [];
+    _presusComp          = _lcLoad('presus_comp',   id) || _presusComp  || [];
+    plantillas           = _lcLoad('plantillas',    id) || [];
+    mantPlantillas       = _lcLoad('mantPlant',     id) || [];
+    _partePlantillasFull = _lcLoad('partePlantFull',id) || [];
+    if(offline){ goScreen('grupo'); setTimeout(_renderPendingBadges,200); }
+  }
+
+  // ── 1. Datos del grupo: Firestore (usa cache si offline) → localStorage → sessionStorage ──
   let grupoData = null;
   try {
     const snap = await getDoc(doc(db,'grupos',id));
     if(snap.exists()){
       grupoData = snap.data();
-      _lcSave('grupo', id, grupoData); // guardar para próxima vez sin red
+      _lcSave('grupo', id, grupoData);
     }
-  } catch(e) { /* sin red, caemos al fallback */ }
+  } catch(e) { /* sin red */ }
 
+  if(!grupoData){ grupoData = _lcLoad('grupo', id); }
   if(!grupoData){
-    // Firestore caché falló → localStorage
-    grupoData = _lcLoad('grupo', id);
-  }
-  if(!grupoData){
-    // último recurso: sessionStorage
     const s = sessionStorage.getItem('joyvi_cg');
     if(s && sessionStorage.getItem('joyvi_cgid')===id) try{ grupoData=JSON.parse(s); }catch(e){}
   }
   if(!grupoData){
-    toast('Sin datos del grupo en caché. Necesitas conexión la primera vez.','e');
+    toast('Sin datos del grupo en cache. Necesitas conexion la primera vez.','e');
     CGID=null; return;
   }
 
@@ -3549,7 +3637,7 @@ window.abrirGrupo=async id=>{
   sessionStorage.setItem('joyvi_cgid', id);
   sessionStorage.setItem('joyvi_cg', JSON.stringify(grupoData));
 
-  // ── 2. Listeners en tiempo real (funcionan con caché Firestore offline) ──
+  // ── 2. Listeners en tiempo real ──
   if(unsubP){unsubP();unsubP=null}
   if(unsubC){unsubC();unsubC=null}
   if(unsubM){unsubM();unsubM=null}
@@ -3557,11 +3645,10 @@ window.abrirGrupo=async id=>{
   unsubC = onSnapshot(collection(db,'grupos',id,'clientes'), snap=>{
     allClientes = snap.docs.map(d=>({id:d.id,...d.data()}));
     _lcSave('clientes', id, allClientes);
-    if(document.querySelector('#screenGrupo.active')) renderGrupo();
+    if(document.querySelector('#screenGrupo.active')){ renderGrupo(); setTimeout(_renderPendingBadges,100); }
   }, ()=>{
-    // Error listener (sin caché Firestore): cargar desde localStorage
     const cached = _lcLoad('clientes', id);
-    if(cached){ allClientes=cached; if(document.querySelector('#screenGrupo.active')) renderGrupo(); }
+    if(cached){ allClientes=cached; if(document.querySelector('#screenGrupo.active')){ renderGrupo(); setTimeout(_renderPendingBadges,100); } }
   });
 
   unsubP = onSnapshot(collection(db,'grupos',id,'partes'), snap=>{
@@ -3582,7 +3669,7 @@ window.abrirGrupo=async id=>{
     if(cached){ allMantenimientos=cached; }
   });
 
-  // ── 3. Plantillas: Firestore caché → localStorage ──
+  // ── 3. Plantillas: Firestore cache → localStorage ──
   try {
     const [pSnap, mpSnap, ppfSnap] = await Promise.all([
       getDocs(collection(db,'grupos',id,'plantillas')),
@@ -3592,12 +3679,10 @@ window.abrirGrupo=async id=>{
     plantillas          = pSnap.docs.map(d=>d.data().nombre);
     mantPlantillas      = mpSnap.docs.map(d=>d.data().nombre);
     _partePlantillasFull= ppfSnap.docs.map(d=>({id:d.id,...d.data()}));
-    // Guardar en localStorage para modo offline
     _lcSave('plantillas',    id, plantillas);
     _lcSave('mantPlant',     id, mantPlantillas);
     _lcSave('partePlantFull',id, _partePlantillasFull);
   } catch(e) {
-    // Sin red: cargar desde localStorage
     plantillas           = _lcLoad('plantillas',    id) || [];
     mantPlantillas       = _lcLoad('mantPlant',     id) || [];
     _partePlantillasFull = _lcLoad('partePlantFull',id) || [];
@@ -3777,10 +3862,10 @@ const _renderGTabAverias_Excl = () => {
     </div>
     <div id="averExclBody"></div>`;
   if(!_unsubAverPend){
-    _unsubAverPend=onSnapshot(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente')),snap=>{_averiasPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_renderAverExcl();});
+    _unsubAverPend=onSnapshot(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente')),snap=>{_averiasPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_lcSave('averias_pend',CGID,_averiasPend);_renderAverExcl();},()=>{const c=_lcLoad('averias_pend',CGID);if(c){_averiasPend=c;_renderAverExcl();}});
   } else { _renderAverExcl(); }
   if(!_unsubAverRes){
-    _unsubAverRes=onSnapshot(query(collection(db,'grupos',CGID,'averias_historial'),orderBy('resueltaEn','desc')),snap=>{_averiasRes=snap.docs.map(d=>({id:d.id,...d.data()}));_renderAverExcl();},()=>{});
+    _unsubAverRes=onSnapshot(query(collection(db,'grupos',CGID,'averias_historial'),orderBy('resueltaEn','desc')),snap=>{_averiasRes=snap.docs.map(d=>({id:d.id,...d.data()}));_lcSave('averias_res',CGID,_averiasRes);_renderAverExcl();},()=>{const c=_lcLoad('averias_res',CGID);if(c){_averiasRes=c;_renderAverExcl();}});
   } else { _renderAverExcl(); }
 };
 let _averExclTab='pend';
@@ -3794,9 +3879,9 @@ const _renderAverExcl=()=>{
   const bP=document.getElementById('averExclBadgePend');const bR=document.getElementById('averExclBadgeRes');
   if(bP)bP.textContent=_averiasPend.length||'';if(bR)bR.textContent=_averiasRes.length||'';
   if(_averExclTab==='pend'){
-    body.innerHTML=!_averiasPend.length?`<div class="empty"><p>Sin averías pendientes ✅</p></div>`:_averiasPend.map(a=>{const c=allClientes.find(x=>x.id===a.clienteId);return`<div class="averia-card" onclick="verAveria('${a.id}')"><div class="averia-header"><div class="averia-ico">${_averIco('#ff9800')}</div><div style="flex:1"><div class="averia-title">${a.tipo||'Avería'}</div><div class="averia-sub">${c?.nombre||'Cliente'} · ${fmtF(a.creado)}</div></div><span class="averia-badge pend">Pendiente</span></div></div>`;}).join('');
+    body.innerHTML=!_averiasPend.length?`<div class="empty"><p>Sin averías pendientes ✅</p></div>`:_averiasPend.map(a=>{const c=allClientes.find(x=>x.id===a.clienteId);return`<div class="averia-card" onclick="verAveria('${a.id}')" data-sync-id="${a.id}"><div class="averia-header">${syncBadgeAv}<div class="averia-ico">${_averIco('#ff9800')}</div><div style="flex:1"><div class="averia-title">${a.tipo||'Avería'}</div><div class="averia-sub">${c?.nombre||'Cliente'} · ${fmtF(a.creado)}</div></div><span class="averia-badge pend">Pendiente</span></div></div>`;}).join('');
   } else {
-    body.innerHTML=!_averiasRes.length?`<div class="empty"><p>Sin averías resueltas</p></div>`:_averiasRes.map(a=>{const c=allClientes.find(x=>x.id===a.clienteId);return`<div class="averia-card resuelta" onclick="verAveriaHistorial('${a.id}','${a.clienteId}')"><div class="averia-header"><div class="averia-ico">${_averIco('#4caf50')}</div><div style="flex:1"><div class="averia-title">${a.tipo||'Avería'}</div><div class="averia-sub">${c?.nombre||'Cliente'} · ${fmtF(a.resueltaEn||a.creado)}</div></div><span class="averia-badge resuelta">Resuelta</span></div></div>`;}).join('');
+    body.innerHTML=!_averiasRes.length?`<div class="empty"><p>Sin averías resueltas</p></div>`:_averiasRes.map(a=>{const c=allClientes.find(x=>x.id===a.clienteId);return`<div class="averia-card resuelta" onclick="verAveriaHistorial('${a.id}','${a.clienteId}')"><div class="averia-header">${syncBadgeAv}<div class="averia-ico">${_averIco('#4caf50')}</div><div style="flex:1"><div class="averia-title">${a.tipo||'Avería'}</div><div class="averia-sub">${c?.nombre||'Cliente'} · ${fmtF(a.resueltaEn||a.creado)}</div></div><span class="averia-badge resuelta">Resuelta</span></div></div>`;}).join('');
   }
 };
 const _renderGTabPresupuestos_Excl = () => {
@@ -3809,10 +3894,10 @@ const _renderGTabPresupuestos_Excl = () => {
     </div>
     <div id="presuExclBody"></div>`;
   if(!_unsubPresuPend){
-    _unsubPresuPend=onSnapshot(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','espera')),snap=>{_presusPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_renderPresuExcl();});
+    _unsubPresuPend=onSnapshot(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','espera')),snap=>{_presusPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_lcSave('presus_pend',CGID,_presusPend);_renderPresuExcl();},()=>{const c=_lcLoad('presus_pend',CGID);if(c){_presusPend=c;_renderPresuExcl();}});
   } else { _renderPresuExcl(); }
   if(!_unsubPresuComp){
-    _unsubPresuComp=onSnapshot(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','aceptado')),snap=>{_presusComp=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_renderPresuExcl();});
+    _unsubPresuComp=onSnapshot(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','aceptado')),snap=>{_presusComp=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_lcSave('presus_comp',CGID,_presusComp);_renderPresuExcl();},()=>{const c=_lcLoad('presus_comp',CGID);if(c){_presusComp=c;_renderPresuExcl();}});
   } else { _renderPresuExcl(); }
 };
 let _presuExclTab='pend';
@@ -3906,14 +3991,15 @@ const _renderGTabAverias=()=>{
   if(!_unsubAverPend){
     _unsubAverPend = onSnapshot(
       query(collection(db,'grupos',CGID,'averias'), where('estado','==','pendiente')),
-      snap => { _averiasPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _renderAverInline(); _renderAveriasTab(); }
+      snap => { _averiasPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _lcSave('averias_pend',CGID,_averiasPend); _renderAverInline(); _renderAveriasTab(); },
+      ()=>{ const c=_lcLoad('averias_pend',CGID); if(c){_averiasPend=c; _renderAverInline(); _renderAveriasTab();} }
     );
   } else { _renderAverInline(); }
   if(!_unsubAverRes){
     _unsubAverRes = onSnapshot(
       query(collection(db,'grupos',CGID,'averias_historial'), orderBy('resueltaEn','desc')),
-      snap => { _averiasRes=snap.docs.map(d=>({id:d.id,...d.data()})); _renderAverInline(); _renderAveriasTab(); },
-      ()=>{}
+      snap => { _averiasRes=snap.docs.map(d=>({id:d.id,...d.data()})); _lcSave('averias_res',CGID,_averiasRes); _renderAverInline(); _renderAveriasTab(); },
+      ()=>{ const c=_lcLoad('averias_res',CGID); if(c){_averiasRes=c; _renderAverInline(); _renderAveriasTab();} }
     );
   } else { _renderAverInline(); }
 };
@@ -3980,13 +4066,15 @@ const _renderGTabPresupuestos=()=>{
   if(!_unsubPresuPend){
     _unsubPresuPend = onSnapshot(
       query(collection(db,'grupos',CGID,'presupuestos'), where('estado','==','espera')),
-      snap => { _presusPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _renderPresuInline(); _renderPresuTab('presupuestosContent'); }
+      snap => { _presusPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _lcSave('presus_pend',CGID,_presusPend); _renderPresuInline(); _renderPresuTab('presupuestosContent'); },
+      ()=>{ const c=_lcLoad('presus_pend',CGID); if(c){_presusPend=c; _renderPresuInline();} }
     );
   } else { _renderPresuInline(); }
   if(!_unsubPresuComp){
     _unsubPresuComp = onSnapshot(
       query(collection(db,'grupos',CGID,'presupuestos'), where('estado','==','aceptado')),
-      snap => { _presusComp=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _renderPresuInline(); _renderPresuTab('presupuestosContent'); }
+      snap => { _presusComp=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _lcSave('presus_comp',CGID,_presusComp); _renderPresuInline(); _renderPresuTab('presupuestosContent'); },
+      ()=>{ const c=_lcLoad('presus_comp',CGID); if(c){_presusComp=c; _renderPresuInline();} }
     );
   } else { _renderPresuInline(); }
 };
@@ -4466,18 +4554,15 @@ window.guardarMantSBNuevo = async () => {
   const dir = document.getElementById('_mantSBDir')?.value.trim()||cli?.direccion||'';
   const edif = document.getElementById('_mantSBEdif')?.value.trim()||cli?.edificio||'';
   const tel = document.getElementById('_mantSBTel')?.value.trim()||cli?.telefono||'';
-  try{
-    const fechaAjustada = _ajustarFechaLaborable(fecha);
-    if(fechaAjustada !== fecha) toast('📅 Fecha trasladada al lunes (empresa no trabaja fines de semana)','i');
-    await addDoc(collection(db,'grupos',CGID,'mantenimientos'),{
-      clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:dir,clienteEdificio:edif,clienteTelefono:tel,
-      nombreTrabajo:nom,frecuencia:frec,fechaInicio:fechaAjustada,fechaProxima:fechaAjustada,
-      estado:'pendiente',notas,creado:serverTimestamp()
-    });
-    toast('Mantenimiento programado','o');
-    cerrarSB();
-    _renderGTabMantenimientos();
-  }catch(e){toast('Error al programar','e')}
+  const fechaAjustada = _ajustarFechaLaborable(fecha);
+  if(fechaAjustada !== fecha) toast('📅 Fecha trasladada al lunes (empresa no trabaja fines de semana)','i');
+  const mantData1={clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:dir,clienteEdificio:edif,clienteTelefono:tel,nombreTrabajo:nom,frecuencia:frec,fechaInicio:fechaAjustada,fechaProxima:fechaAjustada,estado:'pendiente',notas,creado:serverTimestamp()};
+  const tempMId1=_offlineSave(collection(db,'grupos',CGID,'mantenimientos'),mantData1);
+  allMantenimientos=[{id:tempMId1,...mantData1},...allMantenimientos];
+  _lcSave('mantenimientos',CGID,allMantenimientos);
+  toast('Mantenimiento programado','o');
+  cerrarSB();
+  _renderGTabMantenimientos();
 };
 
 window.guardarMantInline=async()=>{
@@ -4491,18 +4576,15 @@ window.guardarMantInline=async()=>{
   const gMDir=$('gMDir')?.value.trim()||cli?.direccion||'';
   const gMEdif=$('gMEdif')?.value.trim()||cli?.edificio||'';
   const gMTel=$('gMTel')?.value.trim()||cli?.telefono||'';
-  try{
-    const fechaAjustadaInline = _ajustarFechaLaborable(fecha);
-    if(fechaAjustadaInline !== fecha) toast('📅 Fecha trasladada al lunes (empresa no trabaja fines de semana)','i');
-    await addDoc(collection(db,'grupos',CGID,'mantenimientos'),{
-      clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:gMDir,clienteEdificio:gMEdif,clienteTelefono:gMTel,
-      nombreTrabajo:nom,frecuencia:frec,fechaInicio:fechaAjustadaInline,fechaProxima:fechaAjustadaInline,
-      estado:'pendiente',notas,creado:serverTimestamp()
-    });
-    toast('Mantenimiento programado','o');
-    window._gMantTabInline=0;
-    _renderGTabMantenimientos();
-  }catch(e){toast('Error','e')}
+  const fechaAjustadaInline = _ajustarFechaLaborable(fecha);
+  if(fechaAjustadaInline !== fecha) toast('📅 Fecha trasladada al lunes (empresa no trabaja fines de semana)','i');
+  const mantDataInline={clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:gMDir,clienteEdificio:gMEdif,clienteTelefono:gMTel,nombreTrabajo:nom,frecuencia:frec,fechaInicio:fechaAjustadaInline,fechaProxima:fechaAjustadaInline,estado:'pendiente',notas,creado:serverTimestamp()};
+  const tempMId2=_offlineSave(collection(db,'grupos',CGID,'mantenimientos'),mantDataInline);
+  allMantenimientos=[{id:tempMId2,...mantDataInline},...allMantenimientos];
+  _lcSave('mantenimientos',CGID,allMantenimientos);
+  toast('Mantenimiento programado','o');
+  window._gMantTabInline=0;
+  _renderGTabMantenimientos();
 };
 
 // Completar/desmarcar desde el tab inline de calendario
@@ -4527,13 +4609,17 @@ window.completarMantCal3=async(id,fecha,btn)=>{
   if(taskEl){taskEl.classList.add('done');const brow=taskEl.querySelector('.btn-row-cal');if(brow)brow.innerHTML=`<button class="btn btn-s btn-sm" style="color:var(--tx2)" disabled>↩️ Desmarcando…</button>`;}
   try{
     const freqDays2={semanal:7,quincenal:14,mensual:30,bimestral:60,trimestral:90,cuatrimestral:120,semestral:180};
+    const idx=allMantenimientos.findIndex(x=>x.id===id);
     if(m.frecuencia&&freqDays2[m.frecuencia]){
       const sig=new Date(fecha+'T00:00:00');sig.setDate(sig.getDate()+freqDays2[m.frecuencia]);
-      await updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{ultimoCompletado:fecha,fechaProxima:sig.toISOString().split('T')[0]});
+      const updates={ultimoCompletado:fecha,fechaProxima:sig.toISOString().split('T')[0]};
+      if(idx>=0){allMantenimientos[idx]={...allMantenimientos[idx],...updates};_lcSave('mantenimientos',CGID,allMantenimientos);}
+      updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),updates).catch(()=>{});
     }else{
-      await updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{estado:'completado',ultimoCompletado:fecha});
+      const updates={estado:'completado',ultimoCompletado:fecha};
+      if(idx>=0){allMantenimientos[idx]={...allMantenimientos[idx],...updates};_lcSave('mantenimientos',CGID,allMantenimientos);}
+      updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),updates).catch(()=>{});
     }
-    const idx=allMantenimientos.findIndex(x=>x.id===id);
     if(idx>=0){
       if(m.frecuencia&&freqDays2[m.frecuencia]){const sig=new Date(fecha+'T00:00:00');sig.setDate(sig.getDate()+freqDays2[m.frecuencia]);allMantenimientos[idx]={...m,ultimoCompletado:fecha,fechaProxima:sig.toISOString().split('T')[0]};}
       else{allMantenimientos[idx]={...m,estado:'completado',ultimoCompletado:fecha};}
@@ -4711,18 +4797,23 @@ window.verCliente=async id=>{
   let mantsC=[], avsC=[], histMants=[], presusCli=[], primeraFoto=null;
   try{
     mantsC=allMantenimientos.filter(m=>m.clienteId===id);
+    // Offline: usar cache local para averias/presupuestos
+    const offline=!navigator.onLine;
+    if(offline){
+      avsC=[...(_averiasPend||[]).filter(a=>a.clienteId===id)];
+      presusCli=[...(_presusPend||[]),...(_presusComp||[])].filter(p=>p.clienteId===id);
+    }
     const [avSnap,avHSnap,hmSnap,presuSnap,imgSnap]=await Promise.all([
-      getDocs(query(collection(db,'grupos',CGID,'averias'),where('clienteId','==',id))),
-      getDocs(query(collection(db,'grupos',CGID,'averias_historial'),where('clienteId','==',id))),
-      getDocs(query(collection(db,'grupos',CGID,'historial_mantenimientos'),where('clienteId','==',id))),
-      getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('clienteId','==',id))),
-      getDocs(query(collection(db,'grupos',CGID,'imagenes'),where('clienteId','==',id)))
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'averias'),where('clienteId','==',id))),
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'averias_historial'),where('clienteId','==',id))),
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'historial_mantenimientos'),where('clienteId','==',id))),
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('clienteId','==',id))),
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'imagenes'),where('clienteId','==',id)))
     ]);
-    avsC=[...avSnap.docs.map(d=>({id:d.id,...d.data(),_src:'pend'})),...avHSnap.docs.map(d=>({id:d.id,...d.data(),_src:'hist'}))];
-    histMants=hmSnap.docs.map(d=>({id:d.id,...d.data()}));
-    presusCli=presuSnap.docs.map(d=>({id:d.id,...d.data()}));
-    const imgs=imgSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.creado?.seconds||0)-(b.creado?.seconds||0));
-    if(imgs.length)primeraFoto=imgs[0];
+    if(avSnap) avsC=[...avSnap.docs.map(d=>({id:d.id,...d.data(),_src:'pend'})),...(avHSnap?.docs||[]).map(d=>({id:d.id,...d.data(),_src:'hist'}))];
+    if(hmSnap) histMants=hmSnap.docs.map(d=>({id:d.id,...d.data()}));
+    if(presuSnap) presusCli=presuSnap.docs.map(d=>({id:d.id,...d.data()}));
+    if(imgSnap){ const imgs=imgSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.creado?.seconds||0)-(b.creado?.seconds||0)); if(imgs.length)primeraFoto=imgs[0]; }
   }catch(e){}
 
   const partesCli=allPartes.filter(p=>p.clienteId===id&&!p.archivado);
@@ -5302,7 +5393,7 @@ window._abrirFormMantSB=(cliId,cliNom,plantilla)=>{
   const cliInitDir=cliInit?.direccion||'';
   const cliInitTel=cliInit?.telefono||'';
   const cliInitEdif=cliInit?.edificio||'';
-  const _sbTitulo = p.nombre ? 'Desde plantilla: ' + p.nombre : 'Nuevo mantenimiento — ' + cliNom;
+    const _sbTitulo = p.nombre ? 'Desde plantilla: ' + p.nombre : 'Nuevo mantenimiento — ' + cliNom;
   abrirSB(_sbTitulo,`
     <button onclick="window._abrirSelectorMantSB('${cliId}','${cliNom.replace(/'/g,"\\'")}',window._mantFullPlantillas||[])" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:800;color:var(--tx2);font-family:var(--font);cursor:pointer;margin-bottom:14px">‹ Plantillas</button>
     ${p.nombre?`<div style="background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.25);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:12px;color:#ff9800;font-weight:700">Plantilla aplicada: <strong>${p.nombre}</strong></div>`:''}
@@ -5372,25 +5463,25 @@ window.guardarMantDesdeSB=async()=>{
   const esPlant=$('mPlantSB')?.checked||false;
   const esPlantFull=$('mPlantFullSB')?.checked||false;
   const mantData={clienteId:cliId,clienteNombre:cli?.nombre||'',clienteDireccion:mantDir,clienteTelefono:mantTel,clienteEdificio:mantEdif,nombreTrabajo:nom,frecuencia:frec,fechaInicio:fecha,fechaProxima:fecha,estado:'pendiente',notas,creado:serverTimestamp()};
-  // Aprender
-  try{
-    await addDoc(collection(db,'grupos',CGID,'mantenimientos'),mantData);
-    if(esPlant&&!mantPlantillas.includes(nom)){
-      await addDoc(collection(db,'grupos',CGID,'mantPlantillas'),{nombre:nom});
-      mantPlantillas.push(nom);
-    }
-    if(esPlantFull){
-      const plantNom=$('mPlantFullNomSB')?.value.trim()||nom;
-      await addDoc(collection(db,'grupos',CGID,'mantPlantillasFull'),{nombre:plantNom,nombreTrabajo:nom,frecuencia:frec,notas,creado:serverTimestamp()});
-      toast('Plantilla completa guardada','o');
-    }
-    toast('Mantenimiento programado','o');
-    const cliRetorno=_sbReturnCli;
-    _sbReturnCli=null;
-    $('sb').classList.remove('open');
-    $('sbOverlay').style.display='none';
-    if(cliRetorno)setTimeout(()=>verCliente(cliRetorno),150);
-  }catch(e){toast('Error al guardar','e');}
+  // Optimistic: guardar sin bloquear
+  const tempMIdSB=_offlineSave(collection(db,'grupos',CGID,'mantenimientos'),mantData);
+  allMantenimientos=[{id:tempMIdSB,...mantData},...allMantenimientos];
+  _lcSave('mantenimientos',CGID,allMantenimientos);
+  if(esPlant&&!mantPlantillas.includes(nom)){
+    addDoc(collection(db,'grupos',CGID,'mantPlantillas'),{nombre:nom}).catch(()=>{});
+    mantPlantillas.push(nom);
+  }
+  if(esPlantFull){
+    const plantNom=$('mPlantFullNomSB')?.value.trim()||nom;
+    addDoc(collection(db,'grupos',CGID,'mantPlantillasFull'),{nombre:plantNom,nombreTrabajo:nom,frecuencia:frec,notas,creado:serverTimestamp()}).catch(()=>{});
+    toast('Plantilla completa guardada','o');
+  }
+  toast('Mantenimiento programado','o');
+  const cliRetorno=_sbReturnCli;
+  _sbReturnCli=null;
+  $('sb').classList.remove('open');
+  $('sbOverlay').style.display='none';
+  if(cliRetorno)setTimeout(()=>verCliente(cliRetorno),150);
 };
 // ─── Formulario cliente ───
 window.abrirFCli=async(id, preData)=>{
@@ -5773,28 +5864,32 @@ window.guardarCliExpress=async()=>{
   if(btn){btn.disabled=true;btn.textContent='Guardando...';}
   const data={nombre:nom,direccion:normDir(dir),color,edificio:'',telefono:'',email:'',notas:'',creado:serverTimestamp(),actualizado:serverTimestamp()};
   if(latVal&&lngVal){data.lat=parseFloat(latVal);data.lng=parseFloat(lngVal);}else{data.lat=null;data.lng=null;}
-  try{
-    const ref=await addDoc(collection(db,'grupos',CGID,'clientes'),data);
-    // Subir foto si se seleccionó
-    if(window._ceFotoFile){
-      try{
-        const {url,publicId}=await _subirImgCloudinary(window._ceFotoFile,`joyvi/${CGID}/clientes/${ref.id}`);
-        await addDoc(collection(db,'grupos',CGID,'imagenes'),{
-          clienteId:ref.id,clienteNombre:nom,descripcion:'Foto principal',url,publicId,creado:serverTimestamp()
-        });
-        // Guardar en cache de avatar inmediatamente
-        if(!window._cliAvatarCache)window._cliAvatarCache={};
-        window._cliAvatarCache[ref.id]=url;
-        window._ceFotoFile=null;
-      }catch(e){console.warn('foto express no subida',e);}
-    }
-    toast('Cliente añadido ✓','o');
-    cerrarSB();
-    try{await registrarLog('nuevo_cli','Nuevo cliente express: '+nom,{clienteId:ref.id});}catch(e){}
-  }catch(e){
-    if(btn){btn.disabled=false;btn.textContent='⚡ Guardar cliente';}
-    toast('Error al guardar','e');
-  }
+  // Optimistic: añadir localmente sin esperar red
+  const tempCliId='local_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  const cliLocal={id:tempCliId,...data};
+  allClientes=[...allClientes,cliLocal];
+  _lcSave('clientes',CGID,allClientes);
+  _addPending(tempCliId,'clientes');
+  toast('Cliente añadido ✓','o');
+  cerrarSB();
+  if(btn){btn.disabled=false;btn.textContent='⚡ Guardar cliente';}
+  addDoc(collection(db,'grupos',CGID,'clientes'),data)
+    .then(async ref=>{
+      _removePending(tempCliId);
+      const ci=allClientes.findIndex(x=>x.id===tempCliId);
+      if(ci>=0){allClientes[ci]={...allClientes[ci],id:ref.id};_lcSave('clientes',CGID,allClientes);}
+      if(window._ceFotoFile){
+        try{
+          const {url,publicId}=await _subirImgCloudinary(window._ceFotoFile,`joyvi/${CGID}/clientes/${ref.id}`);
+          await addDoc(collection(db,'grupos',CGID,'imagenes'),{clienteId:ref.id,clienteNombre:nom,descripcion:'Foto principal',url,publicId,creado:serverTimestamp()});
+          if(!window._cliAvatarCache)window._cliAvatarCache={};
+          window._cliAvatarCache[ref.id]=url;
+          window._ceFotoFile=null;
+        }catch(e){console.warn('foto express no subida',e);}
+      }
+      try{await registrarLog('nuevo_cli','Nuevo cliente express: '+nom,{clienteId:ref.id});}catch(e){}
+    })
+    .catch(()=>{/* Firestore reintentará al volver red */});
 };
 
 window.selInd=v=>{
@@ -5827,14 +5922,24 @@ window.guardarCli=async(id)=>{
       if(mantsActivos.length>0)toast(`Cliente actualizado · ${mantsActivos.length} mantenimiento${mantsActivos.length!==1?'s':''} sincronizado${mantsActivos.length!==1?'s':''}`, 'o');
       else toast('Cliente actualizado','o');
     }else{
-      const ref = await addDoc(collection(db,'grupos',CGID,'clientes'),{...data,creado:serverTimestamp()});
+      const tempNCliId='local_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+      const newCliData={...data,creado:serverTimestamp()};
+      allClientes=[...allClientes,{id:tempNCliId,...newCliData}];
+      _lcSave('clientes',CGID,allClientes);
+      _addPending(tempNCliId,'clientes');
       toast('Cliente añadido','o');
-      // Si hay un selector de cliente esperando este nuevo cliente, seleccionarlo automáticamente
       if(window._pendingCliSelectCb){
-        const cb = window._pendingCliSelectCb;
-        window._pendingCliSelectCb = null;
-        setTimeout(()=>cb(ref.id, nom), 150);
+        const cb=window._pendingCliSelectCb;
+        window._pendingCliSelectCb=null;
+        setTimeout(()=>cb(tempNCliId,nom),150);
       }
+      addDoc(collection(db,'grupos',CGID,'clientes'),newCliData)
+        .then(ref=>{
+          _removePending(tempNCliId);
+          const ci=allClientes.findIndex(x=>x.id===tempNCliId);
+          if(ci>=0){allClientes[ci]={...allClientes[ci],id:ref.id};_lcSave('clientes',CGID,allClientes);}
+        }).catch(()=>{});
+      const ref={id:tempNCliId}; // dummy ref for log below
     }
     cerrarSB();
     try{await registrarLog(id?'editar_cli':'nuevo_cli',`${id?'Editado':'Nuevo'} cliente: ${data.nombre}`,{clienteId:id||'nuevo'});}catch(e){}
@@ -5986,12 +6091,13 @@ const _htmlParteSingleCard=(p)=>{
   const tot=calcTotal(p);
   const cli=allClientes.find(c=>c.id===p.clienteId);
   const cliNom=(cli?.nombre||p.clienteNombre||'Sin cliente').toUpperCase();
+  const syncBadge=_isPending(p.id)?'<span class="sync-pending-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg> Sync</span>':'';
   const pdfBadge=p.pdfGenerado?`<span title="PDF generado el ${p.pdfFecha?new Date(p.pdfFecha).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}" style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#1565c0;background:rgba(21,101,192,.1);border:1px solid rgba(21,101,192,.25);border-radius:6px;padding:2px 6px;margin-left:4px;flex-shrink:0"><svg width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</span>`:'';
-  return`<div class="parte-card ${p.estado==='completado'?'done':'pend'}" style="position:relative" onclick="verParte('${p.id}')">
+  return`<div class="parte-card ${p.estado==='completado'?'done':'pend'}" style="position:relative" onclick="verParte('${p.id}')" data-sync-id="${p.id}">
     <div class="parte-ico" style="background:rgba(var(--theme-rgb),.13)">${p.esPlantilla?`<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>`:`<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/></svg>`}</div>
     <div class="parte-info" style="flex:1;min-width:0">
       <div style="font-size:17px;font-weight:900;color:var(--r);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15">${cliNom}</div>
-      <div class="parte-title" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px">${p.titulo}${pdfBadge}</div>
+      <div class="parte-title" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px">${p.titulo}${pdfBadge}${syncBadge}</div>
       <div class="parte-sub">${fmtF(p.creado)} · <span class="parte-total">${fmtM(tot)}</span>${p.creadoPor?` · <span style="color:var(--tx3);font-size:10px">${p.creadoPor}</span>`:''}</div>
     </div>
     <button onclick="event.stopPropagation();usarParte('${p.id}')" style="flex-shrink:0;border:none;background:rgba(var(--theme-rgb),.12);color:var(--r);border-radius:10px;padding:6px 9px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--font);white-space:nowrap">Usar</button>
@@ -6017,7 +6123,7 @@ const htmlListaPartesAgrupada=(partes)=>{
       </div>
       <div id="grupo-cli-body-${key}">${g.partes.map(p=>{
         const tot=calcTotal(p);
-        return`<div class="parte-card ${p.estado==='completado'?'done':'pend'}" onclick="verParte('${p.id}')" style="margin-left:12px">
+        return`<div class="parte-card ${p.estado==='completado'?'done':'pend'}" onclick="verParte('${p.id}')" data-sync-id="${p.id}" style="margin-left:12px">
           <div class="parte-ico" style="background:rgba(var(--theme-rgb),.13)"><svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/></svg></div>
           <div class="parte-info" style="flex:1;min-width:0">
             <div class="parte-title">${p.titulo}</div>
@@ -6302,37 +6408,40 @@ window.guardarParte=async(id)=>{
   const data={titulo:tit,clienteId:cliId,clienteNombre:cliNom,edificio:edificioParte,clienteDireccion:direccionParte,clienteTelefono:telefonoParte,operario:$('pOpe').value.trim()||CUD?.nombre||'',creadoPor:CUD?.nombre||CU?.email||'',descripcion:$('pDesc').value.trim(),materiales:$('pMat').value.trim(),duracion:$('pDur').value.trim(),importeManoObra:parseFloat($('pMO').value)||0,importeMateriales:parseFloat($('pMatE').value)||0,importeDesplazamiento:parseFloat($('pDesp').value)||0,aplicarIVAMateriales:$('pIVA')?.checked||false,estado:$('pEst').value,esPlantilla:esPlant,fechaParte:fechaParteVal,actualizado:serverTimestamp()};
   try{
     let parteId=id;
-    if(id)await updateDoc(doc(db,'grupos',CGID,'partes',id),data);
-    else{
+    if(id){
+      updateDoc(doc(db,'grupos',CGID,'partes',id),data).catch(()=>{});
+    } else {
       const fechaCreado=fechaParteVal?new Date(fechaParteVal+'T12:00:00'):new Date();
-      const ref=await addDoc(collection(db,'grupos',CGID,'partes'),{...data,creado:Timestamp.fromDate(fechaCreado)});
-      parteId=ref.id;
-      // Notificación a TODOS los miembros del grupo (incluido quien lo crea)
+      const newData={...data,creado:Timestamp.fromDate(fechaCreado)};
+      // Optimistic: añadir a la lista local ya, sin esperar red
+      parteId=_offlineSave(collection(db,'grupos',CGID,'partes'), newData);
+      const parteLocal={id:parteId,...newData};
+      allPartes=[parteLocal,...allPartes];
+      _lcSave('partes',CGID,allPartes);
+      // Notificación (sin bloquear)
       try{
         const todosLosUids=[...new Set(CG?.miembros||[])].filter(uid=>!!uid);
         if(todosLosUids.length){
           const cliLabel=cliNom?`${cliNom}`:'sin cliente';
-          await crearNotificacion(
+          crearNotificacion(
             todosLosUids,
             `📋 Nuevo parte — ${cliLabel}`,
             `${CUD?.nombre||'Un técnico'} ha creado un parte: "${tit}". Pulsa para verlo.`,
             {tipo:'nuevo_parte',grupoId:CGID,parteId,grupoNombre:CG?.nombre||'',clienteNombre:cliNom}
-          );
+          ).catch(()=>{});
         }
       }catch(e){}
     }
     if(esPlant&&!plantillas.includes(tit)){
-      await addDoc(collection(db,'grupos',CGID,'plantillas'),{nombre:tit});
+      addDoc(collection(db,'grupos',CGID,'plantillas'),{nombre:tit}).catch(()=>{});
       plantillas.push(tit);
     }
     if(esPlantFull){
       const plantNom=$('pPlantFullNomVal')?.value.trim()||tit;
-      await addDoc(collection(db,'grupos',CGID,'partePlantillasFull'),{nombre:plantNom,...data,creado:serverTimestamp()});
-      try{const s=await getDocs(collection(db,'grupos',CGID,'partePlantillasFull'));_partePlantillasFull=s.docs.map(d=>({id:d.id,...d.data()}));}catch(e){}
+      addDoc(collection(db,'grupos',CGID,'partePlantillasFull'),{nombre:plantNom,...data,creado:serverTimestamp()}).catch(()=>{});
       toast('Plantilla completa guardada','o');
     }
     cerrarSB();toast(id?'Parte actualizado':'Parte creado','o');
-    // Al crear un parte nuevo, preguntar si se quiere firmar
     if(!id && parteId){
       setTimeout(()=>_ofrecerFirmaAlCrear(parteId), 600);
     }
@@ -6607,12 +6716,11 @@ window.archivarParte=async(id)=>{
 // ─── Flujo unificado: Completar parte → Firma → PDF en un solo paso ───
 window.flujoCompletarFirmarPDF=async(id)=>{
   const p=allPartes.find(x=>x.id===id);if(!p)return;
-  // Marcar como completado primero
-  try{
-    await updateDoc(doc(db,'grupos',CGID,'partes',id),{estado:'completado',actualizado:serverTimestamp()});
-    const idx=allPartes.findIndex(x=>x.id===id);
-    if(idx>=0)allPartes[idx]={...allPartes[idx],estado:'completado'};
-  }catch(e){toast('Error al completar','e');return;}
+  // Marcar como completado: optimistic local + fire-and-forget
+  const idxFlujo=allPartes.findIndex(x=>x.id===id);
+  if(idxFlujo>=0)allPartes[idxFlujo]={...allPartes[idxFlujo],estado:'completado'};
+  _lcSave('partes',CGID,allPartes);
+  updateDoc(doc(db,'grupos',CGID,'partes',id),{estado:'completado',actualizado:serverTimestamp()}).catch(()=>{});
   // Lanzar directamente el flujo de firma+PDF
   const pActualizado={...p,estado:'completado'};
   const tot=calcTotal(pActualizado);
@@ -7917,21 +8025,20 @@ window.guardarMant=async()=>{
   const edifVal=$('mEdif')?.value.trim()||cli?.edificio||'';
   const telVal=$('mTel')?.value.trim()||cli?.telefono||'';
   const mantData={clienteId:cliId||'',clienteNombre:cli?.nombre||'',clienteDireccion:dirVal,clienteEdificio:edifVal,clienteTelefono:telVal,nombreTrabajo:nom,frecuencia:frec,fechaInicio:fecha,fechaProxima:fecha,estado:'pendiente',notas:$('mNotas').value.trim(),creado:serverTimestamp()};
-  // Aprender
-  try{
-    await addDoc(collection(db,'grupos',CGID,'mantenimientos'),mantData);
-    if(esPlant&&!mantPlantillas.includes(nom)){
-      await addDoc(collection(db,'grupos',CGID,'mantPlantillas'),{nombre:nom});
-      mantPlantillas.push(nom);
-    }
-    if(esPlantFull){
-      const plantNom=($('mPlantFullNombreInput')?.value.trim())||nom;
-      const plantData={nombre:plantNom,nombreTrabajo:nom,frecuencia:frec,notas:$('mNotas').value.trim(),creado:serverTimestamp()};
-      await addDoc(collection(db,'grupos',CGID,'mantPlantillasFull'),plantData);
-      toast('Plantilla completa guardada','o');
-    }
-    toast('Mantenimiento programado','o');mantTab=0;renderMantenimiento();
-  }catch(e){toast('Error','e')}
+  // Optimistic: guardar sin bloquear
+  const tempMIdFull=_offlineSave(collection(db,'grupos',CGID,'mantenimientos'),mantData);
+  allMantenimientos=[{id:tempMIdFull,...mantData},...allMantenimientos];
+  _lcSave('mantenimientos',CGID,allMantenimientos);
+  if(esPlant&&!mantPlantillas.includes(nom)){
+    addDoc(collection(db,'grupos',CGID,'mantPlantillas'),{nombre:nom}).catch(()=>{});
+    mantPlantillas.push(nom);
+  }
+  if(esPlantFull){
+    const plantNom=($('mPlantFullNombreInput')?.value.trim())||nom;
+    addDoc(collection(db,'grupos',CGID,'mantPlantillasFull'),{nombre:plantNom,nombreTrabajo:nom,frecuencia:frec,notas:$('mNotas').value.trim(),creado:serverTimestamp()}).catch(()=>{});
+    toast('Plantilla completa guardada','o');
+  }
+  toast('Mantenimiento programado','o');mantTab=0;renderMantenimiento();
 };
 
 // ── Ver/Editar mantenimiento desde lista ──
@@ -9998,16 +10105,17 @@ window._crearParteExpressDesdeAveria = async (averiaId) => {
     aplicarIVAMateriales:false, estado:'completado', esPlantilla:false,
     fechaParte:hoy, actualizado:serverTimestamp()
   };
-  try{
-    const ref = await addDoc(collection(db,'grupos',CGID,'partes'),{...data,creado:Timestamp.fromDate(new Date())});
-    // Cerrar la avería automáticamente
-    await addDoc(collection(db,'grupos',CGID,'averias_historial'),{...a,avId:a.id,estado:'resuelta',resueltaEn:serverTimestamp(),parteId:ref.id});
-    await updateDoc(doc(db,'grupos',CGID,'averias',averiaId),{estado:'resuelta',resueltaEn:serverTimestamp(),parteId:ref.id});
-    toast('✅ Parte creado y avería cerrada','o');
-    haptic('medium');
-    // Ofrecer firma
-    setTimeout(()=>_ofrecerFirmaAlCrear(ref.id), 600);
-  }catch(e){ toast('Error al crear parte','e'); console.error(e); }
+  // Optimistic: fire-and-forget, no blocking
+  const newDataExpress={...data,creado:Timestamp.fromDate(new Date())};
+  const parteIdExpress=_offlineSave(collection(db,'grupos',CGID,'partes'),newDataExpress);
+  allPartes=[{id:parteIdExpress,...newDataExpress},...allPartes];
+  _lcSave('partes',CGID,allPartes);
+  if(_averiasPend){ const ai=_averiasPend.findIndex(x=>x.id===averiaId); if(ai>=0)_averiasPend.splice(ai,1); _lcSave('averias_pend',CGID,_averiasPend); }
+  addDoc(collection(db,'grupos',CGID,'averias_historial'),{...a,avId:a.id,estado:'resuelta',resueltaEn:serverTimestamp(),parteId:parteIdExpress}).catch(()=>{});
+  updateDoc(doc(db,'grupos',CGID,'averias',averiaId),{estado:'resuelta',resueltaEn:serverTimestamp(),parteId:parteIdExpress}).catch(()=>{});
+  toast('✅ Parte creado y avería cerrada','o');
+  haptic('medium');
+  setTimeout(()=>_ofrecerFirmaAlCrear(parteIdExpress), 600);
 };
 
 window.abrirNuevaAveriaPrerellenada=(cliId,tipo,desc,contacto)=>{
@@ -10095,30 +10203,37 @@ window.guardarAveria=async()=>{
   const tipo=($('avTipo')?.value||'').trim();
   if(!cliId||!tipo){toast('Selecciona cliente y tipo de avería','e');return;}
   // Aprender
-  try{
-    await addDoc(collection(db,'grupos',CGID,'averias'),{
-      clienteId:cliId,
-      clienteNombre:allClientes.find(c=>c.id===cliId)?.nombre||'',
-      clienteDireccion:$('avDir')?.value.trim()||'',
-      clienteEdificio:$('avEdif')?.value.trim()||'',
-      clienteTelefono:$('avTel')?.value.trim()||'',
-      tipo,
-      descripcion:$('avDesc').value.trim(),
-      prioridad:$('avPrio')?.value||'normal',
-      estado:'pendiente',
-      fotos:[],
-      creado:serverTimestamp()
-    });
-    cerrarSB();
-    toast('Avería registrada','o');
-    // onSnapshot actualiza automáticamente la lista
-  }catch(e){toast('Error','e')}
+  const averiaData={
+    clienteId:cliId,
+    clienteNombre:allClientes.find(c=>c.id===cliId)?.nombre||'',
+    clienteDireccion:$('avDir')?.value.trim()||'',
+    clienteEdificio:$('avEdif')?.value.trim()||'',
+    clienteTelefono:$('avTel')?.value.trim()||'',
+    tipo,
+    descripcion:$('avDesc').value.trim(),
+    prioridad:$('avPrio')?.value||'normal',
+    estado:'pendiente',
+    fotos:[],
+    creado:serverTimestamp()
+  };
+  // Optimistic: cerrar y mostrar en lista ya
+  const tempAvId=_offlineSave(collection(db,'grupos',CGID,'averias'), averiaData);
+  _averiasPend=[{id:tempAvId,...averiaData},...(_averiasPend||[])];
+  _lcSave('averias_pend',CGID,_averiasPend);
+  cerrarSB();
+  toast('Avería registrada','o');
 };
 
 window.verAveria=async(avId)=>{
-  const snap=await getDoc(doc(db,'grupos',CGID,'averias',avId));
-  if(!snap.exists())return;
-  const a={id:avId,...snap.data()};
+  // Buscar primero en cache local (funciona offline y para IDs temporales)
+  let a = (_averiasPend||[]).find(x=>x.id===avId) || (_averiasRes||[]).find(x=>x.id===avId);
+  if(!a){
+    try{
+      const snap=await getDoc(doc(db,'grupos',CGID,'averias',avId));
+      if(!snap.exists())return;
+      a={id:avId,...snap.data()};
+    }catch(e){ toast('Sin conexión para ver esta avería','e'); return; }
+  }
   const c=allClientes.find(x=>x.id===a.clienteId);
   // Cargar fotos
   const fotosSnap=await getDocs(collection(db,'grupos',CGID,'averias',avId,'fotos'));
@@ -10610,23 +10725,27 @@ window.guardarPresupuesto=async()=>{
   const mat=parseFloat($('prMat')?.value)||0;
   const desp=parseFloat($('prDesp')?.value)||0;
   const partRows=[];
+  const presuData={
+    clienteId:cliId,
+    clienteNombre:allClientes.find(c=>c.id===cliId)?.nombre||'',
+    clienteDireccion:$('prDir')?.value.trim()||'',
+    clienteEdificio:$('prEdif')?.value.trim()||'',
+    clienteTelefono:$('prTel')?.value.trim()||'',
+    titulo,
+    importeManoObra:mo,
+    importeMateriales:mat,
+    importeDesplazamiento:desp,
+    aplicarIVA:_prIVA,
+    partidas:partRows,
+    notas:$('prNotas')?.value.trim()||'',
+    estado:'espera',
+    creado:serverTimestamp()
+  };
+  // Optimistic: añadir localmente y cerrar sin esperar red
+  const newId=_offlineSave(collection(db,'grupos',CGID,'presupuestos'), presuData);
+  _presusPend=[{id:newId,...presuData},...(_presusPend||[])];
+  _lcSave('presus_pend',CGID,_presusPend);
   try{
-    const docRef=await addDoc(collection(db,'grupos',CGID,'presupuestos'),{
-      clienteId:cliId,
-      clienteNombre:allClientes.find(c=>c.id===cliId)?.nombre||'',
-      clienteDireccion:$('prDir')?.value.trim()||'',
-      clienteEdificio:$('prEdif')?.value.trim()||'',
-      clienteTelefono:$('prTel')?.value.trim()||'',
-      titulo,
-      importeManoObra:mo,
-      importeMateriales:mat,
-      importeDesplazamiento:desp,
-      aplicarIVA:_prIVA,
-      partidas:partRows,
-      notas:$('prNotas')?.value.trim()||'',
-      estado:'espera',
-      creado:serverTimestamp()
-    });
     cerrarPresuModal();
     // Preguntar qué hacer con el presupuesto
     const newId=docRef.id;
@@ -10899,7 +11018,7 @@ window.verAveriasHistorialCliente=async(clienteId)=>{
     <button class="btn btn-p btn-sm" style="width:100%;margin-bottom:16px" onclick="abrirNuevaAveria()"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>+ Nueva avería</button>`;
     if(pendAvs.length){
       html+=`<div style="font-size:11px;font-weight:800;color:#ff9800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Pendientes (${pendAvs.length})</div>`;
-      html+=pendAvs.map(a=>`<div class="averia-card" onclick="verAveria('${a.id}')">
+      html+=pendAvs.map(a=>`<div class="averia-card" onclick="verAveria('${a.id}')" data-sync-id="${a.id}">
         <div class="averia-header">
           <div class="averia-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
           <div style="flex:1"><div class="averia-title">${a.tipo||'Avería'}</div><div class="averia-sub">${fmtF(a.creado)}</div></div>
