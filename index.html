@@ -395,8 +395,12 @@ body.modo-claro .cli-sel-trigger::after{background-image:url("data:image/svg+xml
 .cli-sel-opt:hover{background:rgba(var(--theme-rgb),.1)}
 .cli-sel-opt.selected{background:rgba(var(--theme-rgb),.15);font-weight:700}
 body.modo-claro .cli-sel-dropdown{background:#fff;border-color:rgba(0,0,0,.12);box-shadow:0 8px 32px rgba(0,0,0,.15)}
-body.modo-claro .cli-sel-opt{color:#111}
+body.modo-claro .cli-sel-opt{color:#111;background:#fff}
 body.modo-claro .cli-sel-opt:hover{background:rgba(0,0,0,.05)}
+body.modo-claro .cli-sel-opt.selected{background:rgba(var(--theme-rgb),.12);color:#111}
+body.modo-claro .cli-sel-trigger{background:#f5f5f5;border-color:rgba(0,0,0,.18);color:#111}
+body.modo-claro .cli-sel-dropdown{background:#fff}
+.cli-sel-opt{background:transparent}
 .fsec{background:var(--card);border:1px solid var(--border);border-radius:var(--rd);padding:18px;margin-bottom:14px}
 .fsec-title{font-size:10px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
 
@@ -2060,12 +2064,12 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb) => {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             <span>✏️ Nombre personalizado (sin ficha)</span>
           </div>
-          <div class="cli-sel-opt cli-sel-opt-sincliente ${preCliId ? '' : 'selected'}" data-id="" data-color="" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background=''">
+          <div class="cli-sel-opt cli-sel-opt-sincliente ${preCliId ? '' : 'selected'}" data-id="" data-color="" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer" onmouseover="this.style.background='rgba(128,128,128,.1)'" onmouseout="this.style.background=''">
             <span class="cli-sel-dot" style="background:rgba(255,255,255,.2)"></span>
             <span style="color:var(--tx2);font-size:13px">Sin cliente asignado</span>
           </div>
           ${clis.map(c=>`
-            <div class="cli-sel-opt ${c.id===preCliId?' selected':''}" data-id="${c.id}" data-color="${c.color||''}" data-nombre="${(c.nombre||'').toLowerCase()}" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background=''">
+            <div class="cli-sel-opt ${c.id===preCliId?' selected':''}" data-id="${c.id}" data-color="${c.color||''}" data-nombre="${(c.nombre||'').toLowerCase()}" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer" onmouseover="this.style.background='rgba(128,128,128,.1)'" onmouseout="this.style.background=''">
               ${_colorDot(c.color||'azul')}
               <span style="font-size:13px;font-weight:800;text-transform:uppercase">${c.nombre}</span>
             </div>`).join('')}
@@ -11826,6 +11830,25 @@ let _avisosPend=[], _avisosRes=[];
 let _avisTab='pend'; // 'pend' | 'res'
 
 // ── Configuración de prioridades ──
+const _setAvisoPrio = (val, suffix) => {
+  // Update hidden input
+  const inp = document.getElementById('avisPrio');
+  if(inp) inp.value = val;
+  // Button configs
+  const cfg = {
+    baja:  {id:`avisPrioBaja${suffix}`,  border:'#29b6f6', bg:'rgba(41,182,246,.2)',  color:'#29b6f6'},
+    media: {id:`avisPrioMedia${suffix}`, border:'#ffa726', bg:'rgba(255,167,38,.2)',  color:'#ffa726'},
+    alta:  {id:`avisPrioAlta${suffix}`,  border:'#ef5350', bg:'rgba(239,83,80,.2)',   color:'#ef5350'},
+  };
+  Object.entries(cfg).forEach(([k,c]) => {
+    const btn = document.getElementById(c.id);
+    if(!btn) return;
+    const active = k === val;
+    btn.style.border = `2.5px solid ${active ? c.border : 'var(--border)'}`;
+    btn.style.background = active ? c.bg : 'transparent';
+    btn.style.color = active ? c.color : 'var(--tx2)';
+  });
+};
 const _avisPrioridad={
   baja:  {label:'Baja',   color:'#29b6f6', bg:'rgba(41,182,246,.13)',  ico:'🔵'},
   media: {label:'Media',  color:'#ffa726', bg:'rgba(255,167,38,.13)',  ico:'🟠'},
@@ -12000,22 +12023,24 @@ window.abrirNuevoAviso=()=>{
       </div>
       <div class="fgrp">
         <label>Prioridad</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1.5px solid rgba(41,182,246,.4);border-radius:10px;flex:1;min-width:70px">
-            <input type="radio" name="avisPrio" value="baja" checked style="accent-color:#29b6f6">
-            <span style="font-size:13px;font-weight:700;color:#29b6f6">🔵 Baja</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1.5px solid rgba(255,167,38,.4);border-radius:10px;flex:1;min-width:70px">
-            <input type="radio" name="avisPrio" value="media" style="accent-color:#ffa726">
-            <span style="font-size:13px;font-weight:700;color:#ffa726">🟠 Media</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1.5px solid rgba(239,83,80,.4);border-radius:10px;flex:1;min-width:70px">
-            <input type="radio" name="avisPrio" value="alta" style="accent-color:#ef5350">
-            <span style="font-size:13px;font-weight:700;color:#ef5350">🔴 Alta</span>
-          </label>
-        </div>
-      </div>
-      <div class="fgrp">
+         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px" id="avisPrioWrapNew">
+           <button type="button" onclick="_setAvisoPrio('baja','New')" id="avisPrioBajaN"
+             style="padding:10px 6px;border-radius:12px;border:2.5px solid #29b6f6;background:rgba(41,182,246,.2);color:#29b6f6;font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
+             🔵 Baja
+           </button>
+           <button type="button" onclick="_setAvisoPrio('media','New')" id="avisPrioMediaN"
+             style="padding:10px 6px;border-radius:12px;border:2.5px solid var(--border);background:transparent;color:var(--tx2);font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
+             🟠 Media
+           </button>
+           <button type="button" onclick="_setAvisoPrio('alta','New')" id="avisPrioAltaN"
+             style="padding:10px 6px;border-radius:12px;border:2.5px solid var(--border);background:transparent;color:var(--tx2);font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
+             🔴 Alta
+           </button>
+         </div>
+         <input type="hidden" id="avisPrio" value="baja">
+       </div>
+       <div class="fgrp">
+         <label>📅 Alerta
         <label>📅 Alerta programada <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional — salta en esta fecha)</span></label>
         <input type="date" id="avisFechaAlerta" min="${hoy}" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--tx);font-size:14px;font-family:var(--font);padding:10px 12px;width:100%;box-sizing:border-box;outline:none">
       </div>
@@ -12047,22 +12072,24 @@ window.editarAviso=(id)=>{
       </div>
       <div class="fgrp">
         <label>Prioridad</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1.5px solid rgba(41,182,246,.4);border-radius:10px;flex:1;min-width:70px">
-            <input type="radio" name="avisPrio" value="baja"${(a.prioridad||'baja')==='baja'?' checked':''} style="accent-color:#29b6f6">
-            <span style="font-size:13px;font-weight:700;color:#29b6f6">🔵 Baja</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1.5px solid rgba(255,167,38,.4);border-radius:10px;flex:1;min-width:70px">
-            <input type="radio" name="avisPrio" value="media"${a.prioridad==='media'?' checked':''} style="accent-color:#ffa726">
-            <span style="font-size:13px;font-weight:700;color:#ffa726">🟠 Media</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 12px;border:1.5px solid rgba(239,83,80,.4);border-radius:10px;flex:1;min-width:70px">
-            <input type="radio" name="avisPrio" value="alta"${a.prioridad==='alta'?' checked':''} style="accent-color:#ef5350">
-            <span style="font-size:13px;font-weight:700;color:#ef5350">🔴 Alta</span>
-          </label>
-        </div>
-      </div>
-      <div class="fgrp">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px" id="avisPrioWrapEdit">
+           <button type="button" onclick="_setAvisoPrio('baja','Edit')" id="avisPrioBajaE"
+             style="padding:10px 6px;border-radius:12px;border:2.5px solid ${(a.prioridad||'baja')==='baja'?'#29b6f6':'var(--border)'};background:${(a.prioridad||'baja')==='baja'?'rgba(41,182,246,.2)':'transparent'};color:${(a.prioridad||'baja')==='baja'?'#29b6f6':'var(--tx2)'};font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
+             🔵 Baja
+           </button>
+           <button type="button" onclick="_setAvisoPrio('media','Edit')" id="avisPrioMediaE"
+             style="padding:10px 6px;border-radius:12px;border:2.5px solid ${a.prioridad==='media'?'#ffa726':'var(--border)'};background:${a.prioridad==='media'?'rgba(255,167,38,.2)':'transparent'};color:${a.prioridad==='media'?'#ffa726':'var(--tx2)'};font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
+             🟠 Media
+           </button>
+           <button type="button" onclick="_setAvisoPrio('alta','Edit')" id="avisPrioAltaE"
+             style="padding:10px 6px;border-radius:12px;border:2.5px solid ${a.prioridad==='alta'?'#ef5350':'var(--border)'};background:${a.prioridad==='alta'?'rgba(239,83,80,.2)':'transparent'};color:${a.prioridad==='alta'?'#ef5350':'var(--tx2)'};font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
+             🔴 Alta
+           </button>
+         </div>
+         <input type="hidden" id="avisPrio" value="${a.prioridad||'baja'}">
+       </div>
+       <div class="fgrp">
+         <label>📅 Alerta programada
         <label>📅 Alerta programada <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label>
         <input type="date" id="avisFechaAlerta" min="${hoy}" value="${a.fechaAlerta||''}" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--tx);font-size:14px;font-family:var(--font);padding:10px 12px;width:100%;box-sizing:border-box;outline:none">
       </div>
@@ -13522,7 +13549,7 @@ window._verDetalleRutaItem=(cliId)=>{ const c=allClientes.find(x=>x.id===cliId);
 window._abrirAñadirClienteRuta=()=>{
   const cliList=allClientes.filter(c=>!c.archivado&&!_rutaDia.find(r=>r.id===c.id));
   if(!cliList.length){toast('Todos los clientes ya están en la ruta','i');return;}
-  const opts=cliList.map(c=>`<div onclick="añadirClienteARuta('${c.id}');cerrarSBTotal()" style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background=''">
+  const opts=cliList.map(c=>`<div onclick="añadirClienteARuta('${c.id}');cerrarSBTotal()" style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='rgba(128,128,128,.1)'" onmouseout="this.style.background=''">
     <div style="width:34px;height:34px;border-radius:10px;background:rgba(var(--theme-rgb),.1);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:var(--r);flex-shrink:0">${(c.nombre||'?')[0].toUpperCase()}</div>
     <div><div style="font-size:13px;font-weight:800;color:var(--tx)">${c.nombre}</div><div style="font-size:11px;color:var(--tx2)">${c.direccion||'Sin dirección'}</div></div>
   </div>`).join('');
