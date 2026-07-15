@@ -2387,59 +2387,21 @@ window.toast=(msg,tipo='i')=>{
   setTimeout(()=>t.remove(),3200);
 };
 
-// NOTIF LOCAL (app abierta)
+// NOTIF LOCAL — desactivada a petición del usuario: ya no se muestran
+// notificaciones del sistema (barra de tareas/bandeja) ni suenan avisos.
+// Los avisos dentro de la app se siguen mostrando como "toast".
 const notifLocal=(titulo,cuerpo)=>{
-  // Sonido con Web Audio API
-  try{
-    const ac=new(window.AudioContext||window.webkitAudioContext)();
-    [[880,0],[660,.3],[880,.5]].forEach(([freq,t])=>{
-      const o=ac.createOscillator();const g=ac.createGain();
-      o.connect(g);g.connect(ac.destination);
-      o.frequency.value=freq;o.type='sine';
-      g.gain.setValueAtTime(0,ac.currentTime+t);
-      g.gain.linearRampToValueAtTime(.4,ac.currentTime+t+.05);
-      g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+t+.45);
-      o.start(ac.currentTime+t);o.stop(ac.currentTime+t+.5);
-    });
-  }catch(e){}
-  if(navigator.vibrate)navigator.vibrate([300,100,300,100,300]);
-  // Usar la URL absoluta del icono de la app (icon-192 del manifest/favicon)
-  const _iconLink=document.querySelector('link[rel="apple-touch-icon"]')||document.querySelector('link[rel="icon"]');
-  const _iconHref=_iconLink?.href||'';
-  // Si la href es relativa al origen actual, construir URL absoluta
-  const appIcon=_iconHref&&_iconHref.startsWith('http')?_iconHref
-    :_iconHref?new URL(_iconHref,location.origin).href
-    :'https://joyvioficial.netlify.app/icon-192.png';
-  if(Notification.permission==='granted'){
-    const opts={
-      body:cuerpo,
-      icon:appIcon,
-      badge:appIcon,
-      vibrate:[300,100,300,100,300],
-      tag:'joyvi-notif-'+Date.now(),
-      renotify:true
-    };
-    if(_swReg)_swReg.showNotification(titulo,opts);
-    else try{new Notification(titulo,opts);}catch(e){}
-  }
+  // No-op intencionado: sin sonido, sin vibración, sin Notification/showNotification.
 };
 
-// ── FCM: registrar token del dispositivo en Firestore ──
+// ── FCM: registro de token desactivado (sin notificaciones push en barra de tareas) ──
 const registrarFCMToken=async()=>{
-  if(!fcmMessaging||!CU)return;
-  try{
-    const perm=await Notification.requestPermission();
-    if(perm!=='granted')return;
-    const swReg=await navigator.serviceWorker.ready;
-    const token=await getToken(fcmMessaging,{vapidKey:VAPID_KEY,serviceWorkerRegistration:swReg});
-    if(token){
-      await updateDoc(doc(db,'usuarios',CU.uid),{fcmTokens:arrayUnion(token),fcmToken:token});
-      window._fcmToken=token;
-    }
-  }catch(e){console.warn('FCM token error:',e);}
+  // No-op intencionado: no se solicita permiso ni se registra token FCM,
+  // así se evitan notificaciones push con la app cerrada.
+  return;
 };
 
-// ── FCM: escuchar mensajes mientras la app está ABIERTA ──
+// ── FCM: ya no se escuchan mensajes push en primer plano (solo toast interno si llegase alguno) ──
 const iniciarFCMForeground=()=>{
   if(!fcmMessaging)return;
   try{
@@ -2447,7 +2409,7 @@ const iniciarFCMForeground=()=>{
       const n=payload.notification||{};
       const titulo=n.title||'Joyvi';
       const cuerpo=n.body||'Nueva notificación';
-      notifLocal(titulo,cuerpo);
+      // Sin notificación de sistema: solo aviso visual dentro de la app.
       toast(`${titulo}: ${cuerpo}`,'i');
     });
   }catch(e){}
@@ -3693,7 +3655,7 @@ window.abrirGrupo=async id=>{
   }
 
   // ── 4. Tareas secundarias (no bloquean la apertura) ──
-  setTimeout(()=>{if(Notification.permission==='default')Notification.requestPermission();},500);
+  // (Solicitud de permiso de notificaciones desactivada: la app ya no usa notificaciones de sistema)
   setTimeout(_cargarAvataresCli, 800);
   setTimeout(()=>_checkBackupAutomatico(),3000);
   setTimeout(()=>_avanzarMantsAtrasados(),3200);
@@ -6170,7 +6132,8 @@ const renderTabPartes=()=>{
     <button class="fbtn ${filtroPartes==='ayer'?'active':''}" onclick="setFiltroPartes('ayer')">↩️ Ayer</button>
     <button class="fbtn ${filtroPartes==='semana'?'active':''}" onclick="setFiltroPartes('semana')">7 días</button>
     <button class="fbtn ${filtroPartes==='mes'?'active':''}" onclick="setFiltroPartes('mes')">30 días</button>
-    <button class="fbtn ${_partesVistaAgrupada?'active':''}" onclick="toggleVistaAgrupadaPartes()" style="margin-left:auto">👥 Agrupar</button>
+    <button class="fbtn" onclick="imprimirPartes(filtroPartes)" style="margin-left:auto">🖨️ Imprimir</button>
+    <button class="fbtn ${_partesVistaAgrupada?'active':''}" onclick="toggleVistaAgrupadaPartes()">👥 Agrupar</button>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
     <button onclick="abrirParteExpress()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 10px;border-radius:12px;border:1.5px solid rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.09);color:var(--r);font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(var(--theme-rgb),.16)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.09)'">
@@ -6221,6 +6184,91 @@ window._filtrarPartes=(q)=>{
 const htmlListaPartes=partes=>{
   if(!partes.length)return`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><p>Sin partes</p></div>`;
   return partes.map(p=>_htmlParteSingleCard(p)).join('');
+};
+
+// ─── Imprimir partes (Ayer / Semanal / Mensual / Todos / Hoy) ───
+window.imprimirPartes=(modo)=>{
+  const hoy=_hoyPartes();const ayer=_ayerPartes();const semana=_semanaPartes();const mes=_mesPartes();
+  let lista=allPartes.filter(p=>!p.archivado&&!p.esPlantilla);
+  let tituloRango='Todos los partes';
+  if(modo==='hoy'){lista=lista.filter(p=>_dateStr(p.creado)===hoy);tituloRango='Partes de hoy';}
+  else if(modo==='ayer'){lista=lista.filter(p=>_dateStr(p.creado)===ayer);tituloRango='Partes de ayer';}
+  else if(modo==='semana'){lista=lista.filter(p=>_dateStr(p.creado)>=semana);tituloRango='Partes de los últimos 7 días';}
+  else if(modo==='mes'){lista=lista.filter(p=>_dateStr(p.creado)>=mes);tituloRango='Partes de los últimos 30 días';}
+  lista=lista.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+  if(!lista.length){toast('No hay partes en este período','i');return;}
+
+  const totalGeneral=lista.reduce((s,p)=>s+calcTotal(p),0);
+  const fechaHoyTxt=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+
+  const filas=lista.map((p,i)=>{
+    const cli=allClientes.find(c=>c.id===p.clienteId);
+    const cliNom=p.clienteNombre||cli?.nombre||'Sin cliente';
+    const fechaTxt=p.fechaParte?new Date(p.fechaParte+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):fmtF(p.creado);
+    const estadoTxt=p.estado==='completado'?'✓ Completado':'Pendiente';
+    return`<tr class="${i%2===0?'row-even':'row-odd'}">
+      <td class="td-fecha">${fechaTxt}</td>
+      <td class="td-trabajo">${p.titulo||'—'}${p.descripcion?`<div class="sub-desc">${p.descripcion}</div>`:''}</td>
+      <td class="td-cliente">
+        <span class="cli-nombre">${cliNom}</span>
+        ${p.clienteDireccion?`<span class="cli-dir">${p.clienteDireccion}</span>`:''}
+      </td>
+      <td class="td-estado"><span class="${p.estado==='completado'?'estado-comp':'estado-pend'}">${estadoTxt}</span></td>
+      <td class="td-total">${fmtM(calcTotal(p))}</td>
+    </tr>`;
+  }).join('');
+
+  const accentColor='#c62828';
+  const printHTML=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Partes — ${CG?.nombre||'Joyvi'}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hdr{padding:22px 24px;border-bottom:3px solid ${accentColor}}
+.hdr h1{font-size:20px;font-weight:900;color:${accentColor}}
+.hdr .sub{font-size:12px;color:#666;margin-top:4px}
+.resumen{display:flex;gap:18px;padding:14px 24px;background:#fafafa;border-bottom:1px solid #eee;font-size:11px;flex-wrap:wrap}
+.resumen b{color:${accentColor}}
+table{width:100%;border-collapse:collapse;margin:16px 24px;width:calc(100% - 48px)}
+th{text-align:left;font-size:10px;text-transform:uppercase;color:#888;padding:8px 10px;border-bottom:2px solid #ddd}
+td{padding:9px 10px;border-bottom:1px solid #eee;vertical-align:top}
+.row-even{background:#fcfcfc}
+.cli-nombre{font-weight:700;display:block}
+.cli-dir{font-size:10px;color:#888;display:block}
+.sub-desc{font-size:10.5px;color:#777;margin-top:2px}
+.estado-comp{color:#2e7d32;font-weight:700}
+.estado-pend{color:#e65100;font-weight:700}
+.td-total{font-weight:800;text-align:right;white-space:nowrap}
+.ftr{padding:14px 24px;text-align:right;font-size:13px;font-weight:900;border-top:2px solid #ddd;margin:0 24px}
+@media print{body{padding:0}}
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <h1>📋 ${tituloRango}</h1>
+    <div class="sub">${CG?.nombre||'Joyvi'} · Generado el ${fechaHoyTxt}</div>
+  </div>
+  <div class="resumen">
+    <span>Total partes: <b>${lista.length}</b></span>
+    <span>Completados: <b>${lista.filter(p=>p.estado==='completado').length}</b></span>
+    <span>Pendientes: <b>${lista.filter(p=>p.estado!=='completado').length}</b></span>
+  </div>
+  <table>
+    <thead><tr><th>Fecha</th><th>Trabajo</th><th>Cliente</th><th>Estado</th><th style="text-align:right">Importe</th></tr></thead>
+    <tbody>${filas}</tbody>
+  </table>
+  <div class="ftr">TOTAL: ${fmtM(totalGeneral)}</div>
+</body>
+</html>`;
+
+  const w=window.open('','_blank');
+  if(!w){toast('Activa las ventanas emergentes para imprimir','e');return;}
+  w.document.write(printHTML);w.document.close();
+  setTimeout(()=>{w.focus();w.print();},400);
 };
 
 // ─── Ver parte ───
@@ -6402,7 +6450,8 @@ window.guardarParte=async(id)=>{
   const tit=$('pTit').value.trim();
   if(!tit){toast('El título es obligatorio','e');return}
   const cliId=$('pCli').value;
-  const cliNom=cliId?(allClientes.find(c=>c.id===cliId)?.nombre||''):'';
+  const nombrePersonalizadoParte=$('pCli')?.dataset?.nombrePersonalizado||'';
+  const cliNom=cliId?(allClientes.find(c=>c.id===cliId)?.nombre||''):nombrePersonalizadoParte;
   const esPlant=$('pPlant')?.checked||false;
   const esPlantFull=$('pPlantFull')?.checked||false;
   const edificioParte=$('pEdif')?.value.trim()||'';
@@ -6965,12 +7014,22 @@ window.generarPDFConFirma=async(id,firmaDataURL)=>{
   w.document.write(pdfHTML(p,iva,tot,CG,firmaDataURL||null));
   w.document.close();
   setTimeout(()=>w.print(),700);
-  // Marcar que se ha generado PDF para este parte
+  // Marcar que se ha generado PDF para este parte y, si se capturó firma, guardarla en el parte
   try{
     const ahora=new Date().toISOString();
-    await updateDoc(doc(db,'grupos',CGID,'partes',id),{pdfGenerado:true,pdfFecha:ahora});
+    const updateData={pdfGenerado:true,pdfFecha:ahora};
+    const localData={pdfGenerado:true,pdfFecha:ahora};
+    if(firmaDataURL){
+      updateData.firmaCliente=firmaDataURL;
+      updateData.firmado=true;
+      updateData.firmadoEn=serverTimestamp();
+      localData.firmaCliente=firmaDataURL;
+      localData.firmado=true;
+      localData.firmadoEn={seconds:Math.floor(Date.now()/1000)};
+    }
+    await updateDoc(doc(db,'grupos',CGID,'partes',id),updateData);
     const idx=allPartes.findIndex(x=>x.id===id);
-    if(idx>=0)allPartes[idx]={...allPartes[idx],pdfGenerado:true,pdfFecha:ahora};
+    if(idx>=0)allPartes[idx]={...allPartes[idx],...localData};
     // Refrescar lista de partes si está visible
     const listEl=document.getElementById('gPartListArea')||document.getElementById('tabPartContent');
     if(listEl&&typeof _refreshPartesList==='function')_refreshPartesList();
@@ -6978,6 +7037,7 @@ window.generarPDFConFirma=async(id,firmaDataURL)=>{
       const tc=document.getElementById('tabPartContent');
       if(tc&&tc.style.display!=='none')tc.innerHTML=renderTabPartes();
     }
+    if(firmaDataURL)toast('✍️ Firma guardada en el parte','o');
   }catch(e){console.warn('No se pudo marcar pdfGenerado:',e);}
 };
 
@@ -9185,22 +9245,30 @@ const _renderArchivosVacio=(cont)=>{
   </div>`;
 };
 
-const _renderArchivosCard=(it)=>`
+const _renderArchivosCard=(it)=>{
+  const esCliente=it.tipo==='cliente';
+  const nombreMostrar=esCliente?(it.nombre||'Sin nombre'):(it.clienteNombre||it.nombre||it.titulo||'Sin nombre');
+  const fechaArch=fmtF(it.eliminadoEn);
+  const subInfo=esCliente
+    ?`Cliente · archivado ${fechaArch}`
+    :`Parte · archivado ${fechaArch}${it.descripcion?' · '+it.descripcion.slice(0,80):''}`;
+  return `
   <div class="arch-card" data-archid="${it.id}">
     <div class="arch-card-ico">
-      ${it.tipo==='cliente'
+      ${esCliente
         ?`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
         :`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`}
     </div>
     <div class="arch-info">
-      <div class="arch-name">${it.nombre||it.titulo||'Sin nombre'}</div>
-      <div class="arch-sub">${it.tipo==='cliente'?'Cliente':'Parte de trabajo'} · archivado ${fmtF(it.eliminadoEn)}</div>
+      <div class="arch-name">${nombreMostrar}</div>
+      <div class="arch-sub">${subInfo}</div>
     </div>
     <div class="arch-btns">
       <button class="btn btn-ok btn-sm" title="Restaurar" onclick="restaurarArchivo('${it.id}','${it.tipo}')">↩</button>
       <button class="btn btn-del btn-sm" title="Eliminar definitivamente" onclick="borrarArchivo('${it.id}')">🗑</button>
     </div>
   </div>`;
+};
 
 const renderArchivos=async()=>{
   const cont=$('archivosContent');
@@ -9223,24 +9291,28 @@ const renderArchivos=async()=>{
 
     if(!items.length){_renderArchivosVacio(cont);return;}
 
-    // Separar clientes y partes
+    // Orden: los archivados más recientemente arriba
+    const _archTs=it=>it.eliminadoEn?.seconds||(it.eliminadoEn?.toDate?Math.floor(it.eliminadoEn.toDate().getTime()/1000):0)||0;
+    items=items.slice().sort((a,b)=>_archTs(b)-_archTs(a));
+
+    // Separar clientes y partes (partes primero, luego clientes)
     const cliItems=items.filter(it=>it.tipo==='cliente');
     const parteItems=items.filter(it=>it.tipo!=='cliente');
 
     let html='';
-    if(cliItems.length){
-      html+=`<div class="arch-section-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Clientes archivados <span class="arch-badge">${cliItems.length}</span>
-      </div>`;
-      html+=cliItems.map(_renderArchivosCard).join('');
-    }
     if(parteItems.length){
-      html+=`<div class="arch-section-label" ${cliItems.length?'style="margin-top:20px"':''}>
+      html+=`<div class="arch-section-label">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         Partes archivados <span class="arch-badge">${parteItems.length}</span>
       </div>`;
       html+=parteItems.map(_renderArchivosCard).join('');
+    }
+    if(cliItems.length){
+      html+=`<div class="arch-section-label" ${parteItems.length?'style="margin-top:20px"':''}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Clientes archivados <span class="arch-badge">${cliItems.length}</span>
+      </div>`;
+      html+=cliItems.map(_renderArchivosCard).join('');
     }
     cont.innerHTML=html;
   }catch(e){
@@ -11878,10 +11950,13 @@ const _renderGTabAvisos=()=>{
   const el=$('tabAvisContent');
   if(!el)return;
   el.innerHTML=`
-    <button class="btn btn-p" style="width:100%;margin-bottom:14px" onclick="abrirNuevoAviso()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nuevo aviso
-    </button>
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:14px">
+      <button class="btn btn-p" onclick="abrirNuevoAviso()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo aviso
+      </button>
+      <button class="btn btn-s" title="Imprimir avisos" onclick="imprimirAvisos()">🖨️ Imprimir</button>
+    </div>
     <div class="stabs" style="margin-bottom:12px">
       <button class="stab active" id="avisTabPend" onclick="switchAvisTab('pend')">💬 Pendientes <span id="avisBadgePend" style="margin-left:4px;background:rgba(171,71,188,.15);color:#ab47bc;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
       <button class="stab" id="avisTabRes" onclick="switchAvisTab('res')">✅ Resueltos <span id="avisBadgeRes" style="margin-left:4px;background:rgba(76,175,80,.15);color:#4caf50;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
@@ -12004,9 +12079,68 @@ const _renderAvisBody=()=>{
   }).join('');
 };
 
+// ─── Imprimir avisos (según la pestaña activa: pendientes o resueltos) ───
+window.imprimirAvisos=()=>{
+  const lista=(_avisTab==='pend'?_avisosPend:_avisosRes).slice();
+  if(!lista.length){toast('No hay avisos para imprimir','i');return;}
+  const tituloRango=_avisTab==='pend'?'Avisos pendientes':'Avisos resueltos';
+  const fechaHoyTxt=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+
+  const filas=lista.map((a,i)=>{
+    const cli=allClientes.find(x=>x.id===a.clienteId);
+    const prio=_avisPrioridad[a.prioridad||'baja'];
+    const esResuelto=a.estado==='resuelto';
+    return`<tr class="${i%2===0?'row-even':'row-odd'}">
+      <td class="td-fecha">${fmtF(a.creado)}${esResuelto?`<div class="sub-desc">Resuelto ${fmtF(a.resueltaEn)}</div>`:''}</td>
+      <td class="td-cliente">${cli?.nombre||'—'}</td>
+      <td class="td-trabajo">${a.descripcion||'Sin descripción'}</td>
+      <td class="td-estado">${esResuelto?'<span class="estado-comp">✓ Resuelto</span>':`<span style="color:${prio.color};font-weight:700">${prio.ico} ${prio.label}</span>`}</td>
+      <td class="td-fecha">${a.fechaAlerta||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const accentColor='#ab47bc';
+  const printHTML=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Avisos — ${CG?.nombre||'Joyvi'}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hdr{padding:22px 24px;border-bottom:3px solid ${accentColor}}
+.hdr h1{font-size:20px;font-weight:900;color:${accentColor}}
+.hdr .sub{font-size:12px;color:#666;margin-top:4px}
+table{width:calc(100% - 48px);border-collapse:collapse;margin:16px 24px}
+th{text-align:left;font-size:10px;text-transform:uppercase;color:#888;padding:8px 10px;border-bottom:2px solid #ddd}
+td{padding:9px 10px;border-bottom:1px solid #eee;vertical-align:top}
+.row-even{background:#fcfcfc}
+.sub-desc{font-size:10px;color:#888;margin-top:2px}
+.estado-comp{color:#2e7d32;font-weight:700}
+@media print{body{padding:0}}
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <h1>💬 ${tituloRango}</h1>
+    <div class="sub">${CG?.nombre||'Joyvi'} · Generado el ${fechaHoyTxt} · ${lista.length} aviso${lista.length===1?'':'s'}</div>
+  </div>
+  <table>
+    <thead><tr><th>Creado</th><th>Cliente</th><th>Descripción</th><th>Estado</th><th>Alerta</th></tr></thead>
+    <tbody>${filas}</tbody>
+  </table>
+</body>
+</html>`;
+
+  const w=window.open('','_blank');
+  if(!w){toast('Activa las ventanas emergentes para imprimir','e');return;}
+  w.document.write(printHTML);w.document.close();
+  setTimeout(()=>{w.focus();w.print();},400);
+};
+
 // ── Abrir bottom-sheet para nuevo aviso ──
 window.abrirNuevoAviso=()=>{
-  const cliOpts=allClientes.filter(c=>!c.archivado).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
   const hoy=_hoyStr();
   abrirSB('💬 Nuevo aviso',`
     <div class="fsec">
@@ -12016,10 +12150,7 @@ window.abrirNuevoAviso=()=>{
       </div>
       <div class="fgrp">
         <label>Cliente vinculado <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label>
-        <select id="avisCliSelect">
-          <option value="">— Sin cliente —</option>
-          ${cliOpts}
-        </select>
+        <div id="avisCli-wrap"></div>
       </div>
       <div class="fgrp">
         <label>Prioridad</label>
@@ -12049,13 +12180,13 @@ window.abrirNuevoAviso=()=>{
         Guardar aviso
       </button>
     </div>`);
+  setTimeout(()=>_buildCliSelect('avisCli','',()=>{}),0);
 };
 
 // ── Editar aviso existente ──
 window.editarAviso=(id)=>{
   const a=_avisosPend.find(x=>x.id===id);
   if(!a)return;
-  const cliOpts=allClientes.filter(c=>!c.archivado).map(c=>`<option value="${c.id}"${a.clienteId===c.id?' selected':''}>${c.nombre}</option>`).join('');
   const hoy=_hoyStr();
   abrirSB('✏️ Editar aviso',`
     <div class="fsec">
@@ -12065,10 +12196,7 @@ window.editarAviso=(id)=>{
       </div>
       <div class="fgrp">
         <label>Cliente vinculado <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label>
-        <select id="avisCliSelect">
-          <option value=""${!a.clienteId?' selected':''}>— Sin cliente —</option>
-          ${cliOpts}
-        </select>
+        <div id="avisCli-wrap"></div>
       </div>
       <div class="fgrp">
         <label>Prioridad</label>
@@ -12098,11 +12226,12 @@ window.editarAviso=(id)=>{
         Guardar cambios
       </button>
     </div>`);
+  setTimeout(()=>_buildCliSelect('avisCli',a.clienteId||'',()=>{}),0);
 };
 
 window.guardarNuevoAviso=async()=>{
   const desc=(document.getElementById('avisDescInput')?.value||'').trim();
-  const cliId=document.getElementById('avisCliSelect')?.value||'';
+  const cliId=_getCliSelectVal('avisCli');
   const prio=document.querySelector('input[name="avisPrio"]:checked')?.value||'baja';
   const fechaAlerta=document.getElementById('avisFechaAlerta')?.value||null;
   if(!desc&&!cliId){toast('Escribe una descripción o elige un cliente','i');return;}
@@ -12125,7 +12254,7 @@ window.guardarNuevoAviso=async()=>{
 
 window.actualizarAviso=async(id)=>{
   const desc=(document.getElementById('avisDescInput')?.value||'').trim();
-  const cliId=document.getElementById('avisCliSelect')?.value||'';
+  const cliId=_getCliSelectVal('avisCli');
   const prio=document.querySelector('input[name="avisPrio"]:checked')?.value||'baja';
   const fechaAlerta=document.getElementById('avisFechaAlerta')?.value||null;
   if(!desc&&!cliId){toast('Escribe una descripción o elige un cliente','i');return;}
