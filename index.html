@@ -12189,15 +12189,15 @@ window.abrirNuevoAviso=()=>{
       <div class="fgrp">
         <label>Prioridad</label>
          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px" id="avisPrioWrapNew">
-           <button type="button" onclick="_setAvisoPrio('baja','New')" id="avisPrioBajaN"
+           <button type="button" onclick="_setAvisoPrio('baja','N')" id="avisPrioBajaN"
              style="padding:10px 6px;border-radius:12px;border:2.5px solid #29b6f6;background:rgba(41,182,246,.2);color:#29b6f6;font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
              🔵 Baja
            </button>
-           <button type="button" onclick="_setAvisoPrio('media','New')" id="avisPrioMediaN"
+           <button type="button" onclick="_setAvisoPrio('media','N')" id="avisPrioMediaN"
              style="padding:10px 6px;border-radius:12px;border:2.5px solid var(--border);background:transparent;color:var(--tx2);font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
              🟠 Media
            </button>
-           <button type="button" onclick="_setAvisoPrio('alta','New')" id="avisPrioAltaN"
+           <button type="button" onclick="_setAvisoPrio('alta','N')" id="avisPrioAltaN"
              style="padding:10px 6px;border-radius:12px;border:2.5px solid var(--border);background:transparent;color:var(--tx2);font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
              🔴 Alta
            </button>
@@ -12235,15 +12235,15 @@ window.editarAviso=(id)=>{
       <div class="fgrp">
         <label>Prioridad</label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px" id="avisPrioWrapEdit">
-           <button type="button" onclick="_setAvisoPrio('baja','Edit')" id="avisPrioBajaE"
+           <button type="button" onclick="_setAvisoPrio('baja','E')" id="avisPrioBajaE"
              style="padding:10px 6px;border-radius:12px;border:2.5px solid ${(a.prioridad||'baja')==='baja'?'#29b6f6':'var(--border)'};background:${(a.prioridad||'baja')==='baja'?'rgba(41,182,246,.2)':'transparent'};color:${(a.prioridad||'baja')==='baja'?'#29b6f6':'var(--tx2)'};font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
              🔵 Baja
            </button>
-           <button type="button" onclick="_setAvisoPrio('media','Edit')" id="avisPrioMediaE"
+           <button type="button" onclick="_setAvisoPrio('media','E')" id="avisPrioMediaE"
              style="padding:10px 6px;border-radius:12px;border:2.5px solid ${a.prioridad==='media'?'#ffa726':'var(--border)'};background:${a.prioridad==='media'?'rgba(255,167,38,.2)':'transparent'};color:${a.prioridad==='media'?'#ffa726':'var(--tx2)'};font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
              🟠 Media
            </button>
-           <button type="button" onclick="_setAvisoPrio('alta','Edit')" id="avisPrioAltaE"
+           <button type="button" onclick="_setAvisoPrio('alta','E')" id="avisPrioAltaE"
              style="padding:10px 6px;border-radius:12px;border:2.5px solid ${a.prioridad==='alta'?'#ef5350':'var(--border)'};background:${a.prioridad==='alta'?'rgba(239,83,80,.2)':'transparent'};color:${a.prioridad==='alta'?'#ef5350':'var(--tx2)'};font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s">
              🔴 Alta
            </button>
@@ -12266,7 +12266,7 @@ window.editarAviso=(id)=>{
 window.guardarNuevoAviso=async()=>{
   const desc=(document.getElementById('avisDescInput')?.value||'').trim();
   const cliId=_getCliSelectVal('avisCli');
-  const prio=document.querySelector('input[name="avisPrio"]:checked')?.value||'baja';
+  const prio=document.getElementById('avisPrio')?.value||'baja';
   const fechaAlerta=document.getElementById('avisFechaAlerta')?.value||null;
   if(!desc&&!cliId){toast('Escribe una descripción o elige un cliente','i');return;}
   try{
@@ -12289,7 +12289,7 @@ window.guardarNuevoAviso=async()=>{
 window.actualizarAviso=async(id)=>{
   const desc=(document.getElementById('avisDescInput')?.value||'').trim();
   const cliId=_getCliSelectVal('avisCli');
-  const prio=document.querySelector('input[name="avisPrio"]:checked')?.value||'baja';
+  const prio=document.getElementById('avisPrio')?.value||'baja';
   const fechaAlerta=document.getElementById('avisFechaAlerta')?.value||null;
   if(!desc&&!cliId){toast('Escribe una descripción o elige un cliente','i');return;}
   try{
