@@ -6059,11 +6059,12 @@ const _htmlParteSingleCard=(p)=>{
   const cliNom=(cli?.nombre||p.clienteNombre||'Sin cliente').toUpperCase();
   const syncBadge=_isPending(p.id)?'<span class="sync-pending-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg> Sync</span>':'';
   const pdfBadge=p.pdfGenerado?`<span title="PDF generado el ${p.pdfFecha?new Date(p.pdfFecha).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}" style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#1565c0;background:rgba(21,101,192,.1);border:1px solid rgba(21,101,192,.25);border-radius:6px;padding:2px 6px;margin-left:4px;flex-shrink:0"><svg width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</span>`:'';
+  const firmaBadge=(p.firmado&&p.firmaCliente)?`<span title="Firmado por el cliente" style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#2e7d32;background:rgba(46,125,50,.1);border:1px solid rgba(46,125,50,.25);border-radius:6px;padding:2px 6px;margin-left:4px;flex-shrink:0">✍️ Firmado</span>`:'';
   return`<div class="parte-card ${p.estado==='completado'?'done':'pend'}" style="position:relative" onclick="verParte('${p.id}')" data-sync-id="${p.id}">
     <div class="parte-ico" style="background:rgba(var(--theme-rgb),.13)">${p.esPlantilla?`<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>`:`<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/></svg>`}</div>
     <div class="parte-info" style="flex:1;min-width:0">
       <div style="font-size:17px;font-weight:900;color:var(--r);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15">${cliNom}</div>
-      <div class="parte-title" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px">${p.titulo}${pdfBadge}${syncBadge}</div>
+      <div class="parte-title" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px">${p.titulo}${pdfBadge}${firmaBadge}${syncBadge}</div>
       <div class="parte-sub">${fmtF(p.creado)} · <span class="parte-total">${fmtM(tot)}</span>${p.creadoPor?` · <span style="color:var(--tx3);font-size:10px">${p.creadoPor}</span>`:''}</div>
     </div>
     <button onclick="event.stopPropagation();usarParte('${p.id}')" style="flex-shrink:0;border:none;background:rgba(var(--theme-rgb),.12);color:var(--r);border-radius:10px;padding:6px 9px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--font);white-space:nowrap">Usar</button>
@@ -6132,7 +6133,7 @@ const renderTabPartes=()=>{
     <button class="fbtn ${filtroPartes==='ayer'?'active':''}" onclick="setFiltroPartes('ayer')">↩️ Ayer</button>
     <button class="fbtn ${filtroPartes==='semana'?'active':''}" onclick="setFiltroPartes('semana')">7 días</button>
     <button class="fbtn ${filtroPartes==='mes'?'active':''}" onclick="setFiltroPartes('mes')">30 días</button>
-    <button class="fbtn" onclick="imprimirPartes(filtroPartes)" style="margin-left:auto">🖨️ Imprimir</button>
+    <button class="fbtn" onclick="imprimirPartes()" style="margin-left:auto">🖨️ Imprimir</button>
     <button class="fbtn ${_partesVistaAgrupada?'active':''}" onclick="toggleVistaAgrupadaPartes()">👥 Agrupar</button>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
@@ -6188,6 +6189,7 @@ const htmlListaPartes=partes=>{
 
 // ─── Imprimir partes (Ayer / Semanal / Mensual / Todos / Hoy) ───
 window.imprimirPartes=(modo)=>{
+  if(modo===undefined)modo=filtroPartes;
   const hoy=_hoyPartes();const ayer=_ayerPartes();const semana=_semanaPartes();const mes=_mesPartes();
   let lista=allPartes.filter(p=>!p.archivado&&!p.esPlantilla);
   let tituloRango='Todos los partes';
@@ -7037,7 +7039,7 @@ window.generarPDFConFirma=async(id,firmaDataURL)=>{
       const tc=document.getElementById('tabPartContent');
       if(tc&&tc.style.display!=='none')tc.innerHTML=renderTabPartes();
     }
-    if(firmaDataURL)toast('✍️ Firma guardada en el parte','o');
+    if(firmaDataURL){toast('✍️ Firma guardada en el parte','o');cerrarSB();}
   }catch(e){console.warn('No se pudo marcar pdfGenerado:',e);}
 };
 
@@ -9270,6 +9272,41 @@ const _renderArchivosCard=(it)=>{
   </div>`;
 };
 
+const _buildArchivosHTML=(items)=>{
+  if(!items.length)return'';
+  const cliItems=items.filter(it=>it.tipo==='cliente');
+  const parteItems=items.filter(it=>it.tipo!=='cliente');
+  let html='';
+  if(parteItems.length){
+    html+=`<div class="arch-section-label">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      Partes archivados <span class="arch-badge">${parteItems.length}</span>
+    </div>`;
+    html+=parteItems.map(_renderArchivosCard).join('');
+  }
+  if(cliItems.length){
+    html+=`<div class="arch-section-label" ${parteItems.length?'style="margin-top:20px"':''}>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Clientes archivados <span class="arch-badge">${cliItems.length}</span>
+    </div>`;
+    html+=cliItems.map(_renderArchivosCard).join('');
+  }
+  return html;
+};
+
+window._filtrarArchivos=(q)=>{
+  window._archivosQuery=q;
+  const listWrap=$('archivosListWrap');
+  const items=window._archivosAllSorted||[];
+  if(!listWrap)return;
+  const qL=(q||'').toLowerCase().trim();
+  const filtrados=qL?items.filter(it=>{
+    const hay=[it.nombre,it.titulo,it.clienteNombre,it.descripcion].filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(qL);
+  }):items;
+  listWrap.innerHTML=filtrados.length?_buildArchivosHTML(filtrados):`<div class="empty"><p>Sin resultados para "${q}"</p></div>`;
+};
+
 const renderArchivos=async()=>{
   const cont=$('archivosContent');
   if(!CGID){cont.innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><p>Selecciona un grupo primero</p></div>`;return;}
@@ -9294,27 +9331,10 @@ const renderArchivos=async()=>{
     // Orden: los archivados más recientemente arriba
     const _archTs=it=>it.eliminadoEn?.seconds||(it.eliminadoEn?.toDate?Math.floor(it.eliminadoEn.toDate().getTime()/1000):0)||0;
     items=items.slice().sort((a,b)=>_archTs(b)-_archTs(a));
+    window._archivosAllSorted=items;
 
-    // Separar clientes y partes (partes primero, luego clientes)
-    const cliItems=items.filter(it=>it.tipo==='cliente');
-    const parteItems=items.filter(it=>it.tipo!=='cliente');
-
-    let html='';
-    if(parteItems.length){
-      html+=`<div class="arch-section-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        Partes archivados <span class="arch-badge">${parteItems.length}</span>
-      </div>`;
-      html+=parteItems.map(_renderArchivosCard).join('');
-    }
-    if(cliItems.length){
-      html+=`<div class="arch-section-label" ${parteItems.length?'style="margin-top:20px"':''}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Clientes archivados <span class="arch-badge">${cliItems.length}</span>
-      </div>`;
-      html+=cliItems.map(_renderArchivosCard).join('');
-    }
-    cont.innerHTML=html;
+    const searchBar=`<input class="sbox" id="archivosSearchInput" style="margin-bottom:14px" placeholder="🔍 Buscar cliente, parte o descripción..." value="${window._archivosQuery||''}" oninput="window._filtrarArchivos(this.value)">`;
+    cont.innerHTML=`${searchBar}<div id="archivosListWrap">${_buildArchivosHTML(items)}</div>`;
   }catch(e){
     cont.innerHTML=`<div class="empty"><p>Error al cargar: ${e.message}</p></div>`;
   }
@@ -11902,7 +11922,7 @@ let _avisosPend=[], _avisosRes=[];
 let _avisTab='pend'; // 'pend' | 'res'
 
 // ── Configuración de prioridades ──
-const _setAvisoPrio = (val, suffix) => {
+window._setAvisoPrio = (val, suffix) => {
   // Update hidden input
   const inp = document.getElementById('avisPrio');
   if(inp) inp.value = val;
@@ -11961,6 +11981,7 @@ const _renderGTabAvisos=()=>{
       <button class="stab active" id="avisTabPend" onclick="switchAvisTab('pend')">💬 Pendientes <span id="avisBadgePend" style="margin-left:4px;background:rgba(171,71,188,.15);color:#ab47bc;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
       <button class="stab" id="avisTabRes" onclick="switchAvisTab('res')">✅ Resueltos <span id="avisBadgeRes" style="margin-left:4px;background:rgba(76,175,80,.15);color:#4caf50;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
     </div>
+    <input class="sbox" id="avisosSearchInput" style="margin-bottom:12px" placeholder="🔍 Buscar por cliente o descripción..." value="${window._avisQuery||''}" oninput="window._filtrarAvisos(this.value)">
     <div id="avisBody"></div>`;
   _suscribirAvisos();
 };
@@ -12007,6 +12028,11 @@ window.switchAvisTab=(tab)=>{
   _renderAvisBody();
 };
 
+window._filtrarAvisos=(q)=>{
+  window._avisQuery=q;
+  _renderAvisBody();
+};
+
 const _avisIco=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
 const _alarmIco=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6M22 6l-3-3"/></svg>`;
 
@@ -12017,9 +12043,17 @@ const _renderAvisBody=()=>{
   if(bP)bP.textContent=_avisosPend.length||'';
   if(bR)bR.textContent=_avisosRes.length||'';
 
-  const lista=_avisTab==='pend'?_avisosPend:_avisosRes;
+  let lista=_avisTab==='pend'?_avisosPend:_avisosRes;
+  const qL=(window._avisQuery||'').toLowerCase().trim();
+  if(qL){
+    lista=lista.filter(a=>{
+      const cli=allClientes.find(x=>x.id===a.clienteId);
+      const hay=[a.descripcion,cli?.nombre].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(qL);
+    });
+  }
   if(!lista.length){
-    body.innerHTML=`<div class="empty"><p>${_avisTab==='pend'?'Sin avisos pendientes ✅':'Sin avisos resueltos'}</p></div>`;
+    body.innerHTML=`<div class="empty"><p>${qL?`Sin resultados para "${window._avisQuery}"`:(_avisTab==='pend'?'Sin avisos pendientes ✅':'Sin avisos resueltos')}</p></div>`;
     return;
   }
 
