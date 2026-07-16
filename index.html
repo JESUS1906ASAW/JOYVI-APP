@@ -714,6 +714,20 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 
 /* ── CALENDARIO ── */
 .cal-mes{margin-bottom:20px}
+
+/* ── CUADRÍCULA MENSUAL (estilo Google Calendar) ── */
+.gcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.gcal-dow{text-align:center;font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;padding:4px 0}
+.gcal-cell{aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;border-radius:10px;background:rgba(255,255,255,.03);position:relative;transition:.15s}
+.gcal-cell-out{opacity:.28}
+.gcal-cell-clickable{cursor:pointer}
+.gcal-cell-clickable:active{background:rgba(var(--theme-rgb),.12)}
+.gcal-cell-today{background:rgba(var(--theme-rgb),.1);box-shadow:inset 0 0 0 1.5px var(--r)}
+.gcal-daynum{font-size:12px;font-weight:700;color:var(--tx)}
+.gcal-daynum-today{width:22px;height:22px;border-radius:50%;background:var(--r);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900}
+.gcal-dot-wrap{display:flex;align-items:center;gap:2px;margin-top:4px}
+.gcal-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.gcal-count{font-size:9px;font-weight:800;color:var(--tx2)}
 .cal-mes-title{font-size:13px;font-weight:800;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
 .cal-semana{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;overflow:hidden;transition:.15s}
 .cal-semana.current{border-color:var(--r);box-shadow:0 0 0 1px rgba(var(--theme-rgb),.2)}
@@ -790,17 +804,6 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 /* ── MAPA DE CLIENTES ── */
 /* ── MAPA DE CLIENTES eliminado ── */
 
-/* ── RUTA DEL DÍA ── */
-.ruta-item{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;transition:.15s;touch-action:none}
-.ruta-item.dragging{opacity:.5;border-style:dashed;border-color:var(--r)}
-.ruta-item.drag-over{border-color:var(--r);background:rgba(var(--theme-rgb),.06)}
-.ruta-num{width:28px;height:28px;border-radius:8px;background:var(--r);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ruta-drag-handle{color:var(--tx3);cursor:grab;font-size:18px;flex-shrink:0;padding:0 2px;user-select:none}
-.ruta-drag-handle:active{cursor:grabbing}
-.ruta-info{flex:1;min-width:0}
-.ruta-cli-nombre{font-size:14px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ruta-cli-dir{font-size:12px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ruta-actions{display:flex;gap:6px;flex-shrink:0}
 
 /* ── DASHBOARD SUMMARY CARDS ── */
 .dash-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
@@ -1644,14 +1647,6 @@ body.offline .dash-offline-bar{display:flex}
     </div>
   </div>
 
-  <!-- ─── PANTALLA: ESTADÍSTICAS ─── -->
-  <div class="screen" id="screenEstadisticas">
-    <div class="scroll-pad">
-      <div class="volver-btn" onclick="goScreen('grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</div><div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:16px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Estadísticas</div>
-      <div id="statsContent"></div>
-    </div>
-  </div>
-
   <!-- ─── PANTALLA: ARCHIVOS ─── -->
   <div class="screen" id="screenArchivos">
     <div class="scroll-pad">
@@ -1717,15 +1712,6 @@ body.offline .dash-offline-bar{display:flex}
     </div>
   </div>
 
-  <!-- ─── PANTALLA: CONTROL DE HORAS ─── -->
-  <div class="screen" id="screenHoras">
-    <div class="scroll-pad">
-      <div class="volver-btn" onclick="goScreen('grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</div>
-      <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:16px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Control de horas</div>
-      <div id="horasContent"></div>
-    </div>
-  </div>
-
   <!-- ─── PANTALLA: LOG DE ACTIVIDAD ─── -->
   <div class="screen" id="screenLog">
     <div class="scroll-pad">
@@ -1765,19 +1751,6 @@ body.offline .dash-offline-bar{display:flex}
   </div>
 
 
-  <!-- ─── PANTALLA: RUTA DEL DÍA ─── -->
-  <div class="screen" id="screenRutaDia">
-    <div class="scroll-pad">
-      <div class="volver-btn" onclick="goScreen('grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</div>
-      <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:6px;display:flex;align-items:center;gap:8px">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z"/></svg>
-        Ruta del día
-      </div>
-      <div id="rutaDiaContent"></div>
-    </div>
-  </div>
-
-</div>
 
 <!-- ═══════════ APP CLIENTE ═══════════ -->
 <!-- ═══════════ JS ═══════════ -->
@@ -2416,7 +2389,7 @@ const iniciarFCMForeground=()=>{
 };
 
 // NAVEGACIÓN — History API (botón atrás nativo del navegador/móvil)
-const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',estadisticas:'screenEstadisticas',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',horas:'screenHoras',log:'screenLog',kiosk:'screenKiosk',kioskCli:'screenKioskCli',kioskPartes:'screenKioskPartes',kioskAverias:'screenKioskAverias',kioskMant:'screenKioskMant',kioskPresu:'screenKioskPresu',facturas:'screenFacturas',historialGlobal:'screenHistorialGlobal',rutaDia:'screenRutaDia'};
+const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',log:'screenLog',kiosk:'screenKiosk',kioskCli:'screenKioskCli',kioskPartes:'screenKioskPartes',kioskAverias:'screenKioskAverias',kioskMant:'screenKioskMant',kioskPresu:'screenKioskPresu',facturas:'screenFacturas',historialGlobal:'screenHistorialGlobal'};
 
 // Flag para evitar bucles al manejar popstate
 let _navFromPop=false;
@@ -2437,7 +2410,6 @@ const _renderScreen=id=>{
   else if(id==='mantenimiento')renderMantenimiento();
   else if(id==='administracion')renderAdministracion();
   else if(id==='calendario')renderCalendario();
-  else if(id==='estadisticas')renderStats();
   else if(id==='archivos')renderArchivos();
   else if(id==='imagenes')renderImagenes();
 
@@ -2445,10 +2417,8 @@ const _renderScreen=id=>{
   else if(id==='presupuestos')renderPresupuestos();
   else if(id==='notificaciones')renderNotificaciones();
   else if(id==='perfil')renderPerfil();
-  else if(id==='horas')renderHoras();
   else if(id==='facturas')renderFacturas();
   else if(id==='historialGlobal')renderHistorialGlobal();
-  else if(id==='rutaDia')renderRutaDia();
   else if(id==='kiosk')setTimeout(()=>window.renderKioskDocsHoy&&window.renderKioskDocsHoy(),150);
 };
 
@@ -2565,7 +2535,7 @@ window.irAGrupo=()=>goScreen('grupo');
 // - Si estás EN el menú del grupo (screenGrupo) → va al inicio real de la app
 // - En cualquier otro sitio → va al inicio de la app
 window.drawerIrInicio=()=>{
-  const screensDelGrupo=['mantenimiento','administracion','calendario','estadisticas','archivos','imagenes','perfil','notificaciones','horas','log'];
+  const screensDelGrupo=['mantenimiento','administracion','calendario','archivos','imagenes','perfil','notificaciones','log'];
   const cur=_currentScreenId();
   if(screensDelGrupo.includes(cur)&&CGID){
     goScreen('grupo');
@@ -2637,7 +2607,6 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
 
   // ── CON GRUPO ACTIVO: menú completo ──
   const grupoNombre = (typeof CG !== 'undefined' && CG?.nombre) || 'Grupo';
-  const kioskBtn = `<div class="d-item" onclick="activarModoVisualizacion();cerrarDrawer()" style="color:#ff9800"><span class="d-icon">${icoKiosk}</span>Modo gestión</div>`;
   const cur=_currentScreenId();
   const _gtab=(typeof activeGTab!=='undefined'?activeGTab:'cli');
   // act(screenId, gtab?): marca activo si estamos en esa pantalla/subpestaña
@@ -2659,16 +2628,11 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-item${act('grupo','presu')}" onclick="goScreen('grupo');switchGTab('presu');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Presupuestos</div>
     <div class="d-item${act('grupo','avis')}" onclick="goScreen('grupo');switchGTab('avis');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Avisos</div>
     <div class="d-item${act('historialGlobal')}" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
-    <div class="d-item${act('rutaDia')}" onclick="goScreen('rutaDia');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Ruta del día</div>
     <div class="d-item${act('imagenes')}" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
     ${sep}
     <div class="d-section" style="padding-top:6px">Opciones de grupo</div>
-    <div class="d-item${act('estadisticas')}" onclick="goScreen('estadisticas');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Estadísticas</div>
-    <div class="d-item${act('horas')}" onclick="goScreen('horas');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Control de horas</div>
     <div class="d-item${act('administracion')}" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Administración</div>
     <div class="d-item${act('archivos')}" onclick="goScreen('archivos');cerrarDrawer()" style="color:#e53935"><span class="d-icon" style="color:#e53935"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Clientes clasificados</div>
-    ${sep}
-    ${kioskBtn}
     ${sep}
     ${logoutBtn}`;
 };
@@ -3146,7 +3110,7 @@ const iniciarApp=async()=>{
   const sesGrupoId  = sessionStorage.getItem('joyvi_cgid');
   const sesGrupoRaw = sessionStorage.getItem('joyvi_cg');
   const hashScreen  = location.hash.replace('#','');
-  const screensNeedGroup = ['grupo','mantenimiento','administracion','calendario','estadisticas','archivos','imagenes'];
+  const screensNeedGroup = ['grupo','mantenimiento','administracion','calendario','archivos','imagenes'];
 
   // ── 1. Restaurar grupo si existe en sessionStorage ──
   if(sesGrupoId && sesGrupoRaw){
@@ -4048,13 +4012,23 @@ const _renderGTabPresupuestos=()=>{
 // ── Render inline tab: Calendario (calendario completo sincronizado con mantenimientos) ──
 // ─── Estado del toggle dentro del tab Mantenimientos ───
 let _gMantMode='gestionar'; // 'gestionar' | 'calendario'
-let _gCalPeriodo='mes';     // 'semana' | 'mes' | 'trimestre' | 'todo'
+let _gCalPeriodo='mes';     // usado solo por los botones de Imprimir PDF
+let _gCalMesOffset=0;       // meses de diferencia respecto al mes actual (navegación del calendario)
 window._switchGMantMode=(mode)=>{
   _gMantMode=mode;
+  if(mode==='calendario')_gCalMesOffset=0;
   _renderGTabMantenimientos();
 };
 window._setGCalPeriodo=(v)=>{
   _gCalPeriodo=v;
+  _renderGTabMantenimientos();
+};
+window._gCalNavMes=(delta)=>{
+  _gCalMesOffset+=delta;
+  _renderGTabMantenimientos();
+};
+window._gCalIrHoy=()=>{
+  _gCalMesOffset=0;
   _renderGTabMantenimientos();
 };
 
@@ -4080,10 +4054,6 @@ const _renderGTabMantenimientos=()=>{
   </div>
   ${_gMantMode==='calendario'?`
   <div style="margin-bottom:12px">
-    <div style="display:flex;gap:5px;margin-bottom:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:4px">
-      ${[['semana','Semana'],['mes','Mes'],['trimestre','Trimestre'],['todo','Completo']].map(([v,l])=>`
-      <button onclick="_setGCalPeriodo('${v}')" style="flex:1;border:none;border-radius:8px;padding:8px 4px;font-family:var(--font);font-size:11px;font-weight:900;cursor:pointer;transition:.15s;${_gCalPeriodo===v?'background:var(--r);color:#fff;box-shadow:0 2px 8px rgba(var(--theme-rgb),.4)':'background:transparent;color:var(--tx2)'}">${l}</button>`).join('')}
-    </div>
     <div style="display:flex;gap:5px;align-items:center">
       <span style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:2px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>PDF:
@@ -4125,194 +4095,201 @@ const _renderGTabMantenimientos=()=>{
     el.innerHTML=toggleHtml+body;
     if(window._gMantTabInline===1) _renderGMantProgramarSelector();
   } else {
-    // ── Vista Calendario ──
+    // ── Vista Calendario: cuadrícula mensual estilo Google Calendar ──
     const hoy=new Date();
     const hoyStr=hoy.toISOString().split('T')[0];
-    const semanaActual=isoWeek(hoyStr);
 
-    // ── Calcular rango según periodo seleccionado ──
-    let desdeFilter, limiteFilter, periodoLabel;
-    if(_gCalPeriodo==='semana'){
-      const [yW,wN]=semanaActual.split('-W').map(Number);
-      const jan4=new Date(yW,0,4);
-      const lunes=new Date(jan4);lunes.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(wN-1)*7);
-      const domingo=new Date(lunes);domingo.setDate(lunes.getDate()+6);
-      desdeFilter=lunes; limiteFilter=domingo;
-      periodoLabel='Semana actual · '+lunes.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})+' – '+domingo.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
-    } else if(_gCalPeriodo==='mes'){
-      desdeFilter=new Date(hoy.getFullYear(),hoy.getMonth(),1);
-      limiteFilter=new Date(hoy.getFullYear(),hoy.getMonth()+1,0);
-      periodoLabel=hoy.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
-    } else if(_gCalPeriodo==='trimestre'){
-      const trimStart=Math.floor(hoy.getMonth()/3)*3;
-      desdeFilter=new Date(hoy.getFullYear(),trimStart,1);
-      limiteFilter=new Date(hoy.getFullYear(),trimStart+3,0);
-      const trimNames=['1.er trimestre','2.º trimestre','3.er trimestre','4.º trimestre'];
-      periodoLabel=trimNames[Math.floor(hoy.getMonth()/3)]+' '+hoy.getFullYear();
-    } else {
-      desdeFilter=new Date(hoy);desdeFilter.setDate(desdeFilter.getDate()-7);
-      limiteFilter=new Date(hoy);limiteFilter.setMonth(limiteFilter.getMonth()+12);
-      periodoLabel='Próximos 12 meses';
-    }
+    // Mes mostrado según el offset de navegación
+    const mesBase=new Date(hoy.getFullYear(),hoy.getMonth()+_gCalMesOffset,1);
+    const anioMes=mesBase.getFullYear();
+    const mesIdx=mesBase.getMonth();
+    const nomMesCap=mesBase.toLocaleDateString('es-ES',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
 
-    const mants=allMantenimientos.filter(m=>m.fechaProxima);
-    const eventos={};
-    mants.forEach(m=>{
-      const addEv=(fecha,completado)=>{
-        const d=new Date(fecha+'T00:00:00');
-        if(d<desdeFilter||d>limiteFilter)return;
-        const wk=isoWeek(fecha);
-        if(!eventos[wk])eventos[wk]=[];
-        if(!eventos[wk].find(x=>x.id===m.id&&x._fecha===fecha))
-          eventos[wk].push({...m,_fecha:fecha,_completado:completado||false});
-      };
+    // Días de la cuadrícula: desde el lunes de la semana del día 1, hasta completar 6 filas (42 días)
+    const primerDiaMes=new Date(anioMes,mesIdx,1);
+    const offsetInicio=(primerDiaMes.getDay()||7)-1; // 0=lunes ... 6=domingo
+    const inicioGrid=new Date(primerDiaMes);inicioGrid.setDate(inicioGrid.getDate()-offsetInicio);
+    const diasGrid=Array.from({length:42},(_,i)=>{const d=new Date(inicioGrid);d.setDate(inicioGrid.getDate()+i);return d;});
+    const finGrid=diasGrid[41];
+
+    // ── Recolectar eventos (mantenimientos) dentro del rango visible de la cuadrícula ──
+    const mantsCal=allMantenimientos.filter(m=>m.fechaProxima);
+    const eventosPorDia={};
+    const addEvDia=(fecha,m,completado)=>{
+      const d=new Date(fecha+'T00:00:00');
+      if(d<inicioGrid||d>finGrid)return;
+      if(!eventosPorDia[fecha])eventosPorDia[fecha]=[];
+      if(!eventosPorDia[fecha].find(x=>x.id===m.id))
+        eventosPorDia[fecha].push({...m,_fecha:fecha,_completado:completado||false});
+    };
+    mantsCal.forEach(m=>{
       if(m.estado==='completado'){
-        if(m.ultimoCompletado)addEv(m.ultimoCompletado,true);
-        else if(m.fechaProxima)addEv(m.fechaProxima,true);
+        if(m.ultimoCompletado)addEvDia(m.ultimoCompletado,m,true);
+        else if(m.fechaProxima)addEvDia(m.fechaProxima,m,true);
       }else{
-        addEv(m.fechaProxima,false);
+        addEvDia(m.fechaProxima,m,false);
         if(m.frecuencia&&freqDays[m.frecuencia]){
           let f=new Date(m.fechaProxima+'T00:00:00');
-          for(let i=0;i<120;i++){
+          for(let i=0;i<180;i++){
             f.setDate(f.getDate()+freqDays[m.frecuencia]);
-            if(f>limiteFilter)break;
-            addEv(f.toISOString().split('T')[0],false);
+            if(f>finGrid)break;
+            addEvDia(f.toISOString().split('T')[0],m,false);
           }
         }
       }
     });
 
-    // Contar totales para el resumen del periodo
-    const totalEvs=Object.values(eventos).flat();
-    const totalPend=totalEvs.filter(e=>!e._completado).length;
-    const totalComp=totalEvs.filter(e=>e._completado).length;
+    // Totales del mes visible (solo días que pertenecen al mes actual, no los de relleno)
+    const diasDelMes=diasGrid.filter(d=>d.getMonth()===mesIdx);
+    const evsDelMes=diasDelMes.flatMap(d=>eventosPorDia[d.toISOString().split('T')[0]]||[]);
+    const pendMes=evsDelMes.filter(e=>!e._completado).length;
+    const compMes=evsDelMes.filter(e=>e._completado).length;
 
-    if(!Object.keys(eventos).length){
-      el.innerHTML=toggleHtml+`
-      <div style="background:rgba(var(--theme-rgb),.06);border:1px solid rgba(var(--theme-rgb),.15);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--tx2);font-weight:700">
-        📅 ${periodoLabel}
+    // ── Cabecera: navegación de mes ──
+    let html=`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">
+      <button onclick="_gCalNavMes(-1)" style="width:36px;height:36px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.05);color:var(--tx);font-size:16px;font-weight:900;cursor:pointer;font-family:var(--font)">‹</button>
+      <div style="text-align:center;flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:900;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nomMesCap}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--tx2);margin-top:1px">${evsDelMes.length} mantenimiento${evsDelMes.length!==1?'s':''}${pendMes>0?` · ${pendMes} pend.`:''}${compMes>0?` · ${compMes} ✓`:''}</div>
       </div>
-      <div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><p>Sin mantenimientos en este período</p></div>`;
-      return;
-    }
+      <button onclick="_gCalNavMes(1)" style="width:36px;height:36px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.05);color:var(--tx);font-size:16px;font-weight:900;cursor:pointer;font-family:var(--font)">›</button>
+    </div>
+    ${_gCalMesOffset!==0?`<button onclick="_gCalIrHoy()" style="display:block;margin:0 auto 12px;padding:6px 16px;border-radius:20px;border:1px solid rgba(var(--theme-rgb),.3);background:rgba(var(--theme-rgb),.08);color:var(--r);font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font)">📍 Hoy</button>`:''}
 
-    const semanas=Object.keys(eventos).sort();
-    const meses={};
-    semanas.forEach(wk=>{
-      const[y,w]=wk.split('-W').map(Number);
-      const jan4=new Date(y,0,4);const mon=new Date(jan4);mon.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(w-1)*7);
-      const mesKey=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}`;
-      if(!meses[mesKey])meses[mesKey]=[];meses[mesKey].push(wk);
-    });
-
-    // Resumen del período
-    let html=``;
-
-    Object.entries(meses).forEach(([mes,sems])=>{
-      const[y,m]=mes.split('-');
-      const nomMes=new Date(parseInt(y),parseInt(m)-1,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
-      const totalMes=sems.reduce((a,wk)=>a+(eventos[wk]?.length||0),0);
-      const pendMes=sems.reduce((a,wk)=>a+(eventos[wk]?.filter(e=>!e._completado).length||0),0);
-      html+=`<div class="cal-mes">
-        <div class="cal-mes-title">${nomMes.toUpperCase()}
-          <span style="font-size:10px;font-weight:700;color:var(--tx2);text-transform:none;letter-spacing:0;margin-left:4px">${totalMes} trabajo${totalMes!==1?'s':''}</span>
-          ${pendMes>0?`<span style="font-size:10px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.1);border-radius:8px;padding:1px 7px;margin-left:4px">${pendMes} pend.</span>`:'<span style="font-size:10px;font-weight:800;color:#4caf50;margin-left:4px">✓ Todo hecho</span>'}
+    <!-- Cabecera de días de la semana -->
+    <div class="gcal-grid" style="margin-bottom:2px">
+      ${['L','M','X','J','V','S','D'].map(d=>`<div class="gcal-dow">${d}</div>`).join('')}
+    </div>
+    <!-- Cuadrícula del mes -->
+    <div class="gcal-grid">
+      ${diasGrid.map(d=>{
+        const fStr=d.toISOString().split('T')[0];
+        const esDelMes=d.getMonth()===mesIdx;
+        const esHoy=fStr===hoyStr;
+        const evs=eventosPorDia[fStr]||[];
+        const pend=evs.filter(e=>!e._completado).length;
+        const comp=evs.filter(e=>e._completado).length;
+        const esPasado=fStr<hoyStr;
+        const tieneAtrasado=evs.some(e=>!e._completado&&(e.atrasado||fStr<hoyStr));
+        let dotColor='';
+        if(evs.length){
+          if(pend===0)dotColor='#4caf50';
+          else if(tieneAtrasado)dotColor='#f44336';
+          else dotColor='#ff9800';
+        }
+        return `<div class="gcal-cell ${esDelMes?'':'gcal-cell-out'} ${esHoy?'gcal-cell-today':''} ${evs.length?'gcal-cell-clickable':''}" ${evs.length?`onclick="_abrirDiaCalendario('${fStr}')"`:''}>
+          <div class="gcal-daynum ${esHoy?'gcal-daynum-today':''}">${d.getDate()}</div>
+          ${evs.length?`<div class="gcal-dot-wrap">
+            <span class="gcal-dot" style="background:${dotColor}"></span>
+            ${evs.length>1?`<span class="gcal-count">${evs.length}</span>`:''}
+          </div>`:''}
         </div>`;
-      sems.forEach(wk=>{
-        const esCurrent=wk===semanaActual;
-        const[yW,wNum]=wk.split('-W').map(Number);
-        const jan4=new Date(yW,0,4);const mon=new Date(jan4);mon.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(wNum-1)*7);
-        const sun=new Date(mon);sun.setDate(mon.getDate()+6);
-        const esPasada=sun<hoy&&!esCurrent;
-        const evs=eventos[wk];
-        const fmt=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
-        const pendSem=evs.filter(e=>!e._completado).length;
-        const todosComp=pendSem===0;
-        html+=`<div class="cal-semana ${esCurrent?'current':''} ${esPasada?'past':''}">
-          <div class="cal-sem-head" onclick="toggleSem(this)">
-            <div class="cal-sem-left">
-              <div class="cal-sem-icon">${esCurrent
-                ?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.5 8 14 8 14s8-8.5 8-14a8 8 0 0 0-8-8z"/></svg>'
-                :`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${todosComp?'#4caf50':'currentColor'}" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`}
-              </div>
-              <div class="cal-sem-info">
-                <div class="cal-sem-label">
-                  ${esCurrent?'<span style="color:var(--r)">Esta semana</span>':'Sem. '+wNum}
-                  <span class="cal-badge ${todosComp?'verde':''}" style="margin-left:4px">${evs.length}</span>
-                  ${esCurrent?'<span class="cal-current-tag" style="margin-left:4px">← Ahora</span>':''}
-                  ${!todosComp&&pendSem>0?`<span style="font-size:10px;font-weight:800;color:#ff9800;margin-left:4px">${pendSem}⚠</span>`:''}
-                </div>
-                <div class="cal-sem-dates">${fmt(mon)} – ${fmt(sun)}</div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              ${todosComp?`<span style="font-size:10px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:8px;padding:2px 8px">✓</span>`:''}
-              <span style="color:var(--tx3);font-size:20px;transition:.2s">›</span>
-            </div>
+      }).join('')}
+    </div>
+
+    <!-- Leyenda -->
+    <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><span style="width:8px;height:8px;border-radius:50%;background:#ff9800;display:inline-block"></span>Pendiente</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><span style="width:8px;height:8px;border-radius:50%;background:#f44336;display:inline-block"></span>Atrasado</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><span style="width:8px;height:8px;border-radius:50%;background:#4caf50;display:inline-block"></span>Completado</div>
+    </div>
+
+    <!-- Lista rápida: próximos mantenimientos del mes visible -->
+    ${evsDelMes.length?`<div style="margin-top:20px">
+      <div style="font-size:12px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Este mes</div>
+      ${diasDelMes.filter(d=>(eventosPorDia[d.toISOString().split('T')[0]]||[]).length).map(d=>{
+        const fStr=d.toISOString().split('T')[0];
+        const evs=eventosPorDia[fStr];
+        const fLbl=d.toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short'});
+        return `<div class="card" style="margin-bottom:8px;cursor:pointer;padding:12px 14px" onclick="_abrirDiaCalendario('${fStr}')">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div style="font-size:12px;font-weight:800;color:${fStr===hoyStr?'var(--r)':'var(--tx2)'}">${fStr===hoyStr?'⚡ Hoy':fLbl}</div>
+            <div style="font-size:11px;font-weight:800;color:var(--tx2)">${evs.length} trabajo${evs.length!==1?'s':''} ›</div>
           </div>
-          <div class="cal-tasks ${esCurrent||_gCalPeriodo==='semana'?'open':''}">
-            ${evs.map(e=>{
-              const completadoVisual=e._completado||(e.ultimoCompletado&&e.ultimoCompletado===e._fecha);
-              const eCli=allClientes.find(c=>c.id===e.clienteId);
-              const eTel=e.clienteTelefono||eCli?.telefono||'';
-              const eDir=e.clienteDireccion||eCli?.direccion||'';
-              const fechaFmt=new Date(e._fecha+'T00:00:00').toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short'});
-              const esHoy=e._fecha===hoyStr;
-              const esPast=e._fecha<hoyStr;
-              const esAtrasado=!!e.atrasado; // movido automáticamente desde semana pasada
-              return`<div class="cal-task ${completadoVisual?'done':esPast&&!completadoVisual?'overdue':''}" id="caltask3_${e.id}_${e._fecha}" style="border-radius:12px;padding:0;overflow:hidden;margin-bottom:8px">
-                <div style="display:flex;align-items:stretch;min-height:0">
-                  <!-- Franja lateral de color -->
-                  <div style="width:4px;flex-shrink:0;background:${completadoVisual?'#4caf50':esAtrasado?'#ff9800':esPast&&!completadoVisual?'#f44336':esHoy?'var(--r)':'#ff9800'};border-radius:4px 0 0 4px"></div>
-                  <div style="flex:1;padding:11px 12px">
-                    <!-- Fila 1: fecha + estado -->
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                      <div style="display:flex;align-items:center;gap:6px">
-                        <span style="font-size:11px;font-weight:800;color:${completadoVisual?'#4caf50':esAtrasado?'#ff9800':esPast&&!completadoVisual?'#f44336':esHoy?'var(--r)':'#ff9800'};background:${completadoVisual?'rgba(76,175,80,.1)':esAtrasado?'rgba(255,152,0,.1)':esPast&&!completadoVisual?'rgba(244,67,54,.1)':esHoy?'rgba(var(--theme-rgb),.1)':'rgba(255,152,0,.1)'};padding:2px 8px;border-radius:8px">
-                          ${esHoy?'⚡ Hoy':fechaFmt}
-                        </span>
-                        ${e.frecuencia?`<span style="font-size:10px;color:var(--tx2);background:rgba(255,255,255,.06);border-radius:6px;padding:2px 7px;font-weight:700">${e.frecuencia}</span>`:''}
-                      </div>
-                      ${completadoVisual
-                        ?`<span style="font-size:11px;font-weight:800;color:#4caf50;display:flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Hecho</span>`
-                        :esAtrasado
-                          ?`<span style="font-size:11px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);padding:2px 8px;border-radius:8px;display:flex;align-items:center;gap:3px">⏰ Atrasado${e.fechaOriginal?`<span style="font-weight:600;opacity:.75"> · era ${new Date(e.fechaOriginal+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>`:''}</span>`
-                          :esPast?`<span style="font-size:11px;font-weight:800;color:#f44336">⚠ Atrasado</span>`:``}
-                    </div>
-                    <!-- Fila 2: trabajo -->
-                    <div style="font-size:14px;font-weight:900;color:var(--tx);margin-bottom:4px;cursor:pointer" onclick="verMant('${e.id}')">${e.nombreTrabajo}</div>
-                    <!-- Fila 3: cliente + dirección -->
-                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-                      <span style="font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                        <strong style="color:var(--tx)">${e.clienteNombre||'Sin cliente'}</strong>
-                      </span>
-                      ${eDir?`<span style="font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${eDir}</span>`:''}
-                    </div>
-                    <!-- Fila 4: botones de acción -->
-                    <div class="btn-row-cal" style="display:flex;gap:5px;flex-wrap:wrap">
-                      ${!completadoVisual
-                        ?`<button class="btn btn-ok btn-sm" style="font-weight:900;flex:1;min-width:90px" onclick="completarMantCal3('${e.id}','${e._fecha}',this)">✅ Completar</button>`
-                        :`<button class="btn btn-s btn-sm" onclick="desmarcarMantCal3('${e.id}','${e._fecha}',this)" style="color:var(--tx2)">↩ Desmarcar</button>`}
-                      <button class="btn btn-s btn-sm" style="color:#ff7043;border-color:rgba(255,112,67,.3)" onclick="abrirAveriaDesdeMantenimiento('${e.id}')">⚡</button>
-                      ${eTel?`<a href="tel:${eTel}" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>`:''}
-                      ${eTel?`<a href="https://wa.me/34${eTel.replace(/\D/g,'')}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">💬</a>`:''}
-                      ${eDir?`<button class="btn btn-s btn-sm" onclick="abrirMapa('','','${eDir.replace(/'/g,"\\'")}')">📍</button>`:''}
-                      <button class="btn btn-s btn-sm" onclick="verMant('${e.id}',true)">📷</button>
-                    </div>
-                  </div>
-                </div>
-              </div>`;
-            }).join('')}
-          </div>
+          <div style="font-size:13px;color:var(--tx);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${evs.map(e=>e.nombreTrabajo).join(' · ')}</div>
         </div>`;
-      });
-      html+=`</div>`;
-    });
+      }).join('')}
+    </div>`:`<div class="empty" style="margin-top:20px"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><p>Sin mantenimientos este mes</p></div>`}
+    `;
     el.innerHTML=toggleHtml+html;
   }
 };
 window._renderGTabMantenimientos=_renderGTabMantenimientos;
+
+// ─── Ver el detalle de un día del calendario (lista de mantenimientos de ese día) ───
+window._abrirDiaCalendario=(fechaStr)=>{
+  const hoy=new Date();const hoyStr=hoy.toISOString().split('T')[0];
+  const mantsCal=allMantenimientos.filter(m=>m.fechaProxima);
+  const evs=[];
+  const addEv=(fecha,m,completado)=>{
+    if(fecha!==fechaStr)return;
+    if(!evs.find(x=>x.id===m.id))evs.push({...m,_fecha:fecha,_completado:completado||false});
+  };
+  mantsCal.forEach(m=>{
+    if(m.estado==='completado'){
+      if(m.ultimoCompletado)addEv(m.ultimoCompletado,m,true);
+      else if(m.fechaProxima)addEv(m.fechaProxima,m,true);
+    }else{
+      addEv(m.fechaProxima,m,false);
+      if(m.frecuencia&&freqDays[m.frecuencia]){
+        let f=new Date(m.fechaProxima+'T00:00:00');
+        for(let i=0;i<180;i++){
+          f.setDate(f.getDate()+freqDays[m.frecuencia]);
+          const fs=f.toISOString().split('T')[0];
+          if(fs>fechaStr)break;
+          addEv(fs,m,false);
+        }
+      }
+    }
+  });
+  if(!evs.length)return;
+  const fechaTitulo=new Date(fechaStr+'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+  abrirSB(`📅 ${fechaTitulo}`,`
+    ${evs.map(e=>{
+      const completadoVisual=e._completado||(e.ultimoCompletado&&e.ultimoCompletado===e._fecha);
+      const eCli=allClientes.find(c=>c.id===e.clienteId);
+      const eTel=e.clienteTelefono||eCli?.telefono||'';
+      const eDir=e.clienteDireccion||eCli?.direccion||'';
+      const esPast=e._fecha<hoyStr;
+      const esAtrasado=!!e.atrasado;
+      return`<div class="cal-task ${completadoVisual?'done':esPast&&!completadoVisual?'overdue':''}" style="border-radius:12px;padding:0;overflow:hidden;margin-bottom:10px">
+        <div style="display:flex;align-items:stretch;min-height:0">
+          <div style="width:4px;flex-shrink:0;background:${completadoVisual?'#4caf50':esAtrasado?'#ff9800':esPast&&!completadoVisual?'#f44336':'var(--r)'};border-radius:4px 0 0 4px"></div>
+          <div style="flex:1;padding:11px 12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <div style="display:flex;align-items:center;gap:6px">
+                ${e.frecuencia?`<span style="font-size:10px;color:var(--tx2);background:rgba(255,255,255,.06);border-radius:6px;padding:2px 7px;font-weight:700">${e.frecuencia}</span>`:''}
+              </div>
+              ${completadoVisual
+                ?`<span style="font-size:11px;font-weight:800;color:#4caf50;display:flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Hecho</span>`
+                :esAtrasado?`<span style="font-size:11px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);padding:2px 8px;border-radius:8px">⏰ Atrasado</span>`
+                :esPast?`<span style="font-size:11px;font-weight:800;color:#f44336">⚠ Atrasado</span>`:``}
+            </div>
+            <div style="font-size:14px;font-weight:900;color:var(--tx);margin-bottom:4px;cursor:pointer" onclick="verMant('${e.id}')">${e.nombreTrabajo}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+              <span style="font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                <strong style="color:var(--tx)">${e.clienteNombre||'Sin cliente'}</strong>
+              </span>
+              ${eDir?`<span style="font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${eDir}</span>`:''}
+            </div>
+            <div class="btn-row-cal" style="display:flex;gap:5px;flex-wrap:wrap">
+              ${!completadoVisual
+                ?`<button class="btn btn-ok btn-sm" style="font-weight:900;flex:1;min-width:90px" onclick="completarMantCal3('${e.id}','${e._fecha}',this)">✅ Completar</button>`
+                :`<button class="btn btn-s btn-sm" onclick="desmarcarMantCal3('${e.id}','${e._fecha}',this)" style="color:var(--tx2)">↩ Desmarcar</button>`}
+              <button class="btn btn-s btn-sm" style="color:#ff7043;border-color:rgba(255,112,67,.3)" onclick="abrirAveriaDesdeMantenimiento('${e.id}')">⚡</button>
+              ${eTel?`<a href="tel:${eTel}" class="btn btn-s btn-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>`:''}
+              ${eTel?`<a href="https://wa.me/34${eTel.replace(/\D/g,'')}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none">💬</a>`:''}
+              ${eDir?`<button class="btn btn-s btn-sm" onclick="abrirMapa('','','${eDir.replace(/'/g,"\\'")}')">📍</button>`:''}
+              <button class="btn btn-s btn-sm" onclick="verMant('${e.id}',true)">📷</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  `);
+};
 
 // Control del sub-estado formulario en tab mant
 window._gMantTabInline=0;
@@ -9072,140 +9049,6 @@ window.desmarcarMantCal=async(id,fecha,btn)=>{
   }catch(e){toast('Error al desmarcar','e')}
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ESTADÍSTICAS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const renderStats=async()=>{
-  if(!CGID){$('statsContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><p>Selecciona un grupo primero</p></div>`;return}
-  $('statsContent').innerHTML=`<div class="skel skel-hero"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>`;
-
-  const partes=allPartes.filter(p=>!p.archivado);
-  const clis=allClientes.filter(c=>!c.archivado);
-  const pend=partes.filter(p=>p.estado==='pendiente').length;
-  const done=partes.filter(p=>p.estado==='completado').length;
-  const total=partes.length;
-  const factura=partes.reduce((acc,p)=>acc+calcTotal(p),0);
-  const tasa=total>0?Math.round(done/total*100):0;
-
-  // Ingresos por mes (últimos 6 meses)
-  const ahora=new Date();
-  const meses6=Array.from({length:6},(_,i)=>{
-    const d=new Date(ahora);d.setMonth(ahora.getMonth()-5+i);
-    return{mes:d.getMonth(),year:d.getFullYear(),lbl:d.toLocaleDateString('es-ES',{month:'short'}),total:0};
-  });
-  partes.forEach(p=>{
-    const ts=p.creado?.seconds;if(!ts)return;
-    const d=new Date(ts*1000);
-    const slot=meses6.find(m=>m.mes===d.getMonth()&&m.year===d.getFullYear());
-    if(slot)slot.total+=calcTotal(p);
-  });
-  const maxBar=Math.max(...meses6.map(m=>m.total),1);
-
-  // Cliente más rentable
-  const porCli={};
-  partes.forEach(p=>{if(!p.clienteId)return;porCli[p.clienteId]=(porCli[p.clienteId]||0)+calcTotal(p);});
-  const topCli=Object.entries(porCli).sort((a,b)=>b[1]-a[1])[0];
-  const topCliNom=topCli?allClientes.find(c=>c.id===topCli[0])?.nombre||'—':'—';
-
-  // Presupuestos: tasa de conversión
-  let presus=[],presAcep=0,presTot=0;
-  try{
-    const snap=await getDocs(collection(db,'grupos',CGID,'presupuestos'));
-    presus=snap.docs.map(d=>d.data());
-    presTot=presus.length;
-    presAcep=presus.filter(p=>p.estado==='aceptado').length;
-  }catch(e){}
-  const tasaConv=presTot>0?Math.round(presAcep/presTot*100):0;
-
-  // Días más activos
-  const diasCount={};
-  const diasNom=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  partes.forEach(p=>{
-    const ts=p.creado?.seconds;if(!ts)return;
-    const d=new Date(ts*1000).getDay();
-    diasCount[d]=(diasCount[d]||0)+1;
-  });
-  const maxDia=Math.max(...Object.values(diasCount),1);
-
-  $('statsContent').innerHTML=`
-  <div class="stat2-grid">
-    <div class="stat2-card">
-      <div class="stat2-num">${total}</div>
-      <div class="stat2-label">Total partes</div>
-      <div class="stat2-sub">${pend} pdte. · ${done} hechos</div>
-    </div>
-    <div class="stat2-card">
-      <div class="stat2-num">${clis.length}</div>
-      <div class="stat2-label">Clientes activos</div>
-    </div>
-    <div class="stat2-card">
-      <div class="stat2-num" style="font-size:20px">${fmtM(factura)}</div>
-      <div class="stat2-label">Facturación total</div>
-    </div>
-    <div class="stat2-card">
-      <div class="stat2-num">${tasa}%</div>
-      <div class="stat2-label">Tasa completado</div>
-    </div>
-  </div>
-
-  <div class="chart-wrap">
-    <div class="chart-title">💶 Ingresos mensuales (últimos 6 meses)</div>
-    <div class="chart-bars">
-      ${meses6.map(m=>{
-        const pct=maxBar>0?Math.round(m.total/maxBar*100):0;
-        return`<div class="chart-bar-col">
-          ${m.total>0?`<div class="chart-bar-val">${m.total>=1000?(m.total/1000).toFixed(1)+'k':Math.round(m.total)+'€'}</div>`:''}
-          <div class="chart-bar" style="height:${Math.max(pct,2)}%;flex:1"></div>
-          <div class="chart-bar-lbl">${m.lbl}</div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>
-
-  <div class="chart-wrap">
-    <div class="chart-title">Días más activos</div>
-    <div class="chart-bars">
-      ${diasNom.map((_,d)=>{
-        const cnt=diasCount[d]||0;
-        const pct=maxDia>0?Math.round(cnt/maxDia*100):0;
-        return`<div class="chart-bar-col">
-          ${cnt>0?`<div class="chart-bar-val">${cnt}</div>`:''}
-          <div class="chart-bar" style="height:${Math.max(pct,2)}%;flex:1;background:rgba(var(--theme-rgb),.6)"></div>
-          <div class="chart-bar-lbl">${diasNom[d]}</div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>
-
-  ${presTot>0?`<div class="chart-wrap">
-    <div class="chart-title">Tasa de conversión de presupuestos</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:13px;font-weight:700;color:var(--tx2)">${presAcep}/${presTot} aceptados</span>
-      <span style="font-size:18px;font-weight:900;color:var(--r)">${tasaConv}%</span>
-    </div>
-    <div class="conv-bar-bg"><div class="conv-bar-fill" style="width:${tasaConv}%"></div></div>
-  </div>`:''}
-
-  ${topCli?`<div class="chart-wrap">
-    <div class="chart-title">🏆 Cliente más rentable</div>
-    <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
-      <div style="display:flex;align-items:center;justify-content:center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div>
-        <div style="font-size:16px;font-weight:900;color:var(--tx)">${topCliNom}</div>
-        <div style="font-size:14px;font-weight:800;color:var(--r)">${fmtM(topCli[1])}</div>
-      </div>
-    </div>
-  </div>`:''}
-
-  <div class="chart-wrap">
-    <div class="chart-title">Progreso global</div>
-    <div class="prog-bar" style="background:rgba(255,255,255,.07);border-radius:8px;height:12px;overflow:hidden;margin-top:8px">
-      <div class="prog-fill" id="progFill" style="width:0%;background:linear-gradient(90deg,var(--r2),var(--r));height:100%;border-radius:8px;transition:width .8s cubic-bezier(.4,0,.2,1)"></div>
-    </div>
-    <div style="font-size:13px;color:var(--tx2);margin-top:8px">${tasa}% completado</div>
-  </div>`;
-  setTimeout(()=>{const pf=$('progFill');if(pf)pf.style.width=tasa+'%'},150);
-};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ARCHIVOS — ELIMINACIÓN DEFINITIVA
@@ -9255,7 +9098,7 @@ const _renderArchivosCard=(it)=>{
     ?`Cliente · archivado ${fechaArch}`
     :`Parte · archivado ${fechaArch}${it.descripcion?' · '+it.descripcion.slice(0,80):''}`;
   return `
-  <div class="arch-card" data-archid="${it.id}">
+  <div class="arch-card" data-archid="${it.id}" ${esCliente?'':`onclick="_verParteArchivado('${it.id}')" style="cursor:pointer"`}>
     <div class="arch-card-ico">
       ${esCliente
         ?`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
@@ -9266,10 +9109,56 @@ const _renderArchivosCard=(it)=>{
       <div class="arch-sub">${subInfo}</div>
     </div>
     <div class="arch-btns">
-      <button class="btn btn-ok btn-sm" title="Restaurar" onclick="restaurarArchivo('${it.id}','${it.tipo}')">↩</button>
-      <button class="btn btn-del btn-sm" title="Eliminar definitivamente" onclick="borrarArchivo('${it.id}')">🗑</button>
+      <button class="btn btn-ok btn-sm" title="Restaurar" onclick="event.stopPropagation();restaurarArchivo('${it.id}','${it.tipo}')">↩</button>
+      <button class="btn btn-del btn-sm" title="Eliminar definitivamente" onclick="event.stopPropagation();borrarArchivo('${it.id}')">🗑</button>
     </div>
   </div>`;
+};
+
+// ─── Ver ficha completa de un PARTE archivado (antes de restaurarlo) ───
+window._verParteArchivado=(archId)=>{
+  const p=(window._archivosCache&&window._archivosCache[archId])||(window._archivosAllSorted||[]).find(x=>x.id===archId);
+  if(!p||p.tipo==='cliente')return;
+  const tot=calcTotal(p);
+  const iva=p.aplicarIVAMateriales?(parseFloat(p.importeMateriales)||0)*.21:0;
+  abrirSB(p.titulo||p.nombre||'Parte archivado',`
+    <div style="background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.3);border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#f57c00">
+      <span>📦</span> Parte archivado el ${fmtF(p.eliminadoEn)} · vista de solo lectura
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="det-label">Cliente</div><div class="det-val">${p.clienteNombre||'Sin cliente'}</div></div></div>
+      ${p.edificio?`<div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><line x1="9" y1="15" x2="9.01" y2="15"/><line x1="15" y1="15" x2="15.01" y2="15"/></svg></div><div><div class="det-label">Edificio / Comunidad</div><div class="det-val">${p.edificio}</div></div></div>`:''}
+      ${p.clienteDireccion?`<div class="det-row"><div class="det-ico">📍</div><div><div class="det-label">Dirección</div><div class="det-val">${p.clienteDireccion}</div></div></div>`:''}
+      ${p.operario?`<div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="det-label">Operario</div><div class="det-val">${p.operario}</div></div></div>`:''}
+      <div class="det-row"><div class="det-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="det-label">Fecha</div><div class="det-val">${p.fechaParte||fmtF(p.creado)}</div></div></div>
+      <div class="det-row"><div class="det-ico">📌</div><div><div class="det-label">Estado</div><div class="det-val">${p.estado==='completado'?'✓ Completado':'Pendiente'}</div></div></div>
+    </div>
+    ${p.descripcion?`<div class="card" style="margin-bottom:14px"><div class="fsec-title">Descripción</div><p style="font-size:14px;color:var(--tx2)">${p.descripcion}</p></div>`:''}
+    ${p.materiales||p.duracion?`<div class="card" style="margin-bottom:14px"><div class="fsec-title">Trabajo realizado</div>
+      ${p.materiales?`<div class="det-row"><div class="det-ico">📦</div><div><div class="det-label">Materiales</div><div class="det-val">${p.materiales}</div></div></div>`:''}
+      ${p.duracion?`<div class="det-row"><div class="det-ico">⏱️</div><div><div class="det-label">Duración</div><div class="det-val">${p.duracion}</div></div></div>`:''}
+    </div>`:''}
+    <div class="card" style="margin-bottom:14px">
+      <div class="fsec-title">Importes</div>
+      ${(parseFloat(p.importeManoObra)||0)>0?`<div class="importe-row"><span class="il">Mano de obra</span><span class="iv">${fmtM(p.importeManoObra)}</span></div>`:''}
+      ${(parseFloat(p.importeMateriales)||0)>0?`<div class="importe-row"><span class="il">Materiales</span><span class="iv">${fmtM(p.importeMateriales)}</span></div>`:''}
+      ${iva>0?`<div class="importe-row"><span class="il">IVA 21% materiales</span><span class="iv">${fmtM(iva)}</span></div>`:''}
+      ${(parseFloat(p.importeDesplazamiento)||0)>0?`<div class="importe-row"><span class="il">Desplazamiento</span><span class="iv">${fmtM(p.importeDesplazamiento)}</span></div>`:''}
+      <div class="importe-row"><span class="il">TOTAL</span><span>${fmtM(tot)}</span></div>
+    </div>
+    ${p.firmado&&p.firmaCliente?`
+    <div class="card" style="margin-bottom:14px;border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.04)">
+      <div class="fsec-title" style="color:#4caf50">✍️ Firma del cliente</div>
+      <div style="text-align:center;padding:8px 0">
+        <img src="${p.firmaCliente}" style="max-width:100%;max-height:130px;border-radius:8px;border:1px solid rgba(0,0,0,.1);background:#fff;display:block;margin:0 auto">
+        <div style="font-size:11px;color:#4caf50;font-weight:700;margin-top:8px">✅ Firmado · ${p.clienteNombre||'Cliente'}</div>
+      </div>
+    </div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn btn-ok" style="flex:1" onclick="cerrarSB();restaurarArchivo('${p.id}','parte')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' style='margin-right:4px'><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>↩ Restaurar parte</button>
+      <button class="btn btn-del" onclick="cerrarSB();borrarArchivo('${p.id}')">🗑 Eliminar definitivamente</button>
+    </div>
+  `);
 };
 
 const _buildArchivosHTML=(items)=>{
@@ -10525,33 +10414,6 @@ let _presuTabActiva = 'pend';
 let _presusPend = [];
 let _presusComp = [];
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// RUTA DEL DÍA — estado global
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let _rutaDia = []; // [{id, nombre, direccion, telefono, lat, lng}]
-let _rutaDiaDragSrc = null;
-
-const _getRutaKey = ()=> CGID ? `joyvi_ruta_${CGID}_${new Date().toISOString().split('T')[0]}` : null;
-const _cargarRuta = ()=>{
-  const k=_getRutaKey(); if(!k)return;
-  try{ _rutaDia=JSON.parse(localStorage.getItem(k)||'[]'); }catch(e){ _rutaDia=[]; }
-};
-const _guardarRuta = ()=>{
-  const k=_getRutaKey(); if(!k)return;
-  localStorage.setItem(k,JSON.stringify(_rutaDia));
-};
-
-window.añadirClienteARuta=(cliId)=>{
-  const cli=allClientes.find(c=>c.id===cliId);
-  if(!cli)return;
-  _cargarRuta();
-  if(_rutaDia.find(r=>r.id===cliId)){toast('Ya está en la ruta de hoy','i');return;}
-  _rutaDia.push({id:cli.id,nombre:cli.nombre||'Cliente',direccion:cli.direccion||'',telefono:cli.telefono||'',lat:cli.lat||null,lng:cli.lng||null});
-  _guardarRuta();
-  toast(`📍 ${cli.nombre} añadido a la ruta`,'o');
-  // Refrescar ruta si está abierta
-  if(document.querySelector('#screenRutaDia.active')) renderRutaDia();
-};
 
 window.switchPresuTab = (tab) => {
   _presuTabActiva = tab;
@@ -11777,15 +11639,6 @@ const renderPerfil=()=>{
     <div class="toggle-row"><span class="toggle-label">🌗 Alto contraste</span><label class="toggle-sw"><input type="checkbox" id="toggleAltoContraste" onchange="toggleAltoContraste(this.checked)" ${document.body.classList.contains('alto-contraste')?'checked':''}><span class="toggle-track"></span></label></div>
     <div class="toggle-row"><span class="toggle-label">📳 Vibración</span><label class="toggle-sw"><input type="checkbox" id="toggleHaptic" onchange="toggleHaptic(this.checked)" ${localStorage.getItem('joyvi_haptic')!=='0'?'checked':''}><span class="toggle-track"></span></label></div>
   </div>
-
-  <!-- ── MODO VISUALIZACIÓN ── -->
-  <div class="fsec">
-    <div class="fsec-title">🏭 Modo gestión</div>
-    <div class="toggle-row" style="align-items:flex-start">
-      <div><div class="toggle-label">Modo gestión</div><div style="font-size:11px;color:var(--tx2);margin-top:3px;max-width:200px">Permite crear partes, averías, clientes y presupuestos.</div></div>
-      <label class="toggle-sw" style="margin-top:2px;flex-shrink:0"><input type="checkbox" id="toggleKiosk" onchange="this.checked?activarModoVisualizacion():salirModoVisualizacion()" ${_esModoSimple?'checked':''}><span class="toggle-track"></span></label>
-    </div>
-  </div></div>
   </div>
 
   <!-- ── SEGURIDAD ── -->
@@ -12873,313 +12726,6 @@ const renderLog=async()=>{
   }catch(e){$('logContent').innerHTML=`<div class="empty"><p>Error al cargar el log</p></div>`}
 };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CONTROL DE HORAS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let _fichajeActivo=null;
-
-const renderHoras=async()=>{
-  if(!CGID){$('horasContent').innerHTML=`<div class="empty"><div class="empty-ico">⏱️</div><p>Selecciona un grupo primero</p></div>`;return}
-  $('horasContent').innerHTML=`<div class="skel skel-hero"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>`;
-
-  // Buscar si hay ficha activa (entrada sin salida) del usuario hoy
-  let fichaActiva=null;
-  let fichasHoy=[];
-  let todasFichas=[];
-  try{
-    const snap=await getDocs(query(collection(db,'grupos',CGID,'horas'),where('uid','==',CU.uid)));
-    todasFichas=snap.docs.map(d=>({id:d.id,...d.data()}))
-      .sort((a,b)=>(b.entrada?.seconds||0)-(a.entrada?.seconds||0));
-    const hoyStr=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-    fichasHoy=todasFichas.filter(f=>{
-      if(!f.entrada?.seconds)return false;
-      return new Date(f.entrada.seconds*1000).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})===hoyStr;
-    });
-    fichaActiva=todasFichas.find(f=>f.entrada&&!f.salida)||null;
-  }catch(e){}
-
-  const fmtHora=ts=>ts?.seconds?new Date(ts.seconds*1000).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}):'—';
-  const fmtFecha=ts=>ts?.seconds?new Date(ts.seconds*1000).toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}):'—';
-  const fmtDuracion=(entrada,salida)=>{
-    if(!entrada?.seconds||!salida?.seconds)return'—';
-    const s=salida.seconds-entrada.seconds;
-    if(s<0)return'—';
-    const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);
-    return h>0?`${h}h ${m}min`:`${m}min`;
-  };
-
-  // Horas hoy
-  const durHoy=fichasHoy.filter(f=>f.salida).reduce((acc,f)=>{
-    if(!f.entrada?.seconds||!f.salida?.seconds)return acc;
-    return acc+(f.salida.seconds-f.entrada.seconds);
-  },0);
-  const hHoy=Math.floor(durHoy/3600);const mHoy=Math.floor((durHoy%3600)/60);
-
-  // Horas esta semana
-  const lun=new Date();lun.setDate(lun.getDate()-(lun.getDay()||7)+1);lun.setHours(0,0,0,0);
-  const durSem=todasFichas.filter(f=>f.salida&&f.entrada?.seconds&&new Date(f.entrada.seconds*1000)>=lun)
-    .reduce((acc,f)=>acc+(f.salida.seconds-f.entrada.seconds),0);
-  const hSem=Math.floor(durSem/3600);const mSem=Math.floor((durSem%3600)/60);
-
-  // Acciones extras
-  const esAdmin=CG&&CG.adminUid===CU.uid;
-  $('horasContent').innerHTML=`
-  <!-- Selector vista: Mis horas / Equipo (solo admin) -->
-  ${esAdmin?`<div style="display:flex;gap:8px;margin-bottom:16px">
-    <button id="horasTabMio" onclick="_switchHorasTab('mio')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--r);background:var(--r);color:#fff;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer">Mis horas</button>
-    <button id="horasTabEquipo" onclick="_switchHorasTab('equipo')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--border);background:transparent;color:var(--tx2);font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer">🧑‍🤝‍🧑 Todo el equipo</button>
-  </div>`:''}
-
-  <!-- Resumen hoy/semana (MIS horas) -->
-  <div id="horasMioWrap">
-  <div class="stat2-grid" style="margin-bottom:20px">
-    <div class="stat2-card" style="text-align:center">
-      <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">HOY</div>
-      <div style="font-size:28px;font-weight:900;color:var(--tx);line-height:1">${durHoy>0?`${hHoy}h ${mHoy}m`:'—'}</div>
-    </div>
-    <div class="stat2-card" style="text-align:center">
-      <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">SEMANA</div>
-      <div style="font-size:28px;font-weight:900;color:var(--tx);line-height:1">${durSem>0?`${hSem}h ${mSem}m`:'—'}</div>
-    </div>
-  </div>
-
-  <!-- Botón principal fichar -->
-  <div style="margin-bottom:24px">
-    ${fichaActiva?`
-    <div style="background:rgba(76,175,80,.1);border:2px solid rgba(76,175,80,.35);border-radius:18px;padding:20px;text-align:center;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:700;color:#4caf50;margin-bottom:4px">▶ TURNO EN CURSO</div>
-      <div style="font-size:32px;font-weight:900;color:var(--tx);margin:6px 0">${fmtHora(fichaActiva.entrada)}</div>
-      <div style="font-size:12px;color:var(--tx2);margin-bottom:16px">Entrada registrada</div>
-      <button onclick="registrarSalida('${fichaActiva.id}')" style="background:#e53935;color:#fff;border:none;border-radius:14px;padding:14px 32px;font-size:16px;font-weight:900;font-family:var(--font);cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(229,57,53,.35);display:flex;align-items:center;justify-content:center;gap:8px">
-        ⏹ Registrar salida
-      </button>
-    </div>`:`
-    <div style="text-align:center;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:700;color:var(--tx2);margin-bottom:16px">Sin turno activo</div>
-      <button onclick="registrarEntrada()" style="background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-size:16px;font-weight:900;font-family:var(--font);cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(76,175,80,.35);display:flex;align-items:center;justify-content:center;gap:8px">
-        ▶ Registrar entrada
-      </button>
-    </div>`}
-  </div>
-
-  <div style="display:flex;gap:8px;margin-bottom:20px">
-    <button class="btn btn-s btn-sm" onclick="exportarHorasCSV()">Exportar CSV</button>
-  </div>
-
-  <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Historial de fichas</div>
-  ${todasFichas.length?todasFichas.slice(0,30).map(f=>{
-    const dur=fmtDuracion(f.entrada,f.salida);
-    const activa=!f.salida;
-    return`<div class="ficha-row" style="${activa?'border-color:rgba(76,175,80,.35);background:rgba(76,175,80,.05)':''}">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:800;color:var(--tx)">${fmtFecha(f.entrada)}</div>
-        <div style="font-size:12px;color:var(--tx2);margin-top:2px">
-          ▶ ${fmtHora(f.entrada)}${f.salida?` &nbsp;·&nbsp; ⏹ ${fmtHora(f.salida)}`:''}
-        </div>
-      </div>
-      <span class="ficha-badge ${activa?'activa':'cerrada'}">${activa?'En curso':dur}</span>
-      <div style="display:flex;gap:5px;margin-left:6px;flex-shrink:0">
-        <button onclick="_editarFicha('${f.id}',${f.entrada?.seconds||0},${f.salida?.seconds||0})" title="Editar ficha" style="width:30px;height:30px;border:1px solid var(--border);background:rgba(255,255,255,.05);border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--tx2);transition:.15s" onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--tx2)'">✏️</button>
-        <button onclick="_eliminarFicha('${f.id}')" title="Eliminar ficha" style="width:30px;height:30px;border:1px solid rgba(229,57,53,.25);background:rgba(229,57,53,.06);border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:#e53935;transition:.15s" onmouseover="this.style.background='rgba(229,57,53,.15)'" onmouseout="this.style.background='rgba(229,57,53,.06)'">🗑</button>
-      </div>
-    </div>`;}).join(''):`<div class="empty" style="padding:20px"><p>Sin fichas registradas aún</p></div>`}
-  </div>
-
-  <!-- Vista equipo (admin) -->
-  <div id="horasEquipoWrap" style="display:none">
-    <div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">Horas del equipo esta semana</div>
-    <div id="horasEquipoContent"><div class="skel skel-card"></div><div class="skel skel-card"></div></div>
-  </div>`;
-};
-
-window._switchHorasTab=(tab)=>{
-  const mio=document.getElementById('horasMioWrap');
-  const equipo=document.getElementById('horasEquipoWrap');
-  const tMio=document.getElementById('horasTabMio');
-  const tEq=document.getElementById('horasTabEquipo');
-  if(!mio||!equipo)return;
-  if(tab==='equipo'){
-    mio.style.display='none';equipo.style.display='block';
-    if(tMio){tMio.style.background='transparent';tMio.style.color='var(--tx2)';tMio.style.borderColor='var(--border)';}
-    if(tEq){tEq.style.background='var(--r)';tEq.style.color='#fff';tEq.style.borderColor='var(--r)';}
-    _cargarHorasEquipo();
-  }else{
-    mio.style.display='block';equipo.style.display='none';
-    if(tMio){tMio.style.background='var(--r)';tMio.style.color='#fff';tMio.style.borderColor='var(--r)';}
-    if(tEq){tEq.style.background='transparent';tEq.style.color='var(--tx2)';tEq.style.borderColor='var(--border)';}
-  }
-};
-
-window._cargarHorasEquipo=async()=>{
-  const el=document.getElementById('horasEquipoContent');
-  if(!el||!CGID)return;
-  el.innerHTML=`<div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>`;
-  try{
-    const snap=await getDocs(collection(db,'grupos',CGID,'horas'));
-    const todas=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const porTrabajador={};
-    const lun=new Date();lun.setDate(lun.getDate()-(lun.getDay()||7)+1);lun.setHours(0,0,0,0);
-    const hoyStr=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-    todas.forEach(f=>{
-      const uid=f.uid||'unknown';
-      if(!porTrabajador[uid])porTrabajador[uid]={nombre:f.nombre||uid,fichas:[],turnoActivo:false,durSem:0,durHoy:0};
-      porTrabajador[uid].fichas.push(f);
-      if(!f.salida)porTrabajador[uid].turnoActivo=true;
-      if(f.salida&&f.entrada?.seconds&&new Date(f.entrada.seconds*1000)>=lun)
-        porTrabajador[uid].durSem+=(f.salida.seconds-f.entrada.seconds);
-      if(f.entrada?.seconds){
-        const fd=new Date(f.entrada.seconds*1000).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-        if(fd===hoyStr&&f.salida)porTrabajador[uid].durHoy+=(f.salida.seconds-f.entrada.seconds);
-      }
-    });
-    const fmtH=s=>{const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);return s>0?(h>0?`${h}h ${m}m`:`${m}m`):'—';};
-    const trabajadores=Object.values(porTrabajador).sort((a,b)=>b.durSem-a.durSem);
-    if(!trabajadores.length){el.innerHTML=`<div class="empty"><p>Sin fichas en el grupo</p></div>`;return;}
-    const totalSem=trabajadores.reduce((a,t)=>a+t.durSem,0);
-    el.innerHTML=`
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px">Total equipo esta semana</div><div style="font-size:22px;font-weight:900;color:var(--tx);margin-top:4px">${fmtH(totalSem)}</div></div>
-        <button class="btn btn-s btn-sm" onclick="_exportarHorasEquipoCSV()">📊 CSV</button>
-      </div>
-      ${trabajadores.map(t=>`
-        <div style="background:var(--card);border:1px solid ${t.turnoActivo?'rgba(76,175,80,.4)':'var(--border)'};border-radius:14px;padding:14px;margin-bottom:10px${t.turnoActivo?';background:rgba(76,175,80,.04)':''}">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-            <div style="width:40px;height:40px;border-radius:50%;background:rgba(var(--theme-rgb),.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--r);flex-shrink:0">${(t.nombre||'?')[0].toUpperCase()}</div>
-            <div style="flex:1"><div style="font-size:14px;font-weight:800;color:var(--tx)">${t.nombre}</div>${t.turnoActivo?`<div style="font-size:11px;color:#4caf50;font-weight:700">▶ Turno activo</div>`:''}</div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Hoy</div><div style="font-size:18px;font-weight:900;color:var(--tx)">${fmtH(t.durHoy)}</div></div>
-            <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Semana</div><div style="font-size:18px;font-weight:900;color:var(--r)">${fmtH(t.durSem)}</div></div>
-          </div>
-        </div>`).join('')}`;
-  }catch(e){el.innerHTML=`<div class="empty"><p>Error al cargar horas del equipo</p></div>`}
-};
-
-window._exportarHorasEquipoCSV=async()=>{
-  if(!CGID)return;
-  try{
-    const snap=await getDocs(collection(db,'grupos',CGID,'horas'));
-    const todas=snap.docs.map(d=>d.data()).sort((a,b)=>(b.entrada?.seconds||0)-(a.entrada?.seconds||0));
-    const fmtDT=ts=>ts?.seconds?new Date(ts.seconds*1000).toLocaleString('es-ES'):'';
-    const fmtDurH=(ent,sal)=>(!ent?.seconds||!sal?.seconds)?'':((sal.seconds-ent.seconds)/3600).toFixed(2);
-    const csv=['Trabajador,Fecha entrada,Fecha salida,Horas trabajadas',...todas.map(r=>[r.nombre||'',fmtDT(r.entrada),fmtDT(r.salida),fmtDurH(r.entrada,r.salida)].map(v=>`"${v}"`).join(','))].join('\n');
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`horas_equipo_${new Date().toISOString().slice(0,10)}.csv`;a.click();
-    toast('CSV del equipo exportado','o');
-  }catch(e){toast('Error al exportar','e')}
-};
-
-window.registrarEntrada=async()=>{
-  if(!CGID||!CU)return;
-  try{
-    await addDoc(collection(db,'grupos',CGID,'horas'),{
-      uid:CU.uid,
-      nombre:CUD?.nombre||CU.email||'',
-      entrada:serverTimestamp(),
-      salida:null,
-      creado:serverTimestamp()
-    });
-    toast('▶ Entrada registrada','o');
-    haptic('medium');
-    await registrarLog('ficha_entrada','Entrada registrada');
-    renderHoras();
-  }catch(e){toast('Error al registrar','e')}
-};
-
-window.registrarSalida=async(fichaId)=>{
-  if(!CGID||!fichaId)return;
-  try{
-    await updateDoc(doc(db,'grupos',CGID,'horas',fichaId),{salida:serverTimestamp()});
-    toast('⏹ Salida registrada','o');
-    haptic('medium');
-    await registrarLog('ficha_salida','Salida registrada');
-    renderHoras();
-  }catch(e){toast('Error al registrar','e')}
-};
-
-window.exportarHorasCSV=async()=>{
-  if(!CGID){toast('Sin grupo seleccionado','e');return}
-  try{
-    const snap=await getDocs(query(collection(db,'grupos',CGID,'horas'),where('uid','==',CU.uid)));
-    const rows=snap.docs.map(d=>d.data()).sort((a,b)=>(b.entrada?.seconds||0)-(a.entrada?.seconds||0));
-    const fmtDT=ts=>ts?.seconds?new Date(ts.seconds*1000).toLocaleString('es-ES'):'';
-    const fmtDurCSV=(ent,sal)=>{
-      if(!ent?.seconds||!sal?.seconds)return'';
-      const s=sal.seconds-ent.seconds;
-      return(s/3600).toFixed(2);
-    };
-    const csv=['Nombre,Fecha entrada,Hora entrada,Fecha salida,Hora salida,Horas trabajadas',
-      ...rows.map(r=>{
-        const entDT=fmtDT(r.entrada);const salDT=fmtDT(r.salida);
-        return[r.nombre||'',entDT,salDT,fmtDurCSV(r.entrada,r.salida)].map(v=>`"${v}"`).join(',');
-      })].join('\n');
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download=`horas_${(CUD?.nombre||'usuario').replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    toast('CSV exportado','o');
-  }catch(e){toast('Error al exportar','e')}
-};
-
-// ── Editar ficha de horas ──
-window._editarFicha=async(fichaId,entradaSecs,salidaSecs)=>{
-  if(!CGID||!fichaId)return;
-  // Convertir seconds a datetime-local (YYYY-MM-DDTHH:mm)
-  const toLocal=secs=>{
-    if(!secs)return'';
-    const d=new Date(secs*1000);
-    const pad=n=>String(n).padStart(2,'0');
-    return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  };
-  const entVal=toLocal(entradaSecs);
-  const salVal=toLocal(salidaSecs);
-  abrirSB('Editar ficha',`
-    <div style="background:rgba(var(--theme-rgb),.07);border:1px solid rgba(var(--theme-rgb),.2);border-radius:12px;padding:14px;margin-bottom:18px;font-size:13px;color:var(--tx2)">
-      ✏️ Corrige la hora de entrada y/o salida. Si el trabajador no ha salido aún, deja la salida vacía.
-    </div>
-    <div class="fgrp" style="margin-bottom:14px">
-      <label style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase">▶ Hora de entrada</label>
-      <input type="datetime-local" id="fichaEditEntrada" value="${entVal}" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--tx);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box">
-    </div>
-    <div class="fgrp" style="margin-bottom:20px">
-      <label style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:1px;text-transform:uppercase">⏹ Hora de salida</label>
-      <input type="datetime-local" id="fichaEditSalida" value="${salVal}" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--tx);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box">
-      <div style="font-size:11px;color:var(--tx2);margin-top:4px">Deja vacío si el turno sigue activo</div>
-    </div>
-    <button onclick="_guardarEdicionFicha('${fichaId}')" class="btn btn-p" style="width:100%;padding:13px">💾 Guardar cambios</button>
-  `);
-};
-
-window._guardarEdicionFicha=async(fichaId)=>{
-  const entEl=document.getElementById('fichaEditEntrada');
-  const salEl=document.getElementById('fichaEditSalida');
-  if(!entEl?.value){toast('La hora de entrada es obligatoria','e');return;}
-  const entDate=new Date(entEl.value);
-  if(isNaN(entDate.getTime())){toast('Hora de entrada inválida','e');return;}
-  const salDate=salEl?.value?new Date(salEl.value):null;
-  if(salDate&&isNaN(salDate.getTime())){toast('Hora de salida inválida','e');return;}
-  if(salDate&&salDate<=entDate){toast('La salida debe ser posterior a la entrada','e');return;}
-  try{
-    const upd={entrada:entDate,actualizado:serverTimestamp()};
-    if(salDate)upd.salida=salDate;
-    else upd.salida=null;
-    await updateDoc(doc(db,'grupos',CGID,'horas',fichaId),upd);
-    toast('Ficha actualizada ✓','o');
-    cerrarSB();
-    await renderHoras();
-  }catch(e){toast('Error al guardar','e');}
-};
-
-// ── Eliminar ficha de horas ──
-window._eliminarFicha=async(fichaId)=>{
-  if(!CGID||!fichaId)return;
-  if(!confirm('¿Eliminar esta ficha de horas? Esta acción no se puede deshacer.'))return;
-  try{
-    await deleteDoc(doc(db,'grupos',CGID,'horas',fichaId));
-    toast('Ficha eliminada','o');
-    await renderHoras();
-  }catch(e){toast('Error al eliminar','e');}
-};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ALERTAS PROACTIVAS DE MANTENIMIENTOS
@@ -13565,161 +13111,6 @@ window._hgNavegar=(tipo,id,cliId)=>{
   else if(tipo==='mant'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('mant');setTimeout(()=>verMant&&verMant(id),100);},200);}
   else if(tipo==='averia'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('aver');setTimeout(()=>verAveria&&verAveria(id),100);},200);}
   else if(tipo==='presu'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('presu');},200);}
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// RENDER: RUTA DEL DÍA
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const renderRutaDia=()=>{
-  const el=$('rutaDiaContent'); if(!el)return;
-  if(!CGID){el.innerHTML=`<div class="empty"><p>Selecciona un grupo primero</p></div>`;return;}
-  _cargarRuta();
-  const hoyLbl=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
-  let html=`
-  <div style="font-size:12px;color:var(--tx2);margin-bottom:14px">${hoyLbl}</div>
-  <div style="display:flex;gap:8px;margin-bottom:14px">
-    <button class="btn btn-p" style="flex:1" onclick="_abrirAñadirClienteRuta()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:5px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Añadir cliente
-    </button>
-  </div>`;
-
-  if(!_rutaDia.length){
-    html+=`<div class="empty" style="padding:30px 20px"><div class="empty-ico">📍</div><p>No hay clientes en la ruta de hoy.<br>Añade clientes para planificar tu jornada.</p></div>`;
-    el.innerHTML=html;
-    return;
-  }
-
-  html+=`
-  <div style="font-size:12px;font-weight:800;color:var(--tx2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">${_rutaDia.length} parada${_rutaDia.length!==1?'s':''}</div>
-  <div id="rutaListaDrag">`;
-
-  _rutaDia.forEach((r,i)=>{
-    html+=`<div class="ruta-item" draggable="true" data-idx="${i}"
-      ondragstart="_rutaDragStart(event,${i})"
-      ondragover="_rutaDragOver(event,${i})"
-      ondrop="_rutaDrop(event,${i})"
-      ondragend="_rutaDragEnd(event)">
-      <div class="ruta-num">${i+1}</div>
-      <div class="ruta-drag-handle" title="Arrastra para reordenar">⠿</div>
-      <div class="ruta-info" onclick="_verDetalleRutaItem('${r.id}')">
-        <div class="ruta-cli-nombre">${r.nombre}</div>
-        <div class="ruta-cli-dir">${r.direccion||'Sin dirección'}</div>
-      </div>
-      <div class="ruta-actions">
-        ${r.telefono?`<a href="tel:${r.telefono}" class="btn btn-s btn-sm" style="text-decoration:none;padding:6px 10px" title="Llamar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.71 3.4 2 2 0 0 1 3.68 1.21h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.86-1.04a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>`:''}
-        <button class="btn btn-s btn-sm" style="color:#ef5350;border-color:rgba(239,83,80,.3);padding:6px 10px" onclick="_eliminarDeRuta(${i})" title="Eliminar de la ruta">✕</button>
-      </div>
-    </div>`;
-  });
-
-  html+=`</div>`;
-
-  // Botón Google Maps: obtener GPS real y abrir ruta
-  const tieneDestinos=_rutaDia.some(r=>(r.lat&&r.lng)||r.direccion);
-  if(tieneDestinos){
-    html+=`<button class="btn btn-p" onclick="_abrirRutaMaps()" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;width:100%;font-weight:900">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-      🧭 Iniciar ruta desde mi ubicación
-    </button>`;
-  }
-
-  html+=`<button class="btn btn-s" style="margin-top:10px;width:100%;color:#ef5350;border-color:rgba(239,83,80,.3)" onclick="_limpiarRuta()">🗑️ Limpiar ruta del día</button>`;
-  el.innerHTML=html;
-};
-
-// ── Abrir Google Maps/Waze con GPS real como origen ──
-// La URL usa coordenadas precisas obtenidas con geolocation.
-// Cada parada: si tiene lat/lng → coordenadas exactas, si no → dirección codificada.
-// Formato probado en Android (Chrome) e iOS (Safari).
-window._abrirRutaMaps=()=>{
-  if(!_rutaDia.length){ toast('No hay paradas en la ruta','i'); return; }
-
-  // Construir paradas: coordenadas exactas tienen prioridad sobre dirección
-  const _paradaStr=(r)=>{
-    const lat=parseFloat(r.lat), lng=parseFloat(r.lng);
-    if(!isNaN(lat)&&!isNaN(lng)&&(lat||lng)){
-      // Coordenadas — Google Maps las acepta directamente sin encode
-      return `${lat.toFixed(7)},${lng.toFixed(7)}`;
-    }
-    // Sin coords: usar dirección lo más limpia posible
-    // Eliminar caracteres problemáticos y codificar correctamente
-    const dir=(r.direccion||r.nombre||'').trim()
-      .replace(/\s+/g,' ')         // múltiples espacios → uno
-      .replace(/[()]/g,'')         // quitar paréntesis que confunden a Maps
-      .replace(/nº|num\.|n°/gi,'') // abreviaturas de número problemáticas
-      .trim();
-    return encodeURIComponent(dir);
-  };
-
-  const paradas=_rutaDia.map(_paradaStr).filter(Boolean);
-  if(!paradas.length){ toast('Los clientes no tienen ubicación registrada','i'); return; }
-
-  const _btnElem=document.querySelector('[onclick="_abrirRutaMaps()"]');
-  const _btnOrigHtml=_btnElem?_btnElem.innerHTML:'';
-  const _setBtn=(txt,dis)=>{ if(_btnElem){ _btnElem.innerHTML=txt; _btnElem.disabled=dis; } };
-
-  // Abrir Maps con origen lat,lng concreto
-  const _abrirConCoords=(olat,olng)=>{
-    const origenStr=`${olat.toFixed(7)},${olng.toFixed(7)}`;
-    // Google Maps dir/ con origin explícito:
-    // /maps/dir/?api=1&origin=LAT,LNG&destination=LAST&waypoints=W1|W2|...&travelmode=driving
-    // Este formato funciona mejor en Android e iOS que /maps/dir/ORIGEN/PARADAS/
-    if(paradas.length===1){
-      // Un solo destino: navegación directa
-      const url=`https://www.google.com/maps/dir/?api=1&origin=${origenStr}&destination=${paradas[0]}&travelmode=driving`;
-      window.open(url,'_blank');
-    } else {
-      // Multi-parada: último elemento es el destino, el resto son waypoints
-      const dest=paradas[paradas.length-1];
-      const waypoints=paradas.slice(0,-1).join('|');
-      const url=`https://www.google.com/maps/dir/?api=1&origin=${origenStr}&destination=${dest}&waypoints=${waypoints}&travelmode=driving`;
-      window.open(url,'_blank');
-    }
-    _setBtn(_btnOrigHtml,false);
-  };
-
-  // Sin coords disponibles: abrir sin origen fijo (Maps pedirá ubicación)
-  const _abrirSinOrigen=()=>{
-    if(paradas.length===1){
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${paradas[0]}&travelmode=driving`,'_blank');
-    } else {
-      const dest=paradas[paradas.length-1];
-      const waypoints=paradas.slice(0,-1).join('|');
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}&waypoints=${waypoints}&travelmode=driving`,'_blank');
-    }
-    _setBtn(_btnOrigHtml,false);
-  };
-
-  if(!navigator.geolocation){ _abrirSinOrigen(); return; }
-
-  _setBtn(`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg> Obteniendo ubicación...`,true);
-
-  navigator.geolocation.getCurrentPosition(
-    pos=>{ _abrirConCoords(pos.coords.latitude, pos.coords.longitude); },
-    _err=>{ _abrirSinOrigen(); toast('No se pudo obtener tu posición exacta — Maps te la pedirá','i'); },
-    {enableHighAccuracy:true, timeout:10000, maximumAge:15000}
-  );
-};
-
-window._rutaDragStart=(e,idx)=>{ _rutaDiaDragSrc=idx; e.currentTarget.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; };
-window._rutaDragOver=(e,idx)=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; document.querySelectorAll('.ruta-item').forEach((el,i)=>el.classList.toggle('drag-over',i===idx&&i!==_rutaDiaDragSrc)); };
-window._rutaDrop=(e,idx)=>{ e.preventDefault(); if(_rutaDiaDragSrc===null||_rutaDiaDragSrc===idx)return; const moved=_rutaDia.splice(_rutaDiaDragSrc,1)[0]; _rutaDia.splice(idx,0,moved); _guardarRuta(); renderRutaDia(); };
-window._rutaDragEnd=(e)=>{ _rutaDiaDragSrc=null; document.querySelectorAll('.ruta-item').forEach(el=>el.classList.remove('dragging','drag-over')); };
-window._eliminarDeRuta=(idx)=>{ _rutaDia.splice(idx,1); _guardarRuta(); renderRutaDia(); toast('Eliminado de la ruta','i'); };
-window._limpiarRuta=()=>{ if(!confirm('¿Limpiar la ruta de hoy?'))return; _rutaDia=[]; _guardarRuta(); renderRutaDia(); };
-window._verDetalleRutaItem=(cliId)=>{ const c=allClientes.find(x=>x.id===cliId); if(c)verCliente(cliId); };
-window._abrirAñadirClienteRuta=()=>{
-  const cliList=allClientes.filter(c=>!c.archivado&&!_rutaDia.find(r=>r.id===c.id));
-  if(!cliList.length){toast('Todos los clientes ya están en la ruta','i');return;}
-  const opts=cliList.map(c=>`<div onclick="añadirClienteARuta('${c.id}');cerrarSBTotal()" style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='rgba(128,128,128,.1)'" onmouseout="this.style.background=''">
-    <div style="width:34px;height:34px;border-radius:10px;background:rgba(var(--theme-rgb),.1);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:var(--r);flex-shrink:0">${(c.nombre||'?')[0].toUpperCase()}</div>
-    <div><div style="font-size:13px;font-weight:800;color:var(--tx)">${c.nombre}</div><div style="font-size:11px;color:var(--tx2)">${c.direccion||'Sin dirección'}</div></div>
-  </div>`).join('');
-  abrirSB('Añadir cliente a la ruta',`
-    <input class="sbox" style="margin-bottom:10px" placeholder="🔍 Buscar cliente..." oninput="this.nextElementSibling.querySelectorAll('div').forEach(d=>{const txt=(d.textContent||'').toLowerCase();d.style.display=txt.includes(this.value.toLowerCase())?'':'none'})">
-    <div style="max-height:320px;overflow-y:auto;border-radius:12px;border:1px solid var(--border)">${opts}</div>
-  `);
 };
 
 // ════════════════════════════════════════════════════════════
@@ -15422,8 +14813,6 @@ const _lockInicializar = () => {
       else if(id==='grupo'&&typeof renderGrupo==='function'){renderGrupo();await new Promise(r=>setTimeout(r,600));}
       else if(id==='notificaciones'&&typeof renderNotificaciones==='function')await renderNotificaciones();
       else if(id==='archivos'&&typeof renderArchivos==='function')await renderArchivos();
-      else if(id==='estadisticas'&&typeof renderEstadisticas==='function')await renderEstadisticas();
-      else if(id==='horas'&&typeof renderHoras==='function')await renderHoras();
       else if(id==='imagenes'&&typeof renderImagenes==='function')await renderImagenes();
       else if(id==='averias'&&typeof renderAverias==='function')await renderAverias();
       else if(id==='presupuestos'&&typeof renderPresupuestos==='function')await renderPresupuestos();
