@@ -570,20 +570,20 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 
 /* ── GTABS ── */
 .gtabs-main{display:flex;gap:10px;margin-bottom:10px}
-.gtab-big{flex:1;border:none;border-radius:16px;padding:16px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:.2s;font-family:var(--font);background:var(--card);border:1px solid var(--border)}
+.gtab-big{flex:1;border:none;border-radius:16px;padding:20px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:.2s;font-family:var(--font);background:var(--card);border:1px solid var(--border)}
 .gtab-big.active{background:linear-gradient(135deg,var(--r2),var(--r));border-color:transparent;box-shadow:0 4px 16px rgba(var(--theme-rgb),.35)}
 .gtab-big-ico{opacity:.6;transition:.2s}
 .gtab-big.active .gtab-big-ico{opacity:1}
 .gtab-big-ico svg{stroke:var(--tx)}
 .gtab-big.active .gtab-big-ico svg{stroke:#fff}
-.gtab-big-txt{font-size:12px;font-weight:900;color:var(--tx2);letter-spacing:.5px}
+.gtab-big-txt{font-size:15px;font-weight:900;color:var(--tx2);letter-spacing:.5px}
 .gtab-big.active .gtab-big-txt{color:#fff}
 .gtabs-sub{display:flex;gap:8px;margin-bottom:14px}
-.gtab-sm{flex:1;border:none;border-radius:14px;padding:12px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:.2s;font-family:var(--font);background:var(--card);border:1.5px solid var(--border)}
+.gtab-sm{flex:1;border:none;border-radius:14px;padding:15px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;transition:.2s;font-family:var(--font);background:var(--card);border:1.5px solid var(--border)}
 .gtab-sm.active{background:var(--card2);border-color:rgba(var(--theme-rgb),.5);box-shadow:0 2px 10px rgba(var(--theme-rgb),.2)}
 .gtab-sm-ico{transition:.15s;opacity:.7}
 .gtab-sm.active .gtab-sm-ico{opacity:1}
-.gtab-sm-txt{font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:.3px;text-align:center}
+.gtab-sm-txt{font-size:13px;font-weight:800;color:var(--tx2);letter-spacing:.3px;text-align:center}
 .gtab-sm.active .gtab-sm-txt{color:var(--tx)}
 .gtab-sm#tabAvis.active .gtab-sm-ico svg{stroke:#ab47bc}
 .gtab-sm#tabAvis.active{border-color:rgba(171,71,188,.5);box-shadow:0 2px 10px rgba(171,71,188,.2)}
@@ -3667,29 +3667,29 @@ const renderGrupo=()=>{
   </div>
   <div class="gtabs-main">
     <button class="gtab-big active" id="tabCli" onclick="switchGTab('cli')">
-      <div class="gtab-big-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div class="gtab-big-ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
       <div class="gtab-big-txt">Clientes</div>
     </button>
     <button class="gtab-big" id="tabPart" onclick="switchGTab('part')">
-      <div class="gtab-big-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div class="gtab-big-ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
       <div class="gtab-big-txt">Partes</div>
     </button>
   </div>
   <div class="gtabs-sub">
     <button class="gtab-sm" id="tabEntregas" onclick="switchGTab('entregas')">
-      <div class="gtab-sm-ico" style="color:#42a5f5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <div class="gtab-sm-ico" style="color:#42a5f5"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
       <div class="gtab-sm-txt">Entregas</div>
     </button>
     <button class="gtab-sm" id="tabPresu" onclick="switchGTab('presu')">
-      <div class="gtab-sm-ico" style="color:#66bb6a"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div class="gtab-sm-ico" style="color:#66bb6a"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
       <div class="gtab-sm-txt">Presupuestos</div>
     </button>
     <button class="gtab-sm" id="tabCobros" onclick="switchGTab('cobros')">
-      <div class="gtab-sm-ico" style="color:#ffca28"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9.5 9a2.5 2.5 0 0 1 2.5-1.5h.5a2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4h.5A2.5 2.5 0 0 0 14.5 15"/></svg></div>
+      <div class="gtab-sm-ico" style="color:#ffca28"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9.5 9a2.5 2.5 0 0 1 2.5-1.5h.5a2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4h.5A2.5 2.5 0 0 0 14.5 15"/></svg></div>
       <div class="gtab-sm-txt">Cobros</div>
     </button>
     <button class="gtab-sm" id="tabAvis" onclick="switchGTab('avis')" style="position:relative">
-      <div class="gtab-sm-ico" style="color:#ab47bc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="gtab-sm-ico" style="color:#ab47bc"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
       <div class="gtab-sm-txt">Avisos</div>
       <span class="avis-alert-dot" id="avisAlertDot" style="display:none;position:absolute;top:4px;right:10px;min-width:16px;height:16px;background:#ff5722;border-radius:8px;font-size:9px;font-weight:900;color:#fff;padding:0 4px;align-items:center;justify-content:center;font-family:var(--font);border:2px solid var(--bg);line-height:1;animation:notifPop .4s cubic-bezier(.16,1,.3,1)"></span>
     </button>
@@ -4003,11 +4003,12 @@ const _simpleCardHtml=(tipo,item,completado)=>{
   const borderLeft=prio==='critica'?'3px solid #e53935':prio==='urgente'?'3px solid #ff9800':'3px solid transparent';
   const fechaTxt=_fmtFechaSimple(item.fecha);
   const fecha=completado?(item.completadoEn||item.creado):item.creado;
+  const importeTxt=(tipo==='cobro'&&item.importe)?`<span style="font-size:11px;font-weight:900;color:var(--r);margin-left:6px">${fmtM(item.importe)}</span>`:'';
   return `<div class="averia-card ${completado?'resuelta':''}" style="cursor:pointer;border-left:${borderLeft}" onclick="verSimple('${tipo}','${item.id}')">
     <div class="averia-header">
       <div class="averia-ico" style="background:${completado?'rgba(76,175,80,.12)':'rgba('+conf.colorRgb+',.15)'}">${_simpleIco(tipo,completado?'#4caf50':'rgb('+conf.colorRgb+')')}</div>
       <div style="flex:1;min-width:0">
-        <div class="averia-title">${item.titulo||conf.labelSing}</div>
+        <div class="averia-title">${item.titulo||conf.labelSing}${importeTxt}</div>
         <div class="averia-sub">${c?.nombre||item.clienteNombre||'Sin cliente'} · ${completado?'Completado ':''}${fmtF(fecha)}${fechaTxt&&!completado?' · 📅 '+fechaTxt:''}</div>
         <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${_simplePrioTag(prio)}</div>
       </div>
@@ -4088,7 +4089,12 @@ window._renderGTabSimple=(tipo)=>{
   } else { _renderSimpleBody(tipo); }
   if(!_unsubSimple[tipo].comp){
     _unsubSimple[tipo].comp=onSnapshot(query(collection(db,'grupos',CGID,conf.col),where('estado','==','completado')),snap=>{
-      _simpleComp[tipo]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.completadoEn?.seconds||0)-(a.completadoEn?.seconds||0));
+      _simpleComp[tipo]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+        const pOrd={critica:0,urgente:1,normal:2};
+        const pa=pOrd[a.prioridad||'normal']??2, pb=pOrd[b.prioridad||'normal']??2;
+        if(pa!==pb) return pa-pb;
+        return (b.creado?.seconds||0)-(a.creado?.seconds||0);
+      });
       _lcSave(conf.col+'_comp',CGID,_simpleComp[tipo]);
       _renderSimpleBody(tipo);
     },()=>{ const c=_lcLoad(conf.col+'_comp',CGID); if(c){_simpleComp[tipo]=c;_renderSimpleBody(tipo);} });
@@ -4117,6 +4123,7 @@ window.abrirNuevoSimple=(tipo,editId)=>{
   abrirSB(editing?`✏️ Editar ${conf.labelSing.toLowerCase()}`:`+ ${conf.art} ${conf.labelSing.toLowerCase()}`,`
     <div class="fsec">
       <div class="fgrp"><label>Título</label><input id="smpTitulo" placeholder="${conf.tituloPh}" value="${(editing?.titulo||'').replace(/"/g,'&quot;')}"></div>
+      ${tipo==='cobro'?`<div class="fgrp"><label>Importe (€) <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="smpImporte" type="number" step="0.01" min="0" placeholder="0.00" value="${editing?.importe??''}"></div>`:''}
       <div class="fgrp"><label>Cliente <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><div id="smpCli-wrap"></div></div>
       <div class="fgrp"><label>Fecha <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="smpFecha" type="date" value="${editing?.fecha||''}"></div>
       <div class="fgrp">
@@ -4150,6 +4157,10 @@ window.guardarSimple=async(tipo,editId)=>{
     fecha:$('smpFecha')?.value||'',
     prioridad:$('smpPrio')?.value||'normal'
   };
+  if(tipo==='cobro'){
+    const impVal=$('smpImporte')?.value;
+    data.importe=impVal!==undefined&&impVal!==''?parseFloat(impVal)||0:null;
+  }
   try{
     if(editId){
       await updateDoc(doc(db,'grupos',CGID,conf.col,editId),data);
@@ -4178,6 +4189,7 @@ window.verSimple=(tipo,itemId)=>{
         <span class="averia-badge ${completado?'resuelta':'pend'}">${completado?'Completado':'Pendiente'}</span>
       </div>
       ${item.fecha?`<div style="font-size:12px;color:var(--tx2);margin-top:4px">📅 ${_fmtFechaSimple(item.fecha)}</div>`:''}
+      ${(tipo==='cobro'&&item.importe)?`<div style="font-size:13px;font-weight:900;color:var(--r);margin-top:4px">${fmtM(item.importe)}</div>`:''}
       <div style="font-size:12px;color:var(--tx2);margin-top:2px">${fmtF(item.creado)}</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -4218,8 +4230,9 @@ window.crearParteDesdeSimple=(tipo,itemId)=>{
   const item=(_simplePend[tipo]||[]).find(x=>x.id===itemId)||(_simpleComp[tipo]||[]).find(x=>x.id===itemId);
   if(!item){ toast(conf.labelSing+' no encontrado','e'); return; }
   const cli=allClientes.find(c=>c.id===item.clienteId);
+  const importeTxt=(tipo==='cobro'&&item.importe)?` ${fmtM(item.importe).replace(/\s/g,'')}`:'';
   const preData={
-    titulo:item.titulo||conf.labelSing,
+    titulo:(item.titulo||conf.labelSing)+importeTxt,
     descripcion:`${conf.labelSing}: ${item.titulo||''}`,
     operario:CUD?.nombre||''
   };
@@ -4231,9 +4244,9 @@ window.crearParteDesdeSimple=(tipo,itemId)=>{
       <div style="font-size:12px;color:var(--tx2);margin-top:2px">${cli?.nombre||item.clienteNombre||'—'}</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
-      <button onclick="cerrarSBTotal();completarSimple('${tipo}','${itemId}',true);abrirFParte(null,'${item.clienteId||''}',JSON.parse(decodeURIComponent('${encodeURIComponent(preDataJson)}')))" style="display:flex;align-items:center;gap:12px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font)">
-        <span style="font-size:22px">📋</span>
-        <div style="text-align:left"><div style="font-size:14px;font-weight:900;color:var(--tx)">Crear parte completo</div><div style="font-size:11px;color:var(--tx2)">Datos prellenados — puedes editarlos. Se marca como completado</div></div>
+      <button onclick="cerrarSBTotal();completarSimple('${tipo}','${itemId}',true);abrirParteExpress('${item.clienteId||''}',{...JSON.parse(decodeURIComponent('${encodeURIComponent(preDataJson)}')),_ocultarVolver:true})" style="display:flex;align-items:center;gap:12px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font)">
+        <span style="font-size:22px">⚡</span>
+        <div style="text-align:left"><div style="font-size:14px;font-weight:900;color:var(--tx)">Crear parte express</div><div style="font-size:11px;color:var(--tx2)">Datos prellenados — puedes editarlos. Se marca como completado</div></div>
         <span style="margin-left:auto;color:var(--tx2)">›</span>
       </button>
       <button onclick="cerrarSBTotal()" style="padding:11px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
@@ -5052,18 +5065,40 @@ window.verCliente=async id=>{
     if(offline){
       avsC=[...(_averiasPend||[]).filter(a=>a.clienteId===id)];
       presusCli=[...(_presusPend||[]),...(_presusComp||[])].filter(p=>p.clienteId===id);
+      window._fichaHistData={
+        partes:allPartes.filter(p=>p.clienteId===id&&!p.archivado).map(p=>({...p,_archivado:false})),
+        avisos:[],entregas:[],cobros:[]
+      };
     }
-    const [avSnap,avHSnap,hmSnap,presuSnap,imgSnap]=await Promise.all([
+    const [avSnap,avHSnap,hmSnap,presuSnap,imgSnap,archParteSnap,avisSnap,entrSnap,cobrSnap]=await Promise.all([
       offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'averias'),where('clienteId','==',id))),
       offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'averias_historial'),where('clienteId','==',id))),
       offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'historial_mantenimientos'),where('clienteId','==',id))),
       offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('clienteId','==',id))),
-      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'imagenes'),where('clienteId','==',id)))
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'imagenes'),where('clienteId','==',id))),
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'archivos'),where('clienteId','==',id))),
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'avisos'),where('clienteId','==',id))),
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'entregas'),where('clienteId','==',id))),
+      offline?Promise.resolve(null):getDocs(query(collection(db,'grupos',CGID,'cobros'),where('clienteId','==',id)))
     ]);
     if(avSnap) avsC=[...avSnap.docs.map(d=>({id:d.id,...d.data(),_src:'pend'})),...(avHSnap?.docs||[]).map(d=>({id:d.id,...d.data(),_src:'hist'}))];
     if(hmSnap) histMants=hmSnap.docs.map(d=>({id:d.id,...d.data()}));
     if(presuSnap) presusCli=presuSnap.docs.map(d=>({id:d.id,...d.data()}));
     if(imgSnap){ const imgs=imgSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.creado?.seconds||0)-(b.creado?.seconds||0)); if(imgs.length)primeraFoto=imgs[0]; }
+    // Partes archivados de este cliente (siguen visibles en su ficha, aunque ya no estén en 'partes')
+    const _bl=_archBL.get();
+    const archivadosCliente=(archParteSnap?.docs||[])
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(it=>it.tipo==='parte'&&!it._eliminadoDef&&!_bl.has(it.id));
+    window._fichaHistData={
+      partes:[...partesCli.map(p=>({...p,_archivado:false})),...archivadosCliente.map(p=>({...p,_archivado:true}))],
+      avisos:(avisSnap?.docs||[]).map(d=>({id:d.id,...d.data()})),
+      entregas:(entrSnap?.docs||[]).map(d=>({id:d.id,...d.data()})),
+      cobros:(cobrSnap?.docs||[]).map(d=>({id:d.id,...d.data()}))
+    };
+    // Asegurar que _verParteArchivado pueda resolver estos partes aunque la pestaña Archivos no se haya abierto
+    window._archivosCache=window._archivosCache||{};
+    archivadosCliente.forEach(p=>{window._archivosCache[p.id]=p;});
   }catch(e){}
 
   const partesCli=allPartes.filter(p=>p.clienteId===id&&!p.archivado);
@@ -5354,11 +5389,64 @@ window.verCliente=async id=>{
     </button>
 
     ${tlHTML}
+
+    <div style="margin-top:18px">
+      <div style="font-size:10px;font-weight:800;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Registro completo del cliente</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px" id="fichaHistFiltros">
+        <button class="fbtn ficha-hist-fbtn active" data-t="partes" onclick="window._fichaHistFiltro('${id}','partes')">📋 Partes</button>
+        <button class="fbtn ficha-hist-fbtn" data-t="avisos" onclick="window._fichaHistFiltro('${id}','avisos')">💬 Avisos</button>
+        <button class="fbtn ficha-hist-fbtn" data-t="entregas" onclick="window._fichaHistFiltro('${id}','entregas')">📦 Entregas</button>
+        <button class="fbtn ficha-hist-fbtn" data-t="cobros" onclick="window._fichaHistFiltro('${id}','cobros')">💰 Cobros</button>
+      </div>
+      <div id="fichaHistBody">${window._htmlFichaHistLista('partes')}</div>
+    </div>
   `);
 
   // Log actividad
   try{await registrarLog('ver_cliente',`Ficha de ${c.nombre}`,{clienteId:id});}catch(e){}
 };
+
+// ── Registro completo del cliente: filtro Partes / Avisos / Entregas / Cobros (incluye partes archivados) ──
+window._htmlFichaHistLista=(tipo)=>{
+  const data=(window._fichaHistData&&window._fichaHistData[tipo])||[];
+  if(!data.length)return`<div class="empty" style="padding:16px"><p>Sin ${tipo} registrados para este cliente</p></div>`;
+  const items=data.slice().sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+  if(tipo==='partes'){
+    return items.map(p=>{
+      const tot=calcTotal(p);
+      const archBadge=p._archivado?`<span style="font-size:10px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border:1px solid rgba(255,152,0,.3);border-radius:6px;padding:2px 6px;margin-left:6px">📦 Archivado</span>`:'';
+      return`<div class="parte-card ${p.estado==='completado'?'done':'pend'}" onclick="${p._archivado?`_verParteArchivado('${p.id}')`:`verParte('${p.id}')`}">
+        <div class="parte-ico" style="background:rgba(var(--theme-rgb),.13)"><svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/></svg></div>
+        <div class="parte-info" style="flex:1;min-width:0">
+          <div class="parte-title">${p.titulo}${archBadge}</div>
+          <div class="parte-sub">${fmtF(p.creado)} · <span class="parte-total">${fmtM(tot)}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  // avisos / entregas / cobros
+  const icoMap={avisos:'💬',entregas:'📦',cobros:'💰'};
+  return items.map(it=>{
+    const completado=it.estado==='completado'||it.estado==='resuelto';
+    const importeTxt=(tipo==='cobros'&&it.importe)?` · ${fmtM(it.importe)}`:'';
+    return`<div class="averia-card ${completado?'resuelta':''}" style="cursor:default">
+      <div class="averia-header">
+        <div class="averia-ico">${icoMap[tipo]}</div>
+        <div style="flex:1;min-width:0">
+          <div class="averia-title">${it.titulo||it.descripcion||'—'}</div>
+          <div class="averia-sub">${completado?'Completado ':'Pendiente '}${fmtF(it.creado)}${importeTxt}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+window._fichaHistFiltro=(cliId,tipo)=>{
+  document.querySelectorAll('.ficha-hist-fbtn').forEach(b=>b.classList.toggle('active',b.dataset.t===tipo));
+  const body=document.getElementById('fichaHistBody');
+  if(body)body.innerHTML=window._htmlFichaHistLista(tipo);
+};
+
 
 // ── Helpers "desde ficha cliente"
 // verCliente ya pasa cliId=null (ficha base), los demás activan retorno
@@ -6296,9 +6384,6 @@ window.archivarCli=async(id)=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TAB: PARTES
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let filtroPartes='todos';
-let _partesVistaAgrupada=false;
-
 // ── Helpers de fecha para filtros de partes ──
 const _dateStr=(d)=>{if(!d)return'';const dt=d.seconds?new Date(d.seconds*1000):new Date(d);return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;};
 const _hoyPartes=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
@@ -6355,55 +6440,10 @@ const _htmlParteSingleCard=(p)=>{
   </div>`;
 };
 
-const htmlListaPartesAgrupada=(partes)=>{
-  if(!partes.length)return`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><p>Sin partes</p></div>`;
-  const grupos={};
-  partes.forEach(p=>{
-    const key=p.clienteId||'__sin__';
-    if(!grupos[key])grupos[key]={nombre:allClientes.find(c=>c.id===key)?.nombre||p.clienteNombre||'Sin cliente',partes:[],total:0,abierto:true};
-    grupos[key].partes.push(p);
-    grupos[key].total+=calcTotal(p);
-  });
-  return Object.entries(grupos).map(([key,g])=>`
-    <div style="margin-bottom:14px">
-      <div onclick="toggleGrupoCliente('${key}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:12px;cursor:pointer;margin-bottom:6px;transition:.15s" onmouseover="this.style.background='rgba(var(--theme-rgb),.15)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.1)'" id="grupo-cli-hdr-${key}">
-        <span style="font-size:13px;font-weight:900;color:var(--r);flex:1">${g.nombre}</span>
-        <span style="font-size:11px;font-weight:700;color:var(--tx2)">${g.partes.length} parte${g.partes.length!==1?'s':''}</span>
-        <span style="font-size:13px;font-weight:900;color:var(--tx);margin-left:8px">${fmtM(g.total)}</span>
-        <span style="font-size:16px;color:var(--tx3);margin-left:6px" id="grupo-cli-ico-${key}">▾</span>
-      </div>
-      <div id="grupo-cli-body-${key}">${g.partes.map(p=>{
-        const tot=calcTotal(p);
-        return`<div class="parte-card ${p.estado==='completado'?'done':'pend'}" onclick="verParte('${p.id}')" data-sync-id="${p.id}" style="margin-left:12px">
-          <div class="parte-ico" style="background:rgba(var(--theme-rgb),.13)"><svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'/></svg></div>
-          <div class="parte-info" style="flex:1;min-width:0">
-            <div class="parte-title">${p.titulo}</div>
-            <div class="parte-sub">${fmtF(p.creado)} · <span class="parte-total">${fmtM(tot)}</span></div>
-          </div>
-          <button onclick="event.stopPropagation();usarParte('${p.id}')" style="flex-shrink:0;border:none;background:rgba(var(--theme-rgb),.12);color:var(--r);border-radius:10px;padding:6px 9px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--font);white-space:nowrap">Usar</button>
-        </div>`;}).join('')}
-      </div>
-    </div>`).join('');
-};
-
-window.toggleGrupoCliente=(key)=>{
-  const body=document.getElementById('grupo-cli-body-'+key);
-  const ico=document.getElementById('grupo-cli-ico-'+key);
-  if(!body)return;
-  const visible=body.style.display!=='none';
-  body.style.display=visible?'none':'block';
-  if(ico)ico.textContent=visible?'▸':'▾';
-};
 const renderTabPartes=()=>{
-  const hoy=_hoyPartes();const ayer=_ayerPartes();const semana=_semanaPartes();const mes=_mesPartes();
   let partes=allPartes.filter(p=>!p.archivado);
-  // Ordenar por fecha de creación descendente (más reciente primero)
+  // Siempre "todos" — ordenados por fecha de creación descendente (más reciente primero)
   partes=partes.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
-  // Aplicar filtro de fecha
-  if(filtroPartes==='hoy') partes=partes.filter(p=>_dateStr(p.creado)===hoy);
-  else if(filtroPartes==='ayer') partes=partes.filter(p=>_dateStr(p.creado)===ayer);
-  else if(filtroPartes==='semana') partes=partes.filter(p=>_dateStr(p.creado)>=semana);
-  else if(filtroPartes==='mes') partes=partes.filter(p=>_dateStr(p.creado)>=mes);
   const q=(_partesQuery||'').toLowerCase().trim();
   const list=q?partes.filter(p=>{
     const cli=allClientes.find(c=>c.id===p.clienteId);
@@ -6412,13 +6452,7 @@ const renderTabPartes=()=>{
   }):partes;
   return`
   <div class="filter-bar" style="flex-wrap:wrap;gap:6px">
-    <button class="fbtn ${filtroPartes==='todos'?'active':''}" onclick="setFiltroPartes('todos')">Todos</button>
-    <button class="fbtn ${filtroPartes==='hoy'?'active':''}" onclick="setFiltroPartes('hoy')" style="${filtroPartes==='hoy'?'':''}">📅 Hoy</button>
-    <button class="fbtn ${filtroPartes==='ayer'?'active':''}" onclick="setFiltroPartes('ayer')">↩️ Ayer</button>
-    <button class="fbtn ${filtroPartes==='semana'?'active':''}" onclick="setFiltroPartes('semana')">7 días</button>
-    <button class="fbtn ${filtroPartes==='mes'?'active':''}" onclick="setFiltroPartes('mes')">30 días</button>
-    <button class="fbtn" onclick="imprimirPartes()" style="margin-left:auto">🖨️ Imprimir</button>
-    <button class="fbtn ${_partesVistaAgrupada?'active':''}" onclick="toggleVistaAgrupadaPartes()">👥 Agrupar</button>
+    <button class="fbtn" onclick="abrirSelectorImprimirPartes()" style="margin-left:auto">🖨️ Imprimir</button>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
     <button onclick="abrirParteExpress()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 10px;border-radius:12px;border:1.5px solid rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.09);color:var(--r);font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(var(--theme-rgb),.16)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.09)'">
@@ -6429,17 +6463,7 @@ const renderTabPartes=()=>{
     </button>
   </div>
   <input class="sbox" style="margin-bottom:10px" placeholder="🔍 Buscar por cliente, título, operario..." value="${_partesQuery||''}" oninput="_filtrarPartes(this.value)">
-  <div id="partesList">${_partesVistaAgrupada?htmlListaPartesAgrupada(list):_htmlListaPartesPorDia(list)}</div>`;
-};
-
-window.setFiltroPartes=f=>{
-  filtroPartes=f;
-  $('tabPartContent').innerHTML=renderTabPartes();
-};
-
-window.toggleVistaAgrupadaPartes=()=>{
-  _partesVistaAgrupada=!_partesVistaAgrupada;
-  $('tabPartContent').innerHTML=renderTabPartes();
+  <div id="partesList">${_htmlListaPartesPorDia(list)}</div>`;
 };
 
 let _partesQuery='';
@@ -6448,18 +6472,13 @@ window._filtrarPartes=(q)=>{
   const listEl=$('partesList');
   if(listEl){
     const q2=q.toLowerCase().trim();
-    const hoy=_hoyPartes();const ayer=_ayerPartes();const semana=_semanaPartes();const mes=_mesPartes();
     let baseList=allPartes.filter(p=>!p.archivado&&!p.esPlantilla).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
-    if(filtroPartes==='hoy') baseList=baseList.filter(p=>_dateStr(p.creado)===hoy);
-    else if(filtroPartes==='ayer') baseList=baseList.filter(p=>_dateStr(p.creado)===ayer);
-    else if(filtroPartes==='semana') baseList=baseList.filter(p=>_dateStr(p.creado)>=semana);
-    else if(filtroPartes==='mes') baseList=baseList.filter(p=>_dateStr(p.creado)>=mes);
     const list=q2?baseList.filter(p=>{
       const cli=allClientes.find(c=>c.id===p.clienteId);
       const hay=[p.titulo,p.descripcion,p.materiales,p.operario,p.edificio,p.clienteNombre,cli?.nombre].filter(Boolean).join(' ').toLowerCase();
       return q2.split(' ').every(w=>hay.includes(w));
     }):baseList;
-    listEl.innerHTML=_partesVistaAgrupada?htmlListaPartesAgrupada(list):_htmlListaPartesPorDia(list);
+    listEl.innerHTML=_htmlListaPartesPorDia(list);
   } else {
     $('tabPartContent').innerHTML=renderTabPartes();
   }
@@ -6471,9 +6490,23 @@ const htmlListaPartes=partes=>{
   return partes.map(p=>_htmlParteSingleCard(p)).join('');
 };
 
+// ─── Selector de franja de fechas para imprimir partes ───
+window.abrirSelectorImprimirPartes=()=>{
+  abrirSB('🖨️ Imprimir partes',`
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px">Elige la franja de fechas que quieres imprimir</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-s" style="width:100%;text-align:left" onclick="cerrarSBTotal();imprimirPartes('todos')">📋 Todos los partes</button>
+      <button class="btn btn-s" style="width:100%;text-align:left" onclick="cerrarSBTotal();imprimirPartes('hoy')">📅 Hoy</button>
+      <button class="btn btn-s" style="width:100%;text-align:left" onclick="cerrarSBTotal();imprimirPartes('ayer')">↩️ Ayer</button>
+      <button class="btn btn-s" style="width:100%;text-align:left" onclick="cerrarSBTotal();imprimirPartes('semana')">🗓️ Últimos 7 días</button>
+      <button class="btn btn-s" style="width:100%;text-align:left" onclick="cerrarSBTotal();imprimirPartes('mes')">🗓️ Últimos 30 días</button>
+    </div>
+  `);
+};
+
 // ─── Imprimir partes (Ayer / Semanal / Mensual / Todos / Hoy) ───
 window.imprimirPartes=(modo)=>{
-  if(modo===undefined)modo=filtroPartes;
+  if(modo===undefined)modo='todos';
   const hoy=_hoyPartes();const ayer=_ayerPartes();const semana=_semanaPartes();const mes=_mesPartes();
   let lista=allPartes.filter(p=>!p.archivado&&!p.esPlantilla);
   let tituloRango='Todos los partes';
@@ -6599,7 +6632,7 @@ window.verParte=id=>{
       </div>
     </div>`:''}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-      ${p.estado!=='completado'?`<button class="btn btn-ok btn-sm" onclick="flujoCompletarFirmarPDF('${id}')" style="background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;border:none;flex:1"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' style='margin-right:4px'><polyline points='20 6 9 17 4 12'/></svg>Completar + Firma + PDF</button>`:''}
+      ${(p.estado!=='completado'&&!(p.firmado&&p.firmaCliente))?`<button class="btn btn-ok btn-sm" onclick="flujoCompletarFirmarPDF('${id}')" style="background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;border:none;flex:1"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' style='margin-right:4px'><polyline points='20 6 9 17 4 12'/></svg>Completar + Firma + PDF</button>`:''}
       <button class="btn btn-s btn-sm" onclick="abrirFPartePreservandoCli('${id}')">✏️ Editar</button>
       <button class="btn btn-s btn-sm" onclick="clonarParte('${id}')" style="background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.3);color:var(--r)">📋 Clonar</button>
       <button class="btn btn-s btn-sm" onclick="guardarParteComoPlantilla('${id}')">📄 Plantilla</button>
@@ -6944,21 +6977,23 @@ window.abrirSelectorParte=async(preCliId)=>{
 };
 
 // ── Mejora 6: Parte Express — formulario mínimo (3 campos) ──
-window.abrirParteExpress=(preCliId)=>{
+window.abrirParteExpress=(preCliId,preData)=>{
+  const vd=preData||{};
+  const ocultarVolver=!!vd._ocultarVolver;
   abrirSB('⚡ Parte Express',`
     <div style="background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.25);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--r);font-weight:700">Modo rápido — rellena solo lo esencial ahora, edita el resto después</div>
     <div class="fsec">
       <div class="fgrp"><label>Cliente *</label><div id="pCli-wrap"></div></div>
-      <div class="fgrp"><label>Título *</label><input id="pTit" placeholder="Ej: Reparación bomba planta baja"></div>
+      <div class="fgrp"><label>Título *</label><input id="pTit" value="${(vd.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Reparación bomba planta baja"></div>
       <div class="fgrp"><label>Fecha del parte</label><input type="date" id="pFecha" value="${new Date().toISOString().split('T')[0]}"></div>
     </div>
     <input type="hidden" id="pEst" value="pendiente">
     <input type="hidden" id="pEdif" value=""><input type="hidden" id="pDir" value=""><input type="hidden" id="pTel" value="">
-    <input type="hidden" id="pOpe" value="${CUD?.nombre||''}"><input type="hidden" id="pDesc" value=""><input type="hidden" id="pMat" value="">
+    <input type="hidden" id="pOpe" value="${(vd.operario||CUD?.nombre||'').replace(/"/g,'&quot;')}"><input type="hidden" id="pDesc" value="${(vd.descripcion||'').replace(/"/g,'&quot;')}"><input type="hidden" id="pMat" value="">
     <input type="hidden" id="pDur" value=""><input type="hidden" id="pMO" value="0"><input type="hidden" id="pMatE" value="0">
     <input type="hidden" id="pDesp" value="0"><input type="hidden" id="pPlant" value=""><input type="hidden" id="pPlantFull" value="">
     <button class="btn btn-p" style="width:100%;margin-top:4px" onclick="guardarParte('')">⚡ Guardar parte</button>
-    <button onclick="abrirSelectorParte('${preCliId||''}')" style="width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">← Volver al selector</button>
+    ${ocultarVolver?'':`<button onclick="abrirSelectorParte('${preCliId||''}')" style="width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">← Volver al selector</button>`}
   `);
   setTimeout(()=>_buildCliSelect('pCli',preCliId||'',id=>{
     const c=allClientes.find(x=>x.id===id);
@@ -7229,9 +7264,25 @@ const pdfHTML=(p,iva,tot,grp,firmaDataURL)=>{
   </body></html>`;
 };
 
+// Redescargar el PDF de un parte ya firmado, sin volver a pedir firma ni modificar nada
+const _redescargarPDFOriginal=(id)=>{
+  const p=allPartes.find(x=>x.id===id);if(!p)return;
+  const tot=calcTotal(p);
+  const iva=p.aplicarIVAMateriales?(parseFloat(p.importeMateriales)||0)*.21:0;
+  const w=window.open('','_blank');
+  w.document.write(pdfHTML(p,iva,tot,CG,p.firmaCliente||null));
+  w.document.close();
+  setTimeout(()=>w.print(),700);
+};
+
 // Generar PDF con firma digital del cliente antes
 window.generarPDF=id=>{
   const p=allPartes.find(x=>x.id===id);if(!p)return;
+  // Si ya está firmado, solo regenerar y descargar el PDF original con la firma guardada, sin pedir firma de nuevo ni modificar nada
+  if(p.firmado&&p.firmaCliente){
+    _redescargarPDFOriginal(id);
+    return;
+  }
   const tot=calcTotal(p);
   const iva=p.aplicarIVAMateriales?(parseFloat(p.importeMateriales)||0)*.21:0;
 
@@ -12196,7 +12247,13 @@ const _suscribirAvisos=()=>{
       query(collection(db,'grupos',CGID,'avisos'),where('estado','==','resuelto')),
       snap=>{
         _avisosRes=snap.docs.map(d=>({id:d.id,...d.data()}))
-          .sort((a,b)=>(b.resueltaEn?.seconds||0)-(a.resueltaEn?.seconds||0));
+          .sort((a,b)=>{
+            const ord={alta:0,media:1,baja:2};
+            const pa=ord[a.prioridad||'baja']??2;
+            const pb=ord[b.prioridad||'baja']??2;
+            if(pa!==pb)return pa-pb;
+            return (b.creado?.seconds||0)-(a.creado?.seconds||0);
+          });
         _renderAvisBody();
       }
     );
@@ -12528,10 +12585,11 @@ window.crearParteDesdeAviso=(avisoId)=>{
   const preData={
     titulo:(a.descripcion||'Aviso').slice(0,60),
     descripcion:a.descripcion||'',
-    operario:CUD?.nombre||''
+    operario:CUD?.nombre||'',
+    _ocultarVolver:true
   };
   resolverAviso(avisoId);
-  abrirFParte(null, a.clienteId||'', preData);
+  abrirParteExpress(a.clienteId||'', preData);
 };
 
 window.eliminarAviso=async(id)=>{
