@@ -3494,6 +3494,11 @@ const _renderPendingBadges = () => {
 window._syncPendingCount = () => _getPending().length;
 
 // fire-and-forget con ID local + registro en pending
+// Mapa de IDs temporales → ID real de Firestore, y firmas que llegaron
+// mientras el parte todavía no tenía ID definitivo (ver _guardarFirmaParteNuevo).
+const _idMap = Object.create(null);
+const _firmaPendienteTemp = Object.create(null);
+
 const _offlineSave = (colRef, data, onLocalId) => {
   const tempId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
   if(onLocalId) onLocalId(tempId);
@@ -3503,6 +3508,7 @@ const _offlineSave = (colRef, data, onLocalId) => {
     .then(ref => {
       // Firestore confirmó: reemplazar ID temporal en arrays locales
       _removePending(tempId);
+      _idMap[tempId] = ref.id;
       // partes
       const pi = allPartes.findIndex(x=>x.id===tempId);
       if(pi>=0){ allPartes[pi]={...allPartes[pi],id:ref.id}; _lcSave('partes',CGID,allPartes); }
@@ -3513,6 +3519,15 @@ const _offlineSave = (colRef, data, onLocalId) => {
       if(_averiasPend){ const ai=_averiasPend.findIndex(x=>x.id===tempId); if(ai>=0){_averiasPend[ai]={..._averiasPend[ai],id:ref.id};_lcSave('averias_pend',CGID,_averiasPend);} }
       // presupuestos
       if(_presusPend){ const pri=_presusPend.findIndex(x=>x.id===tempId); if(pri>=0){_presusPend[pri]={..._presusPend[pri],id:ref.id};_lcSave('presus_pend',CGID,_presusPend);} }
+      // Si se firmó el parte mientras aún no tenía ID definitivo, aplicar ahora la firma al documento real
+      if(_firmaPendienteTemp[tempId]){
+        const firmaData=_firmaPendienteTemp[tempId];
+        delete _firmaPendienteTemp[tempId];
+        updateDoc(ref, firmaData).then(()=>{
+          const idx=allPartes.findIndex(x=>x.id===ref.id);
+          if(idx>=0){ allPartes[idx]={...allPartes[idx],...firmaData}; _lcSave('partes',CGID,allPartes); }
+        }).catch(()=>{});
+      }
     })
     .catch(()=>{ /* Firestore lo reintentará automáticamente cuando haya red */ });
   return tempId;
@@ -3661,17 +3676,17 @@ const renderGrupo=()=>{
     </button>
   </div>
   <div class="gtabs-sub">
-    <button class="gtab-sm" id="tabAver" onclick="switchGTab('aver')">
-      <div class="gtab-sm-ico" style="color:#ff7043"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-      <div class="gtab-sm-txt">Averías</div>
+    <button class="gtab-sm" id="tabEntregas" onclick="switchGTab('entregas')">
+      <div class="gtab-sm-ico" style="color:#42a5f5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <div class="gtab-sm-txt">Entregas</div>
     </button>
     <button class="gtab-sm" id="tabPresu" onclick="switchGTab('presu')">
       <div class="gtab-sm-ico" style="color:#66bb6a"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
       <div class="gtab-sm-txt">Presupuestos</div>
     </button>
-    <button class="gtab-sm" id="tabMant" onclick="switchGTab('mant')">
-      <div class="gtab-sm-ico" style="color:#ff9800"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></div>
-      <div class="gtab-sm-txt">Mantenimientos</div>
+    <button class="gtab-sm" id="tabCobros" onclick="switchGTab('cobros')">
+      <div class="gtab-sm-ico" style="color:#ffca28"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9.5 9a2.5 2.5 0 0 1 2.5-1.5h.5a2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4h.5A2.5 2.5 0 0 0 14.5 15"/></svg></div>
+      <div class="gtab-sm-txt">Cobros</div>
     </button>
     <button class="gtab-sm" id="tabAvis" onclick="switchGTab('avis')" style="position:relative">
       <div class="gtab-sm-ico" style="color:#ab47bc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
@@ -3684,7 +3699,9 @@ const renderGrupo=()=>{
   <div id="tabAverContent" style="display:none"></div>
   <div id="tabPresuContent" style="display:none"></div>
   <div id="tabMantContent" style="display:none"></div>
-  <div id="tabAvisContent" style="display:none"></div>`;
+  <div id="tabAvisContent" style="display:none"></div>
+  <div id="tabCobrosContent" style="display:none"></div>
+  <div id="tabEntregasContent" style="display:none"></div>`;
   $('grupoContent').innerHTML=html;
   // Restaurar tab activo (tras F5 o navegación)
   const savedTab=sessionStorage.getItem('joyvi_gtab')||'cli';
@@ -3718,6 +3735,18 @@ const renderGrupo=()=>{
     $('tabCliContent').style.display='none';
     $('tabAvisContent').style.display='block';
     _renderGTabAvisos();
+  } else if(savedTab==='cobros'){
+    $('tabCli')?.classList.remove('active');
+    $('tabCobros')?.classList.add('active');
+    $('tabCliContent').style.display='none';
+    $('tabCobrosContent').style.display='block';
+    _renderGTabSimple('cobro');
+  } else if(savedTab==='entregas'){
+    $('tabCli')?.classList.remove('active');
+    $('tabEntregas')?.classList.add('active');
+    $('tabCliContent').style.display='none';
+    $('tabEntregasContent').style.display='block';
+    _renderGTabSimple('entrega');
   }
   // Restaurar posición de scroll guardada al navegar de vuelta
   const _savedGrupoScroll=sessionStorage.getItem('joyvi_grupo_scroll');
@@ -3736,9 +3765,9 @@ window.switchGTab=tab=>{
     _renderVentanaExclusiva(tab);
     return;
   }
-  const tabs=['cli','part','aver','presu','mant','avis'];
-  const tabIds={cli:'tabCli',part:'tabPart',aver:'tabAver',presu:'tabPresu',mant:'tabMant',avis:'tabAvis'};
-  const contentIds={cli:'tabCliContent',part:'tabPartContent',aver:'tabAverContent',presu:'tabPresuContent',mant:'tabMantContent',avis:'tabAvisContent'};
+  const tabs=['cli','part','aver','presu','mant','avis','cobros','entregas'];
+  const tabIds={cli:'tabCli',part:'tabPart',aver:'tabAver',presu:'tabPresu',mant:'tabMant',avis:'tabAvis',cobros:'tabCobros',entregas:'tabEntregas'};
+  const contentIds={cli:'tabCliContent',part:'tabPartContent',aver:'tabAverContent',presu:'tabPresuContent',mant:'tabMantContent',avis:'tabAvisContent',cobros:'tabCobrosContent',entregas:'tabEntregasContent'};
   tabs.forEach(t=>{
     const tabEl=$(tabIds[t]);
     const conEl=$(contentIds[t]);
@@ -3752,6 +3781,8 @@ window.switchGTab=tab=>{
   else if(tab==='presu') _renderGTabPresupuestos();
   else if(tab==='mant') _renderGTabMantenimientos();
   else if(tab==='avis') _renderGTabAvisos();
+  else if(tab==='cobros') _renderGTabSimple('cobro');
+  else if(tab==='entregas') _renderGTabSimple('entrega');
 };
 
 // ── Ventana exclusiva (modo simple): muestra solo la sección seleccionada ──
@@ -3932,6 +3963,282 @@ const _renderGTabAverias=()=>{
       ()=>{ const c=_lcLoad('averias_res',CGID); if(c){_averiasRes=c; _renderAverInline(); _renderAveriasTab();} }
     );
   } else { _renderAverInline(); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// MÓDULO GENÉRICO — COBROS Y ENTREGAS
+// (mismo patrón que Averías: pendientes/completados, prioridad y
+//  fecha opcionales, crear parte a partir de, editar, restaurar)
+// ═══════════════════════════════════════════════════════════════
+const _SIMPLE_CONF = {
+  cobro:   { col:'cobros',   labelSing:'Cobro',   labelPl:'Cobros',   tituloPh:'Ej: Cobro factura de marzo', colorRgb:'255,202,40', art:'Nuevo', artEste:'este' },
+  entrega: { col:'entregas', labelSing:'Entrega', labelPl:'Entregas', tituloPh:'Ej: Entrega de material al cliente', colorRgb:'66,165,245', art:'Nueva', artEste:'esta' }
+};
+let _simplePend={cobro:[],entrega:[]}, _simpleComp={cobro:[],entrega:[]};
+let _unsubSimple={cobro:{pend:null,comp:null},entrega:{pend:null,comp:null}};
+let _simpleTabActiva={cobro:'pend',entrega:'pend'};
+const _capSimple=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+const _fmtFechaSimple=(f)=>{
+  if(!f) return '';
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(f);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : f;
+};
+
+const _simpleIco=(tipo,color)=>{
+  if(tipo==='cobro') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.5a2.5 2.5 0 0 0-2.5-1.5h-1A2.5 2.5 0 0 0 9 10.5c0 1.5 1.5 2 3.5 2.5s3.5 1 3.5 2.5A2.5 2.5 0 0 1 13.5 18h-1A2.5 2.5 0 0 1 10 16.5"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="18" x2="12" y2="20"/></svg>`;
+  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+};
+
+const _simplePrioTag=(prio)=>{
+  if(!prio||prio==='normal') return '';
+  const pc=_averPrioConf[prio]||_averPrioConf.normal;
+  return `<span style="font-size:10px;font-weight:900;color:${pc.color};background:${pc.bg};border:1px solid ${pc.border};padding:2px 8px;border-radius:20px;flex-shrink:0">${pc.label}</span>`;
+};
+
+const _simpleCardHtml=(tipo,item,completado)=>{
+  const conf=_SIMPLE_CONF[tipo];
+  const c=allClientes.find(x=>x.id===item.clienteId);
+  const prio=item.prioridad||'normal';
+  const borderLeft=prio==='critica'?'3px solid #e53935':prio==='urgente'?'3px solid #ff9800':'3px solid transparent';
+  const fechaTxt=_fmtFechaSimple(item.fecha);
+  const fecha=completado?(item.completadoEn||item.creado):item.creado;
+  return `<div class="averia-card ${completado?'resuelta':''}" style="cursor:pointer;border-left:${borderLeft}" onclick="verSimple('${tipo}','${item.id}')">
+    <div class="averia-header">
+      <div class="averia-ico" style="background:${completado?'rgba(76,175,80,.12)':'rgba('+conf.colorRgb+',.15)'}">${_simpleIco(tipo,completado?'#4caf50':'rgb('+conf.colorRgb+')')}</div>
+      <div style="flex:1;min-width:0">
+        <div class="averia-title">${item.titulo||conf.labelSing}</div>
+        <div class="averia-sub">${c?.nombre||item.clienteNombre||'Sin cliente'} · ${completado?'Completado ':''}${fmtF(fecha)}${fechaTxt&&!completado?' · 📅 '+fechaTxt:''}</div>
+        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${_simplePrioTag(prio)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        ${!completado?`<button onclick="event.stopPropagation();crearParteDesdeSimple('${tipo}','${item.id}')" style="border:none;background:rgba(66,165,245,.15);color:#42a5f5;border-radius:10px;padding:5px 8px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--font);white-space:nowrap">📋 Parte</button>`:''}
+        <span class="averia-badge ${completado?'resuelta':'pend'}">${completado?'Completado':'Pendiente'}</span>
+      </div>
+    </div>
+  </div>`;
+};
+
+const _renderSimpleBody=(tipo)=>{
+  const wrap=document.getElementById('tab'+_capSimple(tipo)+'sContent');
+  if(!wrap) return;
+  const bP=document.getElementById('simple'+tipo+'BadgePend');
+  const bC=document.getElementById('simple'+tipo+'BadgeComp');
+  if(bP) bP.textContent=_simplePend[tipo].length||'';
+  if(bC) bC.textContent=_simpleComp[tipo].length||'';
+  const searchBox=document.getElementById('simple'+tipo+'Search');
+  if(searchBox&&searchBox.value.trim()){ window._filtrarSimple(tipo,searchBox.value); return; }
+  const body=document.getElementById('simple'+tipo+'Body');
+  if(!body) return;
+  if(_simpleTabActiva[tipo]==='pend'){
+    body.innerHTML=!_simplePend[tipo].length?`<div class="empty"><div class="empty-ico">✅</div><p>Sin ${_SIMPLE_CONF[tipo].labelPl.toLowerCase()} pendientes</p></div>`:_simplePend[tipo].map(x=>_simpleCardHtml(tipo,x,false)).join('');
+  } else {
+    body.innerHTML=!_simpleComp[tipo].length?`<div class="empty"><div class="empty-ico">📋</div><p>Sin ${_SIMPLE_CONF[tipo].labelPl.toLowerCase()} completados</p></div>`:_simpleComp[tipo].map(x=>_simpleCardHtml(tipo,x,true)).join('');
+  }
+};
+
+window._filtrarSimple=(tipo,q)=>{
+  const sr=document.getElementById('simple'+tipo+'SearchResults');
+  const tw=document.getElementById('simple'+tipo+'TabsWrap');
+  const trimmed=(q||'').trim();
+  if(!trimmed){ if(sr){sr.style.display='none';sr.innerHTML='';} if(tw) tw.style.display=''; return; }
+  if(tw) tw.style.display='none';
+  if(sr) sr.style.display='block';
+  const words=trimmed.toLowerCase().split(/\s+/);
+  const match=(x)=>{ const c=allClientes.find(y=>y.id===x.clienteId); const hay=[x.titulo,x.clienteNombre,c?.nombre].filter(Boolean).join(' ').toLowerCase(); return words.every(w=>hay.includes(w)); };
+  const rP=(_simplePend[tipo]||[]).filter(match);
+  const rC=(_simpleComp[tipo]||[]).filter(match);
+  if(!rP.length&&!rC.length){ sr.innerHTML=`<div class="empty"><p>Sin resultados para "<strong>${trimmed}</strong>"</p></div>`; return; }
+  sr.innerHTML=[...rP.map(x=>_simpleCardHtml(tipo,x,false)),...rC.map(x=>_simpleCardHtml(tipo,x,true))].join('');
+};
+
+window.switchSimpleTab=(tipo,tab)=>{
+  _simpleTabActiva[tipo]=tab;
+  ['Pend','Comp'].forEach(t=>{ const e=document.getElementById('simple'+tipo+'Tab'+t); if(e) e.classList.toggle('active',tab===t.toLowerCase()); });
+  _renderSimpleBody(tipo);
+};
+
+window._renderGTabSimple=(tipo)=>{
+  const conf=_SIMPLE_CONF[tipo];
+  const el=document.getElementById('tab'+_capSimple(tipo)+'sContent');
+  if(!el) return;
+  if(!CGID){ el.innerHTML=`<div class="empty"><p>Selecciona un grupo primero</p></div>`; return; }
+  el.innerHTML=`
+    <button class="btn btn-p" style="margin-bottom:12px;width:100%" onclick="abrirNuevoSimple('${tipo}')">+ ${conf.art} ${conf.labelSing.toLowerCase()}</button>
+    <input class="sbox" id="simple${tipo}Search" style="margin-bottom:10px" placeholder="🔍 Buscar por cliente, título..." oninput="_filtrarSimple('${tipo}',this.value)">
+    <div id="simple${tipo}SearchResults" style="display:none"></div>
+    <div id="simple${tipo}TabsWrap">
+      <div class="stabs" style="margin-bottom:12px">
+        <button class="stab active" id="simple${tipo}TabPend" onclick="switchSimpleTab('${tipo}','pend')">⏳ Pendientes <span id="simple${tipo}BadgePend" style="margin-left:4px;background:rgba(255,152,0,.2);color:#ff9800;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
+        <button class="stab" id="simple${tipo}TabComp" onclick="switchSimpleTab('${tipo}','comp')">✅ Completados <span id="simple${tipo}BadgeComp" style="margin-left:4px;background:rgba(76,175,80,.15);color:#4caf50;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:800"></span></button>
+      </div>
+      <div id="simple${tipo}Body"></div>
+    </div>`;
+  if(!_unsubSimple[tipo].pend){
+    _unsubSimple[tipo].pend=onSnapshot(query(collection(db,'grupos',CGID,conf.col),where('estado','==','pendiente')),snap=>{
+      _simplePend[tipo]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+        const pOrd={critica:0,urgente:1,normal:2};
+        const pa=pOrd[a.prioridad||'normal']??2, pb=pOrd[b.prioridad||'normal']??2;
+        if(pa!==pb) return pa-pb;
+        return (b.creado?.seconds||0)-(a.creado?.seconds||0);
+      });
+      _lcSave(conf.col+'_pend',CGID,_simplePend[tipo]);
+      _renderSimpleBody(tipo);
+    },()=>{ const c=_lcLoad(conf.col+'_pend',CGID); if(c){_simplePend[tipo]=c;_renderSimpleBody(tipo);} });
+  } else { _renderSimpleBody(tipo); }
+  if(!_unsubSimple[tipo].comp){
+    _unsubSimple[tipo].comp=onSnapshot(query(collection(db,'grupos',CGID,conf.col),where('estado','==','completado')),snap=>{
+      _simpleComp[tipo]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.completadoEn?.seconds||0)-(a.completadoEn?.seconds||0));
+      _lcSave(conf.col+'_comp',CGID,_simpleComp[tipo]);
+      _renderSimpleBody(tipo);
+    },()=>{ const c=_lcLoad(conf.col+'_comp',CGID); if(c){_simpleComp[tipo]=c;_renderSimpleBody(tipo);} });
+  } else { _renderSimpleBody(tipo); }
+};
+
+window._setSimplePrio=(p)=>{
+  const wrap=document.getElementById('smpPrioWrap'); if(!wrap) return;
+  const inp=document.getElementById('smpPrio'); if(inp) inp.value=p;
+  const cols={normal:'rgba(76,175,80,.15)',urgente:'rgba(255,152,0,.15)',critica:'rgba(var(--theme-rgb),.15)'};
+  const borders={normal:'rgba(76,175,80,.5)',urgente:'rgba(255,152,0,.5)',critica:'rgba(var(--theme-rgb),.5)'};
+  const texts={normal:'#4caf50',urgente:'#ff9800',critica:'#e53935'};
+  Array.from(wrap.querySelectorAll('button')).forEach((btn,i)=>{
+    const prios=['normal','urgente','critica'];
+    const active=prios[i]===p;
+    btn.style.background=active?cols[prios[i]]:'transparent';
+    btn.style.borderColor=active?borders[prios[i]]:'var(--border)';
+    btn.style.color=active?texts[prios[i]]:'var(--tx2)';
+  });
+};
+
+window.abrirNuevoSimple=(tipo,editId)=>{
+  const conf=_SIMPLE_CONF[tipo];
+  const editing=editId?((_simplePend[tipo]||[]).find(x=>x.id===editId)||(_simpleComp[tipo]||[]).find(x=>x.id===editId)):null;
+  const cliId=editing?.clienteId||'';
+  abrirSB(editing?`✏️ Editar ${conf.labelSing.toLowerCase()}`:`+ ${conf.art} ${conf.labelSing.toLowerCase()}`,`
+    <div class="fsec">
+      <div class="fgrp"><label>Título</label><input id="smpTitulo" placeholder="${conf.tituloPh}" value="${(editing?.titulo||'').replace(/"/g,'&quot;')}"></div>
+      <div class="fgrp"><label>Cliente <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><div id="smpCli-wrap"></div></div>
+      <div class="fgrp"><label>Fecha <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input id="smpFecha" type="date" value="${editing?.fecha||''}"></div>
+      <div class="fgrp">
+        <label>Prioridad <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label>
+        <div id="smpPrioWrap" style="display:flex;gap:8px">
+          <button type="button" onclick="_setSimplePrio('normal')" style="flex:1;padding:9px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-weight:800;font-size:12px;font-family:var(--font);cursor:pointer">Normal</button>
+          <button type="button" onclick="_setSimplePrio('urgente')" style="flex:1;padding:9px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-weight:800;font-size:12px;font-family:var(--font);cursor:pointer">Urgente</button>
+          <button type="button" onclick="_setSimplePrio('critica')" style="flex:1;padding:9px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-weight:800;font-size:12px;font-family:var(--font);cursor:pointer">Crítica</button>
+        </div>
+        <input type="hidden" id="smpPrio" value="${editing?.prioridad||'normal'}">
+      </div>
+      <button class="btn btn-p" style="width:100%;margin-top:6px" onclick="guardarSimple('${tipo}'${editing?`,'${editId}'`:''})">💾 Guardar</button>
+    </div>
+  `);
+  setTimeout(()=>{
+    if(document.getElementById('smpCli-wrap')) _buildCliSelect('smpCli',cliId,()=>{});
+    _setSimplePrio(editing?.prioridad||'normal');
+  },80);
+};
+
+window.guardarSimple=async(tipo,editId)=>{
+  const conf=_SIMPLE_CONF[tipo];
+  const titulo=($('smpTitulo')?.value||'').trim();
+  if(!titulo){ toast('Escribe un título','e'); return; }
+  const cliId=$('smpCli')?.value||'';
+  const cli=allClientes.find(c=>c.id===cliId);
+  const data={
+    titulo,
+    clienteId:cliId,
+    clienteNombre:cli?.nombre||'',
+    fecha:$('smpFecha')?.value||'',
+    prioridad:$('smpPrio')?.value||'normal'
+  };
+  try{
+    if(editId){
+      await updateDoc(doc(db,'grupos',CGID,conf.col,editId),data);
+      toast(conf.labelSing+' actualizado','o');
+    } else {
+      await addDoc(collection(db,'grupos',CGID,conf.col),{...data,estado:'pendiente',creado:serverTimestamp()});
+      toast(conf.labelSing+' creado','o');
+    }
+    cerrarSB();
+  }catch(e){ toast('Error al guardar','e'); }
+};
+
+window.verSimple=(tipo,itemId)=>{
+  const conf=_SIMPLE_CONF[tipo];
+  const completado=!!(_simpleComp[tipo]||[]).find(x=>x.id===itemId);
+  const item=completado?(_simpleComp[tipo]||[]).find(x=>x.id===itemId):(_simplePend[tipo]||[]).find(x=>x.id===itemId);
+  if(!item){ toast('No encontrado','e'); return; }
+  const cli=allClientes.find(c=>c.id===item.clienteId);
+  const prio=item.prioridad||'normal';
+  const pc=_averPrioConf[prio]||_averPrioConf.normal;
+  abrirSB(item.titulo||conf.labelSing,`
+    <div style="margin-bottom:14px">
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:6px">${cli?.nombre||item.clienteNombre||'Sin cliente'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+        ${prio!=='normal'?`<span style="font-size:11px;font-weight:900;color:${pc.color};background:${pc.bg};border:1px solid ${pc.border};padding:3px 10px;border-radius:20px">${pc.label}</span>`:''}
+        <span class="averia-badge ${completado?'resuelta':'pend'}">${completado?'Completado':'Pendiente'}</span>
+      </div>
+      ${item.fecha?`<div style="font-size:12px;color:var(--tx2);margin-top:4px">📅 ${_fmtFechaSimple(item.fecha)}</div>`:''}
+      <div style="font-size:12px;color:var(--tx2);margin-top:2px">${fmtF(item.creado)}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${!completado?`<button class="btn btn-p" style="flex:1" onclick="cerrarSBTotal();completarSimple('${tipo}','${itemId}')">✅ Marcar completado</button>`:`<button class="btn btn-p" style="flex:1" onclick="cerrarSBTotal();restaurarSimple('${tipo}','${itemId}')">↩️ Restaurar a pendiente</button>`}
+      <button class="btn btn-s btn-sm" style="flex:1" onclick="cerrarSBTotal();abrirNuevoSimple('${tipo}','${itemId}')">✏️ Editar</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-s btn-sm" style="flex:1;background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.35);color:var(--r)" onclick="cerrarSBTotal();crearParteDesdeSimple('${tipo}','${itemId}')">📋 Crear parte a partir de ${conf.artEste} ${conf.labelSing.toLowerCase()}</button>
+      <button class="btn btn-del btn-sm" onclick="cerrarSBTotal();borrarSimple('${tipo}','${itemId}')">🗑️</button>
+    </div>
+  `);
+};
+
+window.completarSimple=async(tipo,itemId,silent)=>{
+  if(!silent && !confirm(`¿Marcar ${_SIMPLE_CONF[tipo].artEste} ${_SIMPLE_CONF[tipo].labelSing.toLowerCase()} como completado?`)) return;
+  try{
+    await updateDoc(doc(db,'grupos',CGID,_SIMPLE_CONF[tipo].col,itemId),{estado:'completado',completadoEn:serverTimestamp()});
+    if(!silent) toast(_SIMPLE_CONF[tipo].labelSing+' completado ✅','o');
+  }catch(e){ toast('Error','e'); }
+};
+window.restaurarSimple=async(tipo,itemId)=>{
+  try{
+    await updateDoc(doc(db,'grupos',CGID,_SIMPLE_CONF[tipo].col,itemId),{estado:'pendiente',completadoEn:null});
+    toast('Restaurado a pendiente','o');
+  }catch(e){ toast('Error','e'); }
+};
+window.borrarSimple=async(tipo,itemId)=>{
+  if(!confirm('¿Eliminar este elemento? Esta acción no tiene vuelta atrás.')) return;
+  try{
+    await deleteDoc(doc(db,'grupos',CGID,_SIMPLE_CONF[tipo].col,itemId));
+    toast('Eliminado','i');
+  }catch(e){ toast('Error','e'); }
+};
+
+// Crear un parte de trabajo a partir de un cobro o entrega, volcando sus datos
+window.crearParteDesdeSimple=(tipo,itemId)=>{
+  const conf=_SIMPLE_CONF[tipo];
+  const item=(_simplePend[tipo]||[]).find(x=>x.id===itemId)||(_simpleComp[tipo]||[]).find(x=>x.id===itemId);
+  if(!item){ toast(conf.labelSing+' no encontrado','e'); return; }
+  const cli=allClientes.find(c=>c.id===item.clienteId);
+  const preData={
+    titulo:item.titulo||conf.labelSing,
+    descripcion:`${conf.labelSing}: ${item.titulo||''}`,
+    operario:CUD?.nombre||''
+  };
+  const preDataJson=JSON.stringify(preData).replace(/'/g,"&#39;");
+  abrirSB(`📋 Crear parte desde ${conf.labelSing.toLowerCase()}`,`
+    <div style="background:rgba(66,165,245,.1);border:1px solid rgba(66,165,245,.3);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:900;color:#42a5f5;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Datos volcados desde ${conf.labelSing.toLowerCase()}</div>
+      <div style="font-size:13px;font-weight:800;color:var(--tx)">${item.titulo||conf.labelSing}</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:2px">${cli?.nombre||item.clienteNombre||'—'}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="cerrarSBTotal();completarSimple('${tipo}','${itemId}',true);abrirFParte(null,'${item.clienteId||''}',JSON.parse(decodeURIComponent('${encodeURIComponent(preDataJson)}')))" style="display:flex;align-items:center;gap:12px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font)">
+        <span style="font-size:22px">📋</span>
+        <div style="text-align:left"><div style="font-size:14px;font-weight:900;color:var(--tx)">Crear parte completo</div><div style="font-size:11px;color:var(--tx2)">Datos prellenados — puedes editarlos. Se marca como completado</div></div>
+        <span style="margin-left:auto;color:var(--tx2)">›</span>
+      </button>
+      <button onclick="cerrarSBTotal()" style="padding:11px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
+    </div>
+  `);
 };
 
 // ── Render inline tab: Presupuestos (con 2 sub-pestañas en tiempo real) ──
@@ -6565,14 +6872,36 @@ window._guardarFirmaParteNuevo = async (parteId) => {
   for(let i=0;i<pixels.length;i+=4){ if(pixels[i]<230||pixels[i+1]<230||pixels[i+2]<230){ hayTinta=true; break; } }
   if(!hayTinta){ toast('Dibuja la firma antes de guardar','i'); return; }
   const firmaDataURL = canvas.toDataURL('image/png');
+  const firmaData = { firmaCliente:firmaDataURL, firmadoEn:serverTimestamp(), firmado:true };
+  // El parte recién creado puede tener todavía un ID temporal ("local_...") si
+  // Firestore no ha confirmado aún el addDoc — en ese caso no existe ningún
+  // documento real con ese ID y un updateDoc directo se perdería silenciosamente.
+  // Resolvemos el ID real si ya se conoce (_idMap), y si no, encolamos la firma
+  // para aplicarla en cuanto _offlineSave confirme la creación del documento.
+  const realId = _idMap[parteId] || parteId;
+  // Reflejar la firma ya mismo en la UI/caché local, sea cual sea el ID actual
+  const idxLocal = allPartes.findIndex(x=>x.id===realId || x.id===parteId);
+  if(idxLocal>=0){ allPartes[idxLocal] = {...allPartes[idxLocal], firmaCliente:firmaDataURL, firmado:true}; _lcSave('partes',CGID,allPartes); }
+  if(String(realId).startsWith('local_')){
+    // Todavía no hay documento real en Firestore: encolar la firma
+    _firmaPendienteTemp[realId] = firmaData;
+    cerrarSBTotal();
+    toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
+    haptic('medium');
+    return;
+  }
   try{
-    await updateDoc(doc(db,'grupos',CGID,'partes',parteId),{ firmaCliente:firmaDataURL, firmadoEn:serverTimestamp(), firmado:true });
-    const idx = allPartes.findIndex(x=>x.id===parteId);
-    if(idx>=0) allPartes[idx] = {...allPartes[idx], firmaCliente:firmaDataURL, firmado:true};
+    await updateDoc(doc(db,'grupos',CGID,'partes',realId), firmaData);
     cerrarSBTotal();
     toast('✍️ Firma guardada en el parte','o');
     haptic('medium');
-  }catch(e){ toast('Error al guardar la firma','e'); }
+  }catch(e){
+    // El documento aún no existía en el servidor: encolar para cuando se confirme
+    _firmaPendienteTemp[realId] = firmaData;
+    cerrarSBTotal();
+    toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
+    haptic('medium');
+  }
 };
 
 // ─── Selector de plantilla de parte ───
@@ -11956,7 +12285,7 @@ const _renderAvisBody=()=>{
             ${esResuelto?` · <span style="color:#4caf50;font-weight:700">Resuelto ${fmtF(a.resueltaEn)}</span>`:''}
           </div>
           <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-            ${!esResuelto?`<button class="btn btn-ok btn-sm" onclick="resolverAviso('${a.id}')">✅ Marcar resuelto</button>`:''}
+            ${!esResuelto?`<button class="btn btn-ok btn-sm" onclick="resolverAvisoConOpcion('${a.id}')">✅ Marcar resuelto</button>`:''}
             ${!esResuelto?`<button class="btn btn-s btn-sm" onclick="editarAviso('${a.id}')">✏️ Editar</button>`:''}
             <button class="btn btn-del btn-sm" onclick="eliminarAviso('${a.id}')">🗑 Eliminar</button>
           </div>
@@ -12165,6 +12494,44 @@ window.resolverAviso=async(id)=>{
     });
     toast('✅ Aviso marcado como resuelto','o');
   }catch(e){toast('Error: '+e.message,'e');}
+};
+
+// Preguntar si, al resolver un aviso, se quiere crear un parte a partir de él
+window.resolverAvisoConOpcion=(id)=>{
+  const a=(_avisosPend||[]).find(x=>x.id===id)||(_avisosRes||[]).find(x=>x.id===id);
+  if(!a){ resolverAviso(id); return; }
+  const cli=allClientes.find(c=>c.id===a.clienteId);
+  abrirSB('✅ Marcar aviso como resuelto',`
+    <div style="background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;color:var(--tx)">${a.descripcion||'Aviso'}</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:2px">${cli?.nombre||''}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="cerrarSBTotal();resolverAviso('${id}')" style="display:flex;align-items:center;gap:12px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font)">
+        <span style="font-size:22px">✅</span>
+        <div style="text-align:left"><div style="font-size:14px;font-weight:900;color:var(--tx)">Solo marcar resuelto</div></div>
+        <span style="margin-left:auto;color:var(--tx2)">›</span>
+      </button>
+      <button onclick="cerrarSBTotal();crearParteDesdeAviso('${id}')" style="display:flex;align-items:center;gap:12px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font)">
+        <span style="font-size:22px">📋</span>
+        <div style="text-align:left"><div style="font-size:14px;font-weight:900;color:var(--tx)">Crear parte a partir de este aviso</div><div style="font-size:11px;color:var(--tx2)">Datos prellenados y aviso marcado como resuelto</div></div>
+        <span style="margin-left:auto;color:var(--tx2)">›</span>
+      </button>
+      <button onclick="cerrarSBTotal()" style="padding:11px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
+    </div>
+  `);
+};
+
+window.crearParteDesdeAviso=(avisoId)=>{
+  const a=(_avisosPend||[]).find(x=>x.id===avisoId)||(_avisosRes||[]).find(x=>x.id===avisoId);
+  if(!a){ toast('Aviso no encontrado','e'); return; }
+  const preData={
+    titulo:(a.descripcion||'Aviso').slice(0,60),
+    descripcion:a.descripcion||'',
+    operario:CUD?.nombre||''
+  };
+  resolverAviso(avisoId);
+  abrirFParte(null, a.clienteId||'', preData);
 };
 
 window.eliminarAviso=async(id)=>{
