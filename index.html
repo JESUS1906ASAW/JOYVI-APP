@@ -299,36 +299,6 @@ body.modo-claro .skel{background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(
 .tb-btn:active::after{opacity:1}
 .tb-btn:hover{background:rgba(var(--theme-rgb),.15)}
 
-/* ── ASISTENTE DE VOZ ── */
-#asistentOverlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
-#asistentOverlay.open{display:flex}
-#asistentPanel{width:100%;max-width:540px;background:var(--bg);border-radius:28px 28px 0 0;padding:0 0 env(safe-area-inset-bottom,16px);max-height:85vh;display:flex;flex-direction:column;animation:slideUpPanel .3s cubic-bezier(.16,1,.3,1)}
-@keyframes slideUpPanel{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-#asistentPanel .asist-header{padding:20px 20px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;border-bottom:1px solid var(--border)}
-.asist-mic-btn{width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(var(--theme-rgb),.4);transition:.2s;flex-shrink:0}
-.asist-mic-btn:active{transform:scale(.93)}
-.asist-mic-btn.grabando{animation:micPulse 1s infinite}
-@keyframes micPulse{0%,100%{box-shadow:0 4px 16px rgba(var(--theme-rgb),.4),0 0 0 0 rgba(var(--theme-rgb),.4)}50%{box-shadow:0 4px 16px rgba(var(--theme-rgb),.4),0 0 0 14px rgba(var(--theme-rgb),0)}}
-.asist-estado{font-size:13px;font-weight:700;color:var(--tx2);flex:1}
-.asist-estado strong{display:block;font-size:15px;font-weight:900;color:var(--tx);margin-bottom:2px}
-#asistentBody{flex:1;overflow-y:auto;padding:14px 20px 20px}
-.asist-msg{border-radius:14px;padding:12px 15px;margin-bottom:10px;font-size:13px;line-height:1.55}
-.asist-msg.user{background:linear-gradient(135deg,rgba(var(--theme-rgb),.15),rgba(var(--theme-rgb),.08));border:1px solid rgba(var(--theme-rgb),.2);color:var(--tx);margin-left:20%}
-.asist-msg.bot{background:var(--card);border:1px solid var(--border);color:var(--tx);margin-right:20%}
-.asist-msg.bot .asist-msg-label{font-size:10px;font-weight:900;color:var(--r);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
-.asist-result-card{background:rgba(var(--theme-rgb),.06);border:1px solid rgba(var(--theme-rgb),.2);border-radius:10px;padding:10px 12px;margin-top:8px;cursor:pointer;transition:.15s}
-.asist-result-card:hover{background:rgba(var(--theme-rgb),.12)}
-.asist-result-card .arc-title{font-size:13px;font-weight:800;color:var(--tx)}
-.asist-result-card .arc-sub{font-size:11px;color:var(--tx2);margin-top:2px}
-.asist-hint-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.asist-hint{background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--r);cursor:pointer;transition:.15s}
-.asist-hint:hover{background:rgba(var(--theme-rgb),.16)}
-.asist-input-row{display:flex;gap:8px;padding:10px 20px 0;flex-shrink:0;border-top:1px solid var(--border)}
-.asist-input-row input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:13px;font-family:var(--font);color:var(--tx);outline:none}
-.asist-input-row input:focus{border-color:var(--r)}
-.asist-send-btn{width:40px;height:40px;border-radius:12px;border:none;background:var(--r);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
-.tb-btn-asist{background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.2)}
-body.modo-claro .asist-msg.user{background:linear-gradient(135deg,rgba(var(--theme-rgb),.12),rgba(var(--theme-rgb),.06))}
 .notif-dot{position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:var(--r);border-radius:8px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;padding:0 4px;font-family:var(--font);border:2px solid var(--bg);line-height:1}
 .notif-dot.show{display:flex;animation:notifPop .4s cubic-bezier(.16,1,.3,1)}
 @keyframes notifPop{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
@@ -1330,38 +1300,6 @@ body.offline .dash-offline-bar{display:flex}
   </div>
 
   <!-- DRAWER -->
-  <!-- ── ASISTENTE DE VOZ JOYVI ── -->
-  <div id="asistentOverlay" onclick="cerrarAsistente()">
-    <div id="asistentPanel" onclick="event.stopPropagation()">
-      <div class="asist-header">
-        <button class="asist-mic-btn" id="asistMicBtn" onclick="toggleAsistMic()">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        </button>
-        <div class="asist-estado">
-          <strong id="asistTitulo">Asistente Joyvi</strong>
-          <span id="asistEstadoTxt">Pulsa el micrófono o escribe tu consulta</span>
-        </div>
-        <button onclick="cerrarAsistente()" style="background:none;border:none;color:var(--tx2);font-size:22px;cursor:pointer;padding:4px;line-height:1">✕</button>
-      </div>
-      <div id="asistentBody">
-        <div class="asist-hint-chips" id="asistHints">
-          <div class="asist-hint" onclick="asistConsulta('¿Cuándo fue el último mantenimiento de un cliente?')">🔧 Último mantenimiento</div>
-          <div class="asist-hint" onclick="asistConsulta('¿Qué clientes tienen mantenimiento esta semana?')">📅 Esta semana</div>
-          <div class="asist-hint" onclick="asistConsulta('¿Cuándo fue el último presupuesto de un cliente?')">💶 Último presupuesto</div>
-          <div class="asist-hint" onclick="asistConsulta('¿Qué averías hay pendientes?')">⚡ Averías abiertas</div>
-          <div class="asist-hint" onclick="asistConsulta('¿Cuál es el teléfono de un cliente?')">📞 Teléfono cliente</div>
-          <div class="asist-hint" onclick="asistConsulta('Llévame a la dirección de un cliente')">📍 Ir a cliente</div>
-        </div>
-      </div>
-      <div class="asist-input-row">
-        <input id="asistInputText" placeholder="Escribe tu consulta aquí..." onkeydown="if(event.key==='Enter')asistEnviarTexto()" autocomplete="off">
-        <button class="asist-send-btn" onclick="asistEnviarTexto()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <div id="drawerOverlay" onclick="cerrarDrawer()"></div>
   <div id="drawer">
     <div class="drawer-head" onclick="goScreen('perfil');cerrarDrawer()">
@@ -3263,11 +3201,10 @@ const iniciarApp=async()=>{
     const count=docsRelevantes.length;
     const dot=$('notifDot');
     if(count>0){
-      dot.classList.add('show');
-      dot.textContent=count>9?'9+':count;
+      if(dot){dot.classList.add('show');dot.textContent=count>9?'9+':count;}
       // Sincronizar badge kiosk
       const dotK=document.getElementById('notifDotKiosk');
-      if(dotK){dotK.className=dot.className;dotK.textContent=dot.textContent;}
+      if(dotK){dotK.className=dot?dot.className:'notif-dot show';dotK.textContent=count>9?'9+':count;}
       snap.docChanges().forEach(change=>{
         if(change.type==='added'){
           const d=change.doc.data();
@@ -3281,7 +3218,7 @@ const iniciarApp=async()=>{
         }
       });
     }else{
-      dot.classList.remove('show');
+      if(dot)dot.classList.remove('show');
       const dotK=document.getElementById('notifDotKiosk');
       if(dotK)dotK.classList.remove('show');
     }
@@ -3485,7 +3422,6 @@ const _renderPendingBadges = () => {
     }
   });
 };
-window._syncPendingCount = () => _getPending().length;
 
 // fire-and-forget con ID local + registro en pending
 // Mapa de IDs temporales → ID real de Firestore, y firmas que llegaron
@@ -4335,10 +4271,6 @@ window._switchGMantMode=(mode)=>{
   if(mode==='calendario')_gCalMesOffset=0;
   _renderGTabMantenimientos();
 };
-window._setGCalPeriodo=(v)=>{
-  _gCalPeriodo=v;
-  _renderGTabMantenimientos();
-};
 window._gCalNavMes=(delta)=>{
   _gCalMesOffset+=delta;
   _renderGTabMantenimientos();
@@ -4705,7 +4637,6 @@ window.abrirProgramarMantSB = async () => {
       _mantFullPlantillas = plantsFull; window._mantFullPlantillas = plantsFull;
     } catch(e) {}
   }
-  window._mantSBPlantillas = plantsFull;
 
   const _renderSBMantSelector = (filtro='') => {
     const q = (filtro||'').toLowerCase().trim();
@@ -5054,6 +4985,7 @@ window.verCliente=async id=>{
 
   // Cargar mantenimientos y averías del cliente en paralelo
   let mantsC=[], avsC=[], histMants=[], presusCli=[], primeraFoto=null;
+  const partesCli=allPartes.filter(p=>p.clienteId===id&&!p.archivado);
   try{
     mantsC=allMantenimientos.filter(m=>m.clienteId===id);
     // Offline: usar cache local para averias/presupuestos
@@ -5096,8 +5028,6 @@ window.verCliente=async id=>{
     window._archivosCache=window._archivosCache||{};
     archivadosCliente.forEach(p=>{window._archivosCache[p.id]=p;});
   }catch(e){}
-
-  const partesCli=allPartes.filter(p=>p.clienteId===id&&!p.archivado);
 
   // ─── Agrupar: si un parte y un mant_hist se crearon con pocos segundos de diferencia
   // (máx 90 s), se muestran juntos como un bloque "Mantenimiento realizado + Parte"
@@ -6913,8 +6843,6 @@ window._abrirFirmaParteCreado = (parteId) => {
     canvas.addEventListener('touchstart', e=>{drawing=true;const{x,y}=getXY(e);ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();},{passive:false});
     canvas.addEventListener('touchmove', e=>{if(!drawing)return;const{x,y}=getXY(e);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();},{passive:false});
     canvas.addEventListener('touchend', ()=>drawing=false);
-    window._firmaCtxNuevo = ctx;
-    window._firmaCanvasNuevoEl = canvas;
   }, 200);
 };
 
@@ -7429,99 +7357,6 @@ window.generarPDFConFirma=async(id,firmaDataURL)=>{
     }
     if(firmaDataURL){toast('✍️ Firma guardada en el parte','o');cerrarSB();}
   }catch(e){console.warn('No se pudo marcar pdfGenerado:',e);}
-};
-
-// ── FACTURA DESDE PARTE ──
-window.generarFacturaParte=async(id)=>{
-  const p=allPartes.find(x=>x.id===id);if(!p)return;
-  // Número correlativo: contar facturas emitidas + 1
-  let numFact=1;
-  try{
-    const fSnap=await getDocs(collection(db,'grupos',CGID,'facturas'));
-    numFact=fSnap.docs.length+1;
-    // Guardar registro de factura
-    await addDoc(collection(db,'grupos',CGID,'facturas'),{parteId:id,numero:numFact,clienteNombre:p.clienteNombre||'',creado:serverTimestamp()});
-  }catch(e){}
-  const tot=calcTotal(p);
-  const iva=p.aplicarIVAMateriales?(parseFloat(p.importeMateriales)||0)*.21:0;
-  const cli=allClientes.find(x=>x.id===p.clienteId)||{};
-  const numStr=String(numFact).padStart(4,'0');
-  const hoy=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
-  const factHTML=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Factura ${numStr}</title>
-  <style>
-  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Nunito',sans-serif;background:#fff;color:#222}
-  @page{margin:0;size:A4 portrait}
-  .page{width:210mm;min-height:297mm;display:flex;flex-direction:column}
-  .head{background:linear-gradient(135deg,#c62828,#e53935);color:#fff;padding:30px 36px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
-  .head-brand h1{font-size:28px;font-weight:900;margin-bottom:3px}
-  .head-brand p{font-size:12px;opacity:.75}
-  .head-meta{text-align:right}
-  .head-meta h2{font-size:20px;font-weight:900;margin-bottom:4px}
-  .head-meta p{font-size:12px;opacity:.8}
-  .head-num{background:rgba(0,0,0,.2);border-radius:8px;padding:6px 14px;font-size:16px;font-weight:900;letter-spacing:1px;margin-top:8px;display:inline-block}
-  .content{flex:1;padding:28px 36px;display:flex;flex-direction:column;gap:0}
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
-  .sec-title{font-size:9px;font-weight:900;color:#e53935;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #e53935}
-  .info-row{font-size:12px;padding:3px 0;color:#444}
-  .info-label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-top:8px;margin-bottom:2px}
-  table{width:100%;border-collapse:collapse;margin-bottom:16px}
-  th{background:#f5f5f5;font-size:10px;font-weight:900;color:#999;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;text-align:left}
-  td{padding:10px 12px;font-size:12.5px;border-bottom:1px solid #f0f0f0}
-  td:last-child,th:last-child{text-align:right}
-  .total-row{background:#fff5f5;font-weight:900;color:#e53935;font-size:15px;border-top:2px solid #e53935}
-  .total-row td{border-bottom:none}
-  .footer{background:#f5f5f5;padding:14px 36px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-  @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
-  </style></head><body>
-  <div class="page">
-    <div class="head">
-      <div class="head-brand"><h1>${CG?.nombre||'JoyviApp'}</h1><p>Electrobombas Joyvi</p></div>
-      <div class="head-meta"><h2>FACTURA</h2><p>${hoy}</p><div class="head-num">FAC-${numStr}</div></div>
-    </div>
-    <div class="content">
-      <div class="two-col">
-        <div>
-          <div class="sec-title">Datos del emisor</div>
-          <div class="info-row"><strong>${CG?.nombre||'JoyviApp'}</strong></div>
-          <div class="info-row">${CG?.adminNombre||''}</div>
-        </div>
-        <div>
-          <div class="sec-title">Datos del cliente</div>
-          <div class="info-row"><strong>${cli.nombre||p.clienteNombre||'—'}</strong></div>
-          ${cli.direccion?`<div class="info-row">${cli.direccion}</div>`:''}
-          ${p.edificio?`<div class="info-row">${p.edificio}</div>`:''}
-          ${cli.telefono?`<div class="info-row">Tel: ${cli.telefono}</div>`:''}
-        </div>
-      </div>
-      <div class="sec-title">Concepto</div>
-      <table>
-        <thead><tr><th>Descripción</th><th>Importe</th></tr></thead>
-        <tbody>
-          ${(parseFloat(p.importeManoObra)||0)>0?`<tr><td>Mano de obra${p.duracion?` (${p.duracion})`:''}</td><td>${fmtM(p.importeManoObra)}</td></tr>`:''}
-          ${(parseFloat(p.importeMateriales)||0)>0?`<tr><td>Materiales${p.materiales?`: ${p.materiales}`:''}</td><td>${fmtM(p.importeMateriales)}</td></tr>`:''}
-          ${iva>0?`<tr><td>IVA 21% (sobre materiales)</td><td>${fmtM(iva)}</td></tr>`:''}
-          ${(parseFloat(p.importeDesplazamiento)||0)>0?`<tr><td>Desplazamiento</td><td>${fmtM(p.importeDesplazamiento)}</td></tr>`:''}
-          <tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>${fmtM(tot)}</strong></td></tr>
-        </tbody>
-      </table>
-      ${p.descripcion?`<div style="margin-bottom:16px"><div class="sec-title">Descripción del trabajo</div><p style="font-size:12px;color:#555;line-height:1.6;padding-top:6px">${p.descripcion}</p></div>`:''}
-      <div style="margin-top:auto;padding-top:20px;border-top:1px solid #eee;display:flex;justify-content:flex-end">
-        <div style="text-align:center">
-          <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:30px">Firma y sello</div>
-          <div style="width:200px;border-top:1px solid #ccc;padding-top:6px;font-size:11px;color:#999">${CG?.nombre||'JoyviApp'}</div>
-        </div>
-      </div>
-    </div>
-    <div class="footer"><span>Factura ${numStr} — ${hoy}</span><span>JoyviApp · Electrobombas Joyvi</span></div>
-  </div>
-  </body></html>`;
-  const w=window.open('','_blank');
-  w.document.write(factHTML);
-  w.document.close();
-  setTimeout(()=>w.print(),700);
-  toast(`Factura FAC-${numStr} generada`,'o');
 };
 
 // ─── BACKUP MEJORADO — índice con carpetas por cliente ───
@@ -11076,16 +10911,6 @@ window.calcPresuTotal=()=>{
   if(ivaEl)ivaEl.textContent=iva>0?fmtM(iva):'—';
   if(tot)tot.textContent=fmtM(total);
 };
-window.addPartida=()=>{
-  const id='part_'+Date.now();
-  const el=document.createElement('div');
-  el.className='partida-row';el.id=id;
-  el.innerHTML=`<input class="partida-desc" placeholder="Descripción" oninput="calcPresuTotal()">
-    <input class="partida-importe partida-imp-input" type="number" placeholder="0.00" min="0" step="0.01" oninput="calcPresuTotal()">
-    <button class="partida-del" onclick="document.getElementById('${id}').remove();calcPresuTotal()">✕</button>`;
-  $('partidasContainer').appendChild(el);
-};
-
 window.guardarPresupuesto=async()=>{
   const cliId=$('prCli').value;
   const titulo=$('prTitulo').value.trim();
@@ -12897,13 +12722,6 @@ const _runBackupAllGroups=async(conGesto)=>{
 };
 
 // ── API pública ──
-window._ejecutarAutoBackupSilencioso=async()=>{
-  try{
-    await _runBackupAllGroups(false);
-    toast('✅ Backup guardado','o');
-  }catch(e){console.warn('[Backup] Error',e);}
-};
-
 window.ejecutarBackupAhoraManual=async()=>{
   toast('⏳ Generando backup...','i');
   try{
@@ -12952,11 +12770,6 @@ window.verBackupsGuardados=async()=>{
     `).join('')}
   `);
 };
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// HISTORIAL MANTENIMIENTOS (PANEL TOGGLE)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-window._mantHistOpen = false;
 
 // ── Sheet superpuesto: Historial global de mantenimientos del grupo ──
 window.abrirHMSheetGrupo = async () => {
@@ -13576,443 +13389,7 @@ window._hgNavegar=(tipo,id,cliId)=>{
   else if(tipo==='presu'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('presu');},200);}
 };
 
-// ════════════════════════════════════════════════════════════
-// ASISTENTE DE VOZ JOYVI — consultas inteligentes sobre datos
-// ════════════════════════════════════════════════════════════
-let _asistSR = null;       // SpeechRecognition
-let _asistGrabando = false;
-const _asistHistorial = []; // [{role:'user'|'bot', text, cards}]
 
-window.abrirAsistente = () => {
-  document.getElementById('asistentOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('asistInputText')?.focus(), 300);
-};
-
-window.cerrarAsistente = () => {
-  document.getElementById('asistentOverlay').classList.remove('open');
-  if(_asistGrabando) _asistPararMic();
-};
-
-window.toggleAsistMic = () => {
-  if(_asistGrabando) _asistPararMic();
-  else _asistIniciarMic();
-};
-
-const _asistIniciarMic = () => {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ toast('Micrófono no disponible en este navegador','e'); return; }
-  _asistSR = new SR();
-  _asistSR.lang = 'es-ES';
-  _asistSR.continuous = false;
-  _asistSR.interimResults = false;
-  _asistSR.onstart = () => {
-    _asistGrabando = true;
-    const btn = document.getElementById('asistMicBtn');
-    if(btn) btn.classList.add('grabando');
-    document.getElementById('asistEstadoTxt').textContent = 'Escuchando...';
-    document.getElementById('asistTitulo').textContent = '🎙️ Habla ahora';
-  };
-  _asistSR.onresult = e => {
-    const texto = e.results[0][0].transcript;
-    _asistSR = null;
-    _asistGrabando = false;
-    const btn = document.getElementById('asistMicBtn');
-    if(btn) btn.classList.remove('grabando');
-    asistConsulta(texto);
-  };
-  _asistSR.onerror = () => { _asistPararMic(); toast('No se pudo escuchar, inténtalo de nuevo','i'); };
-  _asistSR.onend = () => {
-    _asistGrabando = false;
-    const btn = document.getElementById('asistMicBtn');
-    if(btn) btn.classList.remove('grabando');
-    document.getElementById('asistEstadoTxt').textContent = 'Pulsa el micrófono o escribe tu consulta';
-    document.getElementById('asistTitulo').textContent = 'Asistente Joyvi';
-  };
-  _asistSR.start();
-};
-
-const _asistPararMic = () => {
-  if(_asistSR){ try{ _asistSR.stop(); }catch(e){} _asistSR = null; }
-  _asistGrabando = false;
-  const btn = document.getElementById('asistMicBtn');
-  if(btn) btn.classList.remove('grabando');
-};
-
-window.asistEnviarTexto = () => {
-  const inp = document.getElementById('asistInputText');
-  const txt = (inp?.value||'').trim();
-  if(!txt) return;
-  inp.value = '';
-  asistConsulta(txt);
-};
-
-// Añadir mensaje al chat
-const _asistAddMsg = (role, text, cards=[]) => {
-  const body = document.getElementById('asistentBody');
-  if(!body) return;
-  // Ocultar hints al primer mensaje
-  const hints = document.getElementById('asistHints');
-  if(hints) hints.style.display = 'none';
-  const div = document.createElement('div');
-  div.className = `asist-msg ${role}`;
-  if(role === 'bot'){
-    let html = `<div class="asist-msg-label">✨ Joyvi</div><div>${text}</div>`;
-    if(cards.length){
-      html += cards.map(card => `
-        <div class="asist-result-card" onclick="${card.action}">
-          <div class="arc-title">${card.title}</div>
-          <div class="arc-sub">${card.sub}</div>
-        </div>`).join('');
-    }
-    div.innerHTML = html;
-  } else {
-    div.textContent = text;
-  }
-  body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
-};
-
-const _asistPensando = () => {
-  const body = document.getElementById('asistentBody');
-  if(!body) return;
-  const div = document.createElement('div');
-  div.className = 'asist-msg bot';
-  div.id = 'asistPensandoMsg';
-  div.innerHTML = `<div class="asist-msg-label">✨ Joyvi</div><div style="display:flex;gap:5px;align-items:center;padding:4px 0"><span style="width:7px;height:7px;border-radius:50%;background:var(--r);animation:micPulse .8s infinite"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--r);animation:micPulse .8s .15s infinite"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--r);animation:micPulse .8s .3s infinite"></span></div>`;
-  body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
-};
-
-const _asistQuitarPensando = () => {
-  document.getElementById('asistPensandoMsg')?.remove();
-};
-
-// ── Motor de consulta: analiza el texto y busca en los datos locales ──
-window.asistConsulta = async (texto) => {
-  if(!texto) return;
-  _asistAddMsg('user', texto);
-  document.getElementById('asistEstadoTxt').textContent = 'Buscando...';
-  _asistPensando();
-
-  // Normalizar texto para análisis
-  const q = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-
-  // ── Funciones de apoyo ──
-  const fmtFecha = ts => {
-    if(!ts) return '—';
-    try{ const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}); }catch{ return '—'; }
-  };
-  const fmtFechaStr = str => {
-    if(!str) return '—';
-    try{ return new Date(str+'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}); }catch{ return str; }
-  };
-
-  // Extraer nombre de cliente del query: patrones tipo "de X cliente", "de X", "a X", etc.
-  const extraerNombreCli = (q) => {
-    const patrones = [
-      /(?:de|para|del|al|a|con)\s+(.+?)(?:\?|$|\s+(?:esta|el|la|los|las|un|una|su|sus|cuándo|cuando|que|qué|tiene|hay|próximo|proximo|último|ultimo))/i,
-      /(?:cliente[s]?\s+(?:llamad[oa]?\s+)?|ficha\s+de\s+)(.+?)(?:\?|$)/i,
-      /(?:ir|llevame|navegar|ubicacion|teléfono|telefono|llamar)\s+(?:a\s+|al\s+)?(.+?)(?:\?|$)/i,
-    ];
-    for(const p of patrones){
-      const m = q.match(p);
-      if(m && m[1] && m[1].trim().length > 1) return m[1].trim().toLowerCase();
-    }
-    // Último recurso: palabras después de palabras clave
-    const keywords = ['de ','para ','a ','con ','al '];
-    for(const kw of keywords){
-      const idx = q.indexOf(kw);
-      if(idx > -1){
-        const resto = q.slice(idx + kw.length).replace(/[?¿]/g,'').trim();
-        if(resto.length > 1) return resto;
-      }
-    }
-    return null;
-  };
-
-  // Buscar cliente por nombre aproximado
-  const buscarCliente = (nombreQ) => {
-    if(!nombreQ) return null;
-    const nq = nombreQ.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    return allClientes.filter(c=>!c.archivado).find(c=>{
-      const cn = (c.nombre||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-      return cn.includes(nq) || nq.includes(cn) || cn.split(' ').some(p=>nq.includes(p)&&p.length>2);
-    }) || null;
-  };
-
-  const buscarClientesFuzzy = (nombreQ) => {
-    if(!nombreQ) return [];
-    const nq = nombreQ.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    return allClientes.filter(c=>{
-      if(c.archivado) return false;
-      const cn = (c.nombre||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-      return cn.includes(nq) || nq.includes(cn) || cn.split(' ').some(p=>nq.includes(p)&&p.length>2);
-    });
-  };
-
-  // ── Detectar intención ──
-  const esMantenimiento = /manten|revision|revisi[oó]n|servicio program/i.test(q);
-  const esParte = /parte|trabajo|visita|servicio realiz/i.test(q);
-  const esAveria = /averia|avería|fallo|incidencia|urgente|urgencia/i.test(q);
-  const esPresupuesto = /presupuest|oferta|cotizaci/i.test(q);
-  const esLlamar = /llam|tel[eé]fono|contactar|llamar/i.test(q);
-  const esIrMapa = /ir a|llevar|navegar|ubicaci[oó]n|direcci[oó]n|casa|domicilio|mapa/i.test(q);
-  const esFicha = /ficha|abrir|ver|mostrar|info|informaci[oó]n/i.test(q);
-  const esUltimo = /[uú]ltimo|[uú]ltima|reciente|anterior/i.test(q);
-  const esProximo = /pr[oó]ximo|siguiente|cuando ser[aá]|cuándo/i.test(q);
-  const esSemana = /semana|esta semana|semana que viene/i.test(q);
-  const esTodos = /todos|lista|hay|cuántos|cuantos/i.test(q);
-  const esPendiente = /pendiente|abierto|sin resolver|por hacer/i.test(q);
-
-  let respuesta = '';
-  let cards = [];
-
-  await new Promise(r => setTimeout(r, 400)); // pequeña pausa para UX
-
-  try {
-
-    // ── LLAMAR A CLIENTE ──
-    if(esLlamar){
-      const nombreQ = extraerNombreCli(q);
-      const resultados = nombreQ ? buscarClientesFuzzy(nombreQ) : [];
-      if(resultados.length === 1){
-        const cli = resultados[0];
-        if(cli.telefono){
-          _asistQuitarPensando();
-          _asistAddMsg('bot', `Llamando a <strong>${cli.nombre}</strong> (${cli.telefono})...`, [
-            {title:`📞 Llamar a ${cli.nombre}`, sub:cli.telefono, action:`window.location.href='tel:${cli.telefono}';cerrarAsistente()`}
-          ]);
-          return;
-        } else {
-          respuesta = `<strong>${cli.nombre}</strong> no tiene teléfono registrado en su ficha.`;
-        }
-      } else if(resultados.length > 1){
-        respuesta = `Encontré varios clientes. ¿A cuál quieres llamar?`;
-        cards = resultados.slice(0,5).map(c=>({title:`📞 ${c.nombre}`, sub:c.telefono||'Sin teléfono', action:`if('${c.telefono}')window.location.href='tel:${c.telefono}';else toast('Sin teléfono','i')`}));
-      } else {
-        respuesta = nombreQ ? `No encontré ningún cliente llamado "<strong>${nombreQ}</strong>".` : 'Dime a qué cliente quieres llamar.';
-      }
-
-    // ── IR A MAPA / DIRECCIÓN ──
-    } else if(esIrMapa && !esMantenimiento && !esParte){
-      const nombreQ = extraerNombreCli(q);
-      const resultados = nombreQ ? buscarClientesFuzzy(nombreQ) : [];
-      if(resultados.length === 1){
-        const cli = resultados[0];
-        if(cli.lat && cli.lng || cli.direccion){
-          _asistQuitarPensando();
-          _asistAddMsg('bot', `Abriendo ubicación de <strong>${cli.nombre}</strong>...`, [
-            {title:`📍 Ir a ${cli.nombre}`, sub:cli.direccion||`${cli.lat}, ${cli.lng}`, action:`cerrarAsistente();abrirMapa('${cli.lat||''}','${cli.lng||''}','${(cli.direccion||'').replace(/'/g,"\'")}');`}
-          ]);
-          return;
-        } else {
-          respuesta = `<strong>${cli.nombre}</strong> no tiene dirección registrada.`;
-        }
-      } else if(resultados.length > 1){
-        respuesta = `¿A qué cliente quieres ir?`;
-        cards = resultados.slice(0,5).map(c=>({title:`📍 ${c.nombre}`, sub:c.direccion||'Sin dirección', action:`cerrarAsistente();abrirMapa('${c.lat||''}','${c.lng||''}','${(c.direccion||'').replace(/'/g,"\'")}');`}));
-      } else {
-        respuesta = nombreQ ? `No encontré ningún cliente llamado "<strong>${nombreQ}</strong>".` : 'Dime a qué cliente quieres ir.';
-      }
-
-    // ── AVERÍAS PENDIENTES ──
-    } else if(esAveria){
-      const avsPend = _averiasPend || [];
-      if(esTodos || esPendiente || avsPend.length > 0 && !extraerNombreCli(q)){
-        if(!avsPend.length){
-          respuesta = '✅ No hay averías pendientes en este momento.';
-        } else {
-          respuesta = `Hay <strong>${avsPend.length} avería${avsPend.length!==1?'s':''} pendiente${avsPend.length!==1?'s':''}</strong>:`;
-          cards = avsPend.slice(0,6).map(a=>{
-            const cli = allClientes.find(c=>c.id===a.clienteId);
-            return {title:`⚡ ${a.tipo||'Avería'}`, sub:`${cli?.nombre||a.clienteNombre||'—'} · ${fmtFecha(a.creado)}`, action:`cerrarAsistente();goScreen('grupo');switchGTab('aver');setTimeout(()=>verAveria('${a.id}'),300)`};
-          });
-        }
-      } else {
-        const nombreQ = extraerNombreCli(q);
-        const cli = nombreQ ? buscarCliente(nombreQ) : null;
-        if(cli){
-          const avsC = avsPend.filter(a=>a.clienteId===cli.id);
-          if(!avsC.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene averías pendientes.`; }
-          else {
-            respuesta = `<strong>${cli.nombre}</strong> tiene <strong>${avsC.length} avería${avsC.length!==1?'s':''} pendiente${avsC.length!==1?'s':''}</strong>:`;
-            cards = avsC.map(a=>({title:`⚡ ${a.tipo||'Avería'}`, sub:fmtFecha(a.creado), action:`cerrarAsistente();verAveria('${a.id}')`}));
-          }
-        } else {
-          respuesta = nombreQ ? `No encontré el cliente "<strong>${nombreQ}</strong>".` : `Hay <strong>${avsPend.length}</strong> avería${avsPend.length!==1?'s pendientes':'  pendiente'}.`;
-        }
-      }
-
-    // ── PRESUPUESTOS ──
-    } else if(esPresupuesto){
-      const presus = _presusPend || [];
-      const nombreQ = extraerNombreCli(q);
-      const cli = nombreQ ? buscarCliente(nombreQ) : null;
-      if(cli){
-        // Buscar todos los presupuestos del cliente en Firestore
-        try{
-          const snap = await getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('clienteId','==',cli.id)));
-          const todosPresus = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
-          if(!todosPresus.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene presupuestos registrados.`; }
-          else if(esUltimo){
-            const p = todosPresus[0];
-            const total = _calcTotal?_calcTotal(p):((parseFloat(p.importeManoObra)||0)+(parseFloat(p.importeMateriales)||0)+(parseFloat(p.importeDesplazamiento)||0));
-            respuesta = `El último presupuesto de <strong>${cli.nombre}</strong> fue el <strong>${fmtFecha(p.creado)}</strong>:`;
-            cards = [{title:`💶 ${p.titulo||'Presupuesto'}`, sub:`${fmtFecha(p.creado)} · ${isNaN(total)?'—':total.toLocaleString('es-ES',{minimumFractionDigits:2})+'€'} · ${p.estado||'espera'}`, action:`cerrarAsistente();verPresupuesto('${p.id}')`}];
-          } else {
-            respuesta = `<strong>${cli.nombre}</strong> tiene <strong>${todosPresus.length} presupuesto${todosPresus.length!==1?'s':''}</strong>:`;
-            cards = todosPresus.slice(0,5).map(p=>({title:`💶 ${p.titulo||'Presupuesto'}`, sub:`${fmtFecha(p.creado)} · ${p.estado||'espera'}`, action:`cerrarAsistente();verPresupuesto('${p.id}')`}));
-          }
-        }catch(e){ respuesta = 'Error al buscar los presupuestos.'; }
-      } else if(esPendiente || esTodos){
-        if(!presus.length){ respuesta = 'No hay presupuestos pendientes.'; }
-        else {
-          respuesta = `Hay <strong>${presus.length} presupuesto${presus.length!==1?'s':''} pendiente${presus.length!==1?'s':''}</strong>:`;
-          cards = presus.slice(0,6).map(p=>({title:`💶 ${p.titulo||'Presupuesto'}`, sub:`${p.clienteNombre||'—'} · ${fmtFecha(p.creado)}`, action:`cerrarAsistente();verPresupuesto('${p.id}')`}));
-        }
-      } else {
-        respuesta = nombreQ ? `No encontré el cliente "<strong>${nombreQ}</strong>".` : 'Dime de qué cliente quieres ver el presupuesto.';
-      }
-
-    // ── MANTENIMIENTOS ──
-    } else if(esMantenimiento){
-      const hoyStr = new Date().toISOString().split('T')[0];
-      const finSem = new Date(); finSem.setDate(finSem.getDate()+7);
-      const finSemStr = finSem.toISOString().split('T')[0];
-
-      const nombreQ = extraerNombreCli(q);
-      const cli = nombreQ ? buscarCliente(nombreQ) : null;
-
-      if(esSemana && !cli){
-        // Mantenimientos esta semana
-        const estaSem = allMantenimientos.filter(m=>m.estado!=='completado'&&m.fechaProxima&&m.fechaProxima>=hoyStr&&m.fechaProxima<=finSemStr);
-        if(!estaSem.length){ respuesta = 'No hay mantenimientos programados para esta semana.'; }
-        else {
-          respuesta = `Esta semana hay <strong>${estaSem.length} mantenimiento${estaSem.length!==1?'s':''}</strong> programados:`;
-          cards = estaSem.sort((a,b)=>a.fechaProxima<b.fechaProxima?-1:1).map(m=>({
-            title:`🔧 ${m.nombreTrabajo}`,
-            sub:`${m.clienteNombre||'—'} · ${fmtFechaStr(m.fechaProxima)}`,
-            action:`cerrarAsistente();goScreen('grupo');switchGTab('mant');setTimeout(()=>verMant('${m.id}'),300)`
-          }));
-        }
-      } else if(cli){
-        // Mantenimientos de un cliente concreto
-        const mantsC = allMantenimientos.filter(m=>m.clienteId===cli.id);
-        if(!mantsC.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene mantenimientos registrados.`; }
-        else if(esUltimo){
-          // Último completado
-          try{
-            const snap = await getDocs(query(collection(db,'grupos',CGID,'historial_mantenimientos'),where('clienteId','==',cli.id),orderBy('fechaCompletado','desc')));
-            const hist = snap.docs.map(d=>d.data());
-            if(!hist.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene mantenimientos completados aún.`; }
-            else {
-              const h = hist[0];
-              respuesta = `El último mantenimiento de <strong>${cli.nombre}</strong> fue el <strong>${fmtFechaStr(h.fechaCompletado)}</strong>:`;
-              const mOrig = mantsC.find(m=>m.id===h.mantenimientoId);
-              cards = [{title:`✅ ${h.nombreTrabajo||'Mantenimiento'}`, sub:`${fmtFechaStr(h.fechaCompletado)} · Realizado por ${h.completadoPor||'—'}`, action:mOrig?`cerrarAsistente();verMant('${mOrig.id}')`:`cerrarAsistente();verCliente('${cli.id}')`}];
-            }
-          }catch(e){
-            const completado = mantsC.filter(m=>m.ultimoCompletado).sort((a,b)=>b.ultimoCompletado<a.ultimoCompletado?-1:1)[0];
-            if(completado){ respuesta = `El último mantenimiento completado de <strong>${cli.nombre}</strong> fue el <strong>${fmtFechaStr(completado.ultimoCompletado)}</strong>:`; cards = [{title:`✅ ${completado.nombreTrabajo}`, sub:fmtFechaStr(completado.ultimoCompletado), action:`cerrarAsistente();verMant('${completado.id}')`}]; }
-            else { respuesta = `<strong>${cli.nombre}</strong> aún no tiene mantenimientos completados.`; }
-          }
-        } else if(esProximo){
-          const prox = mantsC.filter(m=>m.estado!=='completado'&&m.fechaProxima).sort((a,b)=>a.fechaProxima<b.fechaProxima?-1:1)[0];
-          if(!prox){ respuesta = `<strong>${cli.nombre}</strong> no tiene mantenimientos pendientes programados.`; }
-          else { respuesta = `El próximo mantenimiento de <strong>${cli.nombre}</strong> es el <strong>${fmtFechaStr(prox.fechaProxima)}</strong>:`; cards = [{title:`🔧 ${prox.nombreTrabajo}`, sub:`${fmtFechaStr(prox.fechaProxima)}${prox.frecuencia?' · '+prox.frecuencia:''}`, action:`cerrarAsistente();verMant('${prox.id}')`}]; }
-        } else {
-          respuesta = `<strong>${cli.nombre}</strong> tiene <strong>${mantsC.length} mantenimiento${mantsC.length!==1?'s':''}</strong>:`;
-          cards = mantsC.slice(0,5).map(m=>({title:`🔧 ${m.nombreTrabajo}`, sub:`Próximo: ${fmtFechaStr(m.fechaProxima)||'—'}`, action:`cerrarAsistente();verMant('${m.id}')`}));
-        }
-      } else {
-        // Todos los próximos
-        const proximos = allMantenimientos.filter(m=>m.estado!=='completado'&&m.fechaProxima).sort((a,b)=>a.fechaProxima<b.fechaProxima?-1:1);
-        if(!proximos.length){ respuesta = 'No hay mantenimientos pendientes.'; }
-        else {
-          respuesta = `Hay <strong>${proximos.length} mantenimiento${proximos.length!==1?'s':''} pendiente${proximos.length!==1?'s':''}</strong>. Los próximos:`;
-          cards = proximos.slice(0,5).map(m=>({title:`🔧 ${m.nombreTrabajo}`, sub:`${m.clienteNombre||'—'} · ${fmtFechaStr(m.fechaProxima)}`, action:`cerrarAsistente();verMant('${m.id}')`}));
-        }
-      }
-
-    // ── PARTES DE TRABAJO ──
-    } else if(esParte){
-      const nombreQ = extraerNombreCli(q);
-      const cli = nombreQ ? buscarCliente(nombreQ) : null;
-      if(cli){
-        const partesC = allPartes.filter(p=>p.clienteId===cli.id&&!p.archivado);
-        if(!partesC.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene partes de trabajo.`; }
-        else if(esUltimo){
-          const p = partesC[0];
-          respuesta = `El último parte de <strong>${cli.nombre}</strong> fue el <strong>${fmtFecha(p.creado)}</strong>:`;
-          cards = [{title:`📋 ${p.titulo||'Parte de trabajo'}`, sub:`${fmtFecha(p.creado)} · ${p.estado||'—'}`, action:`cerrarAsistente();verParte('${p.id}')`}];
-        } else {
-          respuesta = `<strong>${cli.nombre}</strong> tiene <strong>${partesC.length} parte${partesC.length!==1?'s':''}</strong>:`;
-          cards = partesC.slice(0,5).map(p=>({title:`📋 ${p.titulo||'Parte'}`, sub:`${fmtFecha(p.creado)} · ${p.estado||'—'}`, action:`cerrarAsistente();verParte('${p.id}')`}));
-        }
-      } else {
-        const pendientes = allPartes.filter(p=>p.estado==='pendiente'&&!p.archivado);
-        respuesta = pendientes.length
-          ? `Hay <strong>${pendientes.length} parte${pendientes.length!==1?'s':''} pendiente${pendientes.length!==1?'s':''}</strong>:`
-          : '✅ No hay partes pendientes.';
-        cards = pendientes.slice(0,5).map(p=>({title:`📋 ${p.titulo||'Parte'}`, sub:`${p.clienteNombre||'—'} · ${fmtFecha(p.creado)}`, action:`cerrarAsistente();verParte('${p.id}')`}));
-      }
-
-    // ── FICHA DE CLIENTE ──
-    } else if(esFicha || !esMantenimiento && !esParte && !esAveria && !esPresupuesto){
-      const nombreQ = extraerNombreCli(q) || q.replace(/[¿?]/g,'').trim();
-      if(nombreQ && nombreQ.length > 1){
-        const resultados = buscarClientesFuzzy(nombreQ);
-        if(resultados.length === 1){
-          const cli = resultados[0];
-          respuesta = `Encontré a <strong>${cli.nombre}</strong>:`;
-          cards = [{
-            title:`👤 ${cli.nombre}`,
-            sub:`${cli.telefono||''}${cli.direccion?' · '+cli.direccion:''}`,
-            action:`cerrarAsistente();verCliente('${cli.id}')`
-          }];
-        } else if(resultados.length > 1){
-          respuesta = `Encontré ${resultados.length} clientes:`;
-          cards = resultados.slice(0,5).map(c=>({title:`👤 ${c.nombre}`, sub:c.telefono||c.direccion||'Sin datos', action:`cerrarAsistente();verCliente('${c.id}')`}));
-        } else {
-          respuesta = `No encontré ningún cliente con "<strong>${nombreQ}</strong>". Intenta con otro nombre.`;
-        }
-      } else {
-        respuesta = 'Puedo ayudarte con mantenimientos, averías, presupuestos, partes de trabajo, o información de un cliente. ¿Qué necesitas?';
-      }
-    }
-
-  } catch(err) {
-    respuesta = 'Ocurrió un error al procesar tu consulta. Inténtalo de nuevo.';
-    console.error('Asistente error:', err);
-  }
-
-  _asistQuitarPensando();
-  if(respuesta) _asistAddMsg('bot', respuesta, cards);
-  document.getElementById('asistEstadoTxt').textContent = 'Pulsa el micrófono o escribe tu consulta';
-  document.getElementById('asistTitulo').textContent = 'Asistente Joyvi';
-};
-
-// ── Kiosk-safe navigation (for notifications) ──
-window._kioskSafeNav=(action,grupoId,parteId,tab)=>{
-  const isKiosk=localStorage.getItem('joyvi_kiosk')==='1';
-  if(isKiosk){
-    // Only allow: cli, part, averia, mant tabs
-    const allowed=['cli','part','averia','mant'];
-    if(tab&&allowed.includes(tab)){
-      if(grupoId&&grupoId!==CGID){abrirGrupo(grupoId).then(()=>setTimeout(()=>switchGTab&&switchGTab(tab),400));}
-      else{switchGTab&&switchGTab(tab);}
-      goScreen('grupo');
-    } else if(grupoId){
-      if(grupoId!==CGID){abrirGrupo(grupoId).then(()=>setTimeout(()=>switchGTab&&switchGTab('cli'),400));}
-      goScreen('grupo');
-      setTimeout(()=>switchGTab&&switchGTab('cli'),300);
-    }
-    return;
-  }
-  // Normal mode: execute the action
-  if(typeof action==='function')action();
-  else if(typeof action==='string'){try{eval(action);}catch(e){}}
-};
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // MODO VISUALIZACIÓN (TABLET/TALLER)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -14021,24 +13398,6 @@ const _aplicarModoVisualizacion=()=>{
   document.body.classList.toggle('modo-visualizacion',activo);
 };
 _aplicarModoVisualizacion();
-
-window.activarModoVisualizacion=()=>{
-  localStorage.setItem('joyvi_kiosk','1');
-  _aplicarModoVisualizacion();
-  toast('🏭 Modo gestión activado','o');
-  if(!screens['kiosk'])screens['kiosk']='screenKiosk';
-  // Limpiar historial para que el botón físico no pueda salir del modo
-  screenHistory=[];
-  cerrarDrawer&&cerrarDrawer();
-  setTimeout(()=>{
-    goScreen('kiosk');
-    // Reemplazar entrada de historial del navegador para bloquear retroceso físico
-    history.replaceState({screen:'kiosk',sbOpen:false},'','#kiosk');
-    const hg=document.getElementById('kioskHeaderGroup');
-    if(hg&&CG?.nombre)hg.textContent=CG.nombre;
-    setTimeout(()=>window.renderKioskDocsHoy&&window.renderKioskDocsHoy(),300);
-  },300);
-};
 
 window.salirModoVisualizacion=()=>{
   localStorage.removeItem('joyvi_kiosk');
