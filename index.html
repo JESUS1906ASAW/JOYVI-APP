@@ -2092,22 +2092,19 @@ window._filterCliSel = (hiddenId, q) => {
   const list = document.getElementById(hiddenId+'-list');
   if(!list) return;
   const qL = (q||'').toLowerCase().trim();
-  let hayCoincidencia = false;
   list.querySelectorAll('.cli-sel-opt').forEach(opt => {
-    const esSinCliente = opt.classList.contains('cli-sel-opt-sincliente');
     const nombre = opt.dataset.nombre || opt.querySelector('span:last-child')?.textContent?.toLowerCase() || '';
     const visible = (!qL || nombre.includes(qL));
     opt.style.display = visible ? '' : 'none';
-    if(visible && !esSinCliente) hayCoincidencia = true;
   });
   // Siempre mostrar "Sin cliente"
   const sinCli = list.querySelector('.cli-sel-opt-sincliente');
   if(sinCli) sinCli.style.display = '';
-  // Mostrar botón "Guardar sin ficha" solo si hay texto escrito y ningún cliente existente coincide
+  // Mostrar botón "Guardar sin ficha" siempre que haya texto escrito, coincida o no con clientes existentes
   const btnGuardar = document.getElementById(hiddenId+'-guardarsinficha');
   const txtGuardar = document.getElementById(hiddenId+'-guardarsinficha-txt');
   if(btnGuardar){
-    if(q && q.trim() && !hayCoincidencia){
+    if(q && q.trim()){
       btnGuardar.style.display = 'flex';
       if(txtGuardar) txtGuardar.textContent = q.trim();
     } else {
