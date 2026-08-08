@@ -11,8 +11,8 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
-const CN       = 'joyvi-v6';       // bump de versión para limpiar caché anterior
-const SHELL_CN = 'joyvi-shell-v6';
+const CN       = 'joyvi-v7';       // bump de versión para limpiar caché anterior (nuevo logo)
+const SHELL_CN = 'joyvi-shell-v7';
 
 // Assets del app shell que se pre-cachean en el install
 const SHELL_ASSETS = [
@@ -20,6 +20,8 @@ const SHELL_ASSETS = [
   '/JOYVI-APP/index.html',
   '/JOYVI-APP/icon-192.png',
   '/JOYVI-APP/icon-512.png',
+  '/JOYVI-APP/icon-192-maskable.png',
+  '/JOYVI-APP/icon-512-maskable.png',
   '/JOYVI-APP/manifest.json',
 ];
 

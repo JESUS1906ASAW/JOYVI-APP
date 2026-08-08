@@ -979,6 +979,20 @@ body.offline .dash-offline-bar{display:flex}
 @keyframes ptrSpin{to{transform:rotate(360deg)}}
 .ptr-label{font-size:12px;font-weight:700;color:var(--tx2)}
 
+/* ══ PANTALLA DE CARGA (SPLASH) ══ */
+#splashScreen{
+  position:fixed;inset:0;z-index:999999;
+  background:#ffffff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;
+  transition:opacity .35s ease;
+}
+#splashScreen.hide{opacity:0;pointer-events:none}
+#splashScreen img{width:132px;height:132px;border-radius:28px;box-shadow:0 6px 24px rgba(0,0,0,.1);animation:splashPop .5s cubic-bezier(.16,1,.3,1)}
+@keyframes splashPop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.splash-spinner{width:26px;height:26px;border-radius:50%;border:3px solid rgba(0,0,0,.1);border-top-color:#e53935;animation:splashSpin .8s linear infinite}
+@keyframes splashSpin{to{transform:rotate(360deg)}}
+
 /* ══ PANTALLA DE BLOQUEO ══ */
 /* ══ PANTALLA DE BLOQUEO ══ */
 #lockScreen{
@@ -1166,6 +1180,12 @@ body.offline .dash-offline-bar{display:flex}
 </script>
 </head>
 <body>
+
+<!-- ══ PANTALLA DE CARGA (SPLASH) ══ -->
+<div id="splashScreen">
+  <img src="/icon-192.png" alt="Joyvi">
+  <div class="splash-spinner"></div>
+</div>
 
 <!-- ═══════════ AUTH WRAP ═══════════ -->
   <!-- ══ PANTALLA DE BLOQUEO ══ -->
@@ -3006,6 +3026,17 @@ window.doLogout=async()=>{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // AUTH STATE CHANGE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Oculta la pantalla de carga inicial una vez sabemos qué mostrar (login o app)
+const _ocultarSplash=()=>{
+  const el=document.getElementById('splashScreen');
+  if(!el)return;
+  el.classList.add('hide');
+  setTimeout(()=>{el.style.display='none';},400);
+};
+// Salvaguarda: si algo tarda demasiado (sin red, error de auth...), no dejar al usuario
+// atrapado en la pantalla de carga indefinidamente.
+setTimeout(_ocultarSplash,7000);
+
 onAuthStateChanged(auth,async user=>{
   if(user){
     CU=user;
@@ -3031,6 +3062,7 @@ onAuthStateChanged(auth,async user=>{
     $('loginWrap').style.display='flex';
     setAuthErr('');
   }
+  _ocultarSplash();
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -13784,19 +13816,10 @@ const _recolorIconLogo = (base64Img, logoColor) => new Promise(resolve => {
 // Cache for recolored icons
 const _recoloredIconCache = {};
 
-// Get icon for tema - red logo for non-red backgrounds, white for red background
+// El logo actual es a color fijo (negro/rojo sobre blanco) y no debe recolorearse
+// por tema — se usa siempre tal cual, sea cual sea el color de acento elegido.
 const _getIconForTema = async (tema) => {
-  if (_recoloredIconCache[tema]) return _recoloredIconCache[tema];
-  const orig = _LOGOS_B64[tema] || _LOGOS_B64.azul;
-  // 'rojo' theme has red background -> keep white logo
-  if (tema === 'rojo') {
-    _recoloredIconCache[tema] = orig;
-    return orig;
-  }
-  // All other themes -> change white logo to red (#e53935)
-  const recolored = await _recolorIconLogo(orig, '#e53935');
-  _recoloredIconCache[tema] = recolored;
-  return recolored;
+  return _LOGOS_B64[tema] || _LOGOS_B64.azul;
 };
 
 // Actualizar favicon + manifest dinámico con el logo real
@@ -13816,7 +13839,7 @@ const _actualizarManifestTema = async (tema) => {
     scope: "/JOYVI-APP/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#0d0d0d",
+    background_color: "#ffffff",
     icons: [
       { src: png, sizes: "192x192", type: "image/png", purpose: "any maskable" },
       { src: png, sizes: "512x512", type: "image/png", purpose: "any maskable" },
