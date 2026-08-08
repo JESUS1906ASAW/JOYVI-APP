@@ -1183,7 +1183,7 @@ body.offline .dash-offline-bar{display:flex}
 
 <!-- ══ PANTALLA DE CARGA (SPLASH) ══ -->
 <div id="splashScreen">
-  <img src="icon-192.png" alt="Joyvi">
+  <img src="https://raw.githubusercontent.com/JESUS1906ASAW/JOYVI-APP/main/icon-192.png" alt="Joyvi" onerror="this.onerror=null;this.src='icon-192.png'">
   <div class="splash-spinner"></div>
 </div>
 
@@ -1987,6 +1987,10 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
           <input id="${hiddenId}-search" type="text" placeholder="🔍 Buscar cliente..." autocomplete="off" style="width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--tx);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box" oninput="window._filterCliSel('${hiddenId}',this.value)">
         </div>
         <div id="${hiddenId}-list" style="overflow-y:auto;max-height:240px">
+          <div class="cli-sel-opt-guardar-sinficha" id="${hiddenId}-guardarsinficha" data-id="__personalizado_directo__" style="display:none;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(76,175,80,.1);border-bottom:1px dashed rgba(76,175,80,.4);color:#4caf50;font-size:13px;font-weight:900" onmouseover="this.style.background='rgba(76,175,80,.18)'" onmouseout="this.style.background='rgba(76,175,80,.1)'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>💾 Guardar "<span id="${hiddenId}-guardarsinficha-txt"></span>" sin ficha</span>
+          </div>
           <div class="cli-sel-opt-nuevo" data-id="__nuevo__" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(var(--theme-rgb),.06);border-bottom:1px dashed rgba(var(--theme-rgb),.3);color:var(--r);font-size:13px;font-weight:900" onmouseover="this.style.background='rgba(var(--theme-rgb),.14)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.06)'">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <span>+ Crear nuevo cliente</span>
@@ -2053,6 +2057,17 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
       if(onchangeCb) onchangeCb('', nomPersonal);
       return;
     }
+    if(id==='__personalizado_directo__'){
+      const si = document.getElementById(hiddenId+'-search');
+      const nomPersonal = (si?.value||'').trim();
+      if(!nomPersonal){ close(); return; }
+      hidden.value = '';
+      hidden.dataset.nombrePersonalizado = nomPersonal;
+      trigger.innerHTML = `<span class="cli-sel-txt"><strong style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.3px">${nomPersonal}</strong></span>`;
+      close();
+      if(onchangeCb) onchangeCb('', nomPersonal);
+      return;
+    }
     hidden.dataset.nombrePersonalizado = '';
     trigger.innerHTML = id
       ? `${_colorDot(col||'azul')}<span class="cli-sel-txt"><strong style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.3px">${nombre}</strong></span>`
@@ -2078,6 +2093,9 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
   // Opción "Personalizado"
   const btnPersonal = dropdown.querySelector('.cli-sel-opt-personalizado');
   if(btnPersonal) btnPersonal.addEventListener('click', e => { e.stopPropagation(); pickOpt('__personalizado__','',''); });
+  // Opción "Guardar sin ficha" directa (aparece al escribir un nombre sin coincidencias)
+  const btnGuardarDirecto = document.getElementById(hiddenId+'-guardarsinficha');
+  if(btnGuardarDirecto) btnGuardarDirecto.addEventListener('click', e => { e.stopPropagation(); pickOpt('__personalizado_directo__','',''); });
 
   // Cerrar al clic fuera
   const outsideClose = e => { if(!wrap.contains(e.target)) close(); };
@@ -2091,13 +2109,28 @@ window._filterCliSel = (hiddenId, q) => {
   const list = document.getElementById(hiddenId+'-list');
   if(!list) return;
   const qL = (q||'').toLowerCase().trim();
+  let hayCoincidencia = false;
   list.querySelectorAll('.cli-sel-opt').forEach(opt => {
+    const esSinCliente = opt.classList.contains('cli-sel-opt-sincliente');
     const nombre = opt.dataset.nombre || opt.querySelector('span:last-child')?.textContent?.toLowerCase() || '';
-    opt.style.display = (!qL || nombre.includes(qL)) ? '' : 'none';
+    const visible = (!qL || nombre.includes(qL));
+    opt.style.display = visible ? '' : 'none';
+    if(visible && !esSinCliente) hayCoincidencia = true;
   });
   // Siempre mostrar "Sin cliente"
   const sinCli = list.querySelector('.cli-sel-opt-sincliente');
   if(sinCli) sinCli.style.display = '';
+  // Mostrar botón "Guardar sin ficha" solo si hay texto escrito y ningún cliente existente coincide
+  const btnGuardar = document.getElementById(hiddenId+'-guardarsinficha');
+  const txtGuardar = document.getElementById(hiddenId+'-guardarsinficha-txt');
+  if(btnGuardar){
+    if(q && q.trim() && !hayCoincidencia){
+      btnGuardar.style.display = 'flex';
+      if(txtGuardar) txtGuardar.textContent = q.trim();
+    } else {
+      btnGuardar.style.display = 'none';
+    }
+  }
 };
 // Leer valor del selector custom (igual interfaz que .value de un select)
 window._getCliSelectVal = hiddenId => {
@@ -3975,7 +4008,6 @@ const _simpleCardHtml=(tipo,item,completado)=>{
         <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${_simplePrioTag(prio)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        ${!completado?`<button onclick="event.stopPropagation();crearParteDesdeSimple('${tipo}','${item.id}')" style="border:none;background:rgba(66,165,245,.15);color:#42a5f5;border-radius:10px;padding:5px 8px;font-size:11px;font-weight:900;cursor:pointer;font-family:var(--font);white-space:nowrap">📋 Parte</button>`:''}
         <span class="averia-badge ${completado?'resuelta':'pend'}">${completado?'Completado':'Pendiente'}</span>
       </div>
     </div>
@@ -7290,9 +7322,10 @@ window.generarPDF=id=>{
     <div style="display:flex;gap:8px;margin-bottom:12px">
       <button class="btn btn-s btn-sm" onclick="limpiarFirma()" style="flex:1">🗑️ Limpiar</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button class="btn btn-s" onclick="generarPDFConFirma('${id}',null)" style="font-size:13px">Omitir firma</button>
-      <button class="btn btn-p" onclick="generarPDFConFirmaCapturada('${id}')">Generar PDF</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <button class="btn btn-s" onclick="generarPDFConFirma('${id}',null)" style="font-size:12px">Omitir firma</button>
+      <button class="btn btn-s" id="_btnGuardarFirmaSolo" style="font-size:12px;display:none" onclick="guardarFirmaSinPDF('${id}')">💾 Guardar firma</button>
+      <button class="btn btn-p" style="font-size:12px" onclick="generarPDFConFirmaCapturada('${id}')">Generar PDF</button>
     </div>
   `);
 
@@ -7314,20 +7347,49 @@ window.generarPDF=id=>{
     ctx.lineCap='round';
     ctx.lineJoin='round';
     let drawing=false;
+    const btnGuardarFirma=document.getElementById('_btnGuardarFirmaSolo');
+    const marcarSiHayFirma=()=>{ if(btnGuardarFirma) btnGuardarFirma.style.display='block'; };
     const getXY=(e)=>{
       const r=canvas.getBoundingClientRect();
       if(e.touches){return{x:(e.touches[0].clientX-r.left),y:(e.touches[0].clientY-r.top)};}
       return{x:e.clientX-r.left,y:e.clientY-r.top};
     };
     canvas.addEventListener('mousedown',e=>{drawing=true;const {x,y}=getXY(e);ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();});
-    canvas.addEventListener('mousemove',e=>{if(!drawing)return;const {x,y}=getXY(e);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();});
+    canvas.addEventListener('mousemove',e=>{if(!drawing)return;const {x,y}=getXY(e);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);marcarSiHayFirma();e.preventDefault();});
     canvas.addEventListener('mouseup',()=>drawing=false);
     canvas.addEventListener('touchstart',e=>{drawing=true;const {x,y}=getXY(e);ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();},{passive:false});
-    canvas.addEventListener('touchmove',e=>{if(!drawing)return;const {x,y}=getXY(e);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();},{passive:false});
+    canvas.addEventListener('touchmove',e=>{if(!drawing)return;const {x,y}=getXY(e);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);marcarSiHayFirma();e.preventDefault();},{passive:false});
     canvas.addEventListener('touchend',()=>drawing=false);
     window._firmaCtxActivo=ctx;
     window._firmaCanvasActivo=canvas;
   },200);
+};
+
+// Guardar la firma capturada en el parte SIN generar el PDF
+window.guardarFirmaSinPDF=async(id)=>{
+  const canvas=window._firmaCanvasActivo;
+  if(!canvas){toast('No hay firma que guardar','e');return;}
+  const ctx=canvas.getContext('2d');
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  const tieneFirma=Array.from(data).some(v=>v<250);
+  if(!tieneFirma){toast('Firme antes de guardar','e');return;}
+  const firmaDataURL=canvas.toDataURL('image/png');
+  try{
+    const ahora=new Date().toISOString();
+    const updateData={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    const localData={firmaCliente:firmaDataURL,firmado:true,firmadoEn:{seconds:Math.floor(Date.now()/1000)}};
+    await updateDoc(doc(db,'grupos',CGID,'partes',id),updateData);
+    const idx=allPartes.findIndex(x=>x.id===id);
+    if(idx>=0)allPartes[idx]={...allPartes[idx],...localData};
+    const listEl=document.getElementById('gPartListArea')||document.getElementById('tabPartContent');
+    if(listEl&&typeof _refreshPartesList==='function')_refreshPartesList();
+    else if(typeof renderTabPartes==='function'){
+      const tc=document.getElementById('tabPartContent');
+      if(tc&&tc.style.display!=='none')tc.innerHTML=renderTabPartes();
+    }
+    toast('✍️ Firma guardada en el parte','o');
+    cerrarSB();
+  }catch(e){console.warn('No se pudo guardar la firma:',e);toast('Error al guardar la firma','e');}
 };
 
 window.limpiarFirma=()=>{
