@@ -10984,16 +10984,20 @@ window.calcPresuTotal=()=>{
   if(tot)tot.textContent=fmtM(total);
 };
 window.guardarPresupuesto=async()=>{
-  const cliId=$('prCli').value;
-  const titulo=$('prTitulo').value.trim();
-  if(!cliId||!titulo){toast('Selecciona cliente y pon un título','e');return}
+  const cliEl=$('prCli');
+  const cliId=cliEl?.value||'';
+  const nombrePersonal=cliEl?.dataset?.nombrePersonalizado||'';
+  const tituloEl=$('prTitulo');
+  const titulo=tituloEl?tituloEl.value.trim():'';
+  if((!cliId&&!nombrePersonal)||!titulo){toast('Selecciona cliente y pon un título','e');return}
   const mo=parseFloat($('prMO')?.value)||0;
   const mat=parseFloat($('prMat')?.value)||0;
   const desp=parseFloat($('prDesp')?.value)||0;
   const partRows=[];
+  const cliNom=cliId?(allClientes.find(c=>c.id===cliId)?.nombre||''):nombrePersonal;
   const presuData={
     clienteId:cliId,
-    clienteNombre:allClientes.find(c=>c.id===cliId)?.nombre||'',
+    clienteNombre:cliNom,
     clienteDireccion:$('prDir')?.value.trim()||'',
     clienteEdificio:$('prEdif')?.value.trim()||'',
     clienteTelefono:$('prTel')?.value.trim()||'',
