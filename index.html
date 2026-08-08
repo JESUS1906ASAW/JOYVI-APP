@@ -1995,10 +1995,6 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <span>+ Crear nuevo cliente</span>
           </div>
-          <div class="cli-sel-opt-personalizado" data-id="__personalizado__" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);color:var(--tx2);font-size:12px;font-weight:700" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='rgba(255,255,255,.02)'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <span>✏️ Nombre personalizado (sin ficha)</span>
-          </div>
           <div class="cli-sel-opt cli-sel-opt-sincliente ${preCliId ? '' : 'selected'}" data-id="" data-color="" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer" onmouseover="this.style.background='rgba(128,128,128,.1)'" onmouseout="this.style.background=''">
             <span class="cli-sel-dot" style="background:rgba(255,255,255,.2)"></span>
             <span style="color:var(--tx2);font-size:13px">Sin cliente asignado</span>
@@ -2034,7 +2030,7 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
   trigger.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();} });
 
   const pickOpt = (id, col, nombre) => {
-    hidden.value = id==='__nuevo__'||id==='__personalizado__' ? '' : id;
+    hidden.value = id==='__nuevo__' ? '' : id;
     if(id==='__nuevo__'){
       close();
       // Abrir creación de cliente express y al guardar seleccionarlo
@@ -2045,16 +2041,6 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
       };
       if(typeof abrirFCli==='function') abrirFCli(null);
       else if(typeof abrirCliExpress==='function') abrirCliExpress();
-      return;
-    }
-    if(id==='__personalizado__'){
-      const nomPersonal = prompt('Escribe el nombre del cliente para este documento:','');
-      if(!nomPersonal){ close(); return; }
-      hidden.value = '';
-      hidden.dataset.nombrePersonalizado = nomPersonal;
-      trigger.innerHTML = `<span class="cli-sel-txt"><strong style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.3px">${nomPersonal}</strong></span>`;
-      close();
-      if(onchangeCb) onchangeCb('', nomPersonal);
       return;
     }
     if(id==='__personalizado_directo__'){
@@ -2090,9 +2076,6 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
   // Opción "Crear nuevo cliente"
   const btnNuevo = dropdown.querySelector('.cli-sel-opt-nuevo');
   if(btnNuevo) btnNuevo.addEventListener('click', e => { e.stopPropagation(); pickOpt('__nuevo__','',''); });
-  // Opción "Personalizado"
-  const btnPersonal = dropdown.querySelector('.cli-sel-opt-personalizado');
-  if(btnPersonal) btnPersonal.addEventListener('click', e => { e.stopPropagation(); pickOpt('__personalizado__','',''); });
   // Opción "Guardar sin ficha" directa (aparece al escribir un nombre sin coincidencias)
   const btnGuardarDirecto = document.getElementById(hiddenId+'-guardarsinficha');
   if(btnGuardarDirecto) btnGuardarDirecto.addEventListener('click', e => { e.stopPropagation(); pickOpt('__personalizado_directo__','',''); });
@@ -2614,6 +2597,7 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-item${act('grupo','aver')}" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
     <div class="d-item${act('historialGlobal')}" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
     <div class="d-item${act('imagenes')}" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
+    <div class="d-item" onclick="cerrarDrawer();abrirSelectorImprimirPartes()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>Imprimir partes</div>
     ${sep}
     <div class="d-section" style="padding-top:6px">Opciones de grupo</div>
     <div class="d-item${act('administracion')}" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Administración</div>
@@ -6472,9 +6456,6 @@ const renderTabPartes=()=>{
     return q.split(' ').every(w=>hay.includes(w));
   }):partes;
   return`
-  <div class="filter-bar" style="flex-wrap:wrap;gap:6px">
-    <button class="fbtn" onclick="abrirSelectorImprimirPartes()" style="margin-left:auto">🖨️ Imprimir</button>
-  </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
     <button onclick="abrirParteExpress()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 10px;border-radius:12px;border:1.5px solid rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.09);color:var(--r);font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(var(--theme-rgb),.16)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.09)'">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>⚡ Express
