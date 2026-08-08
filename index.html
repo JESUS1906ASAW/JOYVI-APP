@@ -10924,11 +10924,11 @@ window.abrirNuevoPresupuesto=(presuId)=>{
   };
   _openPresuModal(`
     <div class="fsec">
+      <div class="fgrp"><label>Título / descripción del trabajo</label><input id="prTitulo" placeholder="Ej: Reparación bomba piso 3"></div>
       <div class="fgrp"><label>Cliente</label><div id="prCli-wrap"></div></div>
       <div class="fgrp"><label>Dirección</label><input id="prDir" placeholder="Dirección del cliente"></div>
       <div class="fgrp"><label>Edificio / Comunidad</label><input id="prEdif" placeholder="Edificio o comunidad"></div>
       <div class="fgrp"><label>Teléfono</label><input id="prTel" placeholder="Teléfono de contacto" type="tel"></div>
-      <div class="fgrp"><label>Título / descripción del trabajo</label><input id="prTitulo" placeholder="Ej: Reparación bomba piso 3"></div>
     </div>
     <div style="font-size:12px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Costes</div>
     <div class="card" style="margin-bottom:12px;padding:14px">
@@ -11013,8 +11013,6 @@ window.guardarPresupuesto=async()=>{
   _lcSave('presus_pend',CGID,_presusPend);
   try{
     cerrarPresuModal();
-    // Preguntar qué hacer con el presupuesto
-    const newId=docRef.id;
     abrirSB('💾 Presupuesto guardado',`
       <div style="text-align:center;padding:8px 0 16px">
         <div style="font-size:36px;margin-bottom:8px">✅</div>
@@ -11032,6 +11030,67 @@ window.guardarPresupuesto=async()=>{
       </div>
     `);
   }catch(e){toast('Error','e')}
+};
+
+// ─── Crear parte a partir de un presupuesto ───
+// Vuelca los datos del presupuesto (título, importes, IVA) en el título del parte,
+// ordenados con puntos (·) y signos (€), y también en los campos numéricos del parte.
+window.crearParteDesdePresupuesto = async (prId) => {
+  let p = (_presusPend||[]).find(x=>x.id===prId) || (_presusComp||[]).find(x=>x.id===prId);
+  if(!p){
+    try{
+      const snap = await getDoc(doc(db,'grupos',CGID,'presupuestos',prId));
+      if(snap.exists()) p = {id:snap.id,...snap.data()};
+    }catch(e){}
+  }
+  if(!p){ toast('Presupuesto no encontrado','e'); return; }
+  const cli = allClientes.find(c=>c.id===p.clienteId);
+  const mo = parseFloat(p.importeManoObra)||0;
+  const mat = parseFloat(p.importeMateriales)||0;
+  const desp = parseFloat(p.importeDesplazamiento)||0;
+  const partidasTotal = (p.partidas||[]).reduce((a,b)=>a+(parseFloat(b.importe)||0),0);
+  const iva = p.aplicarIVA ? mat*0.21 : 0;
+  const total = mo+mat+iva+desp+partidasTotal;
+  // Título ordenado con puntos (·) y signos (€)
+  const tituloBloques = [p.titulo||'Presupuesto'];
+  if(mo>0) tituloBloques.push(`M.O.: ${fmtM(mo)}`);
+  if((mat+partidasTotal)>0) tituloBloques.push(`Materiales: ${fmtM(mat+partidasTotal)}${iva>0?` (+IVA ${fmtM(iva)})`:''}`);
+  if(desp>0) tituloBloques.push(`Desplazamiento: ${fmtM(desp)}`);
+  tituloBloques.push(`Total: ${fmtM(total)}`);
+  const tituloParte = tituloBloques.join(' · ');
+  const preData = {
+    titulo: tituloParte,
+    descripcion: p.notas||'',
+    clienteDireccion: p.clienteDireccion||cli?.direccion||'',
+    edificio: p.clienteEdificio||cli?.edificio||'',
+    clienteTelefono: p.clienteTelefono||cli?.telefono||'',
+    clienteNombre: (!p.clienteId && p.clienteNombre) ? p.clienteNombre : '',
+    operario: CUD?.nombre||'',
+    importeManoObra: mo,
+    importeMateriales: mat+partidasTotal,
+    importeDesplazamiento: desp,
+    aplicarIVAMateriales: !!p.aplicarIVA
+  };
+  abrirSB('🧾 Crear parte desde presupuesto', `
+    <div style="background:rgba(66,165,245,.1);border:1px solid rgba(66,165,245,.3);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:900;color:#42a5f5;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Datos volcados desde presupuesto</div>
+      <div style="font-size:13px;font-weight:800;color:var(--tx)">${tituloParte}</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:2px">${cli?.nombre||p.clienteNombre||'—'}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="cerrarSBTotal();abrirParteExpress('${p.clienteId||''}',${JSON.stringify(preData).replace(/'/g,"\\'")})" style="display:flex;align-items:center;gap:12px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font)">
+        <span style="font-size:22px">⚡</span>
+        <div style="text-align:left"><div style="font-size:14px;font-weight:900;color:var(--tx)">Crear parte express</div><div style="font-size:11px;color:var(--tx2)">Título ya ordenado con los importes — puedes editarlo</div></div>
+        <span style="margin-left:auto;color:var(--tx2)">›</span>
+      </button>
+      <button onclick="cerrarSBTotal();abrirFParte(null,'${p.clienteId||''}',${JSON.stringify(preData).replace(/'/g,"\\'")})" style="display:flex;align-items:center;gap:12px;background:rgba(255,152,0,.08);border:1px solid rgba(255,152,0,.25);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font)">
+        <span style="font-size:22px">📋</span>
+        <div style="text-align:left"><div style="font-size:14px;font-weight:900;color:var(--tx)">Crear parte completo</div><div style="font-size:11px;color:var(--tx2)">Importes y datos del cliente prellenados — puedes editarlos</div></div>
+        <span style="margin-left:auto;color:var(--tx2)">›</span>
+      </button>
+      <button onclick="cerrarSBTotal()" style="padding:11px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar</button>
+    </div>
+  `);
 };
 
 window.verPresupuesto=async(prId)=>{
@@ -11068,6 +11127,7 @@ window.verPresupuesto=async(prId)=>{
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
       <button class="btn btn-s btn-sm" style="background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.35);color:var(--r);font-weight:900" onclick="usarPresupuesto('${prId}')">📋 Usar como base</button>
+      <button class="btn btn-s btn-sm" style="background:rgba(66,165,245,.1);border-color:rgba(66,165,245,.35);color:#42a5f5;font-weight:900" onclick="crearParteDesdePresupuesto('${prId}')">🧾 Crear parte</button>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-s" style="flex:1" onclick="exportarPresupuestoPDF('${prId}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</button>
