@@ -1326,12 +1326,6 @@ body.offline .dash-offline-bar{display:flex}
   <div id="topbar">
     <span class="logo" onclick="if(!document.body.classList.contains('modo-visualizacion'))goScreen('inicio')" style="cursor:pointer" title="Inicio">Joyvi</span>
     <span class="kiosk-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Gestión</span>
-    <button class="tb-btn tb-btn-asist" onclick="abrirAsistente()" title="Asistente Joyvi" id="btnAsistente">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    </button>
-    <button class="tb-btn" onclick="goScreen('notificaciones')" style="position:relative">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot"></span>
-    </button>
     <button class="tb-btn" onclick="abrirDrawer()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
   </div>
 
@@ -1996,6 +1990,9 @@ function _applyUpdate(){
 const $=id=>document.getElementById(id);
 const fmtM=n=>isNaN(n)||n==null?'0,00 €':parseFloat(n).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const fmtF=ts=>{if(!ts)return'–';try{const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('es-ES')}catch{return'–'}};
+// Convierte un Firestore Timestamp a un valor comparable con precisión de nanosegundos,
+// para que documentos creados en el mismo segundo mantengan su orden real de creación.
+const _tsN=ts=>{if(!ts)return 0;const s=ts.seconds||0,n=ts.nanoseconds||0;return s*1e9+n;};
 const ini=s=>{if(!s)return'?';const p=s.trim().split(' ');return p.length>1?(p[0][0]+p[1][0]).toUpperCase():s.slice(0,2).toUpperCase()};
 const colorInd=c=>c==='rojo'?'#e53935':c==='amarillo'?'#ff9800':c==='verde'?'#43a047':'#1e88e5';
 
@@ -2006,13 +2003,16 @@ const _colorDot = col => {
   const c = col==='rojo'?'#e53935':col==='amarillo'?'#ff9800':col==='verde'?'#43a047':'#1e88e5';
   return `<span class="cli-sel-dot" style="background:${c}"></span>`;
 };
-window._buildCliSelect = (hiddenId, preCliId, onchangeCb) => {
+window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado) => {
   const wrap = document.getElementById(hiddenId+'-wrap');
   if(!wrap) return;
   const clis = (typeof allClientes!=='undefined' ? allClientes : []).filter(c=>!c.archivado);
   const sel = clis.find(c=>c.id===preCliId) || null;
 
   const renderTrigger = s => {
+    if(!s && preNombrePersonalizado){
+      return `<span class="cli-sel-txt"><strong style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.3px">${preNombrePersonalizado}</strong></span>`;
+    }
     const dot = s ? _colorDot(s.color||'azul') : '';
     const txt = s ? `<strong style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.3px">${s.nombre}</strong>` : '<span style="color:var(--tx2)">Seleccionar cliente...</span>';
     return `${dot}<span class="cli-sel-txt">${txt}</span>`;
@@ -2053,6 +2053,7 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb) => {
   const trigger = document.getElementById(hiddenId+'-trigger');
   const dropdown = document.getElementById(hiddenId+'-dropdown');
   const hidden = document.getElementById(hiddenId);
+  if(!sel && preNombrePersonalizado) hidden.dataset.nombrePersonalizado = preNombrePersonalizado;
 
   const close = () => { dropdown.style.display='none'; trigger.classList.remove('open'); };
   const open = () => {
@@ -2570,12 +2571,10 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
   const sep = `<div class="d-sep"></div>`;
   const logoutBtn = `<div class="d-item" onclick="doLogout()" style="color:#ff5252"><span class="d-icon">${icoLogout}</span>Cerrar sesión</div>`;
 
-  // ── MODO KIOSK: solo Notificaciones, Salir modo, Cerrar sesión (sin Inicio) ──
+  // ── MODO KIOSK: solo Salir modo, Cerrar sesión (sin Inicio) ──
   if(isKiosk){
     return `
       <div class="d-section">Principal</div>
-      <div class="d-item" onclick="goScreen('notificaciones');cerrarDrawer()"><span class="d-icon">${icoNotif}</span>Notificaciones</div>
-      ${sep}
       <div class="d-item" onclick="salirModoVisualizacion();cerrarDrawer()" style="color:#ff9800"><span class="d-icon">${icoSalirKiosk}</span>Salir modo gestión</div>
       ${sep}
       ${logoutBtn}`;
@@ -2618,21 +2617,16 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
   return `
     <div class="d-section">Principal</div>
     <div class="d-item${act('inicio')}" onclick="drawerIrInicio()"><span class="d-icon">${icoHome}</span>Volver</div>
-    <div class="d-item${act('notificaciones')}" onclick="goScreen('notificaciones');cerrarDrawer()"><span class="d-icon">${icoNotif}</span>Notificaciones</div>
     ${sep}
     <div class="d-grupo-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${grupoNombre}</div>
-    <div class="d-item${act('grupo','cli')}" onclick="goScreen('grupo');switchGTab('cli');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Clientes</div>
-    <div class="d-item${act('grupo','part')}" onclick="goScreen('grupo');switchGTab('part');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>Partes de trabajo</div>
     <div class="d-item${act('grupo','mant')}" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
     <div class="d-item${act('grupo','aver')}" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
-    <div class="d-item${act('grupo','presu')}" onclick="goScreen('grupo');switchGTab('presu');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Presupuestos</div>
-    <div class="d-item${act('grupo','avis')}" onclick="goScreen('grupo');switchGTab('avis');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Avisos</div>
     <div class="d-item${act('historialGlobal')}" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
     <div class="d-item${act('imagenes')}" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
     ${sep}
     <div class="d-section" style="padding-top:6px">Opciones de grupo</div>
     <div class="d-item${act('administracion')}" onclick="goScreen('administracion');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Administración</div>
-    <div class="d-item${act('archivos')}" onclick="goScreen('archivos');cerrarDrawer()" style="color:#e53935"><span class="d-icon" style="color:#e53935"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Clientes clasificados</div>
+    <div class="d-item${act('archivos')}" onclick="goScreen('archivos');cerrarDrawer()" style="color:#e53935"><span class="d-icon" style="color:#e53935"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Partes Archivados</div>
     ${sep}
     ${logoutBtn}`;
 };
@@ -3129,7 +3123,7 @@ const iniciarApp=async()=>{
         getDocs(collection(db,'grupos',CGID,'partePlantillasFull')),
       ]);
       allClientes        = cliSnap.docs.map(d=>({id:d.id,...d.data()}));
-      allPartes          = partSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+      allPartes          = partSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
       allMantenimientos  = mantSnap.docs.map(d=>({id:d.id,...d.data()}));
       plantillas         = pSnap.docs.map(d=>d.data().nombre);
       mantPlantillas     = mpSnap.docs.map(d=>d.data().nombre);
@@ -3144,7 +3138,7 @@ const iniciarApp=async()=>{
         if(document.querySelector('#screenGrupo.active'))renderGrupo();
       });
       unsubP = onSnapshot(collection(db,'grupos',CGID,'partes'),snap=>{
-        allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+        allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
         if(document.querySelector('#screenGrupo.active'))renderGrupo();
       });
       unsubM = onSnapshot(collection(db,'grupos',CGID,'mantenimientos'),snap=>{
@@ -3171,7 +3165,7 @@ const iniciarApp=async()=>{
           if(document.querySelector('#screenGrupo.active'))renderGrupo();
         }, ()=>{});
         unsubP = onSnapshot(collection(db,'grupos',CGID,'partes'), snap=>{
-          allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+          allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
           _lcSave('partes',CGID,allPartes);
           if(document.querySelector('#screenGrupo.active'))renderGrupo();
         }, ()=>{});
@@ -3597,7 +3591,7 @@ window.abrirGrupo=async id=>{
   });
 
   unsubP = onSnapshot(collection(db,'grupos',id,'partes'), snap=>{
-    allPartes = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+    allPartes = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
     _lcSave('partes', id, allPartes);
     if(document.querySelector('#screenGrupo.active')) renderGrupo();
   }, ()=>{
@@ -3676,13 +3670,13 @@ const renderGrupo=()=>{
     </button>
   </div>
   <div class="gtabs-sub">
-    <button class="gtab-sm" id="tabEntregas" onclick="switchGTab('entregas')">
-      <div class="gtab-sm-ico" style="color:#42a5f5"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-      <div class="gtab-sm-txt">Entregas</div>
-    </button>
     <button class="gtab-sm" id="tabPresu" onclick="switchGTab('presu')">
       <div class="gtab-sm-ico" style="color:#66bb6a"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
       <div class="gtab-sm-txt">Presupuestos</div>
+    </button>
+    <button class="gtab-sm" id="tabEntregas" onclick="switchGTab('entregas')">
+      <div class="gtab-sm-ico" style="color:#42a5f5"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <div class="gtab-sm-txt">Entregas</div>
     </button>
     <button class="gtab-sm" id="tabCobros" onclick="switchGTab('cobros')">
       <div class="gtab-sm-ico" style="color:#ffca28"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9.5 9a2.5 2.5 0 0 1 2.5-1.5h.5a2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4h.5A2.5 2.5 0 0 0 14.5 15"/></svg></div>
@@ -3823,7 +3817,7 @@ const _renderGTabAverias_Excl = () => {
     </div>
     <div id="averExclBody"></div>`;
   if(!_unsubAverPend){
-    _unsubAverPend=onSnapshot(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente')),snap=>{_averiasPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_lcSave('averias_pend',CGID,_averiasPend);_renderAverExcl();},()=>{const c=_lcLoad('averias_pend',CGID);if(c){_averiasPend=c;_renderAverExcl();}});
+    _unsubAverPend=onSnapshot(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente')),snap=>{_averiasPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));_lcSave('averias_pend',CGID,_averiasPend);_renderAverExcl();},()=>{const c=_lcLoad('averias_pend',CGID);if(c){_averiasPend=c;_renderAverExcl();}});
   } else { _renderAverExcl(); }
   if(!_unsubAverRes){
     _unsubAverRes=onSnapshot(query(collection(db,'grupos',CGID,'averias_historial'),orderBy('resueltaEn','desc')),snap=>{_averiasRes=snap.docs.map(d=>({id:d.id,...d.data()}));_lcSave('averias_res',CGID,_averiasRes);_renderAverExcl();},()=>{const c=_lcLoad('averias_res',CGID);if(c){_averiasRes=c;_renderAverExcl();}});
@@ -3855,10 +3849,10 @@ const _renderGTabPresupuestos_Excl = () => {
     </div>
     <div id="presuExclBody"></div>`;
   if(!_unsubPresuPend){
-    _unsubPresuPend=onSnapshot(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','espera')),snap=>{_presusPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_lcSave('presus_pend',CGID,_presusPend);_renderPresuExcl();},()=>{const c=_lcLoad('presus_pend',CGID);if(c){_presusPend=c;_renderPresuExcl();}});
+    _unsubPresuPend=onSnapshot(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','espera')),snap=>{_presusPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));_lcSave('presus_pend',CGID,_presusPend);_renderPresuExcl();},()=>{const c=_lcLoad('presus_pend',CGID);if(c){_presusPend=c;_renderPresuExcl();}});
   } else { _renderPresuExcl(); }
   if(!_unsubPresuComp){
-    _unsubPresuComp=onSnapshot(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','aceptado')),snap=>{_presusComp=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));_lcSave('presus_comp',CGID,_presusComp);_renderPresuExcl();},()=>{const c=_lcLoad('presus_comp',CGID);if(c){_presusComp=c;_renderPresuExcl();}});
+    _unsubPresuComp=onSnapshot(query(collection(db,'grupos',CGID,'presupuestos'),where('estado','==','aceptado')),snap=>{_presusComp=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));_lcSave('presus_comp',CGID,_presusComp);_renderPresuExcl();},()=>{const c=_lcLoad('presus_comp',CGID);if(c){_presusComp=c;_renderPresuExcl();}});
   } else { _renderPresuExcl(); }
 };
 let _presuExclTab='pend';
@@ -3952,7 +3946,7 @@ const _renderGTabAverias=()=>{
   if(!_unsubAverPend){
     _unsubAverPend = onSnapshot(
       query(collection(db,'grupos',CGID,'averias'), where('estado','==','pendiente')),
-      snap => { _averiasPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _lcSave('averias_pend',CGID,_averiasPend); _renderAverInline(); _renderAveriasTab(); },
+      snap => { _averiasPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado)); _lcSave('averias_pend',CGID,_averiasPend); _renderAverInline(); _renderAveriasTab(); },
       ()=>{ const c=_lcLoad('averias_pend',CGID); if(c){_averiasPend=c; _renderAverInline(); _renderAveriasTab();} }
     );
   } else { _renderAverInline(); }
@@ -4081,7 +4075,7 @@ window._renderGTabSimple=(tipo)=>{
         const pOrd={critica:0,urgente:1,normal:2};
         const pa=pOrd[a.prioridad||'normal']??2, pb=pOrd[b.prioridad||'normal']??2;
         if(pa!==pb) return pa-pb;
-        return (b.creado?.seconds||0)-(a.creado?.seconds||0);
+        return _tsN(b.creado)-_tsN(a.creado);
       });
       _lcSave(conf.col+'_pend',CGID,_simplePend[tipo]);
       _renderSimpleBody(tipo);
@@ -4093,7 +4087,7 @@ window._renderGTabSimple=(tipo)=>{
         const pOrd={critica:0,urgente:1,normal:2};
         const pa=pOrd[a.prioridad||'normal']??2, pb=pOrd[b.prioridad||'normal']??2;
         if(pa!==pb) return pa-pb;
-        return (b.creado?.seconds||0)-(a.creado?.seconds||0);
+        return _tsN(b.creado)-_tsN(a.creado);
       });
       _lcSave(conf.col+'_comp',CGID,_simpleComp[tipo]);
       _renderSimpleBody(tipo);
@@ -4150,10 +4144,11 @@ window.guardarSimple=async(tipo,editId)=>{
   if(!titulo){ toast('Escribe un título','e'); return; }
   const cliId=$('smpCli')?.value||'';
   const cli=allClientes.find(c=>c.id===cliId);
+  const nombrePersonal=$('smpCli')?.dataset?.nombrePersonalizado||'';
   const data={
     titulo,
     clienteId:cliId,
-    clienteNombre:cli?.nombre||'',
+    clienteNombre:cli?.nombre||nombrePersonal||'',
     fecha:$('smpFecha')?.value||'',
     prioridad:$('smpPrio')?.value||'normal'
   };
@@ -4234,7 +4229,8 @@ window.crearParteDesdeSimple=(tipo,itemId)=>{
   const preData={
     titulo:(item.titulo||conf.labelSing)+importeTxt,
     descripcion:`${conf.labelSing}: ${item.titulo||''}`,
-    operario:CUD?.nombre||''
+    operario:CUD?.nombre||'',
+    clienteNombre:!item.clienteId&&item.clienteNombre?item.clienteNombre:''
   };
   const preDataJson=JSON.stringify(preData).replace(/'/g,"&#39;");
   abrirSB(`📋 Crear parte desde ${conf.labelSing.toLowerCase()}`,`
@@ -4316,14 +4312,14 @@ const _renderGTabPresupuestos=()=>{
   if(!_unsubPresuPend){
     _unsubPresuPend = onSnapshot(
       query(collection(db,'grupos',CGID,'presupuestos'), where('estado','==','espera')),
-      snap => { _presusPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _lcSave('presus_pend',CGID,_presusPend); _renderPresuInline(); _renderPresuTab('presupuestosContent'); },
+      snap => { _presusPend=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado)); _lcSave('presus_pend',CGID,_presusPend); _renderPresuInline(); _renderPresuTab('presupuestosContent'); },
       ()=>{ const c=_lcLoad('presus_pend',CGID); if(c){_presusPend=c; _renderPresuInline();} }
     );
   } else { _renderPresuInline(); }
   if(!_unsubPresuComp){
     _unsubPresuComp = onSnapshot(
       query(collection(db,'grupos',CGID,'presupuestos'), where('estado','==','aceptado')),
-      snap => { _presusComp=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)); _lcSave('presus_comp',CGID,_presusComp); _renderPresuInline(); _renderPresuTab('presupuestosContent'); },
+      snap => { _presusComp=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado)); _lcSave('presus_comp',CGID,_presusComp); _renderPresuInline(); _renderPresuTab('presupuestosContent'); },
       ()=>{ const c=_lcLoad('presus_comp',CGID); if(c){_presusComp=c; _renderPresuInline();} }
     );
   } else { _renderPresuInline(); }
@@ -5129,11 +5125,11 @@ window.verCliente=async id=>{
   // Eventos individuales sin agrupar
   const eventos=[];
   grupos.forEach(g=>eventos.push(g));
-  partesCli.forEach(p=>{if(!partesUsados.has(p.id))eventos.push({t:'parte',ts:p.creado?.seconds||0,data:p});});
-  mantsC.forEach(m=>eventos.push({t:'mant',ts:m.creado?.seconds||0,data:{...m,_completado:m.estado==='completado'}}));
-  histMants.forEach(h=>{if(!histUsados.has(h.id))eventos.push({t:'mant_hist',ts:h.creado?.seconds||0,data:h});});
-  avsC.forEach(a=>eventos.push({t:'averia',ts:a.creado?.seconds||0,data:a}));
-  presusCli.forEach(pr=>eventos.push({t:'presupuesto',ts:pr.creado?.seconds||0,data:pr}));
+  partesCli.forEach(p=>{if(!partesUsados.has(p.id))eventos.push({t:'parte',ts:_tsN(p.creado),data:p});});
+  mantsC.forEach(m=>eventos.push({t:'mant',ts:_tsN(m.creado),data:{...m,_completado:m.estado==='completado'}}));
+  histMants.forEach(h=>{if(!histUsados.has(h.id))eventos.push({t:'mant_hist',ts:_tsN(h.creado),data:h});});
+  avsC.forEach(a=>eventos.push({t:'averia',ts:_tsN(a.creado),data:a}));
+  presusCli.forEach(pr=>eventos.push({t:'presupuesto',ts:_tsN(pr.creado),data:pr}));
   eventos.sort((a,b)=>b.ts-a.ts);
 
   // ─── Renderizado de cada tipo de evento ───
@@ -5410,7 +5406,7 @@ window.verCliente=async id=>{
 window._htmlFichaHistLista=(tipo)=>{
   const data=(window._fichaHistData&&window._fichaHistData[tipo])||[];
   if(!data.length)return`<div class="empty" style="padding:16px"><p>Sin ${tipo} registrados para este cliente</p></div>`;
-  const items=data.slice().sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+  const items=data.slice().sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
   if(tipo==='partes'){
     return items.map(p=>{
       const tot=calcTotal(p);
@@ -5429,7 +5425,7 @@ window._htmlFichaHistLista=(tipo)=>{
   return items.map(it=>{
     const completado=it.estado==='completado'||it.estado==='resuelto';
     const importeTxt=(tipo==='cobros'&&it.importe)?` · ${fmtM(it.importe)}`:'';
-    return`<div class="averia-card ${completado?'resuelta':''}" style="cursor:default">
+    return`<div class="averia-card ${completado?'resuelta':''}" style="cursor:pointer" onclick="window._verFichaHistItem('${tipo}','${it.id}')">
       <div class="averia-header">
         <div class="averia-ico">${icoMap[tipo]}</div>
         <div style="flex:1;min-width:0">
@@ -5445,6 +5441,37 @@ window._fichaHistFiltro=(cliId,tipo)=>{
   document.querySelectorAll('.ficha-hist-fbtn').forEach(b=>b.classList.toggle('active',b.dataset.t===tipo));
   const body=document.getElementById('fichaHistBody');
   if(body)body.innerHTML=window._htmlFichaHistLista(tipo);
+};
+
+// Vista de solo lectura para un aviso/entrega/cobro mostrado en el registro completo del cliente.
+// No depende de las cachés en vivo de la pestaña (_simplePend/_simpleComp), así que funciona
+// aunque el elemento no se haya cargado todavía en la pestaña correspondiente del grupo.
+window._verFichaHistItem=(tipo,itemId)=>{
+  const data=(window._fichaHistData&&window._fichaHistData[tipo])||[];
+  const it=data.find(x=>x.id===itemId);
+  if(!it){toast('No encontrado','e');return;}
+  const completado=it.estado==='completado'||it.estado==='resuelto';
+  const icoMap={avisos:'💬',entregas:'📦',cobros:'💰'};
+  const labelMap={avisos:'Aviso',entregas:'Entrega',cobros:'Cobro'};
+  const prio=it.prioridad;
+  const pc=(tipo!=='avisos'&&prio&&prio!=='normal')?(_averPrioConf[prio]||null):null;
+  const avisoAlta=tipo==='avisos'&&it.prioridad==='alta';
+  abrirSB(`${icoMap[tipo]} ${it.titulo||it.descripcion||labelMap[tipo]}`,`
+    <div style="margin-bottom:14px">
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:8px">${it.clienteNombre||'Sin cliente'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        ${pc?`<span style="font-size:11px;font-weight:900;color:${pc.color};background:${pc.bg};border:1px solid ${pc.border};padding:3px 10px;border-radius:20px">${pc.label}</span>`:''}
+        ${avisoAlta?`<span style="font-size:11px;font-weight:900;color:#ef5350;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);padding:3px 10px;border-radius:20px">⚠️ Alta</span>`:''}
+        <span class="averia-badge ${completado?'resuelta':'pend'}">${completado?(tipo==='avisos'?'Resuelto':'Completado'):'Pendiente'}</span>
+      </div>
+      ${(it.descripcion&&it.titulo)?`<div style="font-size:13px;color:var(--tx2);margin-bottom:8px">${it.descripcion}</div>`:''}
+      ${(tipo==='cobros'&&it.importe)?`<div style="font-size:16px;font-weight:900;color:var(--r);margin-bottom:6px">${fmtM(it.importe)}</div>`:''}
+      <div style="font-size:12px;color:var(--tx2)">📅 ${fmtF(it.creado)}${it.resueltaEn?` · Resuelto: ${fmtF(it.resueltaEn)}`:''}</div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:11.5px;color:var(--tx2);line-height:1.5">
+      Para editarlo, marcarlo o crear un parte a partir de ${tipo==='avisos'?'este aviso':(tipo==='entregas'?'esta entrega':'este cobro')}, ve a la pestaña <strong style="color:var(--tx)">${labelMap[tipo]}</strong> del grupo.
+    </div>
+  `);
 };
 
 
@@ -6443,7 +6470,7 @@ const _htmlParteSingleCard=(p)=>{
 const renderTabPartes=()=>{
   let partes=allPartes.filter(p=>!p.archivado);
   // Siempre "todos" — ordenados por fecha de creación descendente (más reciente primero)
-  partes=partes.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+  partes=partes.sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
   const q=(_partesQuery||'').toLowerCase().trim();
   const list=q?partes.filter(p=>{
     const cli=allClientes.find(c=>c.id===p.clienteId);
@@ -6472,7 +6499,7 @@ window._filtrarPartes=(q)=>{
   const listEl=$('partesList');
   if(listEl){
     const q2=q.toLowerCase().trim();
-    let baseList=allPartes.filter(p=>!p.archivado&&!p.esPlantilla).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+    let baseList=allPartes.filter(p=>!p.archivado&&!p.esPlantilla).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
     const list=q2?baseList.filter(p=>{
       const cli=allClientes.find(c=>c.id===p.clienteId);
       const hay=[p.titulo,p.descripcion,p.materiales,p.operario,p.edificio,p.clienteNombre,cli?.nombre].filter(Boolean).join(' ').toLowerCase();
@@ -6514,7 +6541,7 @@ window.imprimirPartes=(modo)=>{
   else if(modo==='ayer'){lista=lista.filter(p=>_dateStr(p.creado)===ayer);tituloRango='Partes de ayer';}
   else if(modo==='semana'){lista=lista.filter(p=>_dateStr(p.creado)>=semana);tituloRango='Partes de los últimos 7 días';}
   else if(modo==='mes'){lista=lista.filter(p=>_dateStr(p.creado)>=mes);tituloRango='Partes de los últimos 30 días';}
-  lista=lista.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+  lista=lista.sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
   if(!lista.length){toast('No hay partes en este período','i');return;}
 
   const totalGeneral=lista.reduce((s,p)=>s+calcTotal(p),0);
@@ -6648,10 +6675,13 @@ window.abrirFParte=async(id,preCliId,preData)=>{
   const p=id?allPartes.find(x=>x.id===id):null;
   const vd=preData||{};
   // Si preData tiene clienteNombre, buscar su id
+  let preNombrePersonalizado='';
   if(!preCliId&&vd.clienteNombre){
     const cm=allClientes.find(c=>!c.archivado&&(c.nombre.toLowerCase().includes(vd.clienteNombre.toLowerCase())||vd.clienteNombre.toLowerCase().includes(c.nombre.toLowerCase())));
-    if(cm)preCliId=cm.id;
+    if(cm)preCliId=cm.id; else preNombrePersonalizado=vd.clienteNombre;
   }
+  // Al editar un parte ya existente con cliente sin ficha, conservar su nombre personalizado
+  if(!preCliId&&!preNombrePersonalizado&&p&&!p.clienteId&&p.clienteNombre) preNombrePersonalizado=p.clienteNombre;
   const cliActual=allClientes.find(c=>c.id===(preCliId||p?.clienteId));
   const edificioInicial=vd.edificio||p?.edificio||(cliActual?.edificio||'');
   const direccionInicial=vd.clienteDireccion||p?.clienteDireccion||(cliActual?.direccion||'');
@@ -6711,7 +6741,7 @@ window.abrirFParte=async(id,preCliId,preData)=>{
         if(df&&c.direccion)df.value=c.direccion;
         if(tf&&c.telefono)tf.value=c.telefono;
       }
-    });
+    }, preNombrePersonalizado);
   },0);
 };
 
@@ -6980,6 +7010,7 @@ window.abrirSelectorParte=async(preCliId)=>{
 window.abrirParteExpress=(preCliId,preData)=>{
   const vd=preData||{};
   const ocultarVolver=!!vd._ocultarVolver;
+  const preNombrePersonalizado=(!preCliId&&vd.clienteNombre)?vd.clienteNombre:'';
   abrirSB('⚡ Parte Express',`
     <div style="background:rgba(var(--theme-rgb),.08);border:1px solid rgba(var(--theme-rgb),.25);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--r);font-weight:700">Modo rápido — rellena solo lo esencial ahora, edita el resto después</div>
     <div class="fsec">
@@ -6998,7 +7029,7 @@ window.abrirParteExpress=(preCliId,preData)=>{
   setTimeout(()=>_buildCliSelect('pCli',preCliId||'',id=>{
     const c=allClientes.find(x=>x.id===id);
     if(c){const ef=$('pEdif'),df=$('pDir'),tf=$('pTel');if(ef)ef.value=c.edificio||'';if(df)df.value=c.direccion||'';if(tf)tf.value=c.telefono||'';}
-  }),0);
+  },preNombrePersonalizado),0);
 };
 
 window._aplicarPlantillaParteSB=(pid,preCliId)=>{
@@ -7647,7 +7678,7 @@ window.exportarBackupZIP=async()=>{
   clis.forEach((cl,idx)=>{
     const cPartes=partesActivos
       .filter(p=>p.clienteId===cl.id)
-      .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+      .sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
     const cMants=allMantenimientos
       .filter(m=>m.clienteId===cl.id)
       .sort((a,b)=>{
@@ -8472,7 +8503,7 @@ window.verMant=async(id,_tabFotos)=>{
   let fotos=[];
   try{
     const fsn=await getDocs(collection(db,'grupos',CGID,'mantenimientos',id,'fotos'));
-    fotos=fsn.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+    fotos=fsn.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
   }catch(e){}
   const cli=allClientes.find(c=>c.id===m.clienteId);
   const tel=m.clienteTelefono||cli?.telefono||'';
@@ -9774,7 +9805,7 @@ window._descargarFichaCliArchivado=async(archId)=>{
         ${cl.notas?`<div style="background:#fff8e1;border-left:3px solid #ff9800;border-radius:0 8px 8px 0;padding:8px 12px;font-size:12px;color:#555;margin-bottom:14px">${cl.notas}</div>`:''}
         <div class="total"><div style="font-size:13px;font-weight:800;color:#555">Total facturado (${partesCli.length} partes)</div><div style="font-size:20px;font-weight:900;color:var(--r)">${fmtM(facTotal)}</div></div>
         <div class="sec">🔧 Partes de trabajo (${partesCli.length})</div>
-        ${partesCli.length?partesCli.sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0)).map(p=>`<div class="row ${p.estado==='completado'?'ok':''}"><div style="flex:1"><div class="rtit">${p.titulo||'–'}</div><div class="rsub">${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div></div><div style="font-size:13px;font-weight:900;color:var(--r)">${fmtM(calcTotal(p))}</div></div>`).join(''):'<div style="color:#aaa;font-size:12px">Sin partes</div>'}
+        ${partesCli.length?partesCli.sort((a,b)=>_tsN(b.creado)-_tsN(a.creado)).map(p=>`<div class="row ${p.estado==='completado'?'ok':''}"><div style="flex:1"><div class="rtit">${p.titulo||'–'}</div><div class="rsub">${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div></div><div style="font-size:13px;font-weight:900;color:var(--r)">${fmtM(calcTotal(p))}</div></div>`).join(''):'<div style="color:#aaa;font-size:12px">Sin partes</div>'}
         ${mantsCli.length?`<div class="sec">⚙️ Mantenimientos (${mantsCli.length})</div>${mantsCli.map(m=>`<div class="row"><div style="flex:1"><div class="rtit">${m.nombreTrabajo||'–'}</div><div class="rsub">${m.frecuencia||''}${m.fechaProxima?' · Próx: '+m.fechaProxima:''}</div></div></div>`).join('')}`:''}
         ${averiasCli.length?`<div class="sec">⚠️ Averías (${averiasCli.length})</div>${averiasCli.map(a=>`<div class="row ${a.estado==='resuelta'?'ok':''}"><div style="flex:1"><div class="rtit">${a.tipo||'Avería'}</div><div class="rsub">${fmtF(a.creado)}</div></div></div>`).join('')}`:''}
       </div>
@@ -9802,7 +9833,7 @@ const renderImagenes=async()=>{
   try{
     const clis=allClientes.filter(c=>!c.archivado);
     const snap=await getDocs(collection(db,'grupos',CGID,'imagenes'));
-    const imgs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+    const imgs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
     const porCliente={};
     imgs.forEach(img=>{
       const key=img.clienteId||'__sin__';
@@ -9997,7 +10028,7 @@ window.verImagenesCliente=async(cliId)=>{
 window.abrirImagenesClienteSB=async(cliId)=>{
   const c=allClientes.find(x=>x.id===cliId);if(!c)return;
   const snap=await getDocs(query(collection(db,'grupos',CGID,'imagenes'),where('clienteId','==',cliId)));
-  const imgs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+  const imgs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
   const html=`
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn btn-p btn-sm" onclick="cerrarSB();verImagenesCliente('${cliId}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>Ver galería completa</button>
@@ -10378,7 +10409,7 @@ const renderAverias = () => {
           const pa=pOrd[a.prioridad||'normal']??2;
           const pb=pOrd[b.prioridad||'normal']??2;
           if(pa!==pb)return pa-pb;
-          return(b.creado?.seconds||0)-(a.creado?.seconds||0);
+          return_tsN(b.creado)-_tsN(a.creado);
         });
       _renderAveriasTab();
     },
@@ -10397,7 +10428,7 @@ const renderAverias = () => {
       getDocs(query(collection(db,'grupos',CGID,'averias'), where('estado','==','resuelta')))
         .then(s => {
           _averiasRes = s.docs.map(d=>({id:d.id,...d.data()}))
-            .sort((a,b)=>(b.resueltaEn?.seconds||0)-(a.resueltaEn?.seconds||0));
+            .sort((a,b)=>_tsN(b.resueltaEn)-_tsN(a.resueltaEn));
           _renderAveriasTab();
         }).catch(()=>{});
     }
@@ -10939,7 +10970,7 @@ const renderPresupuestos = () => {
     query(collection(db,'grupos',CGID,'presupuestos'), where('estado','==','espera')),
     snap => {
       _presusPend = snap.docs.map(d=>({id:d.id,...d.data()}))
-        .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+        .sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
       _renderPresuTab('presupuestosContent');
       _renderPresuTabInline();
     }
@@ -10948,7 +10979,7 @@ const renderPresupuestos = () => {
     query(collection(db,'grupos',CGID,'presupuestos'), where('estado','==','aceptado')),
     snap => {
       _presusComp = snap.docs.map(d=>({id:d.id,...d.data()}))
-        .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+        .sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
       _renderPresuTab('presupuestosContent');
       _renderPresuTabInline();
     }
@@ -11347,9 +11378,9 @@ window.verAveriasHistorialCliente=async(clienteId)=>{
   _sbReturnCli=clienteId;
   try{
     const pendSnap=await getDocs(query(collection(db,'grupos',CGID,'averias'),where('clienteId','==',clienteId)));
-    const pendAvs=pendSnap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.estado==='pendiente').sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+    const pendAvs=pendSnap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.estado==='pendiente').sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
     const histSnap=await getDocs(query(collection(db,'grupos',CGID,'averias_historial'),where('clienteId','==',clienteId)));
-    const histAvs=histSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.resueltaEn?.seconds||0)-(a.resueltaEn?.seconds||0));
+    const histAvs=histSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.resueltaEn)-_tsN(a.resueltaEn));
 
     let html=`
     ${_btnVolverCli(clienteId,c?.nombre)}
@@ -11518,7 +11549,7 @@ window.verHistorialMantCliente=async(clienteId)=>{
     ));
     const historial=hmSnap.docs
       .map(d=>({id:d.id,...d.data(),_esHistorial:true}))
-      .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+      .sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
 
     const mantsActivos=allMantenimientos.filter(m=>m.clienteId===clienteId&&m.estado!=='completado');
     const mantsCompletados=allMantenimientos.filter(m=>m.clienteId===clienteId&&m.estado==='completado');
@@ -11817,7 +11848,7 @@ const renderNotificaciones=async()=>{
           deleteDoc(doc(db,'notificaciones',d.id)).catch(()=>{});
       });
       const notifs=snap.docs.map(d=>({id:d.id,...d.data()}))
-        .sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+        .sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
       // Preservar el textarea si el usuario está escribiendo
       const msgActual=document.getElementById('avisoMsgInput')?.value||'';
       el3.innerHTML=buildHeader()+buildList(notifs);
@@ -12235,7 +12266,7 @@ const _suscribirAvisos=()=>{
             const pa=ord[a.prioridad||'baja']??2;
             const pb=ord[b.prioridad||'baja']??2;
             if(pa!==pb)return pa-pb;
-            return (b.creado?.seconds||0)-(a.creado?.seconds||0);
+            return _tsN(b.creado)-_tsN(a.creado);
           });
         _actualizarAvisAlertDot();
         _renderAvisBody();
@@ -12252,7 +12283,7 @@ const _suscribirAvisos=()=>{
             const pa=ord[a.prioridad||'baja']??2;
             const pb=ord[b.prioridad||'baja']??2;
             if(pa!==pb)return pa-pb;
-            return (b.creado?.seconds||0)-(a.creado?.seconds||0);
+            return _tsN(b.creado)-_tsN(a.creado);
           });
         _renderAvisBody();
       }
@@ -12499,19 +12530,22 @@ window.editarAviso=(id)=>{
         Guardar cambios
       </button>
     </div>`);
-  setTimeout(()=>_buildCliSelect('avisCli',a.clienteId||'',()=>{}),0);
+  setTimeout(()=>_buildCliSelect('avisCli',a.clienteId||'',()=>{},!a.clienteId?(a.clienteNombre||''):''),0);
 };
 
 window.guardarNuevoAviso=async()=>{
   const desc=(document.getElementById('avisDescInput')?.value||'').trim();
   const cliId=_getCliSelectVal('avisCli');
+  const nombrePersonal=document.getElementById('avisCli')?.dataset?.nombrePersonalizado||'';
+  const cliNom=cliId?(allClientes.find(c=>c.id===cliId)?.nombre||''):nombrePersonal;
   const prio=document.getElementById('avisPrio')?.value||'baja';
   const fechaAlerta=document.getElementById('avisFechaAlerta')?.value||null;
-  if(!desc&&!cliId){toast('Escribe una descripción o elige un cliente','i');return;}
+  if(!desc&&!cliId&&!cliNom){toast('Escribe una descripción o elige un cliente','i');return;}
   try{
     await addDoc(collection(db,'grupos',CGID,'avisos'),{
       descripcion:desc,
       clienteId:cliId||null,
+      clienteNombre:cliNom||null,
       prioridad:prio,
       fechaAlerta:fechaAlerta||null,
       creadoPor:CU.uid,
@@ -12528,13 +12562,16 @@ window.guardarNuevoAviso=async()=>{
 window.actualizarAviso=async(id)=>{
   const desc=(document.getElementById('avisDescInput')?.value||'').trim();
   const cliId=_getCliSelectVal('avisCli');
+  const nombrePersonal=document.getElementById('avisCli')?.dataset?.nombrePersonalizado||'';
+  const cliNom=cliId?(allClientes.find(c=>c.id===cliId)?.nombre||''):nombrePersonal;
   const prio=document.getElementById('avisPrio')?.value||'baja';
   const fechaAlerta=document.getElementById('avisFechaAlerta')?.value||null;
-  if(!desc&&!cliId){toast('Escribe una descripción o elige un cliente','i');return;}
+  if(!desc&&!cliId&&!cliNom){toast('Escribe una descripción o elige un cliente','i');return;}
   try{
     await updateDoc(doc(db,'grupos',CGID,'avisos',id),{
       descripcion:desc,
       clienteId:cliId||null,
+      clienteNombre:cliNom||null,
       prioridad:prio,
       fechaAlerta:fechaAlerta||null,
     });
@@ -12586,6 +12623,7 @@ window.crearParteDesdeAviso=(avisoId)=>{
     titulo:(a.descripcion||'Aviso').slice(0,60),
     descripcion:a.descripcion||'',
     operario:CUD?.nombre||'',
+    clienteNombre:!a.clienteId&&a.clienteNombre?a.clienteNombre:'',
     _ocultarVolver:true
   };
   resolverAviso(avisoId);
@@ -13320,7 +13358,7 @@ const renderFacturas = async()=>{
     // orderBy puede fallar si no hay índice; fallback sin ordenar
     try{
       const snap=await getDocs(collection(db,'grupos',CGID,'facturas'));
-      _facturasData=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+      _facturasData=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
     }catch(e2){ _facturasData=[]; }
   }
   _renderFacturasUI();
@@ -13814,7 +13852,7 @@ window.asistConsulta = async (texto) => {
         // Buscar todos los presupuestos del cliente en Firestore
         try{
           const snap = await getDocs(query(collection(db,'grupos',CGID,'presupuestos'),where('clienteId','==',cli.id)));
-          const todosPresus = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+          const todosPresus = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
           if(!todosPresus.length){ respuesta = `<strong>${cli.nombre}</strong> no tiene presupuestos registrados.`; }
           else if(esUltimo){
             const p = todosPresus[0];
@@ -14063,7 +14101,7 @@ window.kioskIr=async(dest)=>{
     setTimeout(()=>{
       const el=document.getElementById('kioskPartesContent');
       if(!el)return;
-      const partes=(allPartes||[]).filter(p=>!p.archivado).sort((a,b)=>(b.creado?.seconds||0)-(a.creado?.seconds||0));
+      const partes=(allPartes||[]).filter(p=>!p.archivado).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
       window._kioskData.partes = partes.map(p=>{
         const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
         const esComp=p.estado==='completado';
