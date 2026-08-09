@@ -13556,7 +13556,8 @@ const CALG_TIPOS={
   averia:{ico:'⚡',color:'#ef5350',label:'Avería'},
   presu:{ico:'💶',color:'#ab47bc',label:'Presupuesto'},
   cobro:{ico:'💰',color:'#ffca28',label:'Cobro'},
-  aviso:{ico:'🔔',color:'#26a69a',label:'Aviso/Entrega'}
+  aviso:{ico:'🔔',color:'#26a69a',label:'Aviso'},
+  entrega:{ico:'📦',color:'#66bb6a',label:'Entrega'}
 };
 const _calgEstadoBadge={
   'completado':'<span style="font-size:10px;background:rgba(76,175,80,.12);color:#4caf50;border-radius:8px;padding:2px 7px;font-weight:800">Completado</span>',
@@ -13641,18 +13642,21 @@ const _calgCargarDatos=async()=>{
   const aCaducar=[];
   avisos.forEach(av=>{
     if(av.estado==='caducado')return;
+    const subTipo=av.tipo==='entrega'||av.tipo==='cobro'?av.tipo:'aviso';
+    const tit=av.titulo||(subTipo==='cobro'?'Cobro':subTipo==='entrega'?'Entrega':'Aviso');
+    const titFinal=tit+(av.importe!=null&&av.importe!==''?' · '+fmtM(av.importe):'');
     if(av.estado==='completado'){
       const fd=new Date((av.fecha||hoyStr)+'T00:00:00');
-      eventos.push({tipo:'aviso',fecha:fd,fechaStr:av.fecha,titulo:av.titulo||'Aviso',sub:av.clienteNombre||'',estado:'completado',id:av.id,cliId:av.clienteId||''});
+      eventos.push({tipo:subTipo,fecha:fd,fechaStr:av.fecha,titulo:titFinal,sub:av.clienteNombre||'',estado:'completado',id:av.id,cliId:av.clienteId||'',gestionable:true});
       return;
     }
     const origD=new Date((av.fecha||hoyStr)+'T00:00:00');
     const diffDias=Math.round((hoyD-origD)/86400000);
     if(diffDias>10){ aCaducar.push(av.id); return; }
     if(diffDias>0){
-      eventos.push({tipo:'aviso',fecha:hoyD,fechaStr:hoyStr,titulo:av.titulo||'Aviso',sub:av.clienteNombre||'',estado:'pendiente',atrasado:true,diasAtraso:diffDias,id:av.id,cliId:av.clienteId||''});
+      eventos.push({tipo:subTipo,fecha:hoyD,fechaStr:hoyStr,titulo:titFinal,sub:av.clienteNombre||'',estado:'pendiente',atrasado:true,diasAtraso:diffDias,id:av.id,cliId:av.clienteId||'',gestionable:true});
     }else{
-      eventos.push({tipo:'aviso',fecha:origD,fechaStr:av.fecha,titulo:av.titulo||'Aviso',sub:av.clienteNombre||'',estado:'pendiente',atrasado:false,id:av.id,cliId:av.clienteId||''});
+      eventos.push({tipo:subTipo,fecha:origD,fechaStr:av.fecha,titulo:titFinal,sub:av.clienteNombre||'',estado:'pendiente',atrasado:false,id:av.id,cliId:av.clienteId||'',gestionable:true});
     }
   });
   aCaducar.forEach(id=>{ updateDoc(doc(db,'grupos',CGID,'eventos',id),{estado:'caducado'}).catch(()=>{}); });
@@ -13729,7 +13733,7 @@ window._calgAbrirDia=(fStr)=>{
   }else{
     evs.forEach(e=>{
       const ti=CALG_TIPOS[e.tipo]||{ico:'📌',color:'#888',label:e.tipo};
-      if(e.tipo==='aviso'){
+      if(e.gestionable){
         html+=`<div class="calg-avi-card${e.atrasado?' atrasado':''}">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
             <span>${ti.ico}</span>
@@ -13770,31 +13774,49 @@ window._calgAbrirDia=(fStr)=>{
 };
 
 window._calgFormNuevoAviso=(fStr)=>{
+  const tipos=[['aviso','🔔 Aviso'],['entrega','📦 Entrega'],['cobro','💰 Cobro']];
   abrirSB('➕ Nuevo aviso/entrega',`
+    <div class="fgrp"><label>Tipo</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="avTipoBtns">
+        ${tipos.map(([v,l],i)=>`<button type="button" class="btn ${i===0?'btn-p':'btn-s'} btn-sm" data-avtipo="${v}" onclick="_calgSetTipoAviso('${v}')" style="flex:1">${l}</button>`).join('')}
+      </div>
+      <input type="hidden" id="avTipo" value="aviso">
+    </div>
     <div class="fgrp"><label>Título *</label><input id="avTit" placeholder="Ej: Entregar pieza, llamar a cliente..."></div>
-    <div class="fgrp"><label>Día</label><input type="date" id="avFecha" value="${fStr}"></div>
+    <div class="fgrp"><label>Día en que debe hacerse *</label><input type="date" id="avFecha" value="${fStr}"></div>
     <div class="fgrp"><label>Cliente <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><div id="avCli-wrap"></div></div>
+    <div class="fgrp"><label>Importe (€) <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><input type="number" id="avImporte" placeholder="0.00" step="0.01" min="0"></div>
     <div class="fgrp"><label>Nota</label><textarea id="avNota" placeholder="Detalles..."></textarea></div>
-    <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="_calgGuardarAviso()">Guardar aviso</button>
+    <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="_calgGuardarAviso()">Guardar</button>
   `);
   if(typeof _buildCliSelect==='function') _buildCliSelect('avCli', null, ()=>{});
 };
 
+window._calgSetTipoAviso=(v)=>{
+  $('avTipo').value=v;
+  document.querySelectorAll('#avTipoBtns [data-avtipo]').forEach(b=>{
+    b.className='btn '+(b.dataset.avtipo===v?'btn-p':'btn-s')+' btn-sm';
+  });
+};
+
 window._calgGuardarAviso=async()=>{
+  const tipo=$('avTipo')?.value||'aviso';
   const titulo=($('avTit').value||'').trim();
   const fecha=$('avFecha').value;
   const cliEl=$('avCli');
   const cliId=cliEl?.value||'';
   const nombrePersonal=cliEl?.dataset?.nombrePersonalizado||'';
   const nota=($('avNota').value||'').trim();
+  const importeVal=$('avImporte').value;
+  const importe=importeVal!==''?parseFloat(importeVal):null;
   if(!titulo){toast('Pon un título','e');return;}
-  if(!fecha){toast('Elige un día','e');return;}
+  if(!fecha){toast('Elige el día','e');return;}
   const cliNom=cliId?(allClientes.find(c=>c.id===cliId)?.nombre||''):nombrePersonal;
   try{
     await addDoc(collection(db,'grupos',CGID,'eventos'),{
-      tipo:'aviso',titulo,fecha,clienteId:cliId||'',clienteNombre:cliNom||'',notas:nota,estado:'pendiente',creado:serverTimestamp()
+      tipo,titulo,fecha,clienteId:cliId||'',clienteNombre:cliNom||'',notas:nota,importe,estado:'pendiente',creado:serverTimestamp()
     });
-    toast('Aviso guardado','o');
+    toast('Guardado en el calendario','o');
     cerrarSB();
     renderCalendarioGlobal();
   }catch(e){toast('Error al guardar','e');}
@@ -13853,11 +13875,18 @@ window._calgVerCaducados=async()=>{
 
 window._calgNavegar=(tipo,id,cliId)=>{
   if(!CGID)return;
-  cerrarSB();
-  if(tipo==='parte'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('part');setTimeout(()=>verParte&&verParte(id),100);},200);}
-  else if(tipo==='averia'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('aver');setTimeout(()=>verAveria&&verAveria(id),100);},200);}
-  else if(tipo==='presu'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('presu');},200);}
-  else if(tipo==='cobro'){goScreen('facturas');}
+  // No navegamos a otra pantalla: abrimos el detalle directamente encima,
+  // así al cerrarlo se vuelve al calendario sin tener que reabrirlo.
+  if(tipo==='parte'){ if(typeof verParte==='function') verParte(id); }
+  else if(tipo==='averia'){ if(typeof verAveria==='function') verAveria(id); }
+  else if(tipo==='presu'){ if(typeof verPresupuesto==='function') verPresupuesto(id); }
+  else if(tipo==='cobro'){
+    (async()=>{
+      const yaCargado=(typeof _facturasData!=='undefined'&&_facturasData||[]).some(f=>f.id===id);
+      if(!yaCargado && typeof renderFacturas==='function') await renderFacturas();
+      if(typeof window._verFactura==='function') window._verFactura(id);
+    })();
+  }
 };
 
 
