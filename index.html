@@ -181,6 +181,7 @@ body.modo-visualizacion [onclick*="doLogout"],
 body.modo-visualizacion [onclick*="eliminarGrupoCompleto"],
 body.modo-visualizacion [onclick*="borrarImagen"],
 body.modo-visualizacion [onclick*="flujoCompletarFirmarPDF"],
+body.modo-visualizacion [onclick*="flujoCompletarFirmar("],
 body.modo-visualizacion .btn-del{display:none!important}
 /* Botón de PDF siempre visible y destacado en modo gestión */
 body.modo-visualizacion .kiosk-pdf-btn{display:flex!important}
@@ -1814,6 +1815,7 @@ window.addEventListener('online', ()=>{
   // Firestore reactivará los onSnapshot automáticamente y subirá escrituras pendientes.
   // Re-renderizar pantallas activas para mostrar datos frescos.
   setTimeout(()=>{
+    if(typeof _reconciliarFirmasPendientes==='function') _reconciliarFirmasPendientes();
     if(CGID && typeof renderGrupo === 'function' && document.querySelector('#screenGrupo.active')){
       renderGrupo();
     }
@@ -3134,6 +3136,7 @@ const iniciarApp=async()=>{
       plantillas         = pSnap.docs.map(d=>d.data().nombre);
       mantPlantillas     = mpSnap.docs.map(d=>d.data().nombre);
       _partePlantillasFull = ppfSnap.docs.map(d=>({id:d.id,...d.data()}));
+      _reconciliarFirmasPendientes();
 
       // Arrancar listeners en tiempo real del grupo
       if(unsubP){unsubP();unsubP=null}
@@ -3145,6 +3148,7 @@ const iniciarApp=async()=>{
       });
       unsubP = onSnapshot(collection(db,'grupos',CGID,'partes'),snap=>{
         allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
+        _reconciliarFirmasPendientes();
         if(document.querySelector('#screenGrupo.active'))renderGrupo();
       });
       unsubM = onSnapshot(collection(db,'grupos',CGID,'mantenimientos'),snap=>{
@@ -3161,6 +3165,7 @@ const iniciarApp=async()=>{
         plantillas         = _lcLoad('plantillas',    CGID) || [];
         mantPlantillas     = _lcLoad('mantPlant',     CGID) || [];
         _partePlantillasFull=_lcLoad('partePlantFull',CGID) || [];
+        _reconciliarFirmasPendientes();
         // Arrancar listeners (servirán datos de caché Firestore cuando vuelva la red)
         if(unsubP){unsubP();unsubP=null}
         if(unsubC){unsubC();unsubC=null}
@@ -3173,6 +3178,7 @@ const iniciarApp=async()=>{
         unsubP = onSnapshot(collection(db,'grupos',CGID,'partes'), snap=>{
           allPartes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
           _lcSave('partes',CGID,allPartes);
+          _reconciliarFirmasPendientes();
           if(document.querySelector('#screenGrupo.active'))renderGrupo();
         }, ()=>{});
         unsubM = onSnapshot(collection(db,'grupos',CGID,'mantenimientos'), snap=>{
@@ -3451,6 +3457,26 @@ const _lcLoad = (tipo, gid) => {
   try { const v=localStorage.getItem(_lcKey(tipo,gid)); return v?JSON.parse(v):null; } catch(e) { return null; }
 };
 
+// ── Cola de firmas pendientes de sincronizar ──
+// A diferencia de _firmaPendienteTemp (solo en memoria, se pierde si se cierra
+// la app), esta cola se guarda en localStorage para que una firma capturada
+// offline sobreviva aunque el usuario cierre la app antes de que Firestore
+// confirme la creación del parte. Se reconcilia con _reconciliarFirmasPendientes().
+const _fpKey = (gid) => `joyvi_firmaspend_${gid}`;
+const _fpLoad = (gid) => { try{ return JSON.parse(localStorage.getItem(_fpKey(gid))||'{}'); }catch(e){ return {}; } };
+const _fpSaveAll = (gid, map) => { try{ localStorage.setItem(_fpKey(gid), JSON.stringify(map)); }catch(e){} };
+const _fpQueue = (gid, tempId, firmaDataURL) => {
+  if(!gid||!tempId) return;
+  const m = _fpLoad(gid);
+  m[tempId] = { firmaCliente: firmaDataURL, firmado: true, ts: Date.now() };
+  _fpSaveAll(gid, m);
+};
+const _fpClear = (gid, tempId) => {
+  if(!gid||!tempId) return;
+  const m = _fpLoad(gid);
+  if(m[tempId]){ delete m[tempId]; _fpSaveAll(gid, m); }
+};
+
 // ── Offline sync engine ──
 // Guarda IDs temporales en localStorage y los elimina cuando Firestore confirma
 const _PENDING_KEY = 'joyvi_pending_sync';
@@ -3492,7 +3518,13 @@ const _offlineSave = (colRef, data, onLocalId) => {
   if(onLocalId) onLocalId(tempId);
   const colPath = colRef.path || colRef._query?.path?.segments?.join('/') || 'unknown';
   _addPending(tempId, colPath);
-  addDoc(colRef, data)
+  // Marcamos el documento con su ID temporal de origen (_localRef). Esto permite
+  // reconciliar firmas pendientes con el documento real incluso si la app se
+  // cierra o recarga antes de que Firestore confirme la creación (ver
+  // _reconciliarFirmasPendientes), ya que _idMap/_firmaPendienteTemp solo viven
+  // en memoria y se pierden al recargar.
+  const dataConRef = { ...data, _localRef: tempId };
+  addDoc(colRef, dataConRef)
     .then(ref => {
       // Firestore confirmó: reemplazar ID temporal en arrays locales
       _removePending(tempId);
@@ -3514,11 +3546,51 @@ const _offlineSave = (colRef, data, onLocalId) => {
         updateDoc(ref, firmaData).then(()=>{
           const idx=allPartes.findIndex(x=>x.id===ref.id);
           if(idx>=0){ allPartes[idx]={...allPartes[idx],...firmaData}; _lcSave('partes',CGID,allPartes); }
+          _fpClear(CGID, tempId);
         }).catch(()=>{});
+      } else {
+        // También puede haber quedado en la cola persistente (localStorage) de
+        // una sesión anterior si la app se cerró antes de llegar hasta aquí.
+        _reconciliarFirmasPendientes();
       }
     })
     .catch(()=>{ /* Firestore lo reintentará automáticamente cuando haya red */ });
   return tempId;
+};
+
+// ── Reconciliar firmas pendientes con su parte real ──
+// Se ejecuta al abrir un grupo, al recuperar la conexión y cada vez que llega
+// una actualización de la colección de partes. Repara el caso en el que una
+// firma se capturó offline (flujo "Sí, firmar ahora" al crear un parte, o
+// desde "Completar + Firma + PDF") y la app se cerró/recargó antes de que
+// Firestore confirmara la creación del parte: la cola en memoria
+// (_firmaPendienteTemp) se pierde al recargar, pero la cola persistida en
+// localStorage (_fpQueue/_fpLoad) y el campo _localRef guardado en el propio
+// documento permiten encontrar el parte real y aplicarle la firma igualmente.
+window._reconciliarFirmasPendientes = () => {
+  if(!CGID) return;
+  const pend = _fpLoad(CGID);
+  const tempIds = Object.keys(pend);
+  if(!tempIds.length) return;
+  tempIds.forEach(tempId=>{
+    const firma = pend[tempId];
+    if(!firma||!firma.firmaCliente) { _fpClear(CGID,tempId); return; }
+    let realId = _idMap[tempId];
+    if(!realId){
+      const match = (allPartes||[]).find(x=>x._localRef===tempId);
+      if(match) realId = match.id;
+    }
+    if(!realId || String(realId).startsWith('local_')) return; // aún no sincronizado: se reintentará más tarde
+    const idx = allPartes.findIndex(x=>x.id===realId);
+    if(idx>=0 && allPartes[idx].firmaCliente){ _fpClear(CGID,tempId); return; } // ya tiene firma
+    updateDoc(doc(db,'grupos',CGID,'partes',realId), {firmaCliente:firma.firmaCliente,firmado:true,firmadoEn:serverTimestamp()})
+      .then(()=>{
+        _fpClear(CGID,tempId);
+        if(idx>=0){ allPartes[idx]={...allPartes[idx],firmaCliente:firma.firmaCliente,firmado:true}; _lcSave('partes',CGID,allPartes); }
+        if(document.querySelector('#screenGrupo.active') && typeof renderGrupo==='function') renderGrupo();
+      })
+      .catch(()=>{ /* seguirá pendiente, se reintentará en la próxima reconciliación */ });
+  });
 };
 
 
@@ -3587,6 +3659,7 @@ window.abrirGrupo=async id=>{
   unsubP = onSnapshot(collection(db,'grupos',id,'partes'), snap=>{
     allPartes = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
     _lcSave('partes', id, allPartes);
+    _reconciliarFirmasPendientes();
     if(document.querySelector('#screenGrupo.active')) renderGrupo();
   }, ()=>{
     const cached = _lcLoad('partes', id);
@@ -6613,7 +6686,7 @@ window.verParte=id=>{
       </div>
     </div>`:''}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-      ${(p.estado!=='completado'&&!(p.firmado&&p.firmaCliente))?`<button class="btn btn-ok btn-sm" onclick="flujoCompletarFirmarPDF('${id}')" style="background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;border:none;flex:1"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' style='margin-right:4px'><polyline points='20 6 9 17 4 12'/></svg>Completar + Firma + PDF</button>`:''}
+      ${(p.estado!=='completado'&&!(p.firmado&&p.firmaCliente))?`<button class="btn btn-ok btn-sm" onclick="flujoCompletarFirmar('${id}')" style="background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;border:none;flex:1"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' style='margin-right:4px'><polyline points='20 6 9 17 4 12'/></svg>Completar + Firmar</button>`:''}
       <button class="btn btn-s btn-sm" onclick="abrirFPartePreservandoCli('${id}')">✏️ Editar</button>
       <button class="btn btn-s btn-sm" onclick="clonarParte('${id}')" style="background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.3);color:var(--r)">📋 Clonar</button>
       <button class="btn btn-s btn-sm" onclick="_gClick(this,()=>guardarParteComoPlantilla('${id}'))">📄 Plantilla</button>
@@ -6898,8 +6971,11 @@ window._guardarFirmaParteNuevo = async (parteId) => {
   const idxLocal = allPartes.findIndex(x=>x.id===realId || x.id===parteId);
   if(idxLocal>=0){ allPartes[idxLocal] = {...allPartes[idxLocal], firmaCliente:firmaDataURL, firmado:true}; _lcSave('partes',CGID,allPartes); }
   if(String(realId).startsWith('local_')){
-    // Todavía no hay documento real en Firestore: encolar la firma
+    // Todavía no hay documento real en Firestore: encolar la firma en memoria
+    // Y también en localStorage (_fpQueue), para que sobreviva aunque la app
+    // se cierre antes de que _offlineSave confirme la creación del documento.
     _firmaPendienteTemp[realId] = firmaData;
+    _fpQueue(CGID, realId, firmaDataURL);
     cerrarSBTotal();
     toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
     haptic('medium');
@@ -6907,12 +6983,14 @@ window._guardarFirmaParteNuevo = async (parteId) => {
   }
   try{
     await updateDoc(doc(db,'grupos',CGID,'partes',realId), firmaData);
+    _fpClear(CGID, parteId);
     cerrarSBTotal();
     toast('✍️ Firma guardada en el parte','o');
     haptic('medium');
   }catch(e){
     // El documento aún no existía en el servidor: encolar para cuando se confirme
     _firmaPendienteTemp[realId] = firmaData;
+    _fpQueue(CGID, realId, firmaDataURL);
     cerrarSBTotal();
     toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
     haptic('medium');
@@ -7147,6 +7225,61 @@ window.flujoCompletarFirmarPDF=async(id)=>{
   toast('✅ Completado — firma y genera el PDF','o');
 };
 
+// ─── Firmar (sin generar PDF a la fuerza) ───
+// Igual que flujoCompletarFirmarPDF pero pensado como acción independiente del
+// PDF: marca el parte como completado y pide la firma, con "Guardar firma"
+// como acción principal. El botón de PDF sigue siendo un botón aparte.
+window.flujoCompletarFirmar=async(id)=>{
+  const p=allPartes.find(x=>x.id===id);if(!p)return;
+  const idxFlujo=allPartes.findIndex(x=>x.id===id);
+  if(idxFlujo>=0)allPartes[idxFlujo]={...allPartes[idxFlujo],estado:'completado'};
+  _lcSave('partes',CGID,allPartes);
+  updateDoc(doc(db,'grupos',CGID,'partes',id),{estado:'completado',actualizado:serverTimestamp()}).catch(()=>{});
+  const pActualizado={...p,estado:'completado'};
+  const tot=calcTotal(pActualizado);
+  abrirSB('✍️ Firma del cliente',`
+    <div style="background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.25);border-radius:12px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:900;color:#4caf50;margin-bottom:2px">✅ Parte marcado como completado</div>
+      <div style="font-size:12px;color:var(--tx2)">${pActualizado.titulo} · ${fmtM(tot)}</div>
+    </div>
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--tx2)">Cliente: <strong style="color:var(--tx)">${pActualizado.clienteNombre||'—'}</strong></div>
+    </div>
+    <div style="background:rgba(255,255,255,.06);border:2px dashed var(--border);border-radius:14px;padding:10px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;text-align:center;margin-bottom:8px">Firme aquí con el dedo</div>
+      <canvas id="firmaCanvas" width="380" height="160" style="width:100%;height:160px;background:#fff;border-radius:10px;cursor:crosshair;touch-action:none;display:block"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn btn-s btn-sm" onclick="limpiarFirma()" style="flex:1">🗑️ Limpiar</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-s" onclick="cerrarSB()" style="font-size:13px">Ahora no</button>
+      <button class="btn btn-p" onclick="_gClick(this,()=>guardarFirmaSinPDF('${id}'))">💾 Guardar firma</button>
+    </div>
+  `);
+  setTimeout(()=>{
+    const canvas=document.getElementById('firmaCanvas');
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const rect=canvas.getBoundingClientRect();
+    canvas.width=rect.width*window.devicePixelRatio||380;
+    canvas.height=160*window.devicePixelRatio||160;
+    ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle='#1a1a1a';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+    let drawing=false;
+    const getXY=(e)=>{const r=canvas.getBoundingClientRect();if(e.touches){return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};}return{x:e.clientX-r.left,y:e.clientY-r.top};};
+    canvas.addEventListener('mousedown',e=>{drawing=true;const{x,y}=getXY(e);ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();});
+    canvas.addEventListener('mousemove',e=>{if(!drawing)return;const{x,y}=getXY(e);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();});
+    canvas.addEventListener('mouseup',()=>drawing=false);
+    canvas.addEventListener('touchstart',e=>{drawing=true;const{x,y}=getXY(e);ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();},{passive:false});
+    canvas.addEventListener('touchmove',e=>{if(!drawing)return;const{x,y}=getXY(e);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);e.preventDefault();},{passive:false});
+    canvas.addEventListener('touchend',()=>drawing=false);
+    window._firmaCtxActivo=ctx;window._firmaCanvasActivo=canvas;
+  },200);
+  toast('✅ Completado — firma el parte','o');
+};
+
 // ─── PDF ───
 // pdfHTML: genera HTML completo del parte (con o sin bloque de firma)
 const pdfHTML=(p,iva,tot,grp,firmaDataURL)=>{
@@ -7355,8 +7488,10 @@ window.guardarFirmaSinPDF=async(id)=>{
   };
   if(String(realId).startsWith('local_')){
     // El parte todavía no tiene documento real en Firestore: encolar la firma
-    // para que _offlineSave la aplique en cuanto confirme la creación.
+    // para que _offlineSave la aplique en cuanto confirme la creación. También
+    // se guarda en localStorage (_fpQueue) para sobrevivir a un cierre de la app.
     _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    _fpQueue(CGID, realId, firmaDataURL);
     _refrescarListaPartes();
     toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
     cerrarSB();
@@ -7364,6 +7499,7 @@ window.guardarFirmaSinPDF=async(id)=>{
   }
   try{
     await updateDoc(doc(db,'grupos',CGID,'partes',realId),updateData);
+    _fpClear(CGID, id);
     _refrescarListaPartes();
     toast('✍️ Firma guardada en el parte','o');
     cerrarSB();
@@ -7372,6 +7508,7 @@ window.guardarFirmaSinPDF=async(id)=>{
     // confirmado todavía): encolar para cuando _offlineSave lo confirme.
     console.warn('No se pudo guardar la firma directamente, se encola:',e);
     _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    _fpQueue(CGID, realId, firmaDataURL);
     _refrescarListaPartes();
     toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
     cerrarSB();
@@ -7439,18 +7576,19 @@ window.generarPDFConFirma=async(id,firmaDataURL)=>{
     }
   };
   if(String(realId).startsWith('local_')){
-    if(firmaDataURL) _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    if(firmaDataURL){ _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()}; _fpQueue(CGID, realId, firmaDataURL); }
     _refrescarListaPartes();
     if(firmaDataURL){toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');cerrarSB();}
     return;
   }
   try{
     await updateDoc(doc(db,'grupos',CGID,'partes',realId),updateData);
+    if(firmaDataURL) _fpClear(CGID, id);
     _refrescarListaPartes();
     if(firmaDataURL){toast('✍️ Firma guardada en el parte','o');cerrarSB();}
   }catch(e){
     console.warn('No se pudo marcar pdfGenerado, se encola la firma si había:',e);
-    if(firmaDataURL) _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    if(firmaDataURL){ _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()}; _fpQueue(CGID, realId, firmaDataURL); }
     _refrescarListaPartes();
     if(firmaDataURL){toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');cerrarSB();}
   }
