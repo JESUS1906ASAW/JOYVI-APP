@@ -741,21 +741,6 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .cal-task-cliente{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:2px;display:flex;align-items:center;gap:6px}
 .cal-task-desc{font-size:12px;color:var(--tx2);margin-bottom:9px;line-height:1.5}
 
-/* ── FACTURAS ── */
-.factura-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:.15s}
-.factura-card:hover{border-color:rgba(var(--theme-rgb),.4);background:rgba(var(--theme-rgb),.03)}
-.factura-num{font-size:11px;font-weight:900;color:var(--r);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
-.factura-cliente{font-size:14px;font-weight:800;color:var(--tx);margin-bottom:3px}
-.factura-meta{font-size:12px;color:var(--tx2)}
-.factura-importe{font-size:16px;font-weight:900;color:var(--tx);margin-left:auto}
-.factura-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px}
-.factura-badge.pend{background:rgba(255,152,0,.15);color:#ff9800}
-.factura-badge.pagada{background:rgba(76,175,80,.15);color:#4caf50}
-.factura-badge.borrador{background:rgba(255,255,255,.08);color:var(--tx2)}
-.fac-filtro-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.fac-filtro-btn{border:1px solid var(--border);background:transparent;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800;color:var(--tx2);cursor:pointer;font-family:var(--font);transition:.15s}
-.fac-filtro-btn.active{background:var(--r);color:#fff;border-color:var(--r)}
-
 /* ── HISTORIAL GLOBAL ── */
 .hg-event{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;gap:12px;transition:.15s;cursor:pointer}
 .hg-event:hover{border-color:rgba(var(--theme-rgb),.4)}
@@ -770,7 +755,6 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .hg-filtro{border:1px solid var(--border);background:transparent;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800;color:var(--tx2);cursor:pointer;font-family:var(--font);transition:.15s}
 .hg-filtro.active{background:var(--r);color:#fff;border-color:var(--r)}
 .hg-event-dot.cobro{background:rgba(255,202,40,.15)}
-.hg-event-dot.factura{background:rgba(255,202,40,.15)}
 .hg-event-dot.aviso{background:rgba(171,71,188,.15)}
 .hg-event-dot.entrega{background:rgba(66,165,245,.12)}
 
@@ -1704,18 +1688,6 @@ body.offline .dash-offline-bar{display:flex}
     <div class="scroll-pad" id="perfilContent"></div>
   </div>
 
-  <!-- ─── PANTALLA: FACTURAS ─── -->
-  <div class="screen" id="screenFacturas">
-    <div class="scroll-pad">
-      <div class="volver-btn" onclick="goScreen('grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</div>
-      <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:6px;display:flex;align-items:center;gap:8px">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Facturas
-      </div>
-      <div id="facturasContent"></div>
-    </div>
-  </div>
-
   <!-- ─── PANTALLA: HISTORIAL GLOBAL ─── -->
   <div class="screen" id="screenHistorialGlobal">
     <div class="scroll-pad">
@@ -2387,7 +2359,7 @@ const iniciarFCMForeground=()=>{
 };
 
 // NAVEGACIÓN — History API (botón atrás nativo del navegador/móvil)
-const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',log:'screenLog',kiosk:'screenKiosk',kioskCli:'screenKioskCli',kioskPartes:'screenKioskPartes',kioskAverias:'screenKioskAverias',kioskMant:'screenKioskMant',kioskPresu:'screenKioskPresu',facturas:'screenFacturas',historialGlobal:'screenHistorialGlobal'};
+const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',log:'screenLog',kiosk:'screenKiosk',kioskCli:'screenKioskCli',kioskPartes:'screenKioskPartes',kioskAverias:'screenKioskAverias',kioskMant:'screenKioskMant',kioskPresu:'screenKioskPresu',historialGlobal:'screenHistorialGlobal'};
 
 // Flag para evitar bucles al manejar popstate
 let _navFromPop=false;
@@ -2415,7 +2387,6 @@ const _renderScreen=id=>{
   else if(id==='presupuestos')renderPresupuestos();
   else if(id==='notificaciones')renderNotificaciones();
   else if(id==='perfil')renderPerfil();
-  else if(id==='facturas')renderFacturas();
   else if(id==='historialGlobal')renderHistorialGlobal();
   else if(id==='kiosk')setTimeout(()=>window.renderKioskDocsHoy&&window.renderKioskDocsHoy(),150);
 };
@@ -3284,18 +3255,8 @@ const iniciarApp=async()=>{
       // Sincronizar badge kiosk
       const dotK=document.getElementById('notifDotKiosk');
       if(dotK){dotK.className=dot?dot.className:'notif-dot show';dotK.textContent=count>9?'9+':count;}
-      snap.docChanges().forEach(change=>{
-        if(change.type==='added'){
-          const d=change.doc.data();
-          const tipo=d.tipo||'';
-          // Solo notificar con sonido/toast si es relevante (no resumen semanal para trabajadores)
-          if(tipo==='resumen_semanal'&&CUD?.tipo!=='admin')return;
-          const titulo=d.titulo||'Joyvi';
-          const cuerpo=d.cuerpo||d.titulo||'Nueva notificación';
-          notifLocal(titulo,cuerpo);
-          toast(`${titulo}`,'i');
-        }
-      });
+      // Sin aviso emergente (ni toast ni notificación local): solo se actualiza
+      // el contador. Las notificaciones se consultan en su propia pantalla.
     }else{
       if(dot)dot.classList.remove('show');
       const dotK=document.getElementById('notifDotKiosk');
@@ -13321,118 +13282,6 @@ const _checkBackupAutomatico=async()=>{
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// RENDER: FACTURAS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let _facturasData = [];
-let _facFiltroEstado = 'todas';
-
-const renderFacturas = async()=>{
-  const el=$('facturasContent'); if(!el)return;
-  if(!CGID){
-    el.innerHTML=`<div class="empty"><p>Selecciona un grupo primero</p></div>`;
-    return;
-  }
-  el.innerHTML=`<div class="skel skel-card" style="margin-bottom:8px"></div><div class="skel skel-card" style="margin-bottom:8px"></div><div class="skel skel-card"></div>`;
-  try{
-    const snap=await getDocs(query(collection(db,'grupos',CGID,'facturas'),orderBy('creado','desc')));
-    _facturasData=snap.docs.map(d=>({id:d.id,...d.data()}));
-  }catch(e){
-    // orderBy puede fallar si no hay índice; fallback sin ordenar
-    try{
-      const snap=await getDocs(collection(db,'grupos',CGID,'facturas'));
-      _facturasData=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
-    }catch(e2){ _facturasData=[]; }
-  }
-  _renderFacturasUI();
-};
-
-const _renderFacturasUI=()=>{
-  const el=$('facturasContent'); if(!el)return;
-  const filtros=['todas','pendiente','pagada','borrador'];
-  const filtroLabels={todas:'Todas',pendiente:'Pendientes',pagada:'Pagadas',borrador:'Borrador'};
-  const filtroBar=`<div class="fac-filtro-bar">${filtros.map(f=>`<button class="fac-filtro-btn${_facFiltroEstado===f?' active':''}" onclick="_facSetFiltro('${f}')">${filtroLabels[f]}</button>`).join('')}</div>`;
-  const searchBox=`<input class="sbox" id="facSearchBox" style="margin-bottom:12px" placeholder="🔍 Buscar por cliente, número..." oninput="_renderFacturasUI2(this.value)">`;
-  el.innerHTML=filtroBar+searchBox+`<div id="facListArea"></div>`;
-  _renderFacturasUI2('');
-};
-
-window._facSetFiltro=(f)=>{ _facFiltroEstado=f; _renderFacturasUI(); };
-
-const _renderFacturasUI2=(q)=>{
-  const el=$('facListArea'); if(!el)return;
-  const words=(q||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
-  let lista=_facturasData;
-  if(_facFiltroEstado!=='todas') lista=lista.filter(f=>(f.estado||'pendiente')===_facFiltroEstado);
-  if(words.length) lista=lista.filter(f=>{
-    const hay=[f.numero,f.clienteNombre,f.parteId].filter(Boolean).join(' ').toLowerCase();
-    return words.every(w=>hay.includes(w));
-  });
-  if(!lista.length){
-    el.innerHTML=`<div class="empty"><div class="empty-ico">🧾</div><p>Sin facturas${_facFiltroEstado!=='todas'?' con ese estado':''}</p></div>`;
-    return;
-  }
-  const totalStr=lista.length===1?'1 factura':`${lista.length} facturas`;
-  el.innerHTML=`<div style="font-size:12px;color:var(--tx2);font-weight:700;margin-bottom:10px">${totalStr}</div>`+
-    lista.map(f=>{
-      const num=f.numero?`FAC-${String(f.numero).padStart(4,'0')}`:'FAC-????';
-      const estado=f.estado||'pendiente';
-      const fecha=fmtF(f.creado);
-      const importe=f.total!=null?fmtM(f.total):'—';
-      return`<div class="factura-card" onclick="_verFactura('${f.id}')">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="flex:1;min-width:0">
-            <div class="factura-num">${num}</div>
-            <div class="factura-cliente">${f.clienteNombre||'Cliente desconocido'}</div>
-            <div class="factura-meta">${fecha}${f.parteId?' · Parte #'+f.parteId:''}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0">
-            <div class="factura-importe">${importe}</div>
-            <div style="margin-top:4px"><span class="factura-badge ${estado}">${estado.charAt(0).toUpperCase()+estado.slice(1)}</span></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-          ${f.clienteTelefono?`<a href="https://wa.me/34${(f.clienteTelefono||'').replace(/\s/g,'')}" target="_blank" class="btn btn-s btn-sm" style="text-decoration:none;font-size:11px">💬 WhatsApp</a>`:''}
-          <button class="btn btn-s btn-sm" style="font-size:11px" onclick="event.stopPropagation();_marcarFacturaPagada('${f.id}','${estado}')">
-            ${estado==='pagada'?'↩️ Marcar pendiente':'✅ Marcar pagada'}
-          </button>
-        </div>
-      </div>`;
-    }).join('');
-};
-
-window._verFactura=async(facId)=>{
-  const fac=_facturasData.find(f=>f.id===facId); if(!fac)return;
-  const num=fac.numero?`FAC-${String(fac.numero).padStart(4,'0')}`:'FAC-????';
-  abrirSB(`🧾 ${num}`,`
-    <div style="background:rgba(var(--theme-rgb),.06);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
-      <div style="font-size:12px;font-weight:900;color:var(--r);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">${num}</div>
-      <div style="font-size:16px;font-weight:900;color:var(--tx);margin-bottom:4px">${fac.clienteNombre||'—'}</div>
-      <div style="font-size:12px;color:var(--tx2)">Fecha: ${fmtF(fac.creado)}</div>
-      ${fac.parteId?`<div style="font-size:12px;color:var(--tx2)">Parte: #${fac.parteId}</div>`:''}
-      ${fac.total!=null?`<div style="font-size:18px;font-weight:900;color:var(--tx);margin-top:8px">${fmtM(fac.total)}</div>`:''}
-      <div style="margin-top:8px"><span class="factura-badge ${fac.estado||'pendiente'}">${(fac.estado||'Pendiente').charAt(0).toUpperCase()+(fac.estado||'pendiente').slice(1)}</span></div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-p" style="flex:1" onclick="_marcarFacturaPagada('${fac.id}','${fac.estado||'pendiente'}');cerrarSB()">
-        ${fac.estado==='pagada'?'↩️ Marcar pendiente':'✅ Marcar pagada'}
-      </button>
-      ${fac.clienteTelefono?`<a href="https://wa.me/34${(fac.clienteTelefono||'').replace(/\s/g,'')}" target="_blank" class="btn btn-s" style="text-decoration:none;flex:1;text-align:center">💬 Reenviar WhatsApp</a>`:''}
-    </div>
-  `);
-};
-
-window._marcarFacturaPagada=async(facId,estadoActual)=>{
-  const nuevoEstado=estadoActual==='pagada'?'pendiente':'pagada';
-  try{
-    await updateDoc(doc(db,'grupos',CGID,'facturas',facId),{estado:nuevoEstado,actualizadoEn:serverTimestamp()});
-    const idx=_facturasData.findIndex(f=>f.id===facId);
-    if(idx>-1) _facturasData[idx].estado=nuevoEstado;
-    toast(nuevoEstado==='pagada'?'✅ Factura marcada como pagada':'Factura marcada como pendiente','o');
-    _renderFacturasUI();
-  }catch(e){toast('Error al actualizar la factura','e');}
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // RENDER: HISTORIAL GLOBAL
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let _hgFiltro='todo';
@@ -13565,7 +13414,6 @@ const CALG_TIPOS={
   parte:{ico:'📋',color:'#42a5f5',label:'Parte'},
   averia:{ico:'⚡',color:'#ef5350',label:'Avería'},
   presu:{ico:'💶',color:'#ab47bc',label:'Presupuesto'},
-  factura:{ico:'🧾',color:'#ffca28',label:'Factura'},
   aviso:{ico:'💬',color:'#ab47bc',label:'Aviso'},
   entrega:{ico:'📦',color:'#42a5f5',label:'Entrega'},
   cobro:{ico:'💰',color:'#ffca28',label:'Cobro'}
@@ -13616,11 +13464,10 @@ const _calgCargarDatos=async()=>{
   const faltaAveriasRes=!averiasResArr||!averiasResArr.length;
   const faltaPresus=!presusArr||!presusArr.length;
 
-  const [aPendSnap,aResSnap,prSnap,fSnap,avisSnap,cobSnap,entSnap]=await Promise.all([
+  const [aPendSnap,aResSnap,prSnap,avisSnap,cobSnap,entSnap]=await Promise.all([
     faltaAveriasPend?getDocs(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente'))).catch(()=>null):null,
     faltaAveriasRes?getDocs(query(collection(db,'grupos',CGID,'averias_historial'),orderBy('resueltaEn','desc'))).catch(()=>null):null,
     faltaPresus?getDocs(query(collection(db,'grupos',CGID,'presupuestos'),orderBy('creado','desc'))).catch(()=>null):null,
-    getDocs(query(collection(db,'grupos',CGID,'facturas'),orderBy('creado','desc'))).catch(()=>null),
     (!_avisosPend?.length&&!_avisosRes?.length)?getDocs(collection(db,'grupos',CGID,'avisos')).catch(()=>null):null,
     (!_simplePend?.cobro?.length&&!_simpleComp?.cobro?.length)?getDocs(collection(db,'grupos',CGID,'cobros')).catch(()=>null):null,
     (!_simplePend?.entrega?.length&&!_simpleComp?.entrega?.length)?getDocs(collection(db,'grupos',CGID,'entregas')).catch(()=>null):null,
@@ -13641,14 +13488,6 @@ const _calgCargarDatos=async()=>{
   (presusArr||[]).forEach(p=>{
     const ts=p.creado?.toDate?.();
     if(ts) eventos.push({tipo:'presu',fecha:ts,titulo:p.titulo||'Presupuesto',sub:p.clienteNombre||'',estado:p.estado||'espera',id:p.id,cliId:p.clienteId||'',sinFicha:!p.clienteId});
-  });
-  if(fSnap) fSnap.docs.forEach(d=>{
-    const f={id:d.id,...d.data()};
-    const ts=f.creado?.toDate?.();
-    if(ts){
-      const num=f.numero?`FAC-${String(f.numero).padStart(4,'0')}`:'Factura';
-      eventos.push({tipo:'factura',fecha:ts,titulo:num+(f.total!=null?' · '+fmtM(f.total):''),sub:f.clienteNombre||'',estado:f.estado||'pendiente',id:f.id,cliId:f.clienteId||'',sinFicha:!f.clienteId});
-    }
   });
 
   const hoyStr=_calgFechaStr(new Date());
@@ -13886,13 +13725,6 @@ window._calgNavegar=(tipo,id,cliId)=>{
   else if(tipo==='presu'){ if(typeof verPresupuesto==='function') verPresupuesto(id); }
   else if(tipo==='aviso'){ if(typeof editarAviso==='function') editarAviso(id); }
   else if(tipo==='cobro'||tipo==='entrega'){ if(typeof verSimple==='function') verSimple(tipo,id); }
-  else if(tipo==='factura'){
-    (async()=>{
-      const yaCargado=(typeof _facturasData!=='undefined'&&_facturasData||[]).some(f=>f.id===id);
-      if(!yaCargado && typeof renderFacturas==='function') await renderFacturas();
-      if(typeof window._verFactura==='function') window._verFactura(id);
-    })();
-  }
 };
 
 
