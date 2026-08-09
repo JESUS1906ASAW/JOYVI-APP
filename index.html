@@ -539,11 +539,13 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 .grupo-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
 
 /* ── Widget mini-calendario dentro del banner de grupo ── */
-.mcal-widget{position:absolute;top:10px;right:12px;width:118px;padding:6px 6px 5px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px) saturate(1.4);-webkit-backdrop-filter:blur(8px) saturate(1.4);border:1px solid rgba(255,255,255,.28);border-radius:10px;cursor:pointer;z-index:2;transition:.18s var(--ease-out)}
+.grupo-header-text{flex-shrink:0}
+.grupo-header-calspacer{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;height:100%}
+.mcal-widget{width:min(212px,94%);box-sizing:border-box;padding:7px 9px 6px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px) saturate(1.4);-webkit-backdrop-filter:blur(8px) saturate(1.4);border:1px solid rgba(255,255,255,.28);border-radius:10px;cursor:pointer;transition:.18s var(--ease-out)}
 .mcal-widget:hover,.mcal-widget:active{background:rgba(0,0,0,.55);border-color:rgba(255,255,255,.45);transform:translateY(-1px)}
-.mcal-month{font-size:9px;font-weight:800;color:#fff;text-align:center;margin-bottom:4px;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-.mcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.mcal-grid span{font-size:7px;font-weight:600;color:rgba(255,255,255,.8);text-align:center;line-height:11px;height:11px;border-radius:50%}
+.mcal-month{font-size:10px;font-weight:800;color:#fff;text-align:center;margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.mcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mcal-grid span{font-size:8px;font-weight:600;color:rgba(255,255,255,.8);text-align:center;line-height:14px;height:14px;border-radius:50%}
 .mcal-today{background:var(--r)!important;color:#fff!important;font-weight:900!important;box-shadow:0 0 0 1px rgba(255,255,255,.5)}
 
 /* ── GTABS ── */
@@ -1010,7 +1012,7 @@ body.offline .dash-offline-bar{display:flex}
   transition:opacity .35s ease;
 }
 #splashScreen.hide{opacity:0;pointer-events:none}
-#splashScreen img{width:220px;height:auto;border-radius:0;box-shadow:none;animation:splashPop .5s cubic-bezier(.16,1,.3,1)}
+#splashScreen img{width:240px;height:auto;border-radius:0;box-shadow:none;animation:splashPop .5s cubic-bezier(.16,1,.3,1)}
 @keyframes splashPop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
 .splash-spinner{width:26px;height:26px;border-radius:50%;border:3px solid rgba(0,0,0,.1);border-top-color:#e53935;animation:splashSpin .8s linear infinite}
 @keyframes splashSpin{to{transform:rotate(360deg)}}
@@ -1205,7 +1207,7 @@ body.offline .dash-offline-bar{display:flex}
 
 <!-- ══ PANTALLA DE CARGA (SPLASH) ══ -->
 <div id="splashScreen">
-  <img src="https://raw.githubusercontent.com/JESUS1906ASAW/JOYVI-APP/main/icon-192.png" alt="Joyvi" onerror="this.onerror=null;this.src='icon-192.png'">
+  <img src="https://raw.githubusercontent.com/JESUS1906ASAW/JOYVI-APP/main/logo-splash.png" alt="Joyvi" onerror="this.onerror=null;this.src='logo-splash.png'">
   <div class="splash-spinner"></div>
 </div>
 
@@ -2145,7 +2147,6 @@ const _ajustarFechaLaborable = (fechaStr) => {
 const weekDates=wk=>{const[y,w]=wk.split('-W').map(Number);const jan4=new Date(y,0,4);const mon=new Date(jan4);mon.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(w-1)*7);const sun=new Date(mon);sun.setDate(mon.getDate()+6);const fmt=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});return`${fmt(mon)} – ${fmt(sun)}`};
 const freqDays={semanal:7,quincenal:14,mensual:30,bimestral:60,trimestral:90,cuatrimestral:120,semestral:180};
 const audioCtx=()=>{try{return new(window.AudioContext||window.webkitAudioContext)()}catch{return null}};
-const beep=()=>{const ac=audioCtx();if(!ac)return;const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=880;g.gain.setValueAtTime(.3,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.5);o.start();o.stop(ac.currentTime+.5)};
 
 // ── Sonido sutil de confirmación (guardar / aceptar) ──
 const _sndConfirm=()=>{try{const ac=audioCtx();if(!ac)return;[[660,.0,.08],[880,.09,.08],[1100,.19,.12]].forEach(([f,t,d])=>{const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,ac.currentTime+t);g.gain.linearRampToValueAtTime(.12,ac.currentTime+t+.02);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+t+d);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+d+.05);});}catch(e){}};
@@ -2206,9 +2207,6 @@ const _subirImgCloudinary=async(file, folder='grupos')=>{
   const data = await resp.json();
   return { url: data.secure_url, publicId: data.public_id };
 };
-
-// Genera ID único simple
-const _uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 
 // COMPATIBILIDAD: comprimirImg legacy (base64) — solo para lectura de fotos antiguas
 const comprimirImg=async(file)=>{
@@ -2476,37 +2474,6 @@ window.addEventListener('popstate',e=>{
   _navFromPop=false;
 });
 
-window.goBack=()=>{
-  if($('sb').classList.contains('open')){cerrarSB();return;}
-  const isKiosk=localStorage.getItem('joyvi_kiosk')==='1';
-  if(isKiosk){
-    const kioskScreens=['kiosk','kioskCli','kioskPartes','kioskAverias','kioskMant','kioskPresu'];
-    const cur=document.querySelector('.screen.active');
-    const curKey=cur?Object.keys(screens).find(k=>screens[k]===cur.id):null;
-    if(curKey==='kiosk') return;
-    if(kioskScreens.includes(curKey)){ goScreen('kiosk'); return; }
-    goScreen('kiosk'); return;
-  }
-  const cur=document.querySelector('.screen.active');
-  const curKey=cur?Object.keys(screens).find(k=>screens[k]===cur.id):null;
-  // Drain screenHistory of entries that equal the current screen
-  while(screenHistory.length && screenHistory[screenHistory.length-1]===curKey){
-    screenHistory.pop();
-  }
-  if(screenHistory.length){
-    const prev=screenHistory.pop();
-    goScreen(prev);
-    return;
-  }
-  // Fallback: if browser state has a different screen use history.back(), else go to inicio
-  if(history.state?.screen && history.state.screen!==curKey){
-    history.back();
-  } else {
-    goScreen('inicio');
-  }
-};
-
-window.irAGrupo=()=>goScreen('grupo');
 // Inicio del drawer:
 // - Si estás en una pestaña del grupo (mant, cal, admin, stats, archivos, imágenes) → vuelve al menú del grupo
 // - Si estás EN el menú del grupo (screenGrupo) → va al inicio real de la app
@@ -3654,12 +3621,12 @@ const renderGrupo=()=>{
     <div class="grupo-header-img" style="background-image:url('${bg}')"></div>
     <div class="grupo-header-ov"></div>
     <div class="grupo-header-content">
-      <div>
+      <div class="grupo-header-text">
         <div class="grupo-title">${CG.nombre||'Grupo'}</div>
         <div class="grupo-sub">Admin: ${CG.adminNombre||'–'}</div>
       </div>
+      <div class="grupo-header-calspacer">${_mcalGrupoHTML()}</div>
     </div>
-    ${_mcalGrupoHTML()}
   </div>
   <div class="gtabs-main">
     <button class="gtab-big active" id="tabCli" onclick="switchGTab('cli')">
@@ -3770,8 +3737,6 @@ window.switchGTab=tab=>{
     if(tabEl) tabEl.classList.toggle('active',t===tab);
     if(conEl) conEl.style.display=t===tab?'block':'none';
   });
-  const calPreviewEl=$('calPreview');
-  if(calPreviewEl) calPreviewEl.style.display=tab==='cli'?'block':'none';
   // Load content for tabs that render async
   if(tab==='aver') _renderGTabAverias();
   else if(tab==='presu') _renderGTabPresupuestos();
@@ -4935,41 +4900,6 @@ const renderTabClientes=()=>{
   const clis=allClientes.filter(c=>!c.archivado);
   const ultimos=clis.slice().reverse();
 
-  // Mini calendario próximos 30 días
-  const hoy=new Date(); hoy.setHours(0,0,0,0);
-  const en30=new Date(hoy); en30.setDate(hoy.getDate()+30);
-  const proxMants=allMantenimientos
-    .filter(m=>{
-      if(m.estado==='completado')return false;
-      const fp=m.fechaProxima||m.fechaInicio; if(!fp)return false;
-      const d=new Date(fp); return d>=hoy&&d<=en30;
-    })
-    .sort((a,b)=>{
-      const fa=a.fechaProxima||a.fechaInicio; const fb=b.fechaProxima||b.fechaInicio;
-      return fa<fb?-1:fa>fb?1:0;
-    });
-
-  const calHTML=proxMants.length
-    ? proxMants.map(m=>{
-        const fp=m.fechaProxima||m.fechaInicio;
-        const d=new Date(fp);
-        const diff=Math.round((d-hoy)/(1000*60*60*24));
-        const difftxt=diff===0?'Hoy':diff===1?'Mañana':`En ${diff} días`;
-        const urgent=diff<=3;
-        return`<div onclick="goScreen('grupo');switchGTab('mant')" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:.15s;background:var(--card)" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='var(--card)'">
-          <div style="width:38px;height:38px;border-radius:10px;background:${urgent?'rgba(var(--theme-rgb),.15)':'rgba(255,255,255,.06)'};display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
-            <div style="font-size:13px;font-weight:900;color:${urgent?'#e53935':'var(--tx)'};">${d.getDate()}</div>
-            <div style="font-size:9px;color:var(--tx2);font-weight:700;text-transform:uppercase">${d.toLocaleString('es',{month:'short'})}</div>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nombreTrabajo||'Mantenimiento'}</div>
-            <div style="font-size:11px;color:var(--tx2);margin-top:1px">${m.clienteNombre||'–'} · <span style="color:${urgent?'#e53935':'var(--tx2)'};font-weight:700">${difftxt}</span></div>
-          </div>
-          <span style="font-size:16px;color:var(--tx3)">›</span>
-        </div>`;
-      }).join('')
-    : `<div style="text-align:center;padding:16px 8px;font-size:12px;color:var(--tx2)">Sin mantenimientos en los próximos 30 días</div>`;
-
   return `
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
     <button class="btn-nuevo" style="margin-left:0;padding:8px 13px;font-size:12px" onclick="exportarBackupZIP()">☁️ Backup</button>
@@ -4978,14 +4908,7 @@ const renderTabClientes=()=>{
     ${('contacts' in navigator)?`<button class="btn-nuevo" onclick="abrirFCli();setTimeout(importarContactoAgenda,100)" style="background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.3);color:var(--r);padding:8px 13px;font-size:12px">📋 Agenda</button>`:''}
   </div>
   <input class="sbox" placeholder="Buscar cliente..." oninput="filtrarClis(this.value)" id="cliSearchBox">
-  <div id="clisList">${htmlListaClis(ultimos,false)}</div>
-  <div id="calPreview" style="margin-top:18px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div style="font-size:11px;font-weight:900;color:var(--tx2);letter-spacing:2px;text-transform:uppercase">Próximos 30 días</div>
-      <button onclick="goScreen('grupo');switchGTab('mant');setTimeout(()=>_switchGMantMode('calendario'),100)" style="font-size:11px;font-weight:700;color:var(--r);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0">Ver todo ›</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px">${calHTML}</div>
-  </div>`;
+  <div id="clisList">${htmlListaClis(ultimos,false)}</div>`;
 };
 
 let activeCTab='clis';
@@ -5028,11 +4951,9 @@ window.filtrarClis=v=>{
   const clis=allClientes.filter(c=>!c.archivado&&(c.nombre?.toLowerCase().includes(v.toLowerCase())||c.telefono?.includes(v)));
   if(v.trim()){
     $('clisList').innerHTML=htmlListaClis(clis,false);
-    const cal=$('calPreview'); if(cal)cal.style.display='none';
   } else {
     const todos=allClientes.filter(c=>!c.archivado).slice().reverse();
     $('clisList').innerHTML=htmlListaClis(todos,false);
-    const cal=$('calPreview'); if(cal)cal.style.display='block';
   }
 };
 
@@ -8360,31 +8281,6 @@ window.abrirMantPlantillaParaEditar=(pid)=>{
   },100);
 };
 
-window.aplicarMantPlantillaFull=async(pid)=>{
-  const p=_mantFullPlantillas.find(x=>x.id===pid);if(!p)return;
-  const cliId=document.getElementById(`apCliSel_${pid}`)?.value||'';
-  const cli=allClientes.find(c=>c.id===cliId);
-  const fecha=document.getElementById(`apFecha_${pid}`)?.value||new Date().toISOString().split('T')[0];
-  const notasInput=document.getElementById(`apNotas_${pid}`)?.value.trim();
-  const notas=notasInput||p.notas||'';
-  try{
-    await addDoc(collection(db,'grupos',CGID,'mantenimientos'),{
-      clienteId:cliId||'',
-      clienteNombre:cli?.nombre||'',
-      clienteDireccion:cli?.direccion||'',
-      nombreTrabajo:p.nombreTrabajo,
-      frecuencia:p.frecuencia||'',
-      fechaInicio:fecha,
-      fechaProxima:fecha,
-      estado:'pendiente',
-      notas,
-      creado:serverTimestamp()
-    });
-    toast('Plantilla aplicada — mantenimiento creado','o');
-    mantTab=0;renderMantenimiento();
-  }catch(e){toast('Error al aplicar plantilla','e')}
-};
-
 window.borrarMantPlantillaFull=async(id)=>{
   if(!confirm('¿Eliminar esta plantilla?'))return;
   try{await deleteDoc(doc(db,'grupos',CGID,'mantPlantillasFull',id));toast('Plantilla eliminada','i');renderMantPlantillasCompletas()}catch(e){toast('Error','e')}
@@ -10133,11 +10029,6 @@ window._cropCancel=()=>{
 };
 
 // Helper: abre crop para una imagen individual
-window._cropIfNeeded=async(file)=>{
-  try{return await abrirCropModal(file);}
-  catch(e){if(e.message==='cancelled')throw e;return file;}
-};
-
 
 window.subirFotosCliente=async(cliId,files)=>{
   if(!files||!files.length)return;
@@ -11347,53 +11238,6 @@ window._generarPresuPDFConFirma=(prId,firmaDataURL)=>{
   setTimeout(()=>{win.focus();win.print();},600);
   cerrarSB();
   toast('PDF del presupuesto listo','o');
-};
-
-// ── Historial de averías en la ficha de cliente ──
-window.verAveriasHistorialCliente=async(clienteId)=>{
-  const c=allClientes.find(x=>x.id===clienteId);
-  if(!CGID)return;
-  // Guardar referencia para poder volver a la ficha del cliente
-  _sbReturnCli=clienteId;
-  try{
-    const pendSnap=await getDocs(query(collection(db,'grupos',CGID,'averias'),where('clienteId','==',clienteId)));
-    const pendAvs=pendSnap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.estado==='pendiente').sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
-    const histSnap=await getDocs(query(collection(db,'grupos',CGID,'averias_historial'),where('clienteId','==',clienteId)));
-    const histAvs=histSnap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>_tsN(b.resueltaEn)-_tsN(a.resueltaEn));
-
-    let html=`
-    ${_btnVolverCli(clienteId,c?.nombre)}
-    <button class="btn btn-p btn-sm" style="width:100%;margin-bottom:16px" onclick="abrirNuevaAveria()"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>+ Nueva avería</button>`;
-    if(pendAvs.length){
-      html+=`<div style="font-size:11px;font-weight:800;color:#ff9800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Pendientes (${pendAvs.length})</div>`;
-      html+=pendAvs.map(a=>`<div class="averia-card" onclick="verAveria('${a.id}')" data-sync-id="${a.id}">
-        <div class="averia-header">
-          <div class="averia-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div style="flex:1"><div class="averia-title">${a.tipo||'Avería'}</div><div class="averia-sub">${fmtF(a.creado)}</div></div>
-          <span class="averia-badge pend">Pendiente</span>
-        </div>
-        ${a.descripcion?`<div style="font-size:13px;color:var(--tx2);padding-left:44px">${a.descripcion}</div>`:''}
-      </div>`).join('');
-    }
-    if(histAvs.length){
-      html+=`<div style="font-size:11px;font-weight:800;color:#4caf50;letter-spacing:1.5px;text-transform:uppercase;margin:12px 0 8px">Resueltas (${histAvs.length})</div>`;
-      html+=histAvs.map(a=>`<div class="averia-card resuelta" style="cursor:pointer" onclick="verAveriaHistorial('${a.id}','${clienteId}')" onmouseover="this.style.borderColor='rgba(76,175,80,.5)'" onmouseout="this.style.borderColor=''">
-        <div class="averia-header">
-          <div class="averia-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div style="flex:1"><div class="averia-title">${a.tipo||'Avería'}</div><div class="averia-sub">${fmtF(a.creado)} → Resuelta: ${fmtF(a.resueltaEn)}</div></div>
-          <span style="font-size:18px;color:var(--tx3)">›</span>
-        </div>
-        ${a.descripcion?`<div style="font-size:13px;color:var(--tx2);padding-left:44px">${a.descripcion}</div>`:''}
-      </div>`).join('');
-    }
-    if(!pendAvs.length&&!histAvs.length){
-      html+=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><p>Sin averías registradas</p></div>`;
-    }
-    // Actualizar título del SB con botón de volver
-    abrirSB(`Averías de ${c?.nombre||'Cliente'}`,html,clienteId);
-  }catch(e){
-    toast('Error al cargar averías','e');
-  }
 };
 
 // ─── Ver detalle de avería resuelta (historial) ───
@@ -12999,72 +12843,6 @@ window._hmGrupoFiltrar = (q) => {
   }
 };
 
-window._toggleMantHistorial = async () => { abrirHMSheetGrupo(); };
-
-window._cargarMantHistorial = async (filtro) => {
-  const cont = document.getElementById('mantHistContent');
-  if(!cont) return;
-  if(!CGID) { cont.innerHTML = '<div class="empty" style="padding:12px"><p>Selecciona un grupo primero</p></div>'; return; }
-  if(!_mantHistCache.length) {
-    cont.innerHTML = '<div class="empty" style="padding:12px"><p>Cargando...</p></div>';
-    try {
-      const snap = await getDocs(query(collection(db,'grupos',CGID,'historial_mantenimientos'), orderBy('creado','desc')));
-      _mantHistCache = snap.docs.map(d=>({id:d.id,...d.data()}));
-    } catch(e) { cont.innerHTML = '<div class="empty" style="padding:12px"><p>Error cargando historial</p></div>'; return; }
-  }
-  _renderMantHistorial(filtro||'');
-};
-
-window._filtrarMantHistorial = (q) => {
-  if(!_mantHistCache.length) { _cargarMantHistorial(q); return; }
-  _renderMantHistorial(q);
-};
-
-window._renderMantHistorial = (q) => {
-  const cont = document.getElementById('mantHistContent');
-  if(!cont) return;
-  const words = (q||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
-  let lista = _mantHistCache;
-  if(words.length) {
-    lista = lista.filter(h => {
-      const hay = [h.nombreTrabajo,h.clienteNombre,h.fechaCompletado,h.completadoPor,h.frecuencia].filter(Boolean).join(' ').toLowerCase();
-      return words.every(w => hay.includes(w));
-    });
-  }
-  if(!lista.length) { cont.innerHTML = '<div class="empty" style="padding:12px"><p>Sin resultados</p></div>'; return; }
-  cont.innerHTML = lista.slice(0,80).map(h => `
-    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="verMantHist('${h.id}')">
-      <div style="flex-shrink:0;width:32px;height:32px;border-radius:10px;background:rgba(76,175,80,.12);display:flex;align-items:center;justify-content:center">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.nombreTrabajo||'—'}</div>
-        <div style="font-size:11px;color:var(--tx2)">${h.clienteNombre||'—'} · ${h.fechaCompletado||fmtF(h.creado)}${h.completadoPor?' · '+h.completadoPor:''}</div>
-      </div>
-      <span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;background:rgba(76,175,80,.12);color:#4caf50;flex-shrink:0">${h.frecuencia||'Único'}</span>
-    </div>`).join('');
-};
-
-window.verMantHist = async(id) => {
-  if(!CGID) return;
-  try {
-    const snap = await getDoc(doc(db,'grupos',CGID,'historial_mantenimientos',id));
-    if(!snap.exists()) { toast('No encontrado','e'); return; }
-    const h = {id:snap.id,...snap.data()};
-    abrirSB(`✅ ${h.nombreTrabajo}`,`
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div style="background:rgba(76,175,80,.07);border:1px solid rgba(76,175,80,.22);border-radius:14px;padding:14px">
-          <div style="font-size:15px;font-weight:900;color:var(--tx);margin-bottom:4px">${h.nombreTrabajo}</div>
-          <div style="font-size:12px;color:#4caf50;font-weight:700">Completado el ${h.fechaCompletado||fmtF(h.creado)}${h.completadoPor?' · por '+h.completadoPor:''}</div>
-        </div>
-        ${h.clienteNombre?`<div><span style="font-size:11px;color:var(--tx2);font-weight:700">CLIENTE</span><div style="font-size:14px;font-weight:800;color:var(--tx);margin-top:2px">${h.clienteNombre}</div></div>`:''}
-        ${h.frecuencia?`<div><span style="font-size:11px;color:var(--tx2);font-weight:700">FRECUENCIA</span><div style="font-size:13px;color:var(--tx);margin-top:2px">${h.frecuencia}</div></div>`:''}
-        ${h.notas?`<div><span style="font-size:11px;color:var(--tx2);font-weight:700">NOTAS</span><div style="font-size:13px;color:var(--tx);margin-top:2px;white-space:pre-wrap">${h.notas}</div></div>`:''}
-        ${h.equipos?`<div><span style="font-size:11px;color:var(--tx2);font-weight:700">EQUIPOS</span><div style="font-size:13px;color:var(--tx);margin-top:2px">${h.equipos}</div></div>`:''}
-      </div>`);
-  } catch(e) { toast('Error al cargar','e'); }
-};
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // QR POR CLIENTE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -13095,30 +12873,6 @@ window.mostrarQRCliente=async(cliId)=>{
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ENVIAR PRESUPUESTO POR WHATSAPP
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-window.enviarPresupuestoWA=(presuId)=>{
-  const p=allPartes.find(x=>x.id===presuId)||{};
-  const c=allClientes.find(x=>x.id===p.clienteId)||{};
-  const tel=(c.telefono||'').replace(/\s/g,'');
-  if(!tel){toast('El cliente no tiene teléfono','e');return;}
-  const total=calcTotal(p);
-  const msg=encodeURIComponent(
-    `Hola ${c.nombre},\n\nLe enviamos el presupuesto para "${p.titulo||'trabajo'}":\n\n` +
-    `💶 Total: ${fmtM(total)}\n\n` +
-    `Quedo a su disposición para cualquier duda.\n\nSaludos,\nJoyvi Electrobombas`
-  );
-  window.open(`https://wa.me/34${tel}?text=${msg}`,'_blank');
-};
-
-// Botón en ficha presupuesto (llamado desde verPresupuesto)
-window.enviarPresuWADesdeVer=(presuId)=>{
-  // Buscar en allPartes o colección presupuestos
-  // Reutilizamos la función pero con datos del presupuesto
-  enviarPresupuestoWA(presuId);
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // LOG DE ACTIVIDAD
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const registrarLog=async(accion,descripcion,extras={})=>{
@@ -13133,29 +12887,6 @@ const registrarLog=async(accion,descripcion,extras={})=>{
     });
   }catch(e){}
 };
-
-const renderLog=async()=>{
-  if(!CGID){$('logContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><p>Selecciona un grupo primero</p></div>`;return}
-  $('logContent').innerHTML=`<div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>`;
-  try{
-    const snap=await getDocs(query(collection(db,'grupos',CGID,'log'),orderBy('creado','desc')));
-    const logs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(!logs.length){$('logContent').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><p>Sin actividad registrada aún</p></div>`;return}
-    const iconosAcc={ver_cliente:'·',guardar_cli:'·',nuevo_parte:'·',editar_parte:'·',archivar:'·',nueva_averia:'·',resolver_averia:'·',nuevo_mant:'·',nuevo_presu:'·',backup:'·'};
-    $('logContent').innerHTML=`
-    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px">${logs.length} acciones registradas</div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:4px 16px 4px">
-      ${logs.slice(0,60).map(l=>`<div class="log-item">
-        <div class="log-ico">${iconosAcc[l.accion]||'·'}</div>
-        <div class="log-info">
-          <div class="log-msg">${l.descripcion||l.accion}</div>
-          <div class="log-meta">👤 ${l.nombre||'—'} · ${fmtF(l.creado)}</div>
-        </div>
-      </div>`).join('')}
-    </div>`;
-  }catch(e){$('logContent').innerHTML=`<div class="empty"><p>Error al cargar el log</p></div>`}
-};
-
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ALERTAS PROACTIVAS DE MANTENIMIENTOS
@@ -14110,42 +13841,6 @@ const _LOGOS_B64 = {
   astonmartin: 'https://raw.githubusercontent.com/JESUS1906ASAW/JOYVI-APP/main/icon-192.png',
 };
 
-// Generar icono con logo rojo (para fondos no-rojos)
-const _recolorIconLogo = (base64Img, logoColor) => new Promise(resolve => {
-  const img = new Image();
-  img.onload = () => {
-    const c = document.createElement('canvas');
-    c.width = img.width; c.height = img.height;
-    const ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    // Extract logo area (logo is drawn in the center ~70% of icon)
-    // We'll use source-atop to color the bright (white) areas
-    const imgData = ctx.getImageData(0, 0, c.width, c.height);
-    const d = imgData.data;
-    // Parse target color
-    const rc = parseInt(logoColor.slice(1,3),16);
-    const gc = parseInt(logoColor.slice(3,5),16);
-    const bc = parseInt(logoColor.slice(5,7),16);
-    for (let i = 0; i < d.length; i += 4) {
-      const brightness = (d[i] + d[i+1] + d[i+2]) / 3;
-      // If pixel is close to white (logo), recolor it
-      if (brightness > 180 && d[i+3] > 50) {
-        const factor = brightness / 255;
-        d[i]   = Math.round(rc * factor);
-        d[i+1] = Math.round(gc * factor);
-        d[i+2] = Math.round(bc * factor);
-      }
-    }
-    ctx.putImageData(imgData, 0, 0);
-    resolve(c.toDataURL('image/png'));
-  };
-  img.onerror = () => resolve(base64Img);
-  img.src = base64Img;
-});
-
-// Cache for recolored icons
-const _recoloredIconCache = {};
-
 // El logo actual es a color fijo (negro/rojo sobre blanco) y no debe recolorearse
 // por tema — se usa siempre tal cual, sea cual sea el color de acento elegido.
 const _getIconForTema = async (tema) => {
@@ -14967,20 +14662,6 @@ const _lockInicializar = () => {
     const active=document.querySelector('.screen.active');
     if(!active)return null;
     return active.querySelector('.scroll-pad')||null;
-  };
-
-  // Guardar pantalla actual en sessionStorage antes de recargar
-  const _guardarEstado=()=>{
-    const active=document.querySelector('.screen.active');
-    if(!active)return;
-    const id=Object.keys(screens||{}).find(k=>(screens[k]===active.id));
-    if(id){
-      sessionStorage.setItem('joyvi_ptr_screen',id);
-      if(id==='grupo'){
-        const tab=sessionStorage.getItem('joyvi_gtab')||'cli';
-        sessionStorage.setItem('joyvi_ptr_gtab',tab);
-      }
-    }
   };
 
   // Refrescar el contenido de la pantalla actual SIN recargar la página
