@@ -769,6 +769,33 @@ body.modo-claro #presuModalHead .pm-close{background:rgba(0,0,0,.06)}
 .hg-filtros{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .hg-filtro{border:1px solid var(--border);background:transparent;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800;color:var(--tx2);cursor:pointer;font-family:var(--font);transition:.15s}
 .hg-filtro.active{background:var(--r);color:#fff;border-color:var(--r)}
+.hg-event-dot.cobro{background:rgba(255,202,40,.15)}
+
+/* ── CALENDARIO GLOBAL ── */
+.calg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.calg-nav-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:18px;font-weight:900;font-family:var(--font)}
+.calg-nav-btn:hover{border-color:var(--r);color:var(--r)}
+.calg-title{font-size:15px;font-weight:900;color:var(--tx);text-transform:capitalize;flex:1;text-align:center}
+.calg-toolbar{display:flex;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.calg-hoy-btn{font-size:11px;font-weight:800;color:var(--r);background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap;font-family:var(--font)}
+.calg-cad-btn{font-size:11px;font-weight:800;color:var(--tx2);background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap;font-family:var(--font)}
+.calg-daynames{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.calg-dayname{text-align:center;font-size:10px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px}
+.calg-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.calg-cell{aspect-ratio:1;border-radius:10px;border:1px solid var(--border);background:var(--card2);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 2px;cursor:pointer;transition:.15s}
+.calg-cell:hover{border-color:rgba(var(--theme-rgb),.4)}
+.calg-cell.other{opacity:0;pointer-events:none;border-color:transparent;background:transparent}
+.calg-cell.today{border-color:var(--r);box-shadow:0 0 0 1px rgba(var(--theme-rgb),.3)}
+.calg-daynum{font-size:12px;font-weight:800;color:var(--tx)}
+.calg-cell.today .calg-daynum{color:var(--r)}
+.calg-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;margin-top:3px}
+.calg-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.calg-more{font-size:8px;font-weight:800;color:var(--tx2)}
+.calg-legend{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.calg-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2);font-weight:700}
+.calg-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.calg-avi-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:12px 14px;margin-bottom:8px}
+.calg-avi-card.atrasado{border-color:rgba(239,83,80,.4);background:rgba(239,83,80,.06)}
 
 /* ── MAPA CLIENTES ── */
 /* ── MAPA DE CLIENTES ── */
@@ -1590,12 +1617,8 @@ body.offline .dash-offline-bar{display:flex}
   <div class="screen" id="screenCalendario">
     <div class="scroll-pad">
       <div class="volver-btn" style="margin-bottom:16px" onclick="goScreen('grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</div>
-      <div style="text-align:center;padding:40px 20px">
-        <div style="width:64px;height:64px;border-radius:20px;background:rgba(66,165,245,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 18px"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#42a5f5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-        <div style="font-size:18px;font-weight:900;color:var(--tx);margin-bottom:8px">Calendario</div>
-        <div style="font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:20px">El calendario ahora está integrado en la pestaña <strong>Mantenimientos</strong> del menú de grupo.</div>
-        <button class="btn btn-p" onclick="goScreen('grupo');switchGTab('mant');setTimeout(()=>_switchGMantMode('calendario'),100)">📅 Ir al Calendario →</button>
-      </div>
+      <div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:16px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Calendario</div>
+      <div id="calGlobalContent"></div>
     </div>
   </div>
 
@@ -2381,7 +2404,7 @@ const _renderScreen=id=>{
   else if(id==='grupo')renderGrupo();
   else if(id==='mantenimiento')renderMantenimiento();
   else if(id==='administracion')renderAdministracion();
-  else if(id==='calendario')renderCalendario();
+  else if(id==='calendario')renderCalendarioGlobal();
   else if(id==='archivos')renderArchivos();
   else if(id==='imagenes')renderImagenes();
 
@@ -2592,7 +2615,7 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-grupo-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${grupoNombre}</div>
     <div class="d-item${act('grupo','mant')}" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
     <div class="d-item${act('grupo','aver')}" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
-    <div class="d-item${act('historialGlobal')}" onclick="goScreen('historialGlobal');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Historial global</div>
+    <div class="d-item${act('calendario')}" onclick="goScreen('calendario');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Calendario</div>
     <div class="d-item${act('imagenes')}" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
     <div class="d-item" onclick="cerrarDrawer();abrirSelectorImprimirPartes()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>Imprimir partes</div>
     ${sep}
@@ -13523,6 +13546,316 @@ window._hgNavegar=(tipo,id,cliId)=>{
   else if(tipo==='mant'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('mant');setTimeout(()=>verMant&&verMant(id),100);},200);}
   else if(tipo==='averia'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('aver');setTimeout(()=>verAveria&&verAveria(id),100);},200);}
   else if(tipo==='presu'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('presu');},200);}
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CALENDARIO GLOBAL (partes, averías, presupuestos, cobros, avisos)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const CALG_TIPOS={
+  parte:{ico:'📋',color:'#42a5f5',label:'Parte'},
+  averia:{ico:'⚡',color:'#ef5350',label:'Avería'},
+  presu:{ico:'💶',color:'#ab47bc',label:'Presupuesto'},
+  cobro:{ico:'💰',color:'#ffca28',label:'Cobro'},
+  aviso:{ico:'🔔',color:'#26a69a',label:'Aviso/Entrega'}
+};
+const _calgEstadoBadge={
+  'completado':'<span style="font-size:10px;background:rgba(76,175,80,.12);color:#4caf50;border-radius:8px;padding:2px 7px;font-weight:800">Completado</span>',
+  'pendiente':'<span style="font-size:10px;background:rgba(255,152,0,.12);color:#ff9800;border-radius:8px;padding:2px 7px;font-weight:800">Pendiente</span>',
+  'resuelta':'<span style="font-size:10px;background:rgba(76,175,80,.12);color:#4caf50;border-radius:8px;padding:2px 7px;font-weight:800">Resuelta</span>',
+  'espera':'<span style="font-size:10px;background:rgba(171,71,188,.12);color:#ab47bc;border-radius:8px;padding:2px 7px;font-weight:800">En espera</span>',
+  'aceptado':'<span style="font-size:10px;background:rgba(76,175,80,.12);color:#4caf50;border-radius:8px;padding:2px 7px;font-weight:800">Aceptado</span>',
+  'pagada':'<span style="font-size:10px;background:rgba(76,175,80,.12);color:#4caf50;border-radius:8px;padding:2px 7px;font-weight:800">Pagada</span>',
+  'borrador':'<span style="font-size:10px;background:rgba(255,255,255,.08);color:var(--tx2);border-radius:8px;padding:2px 7px;font-weight:800">Borrador</span>',
+};
+let _calgYear=null,_calgMonth=null;
+window._calgEventos=[];
+window._calgAvisosRaw=[];
+
+const _calgFechaStr=d=>{
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+};
+
+const renderCalendarioGlobal=async()=>{
+  const el=$('calGlobalContent'); if(!el)return;
+  if(!CGID){el.innerHTML=`<div class="empty"><p>Selecciona un grupo primero</p></div>`;return;}
+  const hoy=new Date();
+  if(_calgYear==null){_calgYear=hoy.getFullYear();_calgMonth=hoy.getMonth();}
+  el.innerHTML=`<div class="skel skel-card" style="margin-bottom:8px"></div><div class="skel skel-card" style="margin-bottom:8px"></div><div class="skel skel-card"></div>`;
+  await _calgCargarDatos();
+  _calgRenderGrid();
+};
+
+const _calgCargarDatos=async()=>{
+  const eventos=[];
+  try{
+    const pSnap=await getDocs(query(collection(db,'grupos',CGID,'partes'),orderBy('creado','desc')));
+    pSnap.docs.forEach(d=>{
+      const p={id:d.id,...d.data()};
+      const ts=p.creado?.toDate?.();
+      if(ts) eventos.push({tipo:'parte',fecha:ts,titulo:p.titulo||'Parte de trabajo',sub:p.clienteNombre||'',estado:p.estado||'',id:p.id,cliId:p.clienteId||''});
+    });
+  }catch(e){}
+  try{
+    const aSnap=await getDocs(query(collection(db,'grupos',CGID,'averias_historial'),orderBy('resueltaEn','desc')));
+    aSnap.docs.forEach(d=>{
+      const a={id:d.id,...d.data()};
+      const ts=a.resueltaEn?.toDate?.();
+      if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'resuelta',id:a.id,cliId:a.clienteId||''});
+    });
+    const aAbSnap=await getDocs(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente')));
+    aAbSnap.docs.forEach(d=>{
+      const a={id:d.id,...d.data()};
+      const ts=a.creado?.toDate?.();
+      if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'pendiente',id:a.id,cliId:a.clienteId||''});
+    });
+  }catch(e){}
+  try{
+    const prSnap=await getDocs(query(collection(db,'grupos',CGID,'presupuestos'),orderBy('creado','desc')));
+    prSnap.docs.forEach(d=>{
+      const p={id:d.id,...d.data()};
+      const ts=p.creado?.toDate?.();
+      if(ts) eventos.push({tipo:'presu',fecha:ts,titulo:p.titulo||'Presupuesto',sub:p.clienteNombre||'',estado:p.estado||'espera',id:p.id,cliId:p.clienteId||''});
+    });
+  }catch(e){}
+  try{
+    const fSnap=await getDocs(query(collection(db,'grupos',CGID,'facturas'),orderBy('creado','desc')));
+    fSnap.docs.forEach(d=>{
+      const f={id:d.id,...d.data()};
+      const ts=f.creado?.toDate?.();
+      if(ts){
+        const num=f.numero?`FAC-${String(f.numero).padStart(4,'0')}`:'Cobro';
+        eventos.push({tipo:'cobro',fecha:ts,titulo:num+(f.total!=null?' · '+fmtM(f.total):''),sub:f.clienteNombre||'',estado:f.estado||'pendiente',id:f.id,cliId:f.clienteId||''});
+      }
+    });
+  }catch(e){}
+
+  // ── Avisos/entregas (con lógica de atraso y caducidad) ──
+  let avisos=[];
+  try{
+    const evSnap=await getDocs(collection(db,'grupos',CGID,'eventos'));
+    avisos=evSnap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){}
+  const hoyStr=_calgFechaStr(new Date());
+  const hoyD=new Date(hoyStr+'T00:00:00');
+  const aCaducar=[];
+  avisos.forEach(av=>{
+    if(av.estado==='caducado')return;
+    if(av.estado==='completado'){
+      const fd=new Date((av.fecha||hoyStr)+'T00:00:00');
+      eventos.push({tipo:'aviso',fecha:fd,fechaStr:av.fecha,titulo:av.titulo||'Aviso',sub:av.clienteNombre||'',estado:'completado',id:av.id,cliId:av.clienteId||''});
+      return;
+    }
+    const origD=new Date((av.fecha||hoyStr)+'T00:00:00');
+    const diffDias=Math.round((hoyD-origD)/86400000);
+    if(diffDias>10){ aCaducar.push(av.id); return; }
+    if(diffDias>0){
+      eventos.push({tipo:'aviso',fecha:hoyD,fechaStr:hoyStr,titulo:av.titulo||'Aviso',sub:av.clienteNombre||'',estado:'pendiente',atrasado:true,diasAtraso:diffDias,id:av.id,cliId:av.clienteId||''});
+    }else{
+      eventos.push({tipo:'aviso',fecha:origD,fechaStr:av.fecha,titulo:av.titulo||'Aviso',sub:av.clienteNombre||'',estado:'pendiente',atrasado:false,id:av.id,cliId:av.clienteId||''});
+    }
+  });
+  aCaducar.forEach(id=>{ updateDoc(doc(db,'grupos',CGID,'eventos',id),{estado:'caducado'}).catch(()=>{}); });
+
+  window._calgAvisosRaw=avisos;
+  window._calgEventos=eventos;
+};
+
+const _calgRenderGrid=()=>{
+  const el=$('calGlobalContent'); if(!el)return;
+  const hoyStr=_calgFechaStr(new Date());
+  const year=_calgYear, month=_calgMonth;
+  const primerDia=new Date(year,month,1);
+  const ultimoDia=new Date(year,month+1,0);
+  const mapa={};
+  (window._calgEventos||[]).forEach(e=>{
+    const k=e.fechaStr||_calgFechaStr(e.fecha);
+    if(!mapa[k])mapa[k]=[];
+    mapa[k].push(e);
+  });
+  let startOffset=(primerDia.getDay()+6)%7; // lunes=0
+  const totalCeldas=Math.ceil((startOffset+ultimoDia.getDate())/7)*7;
+  const nombreMes=primerDia.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+  let celdas='';
+  for(let i=0;i<totalCeldas;i++){
+    const diaNum=i-startOffset+1;
+    if(diaNum<1||diaNum>ultimoDia.getDate()){ celdas+=`<div class="calg-cell other"></div>`; continue; }
+    const fStr=_calgFechaStr(new Date(year,month,diaNum));
+    const evs=mapa[fStr]||[];
+    const esHoy=fStr===hoyStr;
+    const dotsHtml=evs.slice(0,4).map(e=>`<span class="calg-dot" style="background:${(CALG_TIPOS[e.tipo]||{}).color||'#888'}"></span>`).join('')+(evs.length>4?`<span class="calg-more">+${evs.length-4}</span>`:'');
+    celdas+=`<div class="calg-cell${esHoy?' today':''}" onclick="_calgAbrirDia('${fStr}')">
+      <div class="calg-daynum">${diaNum}</div>
+      <div class="calg-dots">${dotsHtml}</div>
+    </div>`;
+  }
+  const dayNames=['L','M','X','J','V','S','D'];
+  el.innerHTML=`
+    <div class="calg-head">
+      <div class="calg-nav-btn" onclick="_calgCambiarMes(-1)">‹</div>
+      <div class="calg-title">${nombreMes}</div>
+      <div class="calg-nav-btn" onclick="_calgCambiarMes(1)">›</div>
+    </div>
+    <div class="calg-toolbar">
+      <button class="calg-hoy-btn" onclick="_calgIrHoy()">📍 Hoy</button>
+      <button class="calg-cad-btn" onclick="_calgVerCaducados()">🗄️ Caducados</button>
+    </div>
+    <div class="calg-daynames">${dayNames.map(n=>`<div class="calg-dayname">${n}</div>`).join('')}</div>
+    <div class="calg-grid">${celdas}</div>
+    <div class="calg-legend">${Object.entries(CALG_TIPOS).map(([k,t])=>`<div class="calg-legend-item"><span class="calg-legend-dot" style="background:${t.color}"></span>${t.label}</div>`).join('')}</div>
+  `;
+};
+
+window._calgCambiarMes=(delta)=>{
+  let m=_calgMonth+delta,y=_calgYear;
+  if(m<0){m=11;y--;} if(m>11){m=0;y++;}
+  _calgMonth=m;_calgYear=y;
+  _calgRenderGrid();
+};
+window._calgIrHoy=()=>{
+  const hoy=new Date();_calgYear=hoy.getFullYear();_calgMonth=hoy.getMonth();
+  _calgRenderGrid();
+};
+
+window._calgAbrirDia=(fStr)=>{
+  const evs=(window._calgEventos||[]).filter(e=>(e.fechaStr||_calgFechaStr(e.fecha))===fStr);
+  const d=new Date(fStr+'T00:00:00');
+  const titulo=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  const hoyStr=_calgFechaStr(new Date());
+  const esFuturoOHoy=fStr>=hoyStr;
+  let html='';
+  if(!evs.length){
+    html+=`<div class="empty"><div class="empty-ico">📅</div><p>Sin eventos este día</p></div>`;
+  }else{
+    evs.forEach(e=>{
+      const ti=CALG_TIPOS[e.tipo]||{ico:'📌',color:'#888',label:e.tipo};
+      if(e.tipo==='aviso'){
+        html+=`<div class="calg-avi-card${e.atrasado?' atrasado':''}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span>${ti.ico}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:800;color:var(--tx)">${e.titulo}</div>
+              ${e.sub?`<div style="font-size:12px;color:var(--tx2)">${e.sub}</div>`:''}
+            </div>
+            ${e.estado==='completado'?_calgEstadoBadge['completado']:(e.atrasado?`<span style="font-size:10px;background:rgba(239,83,80,.15);color:#ef5350;border-radius:8px;padding:2px 7px;font-weight:800;white-space:nowrap">Atrasado ${e.diasAtraso}d</span>`:_calgEstadoBadge['pendiente'])}
+          </div>
+          ${e.estado!=='completado'?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+            <button class="btn btn-ok btn-sm" onclick="_calgCompletarAviso('${e.id}')">✅ Completar</button>
+            <button class="btn btn-s btn-sm" onclick="_calgCrearParteDesdeAviso('${e.id}')">📋 Crear parte</button>
+            <button class="btn btn-s btn-sm" style="color:#ef5350" onclick="_calgEliminarAviso('${e.id}')">🗑️ Eliminar</button>
+          </div>`:''}
+        </div>`;
+      }else{
+        html+=`<div class="hg-event" onclick="_calgNavegar('${e.tipo}','${e.id}','${e.cliId}')">
+          <div class="hg-event-dot ${e.tipo}">${ti.ico}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
+            <div style="font-size:12px;color:var(--tx2);margin:2px 0">${e.sub||'—'}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+              <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:${ti.color}">${ti.label}</span>
+              ${_calgEstadoBadge[e.estado]||''}
+            </div>
+          </div>
+          <span style="color:var(--tx3);font-size:16px;flex-shrink:0">›</span>
+        </div>`;
+      }
+    });
+  }
+  if(esFuturoOHoy){
+    html+=`<button class="btn btn-p" style="width:100%;margin-top:14px" onclick="_calgFormNuevoAviso('${fStr}')">➕ Añadir aviso/entrega</button>`;
+  }
+  abrirSB(`📅 ${titulo}`,html);
+};
+
+window._calgFormNuevoAviso=(fStr)=>{
+  const cliOpts=allClientes.filter(c=>!c.archivado).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  abrirSB('➕ Nuevo aviso/entrega',`
+    <div class="fgrp"><label>Título *</label><input id="avTit" placeholder="Ej: Entregar pieza, llamar a cliente..."></div>
+    <div class="fgrp"><label>Día</label><input type="date" id="avFecha" value="${fStr}"></div>
+    <div class="fgrp"><label>Cliente <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label>
+      <select id="avCli"><option value="">— Ninguno —</option>${cliOpts}</select>
+    </div>
+    <div class="fgrp"><label>Nota</label><textarea id="avNota" placeholder="Detalles..."></textarea></div>
+    <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="_calgGuardarAviso()">Guardar aviso</button>
+  `);
+};
+
+window._calgGuardarAviso=async()=>{
+  const titulo=($('avTit').value||'').trim();
+  const fecha=$('avFecha').value;
+  const cliId=$('avCli').value;
+  const nota=($('avNota').value||'').trim();
+  if(!titulo){toast('Pon un título','e');return;}
+  if(!fecha){toast('Elige un día','e');return;}
+  const cli=allClientes.find(c=>c.id===cliId);
+  try{
+    await addDoc(collection(db,'grupos',CGID,'eventos'),{
+      tipo:'aviso',titulo,fecha,clienteId:cliId||'',clienteNombre:cli?.nombre||'',notas:nota,estado:'pendiente',creado:serverTimestamp()
+    });
+    toast('Aviso guardado','o');
+    cerrarSB();
+    renderCalendarioGlobal();
+  }catch(e){toast('Error al guardar','e');}
+};
+
+window._calgCompletarAviso=async(id)=>{
+  try{
+    await updateDoc(doc(db,'grupos',CGID,'eventos',id),{estado:'completado'});
+    toast('Marcado como completado','o');
+    cerrarSB();
+    renderCalendarioGlobal();
+  }catch(e){toast('Error','e');}
+};
+
+window._calgEliminarAviso=async(id)=>{
+  if(!confirm('¿Eliminar este aviso?'))return;
+  try{
+    await deleteDoc(doc(db,'grupos',CGID,'eventos',id));
+    toast('Aviso eliminado','i');
+    cerrarSB();
+    renderCalendarioGlobal();
+  }catch(e){toast('Error','e');}
+};
+
+window._calgCrearParteDesdeAviso=(id)=>{
+  const av=(window._calgAvisosRaw||[]).find(a=>a.id===id);
+  if(!av)return;
+  cerrarSB();
+  updateDoc(doc(db,'grupos',CGID,'eventos',id),{estado:'completado'}).catch(()=>{});
+  setTimeout(()=>{
+    abrirFParte(null, av.clienteId||null, {titulo:av.titulo,descripcion:av.notas||'',clienteNombre:av.clienteNombre||''});
+  },150);
+};
+
+window._calgVerCaducados=async()=>{
+  let avisos=[];
+  try{
+    const snap=await getDocs(query(collection(db,'grupos',CGID,'eventos'),where('estado','==','caducado')));
+    avisos=snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){}
+  avisos.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  let html='';
+  if(!avisos.length){
+    html=`<div class="empty"><div class="empty-ico">🗄️</div><p>No hay avisos caducados</p></div>`;
+  }else{
+    html=avisos.map(a=>`<div class="calg-avi-card">
+      <div style="font-size:13px;font-weight:800;color:var(--tx)">${a.titulo||'Aviso'}</div>
+      <div style="font-size:12px;color:var(--tx2);margin:2px 0">${a.clienteNombre||'—'} · ${a.fecha||''}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-s btn-sm" style="color:#ef5350" onclick="_calgEliminarAviso('${a.id}');setTimeout(()=>_calgVerCaducados(),300)">🗑️ Eliminar</button>
+      </div>
+    </div>`).join('');
+  }
+  abrirSB('🗄️ Avisos caducados',html);
+};
+
+window._calgNavegar=(tipo,id,cliId)=>{
+  if(!CGID)return;
+  cerrarSB();
+  if(tipo==='parte'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('part');setTimeout(()=>verParte&&verParte(id),100);},200);}
+  else if(tipo==='averia'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('aver');setTimeout(()=>verAveria&&verAveria(id),100);},200);}
+  else if(tipo==='presu'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('presu');},200);}
+  else if(tipo==='cobro'){goScreen('facturas');}
 };
 
 
