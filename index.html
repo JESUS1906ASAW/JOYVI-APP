@@ -538,6 +538,14 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 .grupo-title{font-size:19px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5)}
 .grupo-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
 
+/* ── Widget mini-calendario dentro del banner de grupo ── */
+.mcal-widget{position:absolute;top:10px;right:12px;width:118px;padding:6px 6px 5px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px) saturate(1.4);-webkit-backdrop-filter:blur(8px) saturate(1.4);border:1px solid rgba(255,255,255,.28);border-radius:10px;cursor:pointer;z-index:2;transition:.18s var(--ease-out)}
+.mcal-widget:hover,.mcal-widget:active{background:rgba(0,0,0,.55);border-color:rgba(255,255,255,.45);transform:translateY(-1px)}
+.mcal-month{font-size:9px;font-weight:800;color:#fff;text-align:center;margin-bottom:4px;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.mcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.mcal-grid span{font-size:7px;font-weight:600;color:rgba(255,255,255,.8);text-align:center;line-height:11px;height:11px;border-radius:50%}
+.mcal-today{background:var(--r)!important;color:#fff!important;font-weight:900!important;box-shadow:0 0 0 1px rgba(255,255,255,.5)}
+
 /* ── GTABS ── */
 .gtabs-main{display:flex;gap:10px;margin-bottom:10px}
 .gtab-big{flex:1;border:none;border-radius:16px;padding:20px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:.2s;font-family:var(--font);background:var(--card);border:1px solid var(--border)}
@@ -3615,6 +3623,23 @@ window.abrirGrupo=async id=>{
   goScreen('grupo');
 };
 
+const _mcalGrupoHTML=()=>{
+  const now=new Date();
+  const year=now.getFullYear(), month=now.getMonth(), today=now.getDate();
+  let startDay=new Date(year,month,1).getDay(); // 0=Dom
+  startDay=(startDay===0)?6:startDay-1; // Lunes=0
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  let cells='';
+  for(let i=0;i<startDay;i++) cells+='<span></span>';
+  for(let d=1; d<=daysInMonth; d++) cells+=`<span${d===today?' class="mcal-today"':''}>${d}</span>`;
+  return `
+  <div class="mcal-widget" onclick="event.stopPropagation();goScreen('calendario')" title="Ir al calendario">
+    <div class="mcal-month">${meses[month]} ${year}</div>
+    <div class="mcal-grid">${cells}</div>
+  </div>`;
+};
+
 const renderGrupo=()=>{
   if(!CG)return;
   const bg=CG.fondoImg||FONDOS[0];
@@ -3634,6 +3659,7 @@ const renderGrupo=()=>{
         <div class="grupo-sub">Admin: ${CG.adminNombre||'–'}</div>
       </div>
     </div>
+    ${_mcalGrupoHTML()}
   </div>
   <div class="gtabs-main">
     <button class="gtab-big active" id="tabCli" onclick="switchGTab('cli')">
