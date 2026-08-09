@@ -7334,22 +7334,48 @@ window.guardarFirmaSinPDF=async(id)=>{
   const tieneFirma=Array.from(data).some(v=>v<250);
   if(!tieneFirma){toast('Firme antes de guardar','e');return;}
   const firmaDataURL=canvas.toDataURL('image/png');
-  try{
-    const ahora=new Date().toISOString();
-    const updateData={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
-    const localData={firmaCliente:firmaDataURL,firmado:true,firmadoEn:{seconds:Math.floor(Date.now()/1000)}};
-    await updateDoc(doc(db,'grupos',CGID,'partes',id),updateData);
-    const idx=allPartes.findIndex(x=>x.id===id);
-    if(idx>=0)allPartes[idx]={...allPartes[idx],...localData};
+  const updateData={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+  const localData={firmaCliente:firmaDataURL,firmado:true,firmadoEn:{seconds:Math.floor(Date.now()/1000)}};
+  // El parte puede tener todavía un ID temporal ("local_...") si se creó offline
+  // y Firestore aún no ha confirmado el addDoc — resolvemos el ID real si ya se
+  // conoce (_idMap). Un updateDoc contra el ID temporal apuntaría a un documento
+  // que no existe y la firma se perdería sin avisar.
+  const realId=_idMap[id]||id;
+  // Reflejar la firma ya mismo en memoria Y en la caché local (localStorage),
+  // para que sobreviva aunque se cierre la app antes de terminar de sincronizar.
+  const idx=allPartes.findIndex(x=>x.id===realId||x.id===id);
+  if(idx>=0){ allPartes[idx]={...allPartes[idx],...localData,id:realId}; _lcSave('partes',CGID,allPartes); }
+  const _refrescarListaPartes=()=>{
     const listEl=document.getElementById('gPartListArea')||document.getElementById('tabPartContent');
     if(listEl&&typeof _refreshPartesList==='function')_refreshPartesList();
     else if(typeof renderTabPartes==='function'){
       const tc=document.getElementById('tabPartContent');
       if(tc&&tc.style.display!=='none')tc.innerHTML=renderTabPartes();
     }
+  };
+  if(String(realId).startsWith('local_')){
+    // El parte todavía no tiene documento real en Firestore: encolar la firma
+    // para que _offlineSave la aplique en cuanto confirme la creación.
+    _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    _refrescarListaPartes();
+    toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
+    cerrarSB();
+    return;
+  }
+  try{
+    await updateDoc(doc(db,'grupos',CGID,'partes',realId),updateData);
+    _refrescarListaPartes();
     toast('✍️ Firma guardada en el parte','o');
     cerrarSB();
-  }catch(e){console.warn('No se pudo guardar la firma:',e);toast('Error al guardar la firma','e');}
+  }catch(e){
+    // El documento aún no existía en el servidor (p.ej. creado offline y no
+    // confirmado todavía): encolar para cuando _offlineSave lo confirme.
+    console.warn('No se pudo guardar la firma directamente, se encola:',e);
+    _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    _refrescarListaPartes();
+    toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
+    cerrarSB();
+  }
 };
 
 window.limpiarFirma=()=>{
@@ -7387,30 +7413,47 @@ window.generarPDFConFirma=async(id,firmaDataURL)=>{
   w.document.close();
   setTimeout(()=>w.print(),700);
   // Marcar que se ha generado PDF para este parte y, si se capturó firma, guardarla en el parte
-  try{
-    const ahora=new Date().toISOString();
-    const updateData={pdfGenerado:true,pdfFecha:ahora};
-    const localData={pdfGenerado:true,pdfFecha:ahora};
-    if(firmaDataURL){
-      updateData.firmaCliente=firmaDataURL;
-      updateData.firmado=true;
-      updateData.firmadoEn=serverTimestamp();
-      localData.firmaCliente=firmaDataURL;
-      localData.firmado=true;
-      localData.firmadoEn={seconds:Math.floor(Date.now()/1000)};
-    }
-    await updateDoc(doc(db,'grupos',CGID,'partes',id),updateData);
-    const idx=allPartes.findIndex(x=>x.id===id);
-    if(idx>=0)allPartes[idx]={...allPartes[idx],...localData};
-    // Refrescar lista de partes si está visible
+  const ahora=new Date().toISOString();
+  const updateData={pdfGenerado:true,pdfFecha:ahora};
+  const localData={pdfGenerado:true,pdfFecha:ahora};
+  if(firmaDataURL){
+    updateData.firmaCliente=firmaDataURL;
+    updateData.firmado=true;
+    updateData.firmadoEn=serverTimestamp();
+    localData.firmaCliente=firmaDataURL;
+    localData.firmado=true;
+    localData.firmadoEn={seconds:Math.floor(Date.now()/1000)};
+  }
+  // El parte puede tener todavía un ID temporal ("local_...") si se creó offline
+  // y Firestore aún no ha confirmado el addDoc — resolvemos el ID real si ya se
+  // conoce (_idMap), igual que en guardarFirmaSinPDF.
+  const realId=_idMap[id]||id;
+  const idx=allPartes.findIndex(x=>x.id===realId||x.id===id);
+  if(idx>=0){ allPartes[idx]={...allPartes[idx],...localData,id:realId}; _lcSave('partes',CGID,allPartes); }
+  const _refrescarListaPartes=()=>{
     const listEl=document.getElementById('gPartListArea')||document.getElementById('tabPartContent');
     if(listEl&&typeof _refreshPartesList==='function')_refreshPartesList();
     else if(typeof renderTabPartes==='function'){
       const tc=document.getElementById('tabPartContent');
       if(tc&&tc.style.display!=='none')tc.innerHTML=renderTabPartes();
     }
+  };
+  if(String(realId).startsWith('local_')){
+    if(firmaDataURL) _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    _refrescarListaPartes();
+    if(firmaDataURL){toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');cerrarSB();}
+    return;
+  }
+  try{
+    await updateDoc(doc(db,'grupos',CGID,'partes',realId),updateData);
+    _refrescarListaPartes();
     if(firmaDataURL){toast('✍️ Firma guardada en el parte','o');cerrarSB();}
-  }catch(e){console.warn('No se pudo marcar pdfGenerado:',e);}
+  }catch(e){
+    console.warn('No se pudo marcar pdfGenerado, se encola la firma si había:',e);
+    if(firmaDataURL) _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
+    _refrescarListaPartes();
+    if(firmaDataURL){toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');cerrarSB();}
+  }
 };
 
 // ─── BACKUP MEJORADO — índice con carpetas por cliente ───
