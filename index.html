@@ -13589,54 +13589,58 @@ const renderCalendarioGlobal=async()=>{
 
 const _calgCargarDatos=async()=>{
   const eventos=[];
-  try{
-    const pSnap=await getDocs(query(collection(db,'grupos',CGID,'partes'),orderBy('creado','desc')));
-    pSnap.docs.forEach(d=>{
-      const p={id:d.id,...d.data()};
-      const ts=p.creado?.toDate?.();
-      if(ts) eventos.push({tipo:'parte',fecha:ts,titulo:p.titulo||'Parte de trabajo',sub:p.clienteNombre||'',estado:p.estado||'',id:p.id,cliId:p.clienteId||'',sinFicha:!p.clienteId});
-    });
-  }catch(e){}
-  try{
-    const aSnap=await getDocs(query(collection(db,'grupos',CGID,'averias_historial'),orderBy('resueltaEn','desc')));
-    aSnap.docs.forEach(d=>{
-      const a={id:d.id,...d.data()};
-      const ts=a.resueltaEn?.toDate?.();
-      if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'resuelta',id:a.id,cliId:a.clienteId||'',sinFicha:!a.clienteId});
-    });
-    const aAbSnap=await getDocs(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente')));
-    aAbSnap.docs.forEach(d=>{
-      const a={id:d.id,...d.data()};
-      const ts=a.creado?.toDate?.();
-      if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'pendiente',id:a.id,cliId:a.clienteId||'',sinFicha:!a.clienteId});
-    });
-  }catch(e){}
-  try{
-    const prSnap=await getDocs(query(collection(db,'grupos',CGID,'presupuestos'),orderBy('creado','desc')));
-    prSnap.docs.forEach(d=>{
-      const p={id:d.id,...d.data()};
-      const ts=p.creado?.toDate?.();
-      if(ts) eventos.push({tipo:'presu',fecha:ts,titulo:p.titulo||'Presupuesto',sub:p.clienteNombre||'',estado:p.estado||'espera',id:p.id,cliId:p.clienteId||'',sinFicha:!p.clienteId});
-    });
-  }catch(e){}
-  try{
-    const fSnap=await getDocs(query(collection(db,'grupos',CGID,'facturas'),orderBy('creado','desc')));
-    fSnap.docs.forEach(d=>{
-      const f={id:d.id,...d.data()};
-      const ts=f.creado?.toDate?.();
-      if(ts){
-        const num=f.numero?`FAC-${String(f.numero).padStart(4,'0')}`:'Cobro';
-        eventos.push({tipo:'cobro',fecha:ts,titulo:num+(f.total!=null?' · '+fmtM(f.total):''),sub:f.clienteNombre||'',estado:f.estado||'pendiente',id:f.id,cliId:f.clienteId||'',sinFicha:!f.clienteId});
-      }
-    });
-  }catch(e){}
+
+  // Partes: reutilizamos allPartes, ya cargado en memoria al abrir el grupo (evita otra consulta)
+  (allPartes||[]).forEach(p=>{
+    const ts=p.creado?.toDate?.();
+    if(ts) eventos.push({tipo:'parte',fecha:ts,titulo:p.titulo||'Parte de trabajo',sub:p.clienteNombre||'',estado:p.estado||'',id:p.id,cliId:p.clienteId||'',sinFicha:!p.clienteId});
+  });
+
+  // Averías y presupuestos: si ya están en memoria (se visitó esa pestaña) los reutilizamos;
+  // si no, los pedimos junto al resto en paralelo más abajo.
+  let averiasPendArr=(typeof _averiasPend!=='undefined'?_averiasPend:null);
+  let averiasResArr=(typeof _averiasRes!=='undefined'?_averiasRes:null);
+  let presusArr=(typeof _presusPend!=='undefined'&&typeof _presusComp!=='undefined')?[...( _presusPend||[]),...(_presusComp||[])]:null;
+
+  const faltaAveriasPend=!averiasPendArr||!averiasPendArr.length;
+  const faltaAveriasRes=!averiasResArr||!averiasResArr.length;
+  const faltaPresus=!presusArr||!presusArr.length;
+
+  const [aPendSnap,aResSnap,prSnap,fSnap,evSnap]=await Promise.all([
+    faltaAveriasPend?getDocs(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente'))).catch(()=>null):null,
+    faltaAveriasRes?getDocs(query(collection(db,'grupos',CGID,'averias_historial'),orderBy('resueltaEn','desc'))).catch(()=>null):null,
+    faltaPresus?getDocs(query(collection(db,'grupos',CGID,'presupuestos'),orderBy('creado','desc'))).catch(()=>null):null,
+    getDocs(query(collection(db,'grupos',CGID,'facturas'),orderBy('creado','desc'))).catch(()=>null),
+    getDocs(collection(db,'grupos',CGID,'eventos')).catch(()=>null),
+  ]);
+
+  if(aPendSnap) averiasPendArr=aPendSnap.docs.map(d=>({id:d.id,...d.data()}));
+  if(aResSnap) averiasResArr=aResSnap.docs.map(d=>({id:d.id,...d.data()}));
+  if(prSnap) presusArr=prSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+  (averiasResArr||[]).forEach(a=>{
+    const ts=a.resueltaEn?.toDate?.();
+    if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'resuelta',id:a.id,cliId:a.clienteId||'',sinFicha:!a.clienteId});
+  });
+  (averiasPendArr||[]).forEach(a=>{
+    const ts=a.creado?.toDate?.();
+    if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'pendiente',id:a.id,cliId:a.clienteId||'',sinFicha:!a.clienteId});
+  });
+  (presusArr||[]).forEach(p=>{
+    const ts=p.creado?.toDate?.();
+    if(ts) eventos.push({tipo:'presu',fecha:ts,titulo:p.titulo||'Presupuesto',sub:p.clienteNombre||'',estado:p.estado||'espera',id:p.id,cliId:p.clienteId||'',sinFicha:!p.clienteId});
+  });
+  if(fSnap) fSnap.docs.forEach(d=>{
+    const f={id:d.id,...d.data()};
+    const ts=f.creado?.toDate?.();
+    if(ts){
+      const num=f.numero?`FAC-${String(f.numero).padStart(4,'0')}`:'Cobro';
+      eventos.push({tipo:'cobro',fecha:ts,titulo:num+(f.total!=null?' · '+fmtM(f.total):''),sub:f.clienteNombre||'',estado:f.estado||'pendiente',id:f.id,cliId:f.clienteId||'',sinFicha:!f.clienteId});
+    }
+  });
 
   // ── Avisos/entregas (con lógica de atraso y caducidad) ──
-  let avisos=[];
-  try{
-    const evSnap=await getDocs(collection(db,'grupos',CGID,'eventos'));
-    avisos=evSnap.docs.map(d=>({id:d.id,...d.data()}));
-  }catch(e){}
+  const avisos=evSnap?evSnap.docs.map(d=>({id:d.id,...d.data()})):[];
   const hoyStr=_calgFechaStr(new Date());
   const hoyD=new Date(hoyStr+'T00:00:00');
   const aCaducar=[];
@@ -15142,8 +15146,9 @@ const _lockInicializar = () => {
 
   document.addEventListener('touchstart',e=>{
     if(!isStandalone())return;
-    // No activar PTR si el drawer está abierto
+    // No activar PTR si el drawer o un panel superpuesto (sb) están abiertos
     if(document.getElementById('drawer')?.classList.contains('open')){blocked=true;return;}
+    if(document.getElementById('sb')?.classList.contains('open')){blocked=true;return;}
     const pad=getActivePad();
     if(!pad)return;
     // Solo iniciar si el pad está en scroll top 0
@@ -15156,8 +15161,9 @@ const _lockInicializar = () => {
 
   document.addEventListener('touchmove',e=>{
     if(!isStandalone()||blocked)return;
-    // No activar PTR si el drawer está abierto
+    // No activar PTR si el drawer o un panel superpuesto (sb) están abiertos
     if(document.getElementById('drawer')?.classList.contains('open')){blocked=true;return;}
+    if(document.getElementById('sb')?.classList.contains('open')){blocked=true;return;}
     const pad=getActivePad();
     if(!pad)return;
     // Si el pad no está en top, no hacer nada (scroll normal)
