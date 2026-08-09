@@ -389,6 +389,9 @@ body.modo-claro .cli-sel-dropdown{background:#fff}
 .btn-nuevo{background:linear-gradient(135deg,var(--r) 0%,var(--r2) 100%);color:#fff;border:none;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;margin-left:auto;transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s ease,filter .15s;white-space:nowrap;box-shadow:0 3px 12px rgba(var(--theme-rgb),.3)}
 .btn-nuevo:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 5px 18px rgba(var(--theme-rgb),.4)}
 .btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+.btn-saving[disabled]{opacity:.85;cursor:wait}
+.btn-saving-spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;display:inline-block;animation:_gspin .7s linear infinite;flex-shrink:0}
+@keyframes _gspin{to{transform:rotate(360deg)}}
 
 /* ── CARDS ── */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--rd);padding:16px;transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s ease,border-color .2s ease}
@@ -529,7 +532,7 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 .gtile-name{position:absolute;bottom:12px;left:12px;right:12px;font-size:15px;font-weight:900;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 
 /* ── GRUPO HEADER ── */
-.grupo-header{height:120px;border-radius:18px;overflow:hidden;position:relative;cursor:pointer;margin-bottom:16px;flex-shrink:0}
+.grupo-header{height:168px;border-radius:18px;overflow:hidden;position:relative;cursor:pointer;margin-bottom:16px;flex-shrink:0}
 .grupo-header-img{position:absolute;inset:0;background-size:cover;background-position:center;filter:saturate(1.2) brightness(1.0);transform:scale(1)}
 .grupo-header-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.1) 100%)}
 .grupo-header-content{position:absolute;bottom:0;left:0;right:0;padding:14px 18px;display:flex;align-items:center;gap:12px}
@@ -540,13 +543,16 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 
 /* ── Widget mini-calendario dentro del banner de grupo ── */
 .grupo-header-text{flex-shrink:0}
-.grupo-header-calspacer{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;height:100%}
-.mcal-widget{width:min(212px,94%);box-sizing:border-box;padding:7px 9px 6px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px) saturate(1.4);-webkit-backdrop-filter:blur(8px) saturate(1.4);border:1px solid rgba(255,255,255,.28);border-radius:10px;cursor:pointer;transition:.18s var(--ease-out)}
-.mcal-widget:hover,.mcal-widget:active{background:rgba(0,0,0,.55);border-color:rgba(255,255,255,.45);transform:translateY(-1px)}
-.mcal-month{font-size:10px;font-weight:800;color:#fff;text-align:center;margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+/* El widget ya no vive dentro de la fila de texto (que está anclada abajo);
+   se posiciona de forma independiente para poder centrarlo verticalmente
+   dejando el mismo hueco arriba y abajo dentro del banner. */
+.mcal-widget{position:absolute;top:50%;right:16px;transform:translateY(-50%);width:min(260px,58%);box-sizing:border-box;padding:9px 11px 8px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px) saturate(1.4);-webkit-backdrop-filter:blur(8px) saturate(1.4);border:1px solid rgba(255,255,255,.28);border-radius:10px;cursor:pointer;transition:.18s var(--ease-out);z-index:2}
+.mcal-widget:hover,.mcal-widget:active{background:rgba(0,0,0,.55);border-color:rgba(255,255,255,.45);transform:translateY(-50%) translateY(-1px)}
+.mcal-month{font-size:12px;font-weight:800;color:#fff;text-align:center;margin-bottom:5px;letter-spacing:.6px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 .mcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.mcal-grid span{font-size:8px;font-weight:600;color:rgba(255,255,255,.8);text-align:center;line-height:14px;height:14px;border-radius:50%}
+.mcal-grid span{font-size:9px;font-weight:600;color:rgba(255,255,255,.8);text-align:center;line-height:15px;height:15px;border-radius:50%}
 .mcal-today{background:var(--r)!important;color:#fff!important;font-weight:900!important;box-shadow:0 0 0 1px rgba(255,255,255,.5)}
+@media(max-width:359px){.mcal-widget{width:min(230px,62%);padding:7px 8px 6px}.mcal-month{font-size:10px}.mcal-grid span{font-size:8px;line-height:13px;height:13px}}
 
 /* ── GTABS ── */
 .gtabs-main{display:flex;gap:10px;margin-bottom:10px}
@@ -2336,6 +2342,43 @@ window.toast=(msg,tipo='i')=>{
   setTimeout(()=>t.remove(),3200);
 };
 
+// ── GUARD ANTI-DOBLE-GUARDADO ──
+// Envuelve cualquier acción de guardar (async o no) para que, mientras esté
+// en curso, el botón quede bloqueado y muestre "Guardando…". Si el usuario
+// pulsa de nuevo (por ejemplo por falta de cobertura y no ver respuesta),
+// se avisa con un toast y NO se lanza una segunda ejecución ⇒ no se duplica
+// el documento. Al terminar (éxito o error) el botón se restaura.
+window._gClick=(el,fn)=>{
+  if(!el){ try{fn();}catch(e){} return; }
+  if(el.dataset.saving==='1'){
+    toast('Ya se está guardando… espera un momento','i');
+    return;
+  }
+  el.dataset.saving='1';
+  if(el.dataset.origHtml===undefined) el.dataset.origHtml=el.innerHTML;
+  el.disabled=true;
+  el.classList.add('btn-saving');
+  el.innerHTML='<span class="btn-saving-spinner"></span> Guardando…';
+  const restaurar=()=>{
+    el.dataset.saving='0';
+    el.disabled=false;
+    el.classList.remove('btn-saving');
+    el.innerHTML=el.dataset.origHtml;
+  };
+  let r;
+  try{
+    r=fn();
+  }catch(e){
+    restaurar();
+    throw e;
+  }
+  if(r && typeof r.then==='function'){
+    r.then(restaurar).catch(restaurar);
+  }else{
+    restaurar();
+  }
+};
+
 // NOTIF LOCAL — desactivada a petición del usuario: ya no se muestran
 // notificaciones del sistema (barra de tareas/bandeja) ni suenan avisos.
 // Los avisos dentro de la app se siguen mostrando como "toast".
@@ -3620,12 +3663,12 @@ const renderGrupo=()=>{
   <div class="grupo-header" onclick="abrirEditarGrupo()">
     <div class="grupo-header-img" style="background-image:url('${bg}')"></div>
     <div class="grupo-header-ov"></div>
+    ${_mcalGrupoHTML()}
     <div class="grupo-header-content">
       <div class="grupo-header-text">
         <div class="grupo-title">${CG.nombre||'Grupo'}</div>
         <div class="grupo-sub">Admin: ${CG.adminNombre||'–'}</div>
       </div>
-      <div class="grupo-header-calspacer">${_mcalGrupoHTML()}</div>
     </div>
   </div>
   <div class="gtabs-main">
@@ -4095,7 +4138,7 @@ window.abrirNuevoSimple=(tipo,editId,presetFecha)=>{
         </div>
         <input type="hidden" id="smpPrio" value="${editing?.prioridad||'normal'}">
       </div>
-      <button class="btn btn-p" style="width:100%;margin-top:6px" onclick="guardarSimple('${tipo}'${editing?`,'${editId}'`:''})">💾 Guardar</button>
+      <button class="btn btn-p" style="width:100%;margin-top:6px" onclick="_gClick(this,()=>guardarSimple('${tipo}'${editing?`,'${editId}'`:''}))">💾 Guardar</button>
     </div>
   `);
   setTimeout(()=>{
@@ -4645,7 +4688,7 @@ window._renderGMantProgramarForm=(plantillaJson)=>{
       </div>
       <div class="fgrp"><label>Fecha inicio</label><input type="date" id="gMFecha" value="${new Date().toISOString().split('T')[0]}"></div>
       <div class="fgrp"><label>Notas</label><textarea id="gMNotas" placeholder="Observaciones...">${p.notas||''}</textarea></div>
-      <button class="btn btn-p" onclick="guardarMantInline()">💾 Programar mantenimiento</button>
+      <button class="btn btn-p" onclick="_gClick(this,()=>guardarMantInline())">💾 Programar mantenimiento</button>
     </div>
   `;
   setTimeout(()=>_buildCliSelect('gMCli',p.clienteId||'',id=>{
@@ -5442,7 +5485,7 @@ window._crearPresupuestoRapidoCli=(cliId)=>{
         <div class="importe-row"><span class="il">Total</span><span id="prTot">—</span></div>
       </div>
     </div>
-    <button class="btn btn-p" onclick="guardarPresupuesto()">💾 Guardar presupuesto</button>
+    <button class="btn btn-p" onclick="_gClick(this,()=>guardarPresupuesto())">💾 Guardar presupuesto</button>
   `);
   setTimeout(()=>_buildCliSelect('prCli',cliId,()=>{}),0);
   setTimeout(()=>calcPresuTotal(),50);
@@ -5723,7 +5766,7 @@ window._abrirFormMantSB=(cliId,cliNom,plantilla)=>{
           <input id="mPlantFullNomSB" class="sbox" placeholder="Nombre de la plantilla…" style="margin:0">
         </div>
       </div>
-      <button class="btn btn-p" onclick="guardarMantDesdeSB()">💾 Programar mantenimiento</button>
+      <button class="btn btn-p" onclick="_gClick(this,()=>guardarMantDesdeSB())">💾 Programar mantenimiento</button>
     </div>
   `,cliId);
 };
@@ -5801,7 +5844,7 @@ window.abrirFCli=async(id, preData)=>{
       </div>
       <input type="hidden" id="cColor" value="${c?.color||'verde'}">
     </div>
-    <button class="btn btn-p" onclick="guardarCli('${id||''}')">💾 Guardar cliente</button>
+    <button class="btn btn-p" onclick="_gClick(this,()=>guardarCli('${id||''}'))">💾 Guardar cliente</button>
     ${id?`<button class="btn btn-del" style="margin-top:8px" onclick="archivarCli('${id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:5px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Mover a archivos</button>`:''}
   `;
   abrirSB(id?'Editar cliente':'Nuevo cliente',html);
@@ -5864,7 +5907,7 @@ window.abrirCliExpress=()=>{
     const geoBtn=document.getElementById('btnGeoExpress');
     if(geoBtn)geoBtn.addEventListener('click',usarUbicacionExpressCli);
     const saveBtn=document.getElementById('btnGuardarCliExpress');
-    if(saveBtn)saveBtn.addEventListener('click',guardarCliExpress);
+    if(saveBtn)saveBtn.addEventListener('click',()=>_gClick(saveBtn,()=>guardarCliExpress()));
     const fullBtn=document.getElementById('btnCliExpressCompleto');
     if(fullBtn)fullBtn.addEventListener('click',()=>{cerrarSB();setTimeout(()=>abrirFCli(),150);});
     // Foto handlers
@@ -6573,7 +6616,7 @@ window.verParte=id=>{
       ${(p.estado!=='completado'&&!(p.firmado&&p.firmaCliente))?`<button class="btn btn-ok btn-sm" onclick="flujoCompletarFirmarPDF('${id}')" style="background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;border:none;flex:1"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' style='margin-right:4px'><polyline points='20 6 9 17 4 12'/></svg>Completar + Firma + PDF</button>`:''}
       <button class="btn btn-s btn-sm" onclick="abrirFPartePreservandoCli('${id}')">✏️ Editar</button>
       <button class="btn btn-s btn-sm" onclick="clonarParte('${id}')" style="background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.3);color:var(--r)">📋 Clonar</button>
-      <button class="btn btn-s btn-sm" onclick="guardarParteComoPlantilla('${id}')">📄 Plantilla</button>
+      <button class="btn btn-s btn-sm" onclick="_gClick(this,()=>guardarParteComoPlantilla('${id}'))">📄 Plantilla</button>
       <button class="btn btn-p btn-sm kiosk-pdf-btn" style="display:flex" onclick="generarPDF('${id}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</button>
       <button class="btn btn-ok btn-sm" onclick="crearPresupuestoDesdeParteId('${id}')" style="background:linear-gradient(135deg,#1565c0,#1e88e5);color:#fff;border:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Presupuesto</button>
       <button class="btn btn-del btn-sm" onclick="archivarParte('${id}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'/></svg>Archivar</button>
@@ -6638,7 +6681,7 @@ window.abrirFParte=async(id,preCliId,preData)=>{
     <div id="pPlantFullNom" style="display:none;margin-bottom:16px">
       <input id="pPlantFullNomVal" class="sbox" placeholder="Nombre de la plantilla completa…" style="margin:0">
     </div>
-    <button class="btn btn-p" onclick="guardarParte('${id||''}')">💾 Guardar parte</button>
+    <button class="btn btn-p" onclick="_gClick(this,()=>guardarParte('${id||''}'))">💾 Guardar parte</button>
   `);
   // Iniciar selector custom de cliente (se ejecuta en el siguiente tick para que el DOM exista)
   setTimeout(()=>{
@@ -6932,7 +6975,7 @@ window.abrirParteExpress=(preCliId,preData)=>{
     <input type="hidden" id="pOpe" value="${(vd.operario||CUD?.nombre||'').replace(/"/g,'&quot;')}"><input type="hidden" id="pDesc" value="${(vd.descripcion||'').replace(/"/g,'&quot;')}"><input type="hidden" id="pMat" value="">
     <input type="hidden" id="pDur" value=""><input type="hidden" id="pMO" value="0"><input type="hidden" id="pMatE" value="0">
     <input type="hidden" id="pDesp" value="0"><input type="hidden" id="pPlant" value=""><input type="hidden" id="pPlantFull" value="">
-    <button class="btn btn-p" style="width:100%;margin-top:4px" onclick="guardarParte('')">⚡ Guardar parte</button>
+    <button class="btn btn-p" style="width:100%;margin-top:4px" onclick="_gClick(this,()=>guardarParte(''))">⚡ Guardar parte</button>
     ${ocultarVolver?'':`<button onclick="abrirSelectorParte('${preCliId||''}')" style="width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">← Volver al selector</button>`}
   `);
   setTimeout(()=>_buildCliSelect('pCli',preCliId||'',id=>{
@@ -6986,7 +7029,7 @@ window._abrirFParteConPlantilla=(pl,preCliId)=>{
     <div id="pPlantFullNom" style="display:none;margin-bottom:16px">
       <input id="pPlantFullNomVal" class="sbox" placeholder="Nombre de la plantilla completa…" style="margin:0" value="${pl.nombre||''}">
     </div>
-    <button class="btn btn-p" onclick="guardarParte('')">💾 Guardar parte</button>
+    <button class="btn btn-p" onclick="_gClick(this,()=>guardarParte(''))">💾 Guardar parte</button>
   `);
   setTimeout(()=>_buildCliSelect('pCli',cliId,id=>{
     const c=allClientes.find(x=>x.id===id);
@@ -7241,7 +7284,7 @@ window.generarPDF=id=>{
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
       <button class="btn btn-s" onclick="generarPDFConFirma('${id}',null)" style="font-size:12px">Omitir firma</button>
-      <button class="btn btn-s" id="_btnGuardarFirmaSolo" style="font-size:12px;display:none" onclick="guardarFirmaSinPDF('${id}')">💾 Guardar firma</button>
+      <button class="btn btn-s" id="_btnGuardarFirmaSolo" style="font-size:12px;display:none" onclick="_gClick(this,()=>guardarFirmaSinPDF('${id}'))">💾 Guardar firma</button>
       <button class="btn btn-p" style="font-size:12px" onclick="generarPDFConFirmaCapturada('${id}')">Generar PDF</button>
     </div>
   `);
@@ -8199,7 +8242,7 @@ window.renderMantProgramarForm=(plantillaJson)=>{
           <input class="sbox" id="mPlantFullNombreInput" placeholder="Nombre de la plantilla…" style="margin:0">
         </div>
       </div>
-      <button class="btn btn-p" onclick="guardarMant()">💾 Programar mantenimiento</button>
+      <button class="btn btn-p" onclick="_gClick(this,()=>guardarMant())">💾 Programar mantenimiento</button>
       <p style="font-size:12px;color:var(--tx2);margin-top:10px;text-align:center">Aparecerá automáticamente en el Calendario</p>
     </div>
   `;
@@ -8379,7 +8422,7 @@ window.verMant=async(id,_tabFotos)=>{
         <input type="checkbox" id="eMPlant" style="width:18px;height:18px;accent-color:var(--r)">
         <label for="eMPlant" style="font-size:13px;font-weight:700;color:var(--tx2);cursor:pointer">Guardar también como plantilla</label>
       </div>
-      <button class="btn btn-p" style="margin-bottom:10px" onclick="guardarEditMant('${id}')">💾 Guardar cambios</button>
+      <button class="btn btn-p" style="margin-bottom:10px" onclick="_gClick(this,()=>guardarEditMant('${id}'))">💾 Guardar cambios</button>
       <button class="btn btn-del" onclick="eliminarMant('${id}')">🗑️ Eliminar mantenimiento</button>
     </div>`:`
     <div class="fsec">
@@ -9255,7 +9298,7 @@ window.abrirParteDesdeMantenimiento=(m,cli,fechaCompletado)=>{
     <div id="pPlantFullNom" style="display:none;margin-bottom:16px">
       <input id="pPlantFullNomVal" class="sbox" placeholder="Nombre de la plantilla completa…" style="margin:0">
     </div>
-    <button class="btn btn-p" onclick="guardarParte('')">💾 Guardar parte</button>
+    <button class="btn btn-p" onclick="_gClick(this,()=>guardarParte(''))">💾 Guardar parte</button>
   `);
   setTimeout(()=>_buildCliSelect('pCli',cliId,id=>{
     const c=allClientes.find(x=>x.id===id);
@@ -10345,7 +10388,7 @@ window.abrirNuevaAveriaPrerellenada=(cliId,tipo,desc,contacto)=>{
       <div class="fgrp"><label>Tipo de avería / problema</label><input id="avTipo" placeholder="Ej: No arranca, fuga de agua..." value="${(tipo||'').replace(/"/g,'&quot;')}"></div>
       <div class="fgrp"><label>Prioridad</label><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px" id="avPrioWrap"><button type="button" onclick="_setAverPrio('normal')" style="padding:9px 4px;border-radius:10px;border:2px solid rgba(76,175,80,.5);background:rgba(76,175,80,.15);color:#4caf50;font-size:11px;font-weight:800;font-family:var(--font);cursor:pointer">🟢 Normal</button><button type="button" onclick="_setAverPrio('urgente')" style="padding:9px 4px;border-radius:10px;border:2px solid var(--border);background:transparent;color:var(--tx2);font-size:11px;font-weight:800;font-family:var(--font);cursor:pointer">🟠 Urgente</button><button type="button" onclick="_setAverPrio('critica')" style="padding:9px 4px;border-radius:10px;border:2px solid var(--border);background:transparent;color:var(--tx2);font-size:11px;font-weight:800;font-family:var(--font);cursor:pointer">🔴 Crítica</button></div><input type="hidden" id="avPrio" value="normal"></div>
       <div class="fgrp"><label>Descripción (opcional)</label><textarea id="avDesc" rows="3" placeholder="Detalla el problema...">${desc||''}</textarea></div>
-      <button class="btn btn-p" style="width:100%" onclick="guardarAveria()">Guardar avería</button>
+      <button class="btn btn-p" style="width:100%" onclick="_gClick(this,()=>guardarAveria())">Guardar avería</button>
     </div>
   `);
   setTimeout(()=>{
@@ -10385,7 +10428,7 @@ window.abrirAveriaDesdeMantenimiento=(mantId)=>{
       <div class="fgrp"><label>Teléfono</label><input id="avTel" value="${cliTel}" placeholder="Teléfono de contacto" type="tel"></div>
       <div class="fgrp"><label>Tipo de avería / problema</label><input id="avTipo" placeholder="Ej: No arranca, fuga de agua..." value="${tipoAuto.replace(/"/g,'&quot;')}"></div>
       <div class="fgrp"><label>Descripción</label><textarea id="avDesc" rows="4">${descAuto}</textarea></div>
-      <button class="btn btn-p" style="width:100%;background:linear-gradient(135deg,#ff7043,#e64a19)" onclick="guardarAveria()">⚡ Guardar avería</button>
+      <button class="btn btn-p" style="width:100%;background:linear-gradient(135deg,#ff7043,#e64a19)" onclick="_gClick(this,()=>guardarAveria())">⚡ Guardar avería</button>
     </div>
   `);
   setTimeout(()=>_buildCliSelect('avCli',cliId,id=>{
@@ -10623,7 +10666,7 @@ window.crearPresupuestoDesdeParteId=async(parteId)=>{
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-p" style="flex:1" onclick="guardarPresupuesto()">💾 Guardar presupuesto</button>
+      <button class="btn btn-p" style="flex:1" onclick="_gClick(this,()=>guardarPresupuesto())">💾 Guardar presupuesto</button>
     </div>
   `);
   _prIVA = p.aplicarIVAMateriales||false;
@@ -10743,7 +10786,7 @@ window.usarPresupuesto = (id) => {
       <div class="card" style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-top:6px"><span style="font-size:13px;font-weight:700;color:var(--tx2)">TOTAL</span><span style="font-size:20px;font-weight:900;color:var(--r)" id="prTotal">—</span></div>
     </div>
     <div class="fgrp"><label>Notas</label><textarea id="prNotas" rows="2">${(p.notas||'').replace(/</g,'&lt;')}</textarea></div>
-    <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="guardarPresupuesto()">💾 Guardar presupuesto</button>
+    <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="_gClick(this,()=>guardarPresupuesto())">💾 Guardar presupuesto</button>
   `);
   _prIVA = p.aplicarIVA||false;
   calcPresuTotal();
@@ -10860,7 +10903,7 @@ window.abrirNuevoPresupuesto=(presuId)=>{
     </div>
     <div class="fgrp"><label>Notas adicionales</label><textarea id="prNotas" rows="2" placeholder="Observaciones para el cliente..."></textarea></div>
     <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn btn-p" style="flex:1" onclick="guardarPresupuesto()">💾 Guardar</button>
+      <button class="btn btn-p" style="flex:1" onclick="_gClick(this,()=>guardarPresupuesto())">💾 Guardar</button>
     </div>
   `);
   setTimeout(()=>_buildCliSelect('prCli','',id=>{
@@ -11840,7 +11883,7 @@ const renderPerfil=()=>{
       <div style="font-size:11px;color:var(--tx2);margin-top:2px">${CUD?.tipo||'Trabajador'}</div>
     </div>
     <div class="fgrp" style="margin-bottom:8px"><input id="pNom" value="${CUD?.nombre||''}" placeholder="Editar nombre" autocomplete="name"></div>
-    <button class="btn btn-p" id="pf-save-btn" onclick="guardarPerfil()">Guardar nombre</button>
+    <button class="btn btn-p" id="pf-save-btn" onclick="_gClick(this,()=>guardarPerfil())">Guardar nombre</button>
   </div>
 
   <!-- ── APARIENCIA ── -->
@@ -12302,7 +12345,7 @@ window.abrirNuevoAviso=(presetFecha)=>{
         <label>📅 Alerta programada <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional — salta en esta fecha)</span></label>
         <input type="date" id="avisFechaAlerta" min="${hoy}" value="${presetFecha||''}" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--tx);font-size:14px;font-family:var(--font);padding:10px 12px;width:100%;box-sizing:border-box;outline:none">
       </div>
-      <button class="btn btn-p" style="width:100%" onclick="guardarNuevoAviso()">
+      <button class="btn btn-p" style="width:100%" onclick="_gClick(this,()=>guardarNuevoAviso())">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg>
         Guardar aviso
       </button>
