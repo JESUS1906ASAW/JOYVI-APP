@@ -233,11 +233,12 @@ body.modo-claro{background:#f2f2f7 !important}
 ::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px;transition:background .2s}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.3)}
 
 /* ── LAYOUT ── */
-#authWrap{display:none;flex-direction:column;flex:1;overflow:hidden;z-index:200;background:#0d0d0d}
+#authWrap{display:none;flex-direction:column;flex:1;overflow:hidden;z-index:200;background:#0d0d0d;width:100%;max-width:480px;margin:0 auto}
 
 #authWrap.active{display:flex}
-#app{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+#app{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0;width:100%;max-width:480px;margin:0 auto;position:relative;transform:translateZ(0)}
 #app.active{display:flex}
+@media(min-width:600px){#app{box-shadow:0 0 60px rgba(0,0,0,.55)}}
 .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;height:100%}
 .screen.active{display:flex}
 .scroll-pad{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 16px 100px;-webkit-overflow-scrolling:touch;min-height:0;overscroll-behavior-y:contain}
@@ -557,22 +558,6 @@ body.alto-contraste .cli-card,body.alto-contraste .parte-card,body.alto-contrast
 .mcal-grid span{font-size:8px;font-weight:600;color:rgba(255,255,255,.8);text-align:center;line-height:12px;height:12px;border-radius:50%}
 .mcal-today{background:var(--r)!important;color:#fff!important;font-weight:900!important;box-shadow:0 0 0 1px rgba(255,255,255,.5)}
 @media(max-width:359px){.mcal-widget{width:min(210px,60%);padding:5px 7px 4px}.mcal-month{font-size:9px}.mcal-grid span{font-size:7.5px;line-height:11px;height:11px}}
-/* ── Tablet / PC: el banner crece y el calendario se agranda y se centra
-   con él, manteniendo siempre proporción con el hueco disponible ── */
-@media(min-width:700px){
-  .grupo-header{height:240px}
-  .mcal-widget{width:min(420px,50%);padding:16px 20px 14px;border-radius:14px}
-  .mcal-month{font-size:16px;margin-bottom:8px;letter-spacing:1px}
-  .mcal-grid{gap:4px}
-  .mcal-grid span{font-size:13px;line-height:24px;height:24px}
-}
-@media(min-width:1100px){
-  .grupo-header{height:280px}
-  .mcal-widget{width:min(480px,44%);padding:20px 24px 18px}
-  .mcal-month{font-size:19px;margin-bottom:10px}
-  .mcal-grid{gap:5px}
-  .mcal-grid span{font-size:15px;line-height:28px;height:28px}
-}
 
 /* ── GTABS ── */
 .gtabs-main{display:flex;gap:10px;margin-bottom:10px}
