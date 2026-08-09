@@ -13245,6 +13245,11 @@ const renderCalendarioGlobal=async()=>{
 
 const _calgCargarDatos=async()=>{
   const eventos=[];
+  // Offline: si una consulta a Firestore vuelve vacía porque nunca se cacheó
+  // (nunca se visitó esa pestaña estando online), recurrimos a la caché local
+  // en localStorage que el resto de la app ya mantiene actualizada. Así el
+  // calendario global muestra lo mismo offline que online.
+  const _calgOffline = !navigator.onLine;
 
   // Partes: reutilizamos allPartes, ya cargado en memoria al abrir el grupo (evita otra consulta)
   (allPartes||[]).forEach(p=>{
@@ -13271,9 +13276,22 @@ const _calgCargarDatos=async()=>{
     (!_simplePend?.entrega?.length&&!_simpleComp?.entrega?.length)?getDocs(collection(db,'grupos',CGID,'entregas')).catch(()=>null):null,
   ]);
 
-  if(aPendSnap) averiasPendArr=aPendSnap.docs.map(d=>({id:d.id,...d.data()}));
-  if(aResSnap) averiasResArr=aResSnap.docs.map(d=>({id:d.id,...d.data()}));
-  if(prSnap) presusArr=prSnap.docs.map(d=>({id:d.id,...d.data()}));
+  // Helper: aplica el resultado de Firestore, y si offline vino vacío
+  // (sin caché de Firestore para esa consulta), cae a la caché localStorage.
+  const _calgResolver=(snap, lcKey, saveArr)=>{
+    if(!snap) return null;
+    const arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(arr.length || !_calgOffline){
+      if(!_calgOffline && lcKey) _lcSave(lcKey,CGID,saveArr?saveArr(arr):arr);
+      return arr;
+    }
+    const cached=lcKey?_lcLoad(lcKey,CGID):null;
+    return (cached&&cached.length)?cached:arr;
+  };
+
+  const _r1=_calgResolver(aPendSnap,'averias_pend'); if(_r1) averiasPendArr=_r1;
+  const _r2=_calgResolver(aResSnap,'averias_res'); if(_r2) averiasResArr=_r2;
+  const _r3=_calgResolver(prSnap,'calg_presupuestos'); if(_r3) presusArr=_r3;
 
   (averiasResArr||[]).forEach(a=>{
     const ts=a.resueltaEn?.toDate?.();
@@ -13293,8 +13311,9 @@ const _calgCargarDatos=async()=>{
 
   // ── Avisos (colección real 'avisos': descripcion, fechaAlerta, estado pendiente/resuelto) ──
   let avisosArr;
-  if(avisSnap){
-    avisosArr=avisSnap.docs.map(d=>({id:d.id,...d.data()}));
+  const _r4=_calgResolver(avisSnap,'calg_avisos');
+  if(_r4){
+    avisosArr=_r4;
     _avisosPend=avisosArr.filter(a=>a.estado==='pendiente');
     _avisosRes=avisosArr.filter(a=>a.estado==='resuelto');
   }else{
@@ -13326,11 +13345,20 @@ const _calgCargarDatos=async()=>{
   // ── Cobros y entregas (colecciones reales 'cobros'/'entregas' vía _SIMPLE_CONF: titulo, fecha, estado pendiente/completado) ──
   ['cobro','entrega'].forEach(subTipo=>{
     const snap=subTipo==='cobro'?cobSnap:entSnap;
+    const colName=subTipo+'s'; // 'cobros' / 'entregas' — mismas claves que usa el resto de la app
     let arr;
     if(snap){
       arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(!arr.length && _calgOffline){
+        const cP=_lcLoad(colName+'_pend',CGID)||[], cC=_lcLoad(colName+'_comp',CGID)||[];
+        if(cP.length||cC.length) arr=[...cP,...cC];
+      }
       _simplePend[subTipo]=arr.filter(x=>x.estado==='pendiente');
       _simpleComp[subTipo]=arr.filter(x=>x.estado==='completado');
+      if(!_calgOffline){
+        _lcSave(colName+'_pend',CGID,_simplePend[subTipo]);
+        _lcSave(colName+'_comp',CGID,_simpleComp[subTipo]);
+      }
     }else{
       arr=[...(_simplePend?.[subTipo]||[]),...(_simpleComp?.[subTipo]||[])];
     }

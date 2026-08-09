@@ -11,8 +11,8 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
-const CN       = 'joyvi-v8';       // bump de versión: código muerto eliminado + nuevo logo splash
-const SHELL_CN = 'joyvi-shell-v8';
+const CN       = 'joyvi-v9';       // bump de versión: fix banner calendario grupo desactualizado offline
+const SHELL_CN = 'joyvi-shell-v9';
 
 // Assets del app shell que se pre-cachean en el install
 const SHELL_ASSETS = [
@@ -27,12 +27,19 @@ const SHELL_ASSETS = [
 ];
 
 // ── Install: pre-cachear app shell ──
+// Usamos fetch con {cache:'reload'} en vez de cache.add() para forzar que
+// cada asset (sobre todo index.html) se traiga de red de verdad, sin colarse
+// una copia vieja desde la caché HTTP del navegador. Así cada vez que se
+// instala una versión nueva del SW, el HTML/JS del app shell queda realmente
+// al día — evita servir un banner/calendario de una versión anterior offline.
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(SHELL_CN).then(cache =>
       Promise.allSettled(
         SHELL_ASSETS.map(url =>
-          cache.add(url).catch(err => console.warn('SW cache miss:', url, err))
+          fetch(url, { cache: 'reload' })
+            .then(res => { if (res.ok) return cache.put(url, res); })
+            .catch(err => console.warn('SW cache miss:', url, err))
         )
       )
     ).then(() => self.skipWaiting())
