@@ -1015,7 +1015,7 @@ body.offline .dash-offline-bar{display:flex}
   transition:opacity .35s ease;
 }
 #splashScreen.hide{opacity:0;pointer-events:none}
-#splashScreen img{width:132px;height:132px;border-radius:28px;box-shadow:0 6px 24px rgba(0,0,0,.1);animation:splashPop .5s cubic-bezier(.16,1,.3,1)}
+#splashScreen img{width:220px;height:auto;border-radius:0;box-shadow:none;animation:splashPop .5s cubic-bezier(.16,1,.3,1)}
 @keyframes splashPop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
 .splash-spinner{width:26px;height:26px;border-radius:50%;border:3px solid rgba(0,0,0,.1);border-top-color:#e53935;animation:splashSpin .8s linear infinite}
 @keyframes splashSpin{to{transform:rotate(360deg)}}
@@ -13593,7 +13593,7 @@ const _calgCargarDatos=async()=>{
     pSnap.docs.forEach(d=>{
       const p={id:d.id,...d.data()};
       const ts=p.creado?.toDate?.();
-      if(ts) eventos.push({tipo:'parte',fecha:ts,titulo:p.titulo||'Parte de trabajo',sub:p.clienteNombre||'',estado:p.estado||'',id:p.id,cliId:p.clienteId||''});
+      if(ts) eventos.push({tipo:'parte',fecha:ts,titulo:p.titulo||'Parte de trabajo',sub:p.clienteNombre||'',estado:p.estado||'',id:p.id,cliId:p.clienteId||'',sinFicha:!p.clienteId});
     });
   }catch(e){}
   try{
@@ -13601,13 +13601,13 @@ const _calgCargarDatos=async()=>{
     aSnap.docs.forEach(d=>{
       const a={id:d.id,...d.data()};
       const ts=a.resueltaEn?.toDate?.();
-      if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'resuelta',id:a.id,cliId:a.clienteId||''});
+      if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'resuelta',id:a.id,cliId:a.clienteId||'',sinFicha:!a.clienteId});
     });
     const aAbSnap=await getDocs(query(collection(db,'grupos',CGID,'averias'),where('estado','==','pendiente')));
     aAbSnap.docs.forEach(d=>{
       const a={id:d.id,...d.data()};
       const ts=a.creado?.toDate?.();
-      if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'pendiente',id:a.id,cliId:a.clienteId||''});
+      if(ts) eventos.push({tipo:'averia',fecha:ts,titulo:a.tipo||'Avería',sub:a.clienteNombre||'',estado:'pendiente',id:a.id,cliId:a.clienteId||'',sinFicha:!a.clienteId});
     });
   }catch(e){}
   try{
@@ -13615,7 +13615,7 @@ const _calgCargarDatos=async()=>{
     prSnap.docs.forEach(d=>{
       const p={id:d.id,...d.data()};
       const ts=p.creado?.toDate?.();
-      if(ts) eventos.push({tipo:'presu',fecha:ts,titulo:p.titulo||'Presupuesto',sub:p.clienteNombre||'',estado:p.estado||'espera',id:p.id,cliId:p.clienteId||''});
+      if(ts) eventos.push({tipo:'presu',fecha:ts,titulo:p.titulo||'Presupuesto',sub:p.clienteNombre||'',estado:p.estado||'espera',id:p.id,cliId:p.clienteId||'',sinFicha:!p.clienteId});
     });
   }catch(e){}
   try{
@@ -13625,7 +13625,7 @@ const _calgCargarDatos=async()=>{
       const ts=f.creado?.toDate?.();
       if(ts){
         const num=f.numero?`FAC-${String(f.numero).padStart(4,'0')}`:'Cobro';
-        eventos.push({tipo:'cobro',fecha:ts,titulo:num+(f.total!=null?' · '+fmtM(f.total):''),sub:f.clienteNombre||'',estado:f.estado||'pendiente',id:f.id,cliId:f.clienteId||''});
+        eventos.push({tipo:'cobro',fecha:ts,titulo:num+(f.total!=null?' · '+fmtM(f.total):''),sub:f.clienteNombre||'',estado:f.estado||'pendiente',id:f.id,cliId:f.clienteId||'',sinFicha:!f.clienteId});
       }
     });
   }catch(e){}
@@ -13746,14 +13746,16 @@ window._calgAbrirDia=(fStr)=>{
           </div>`:''}
         </div>`;
       }else{
+        const avisoCli=e.sinFicha?(e.sub?`<span style="font-size:10px;background:rgba(255,152,0,.15);color:#ff9800;border-radius:8px;padding:2px 7px;font-weight:800;white-space:nowrap">⚠️ Sin ficha</span>`:`<span style="font-size:10px;background:rgba(255,152,0,.15);color:#ff9800;border-radius:8px;padding:2px 7px;font-weight:800;white-space:nowrap">⚠️ Sin cliente</span>`):'';
         html+=`<div class="hg-event" onclick="_calgNavegar('${e.tipo}','${e.id}','${e.cliId}')">
           <div class="hg-event-dot ${e.tipo}">${ti.ico}</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:800;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
-            <div style="font-size:12px;color:var(--tx2);margin:2px 0">${e.sub||'—'}</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+            <div style="font-size:12px;color:var(--tx2);margin:2px 0">${e.sub||(e.sinFicha?'Sin cliente asociado':'—')}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap">
               <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:${ti.color}">${ti.label}</span>
               ${_calgEstadoBadge[e.estado]||''}
+              ${avisoCli}
             </div>
           </div>
           <span style="color:var(--tx3);font-size:16px;flex-shrink:0">›</span>
@@ -13768,29 +13770,29 @@ window._calgAbrirDia=(fStr)=>{
 };
 
 window._calgFormNuevoAviso=(fStr)=>{
-  const cliOpts=allClientes.filter(c=>!c.archivado).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
   abrirSB('➕ Nuevo aviso/entrega',`
     <div class="fgrp"><label>Título *</label><input id="avTit" placeholder="Ej: Entregar pieza, llamar a cliente..."></div>
     <div class="fgrp"><label>Día</label><input type="date" id="avFecha" value="${fStr}"></div>
-    <div class="fgrp"><label>Cliente <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label>
-      <select id="avCli"><option value="">— Ninguno —</option>${cliOpts}</select>
-    </div>
+    <div class="fgrp"><label>Cliente <span style="font-weight:400;color:var(--tx2);font-size:11px">(opcional)</span></label><div id="avCli-wrap"></div></div>
     <div class="fgrp"><label>Nota</label><textarea id="avNota" placeholder="Detalles..."></textarea></div>
     <button class="btn btn-p" style="width:100%;margin-top:8px" onclick="_calgGuardarAviso()">Guardar aviso</button>
   `);
+  if(typeof _buildCliSelect==='function') _buildCliSelect('avCli', null, ()=>{});
 };
 
 window._calgGuardarAviso=async()=>{
   const titulo=($('avTit').value||'').trim();
   const fecha=$('avFecha').value;
-  const cliId=$('avCli').value;
+  const cliEl=$('avCli');
+  const cliId=cliEl?.value||'';
+  const nombrePersonal=cliEl?.dataset?.nombrePersonalizado||'';
   const nota=($('avNota').value||'').trim();
   if(!titulo){toast('Pon un título','e');return;}
   if(!fecha){toast('Elige un día','e');return;}
-  const cli=allClientes.find(c=>c.id===cliId);
+  const cliNom=cliId?(allClientes.find(c=>c.id===cliId)?.nombre||''):nombrePersonal;
   try{
     await addDoc(collection(db,'grupos',CGID,'eventos'),{
-      tipo:'aviso',titulo,fecha,clienteId:cliId||'',clienteNombre:cli?.nombre||'',notas:nota,estado:'pendiente',creado:serverTimestamp()
+      tipo:'aviso',titulo,fecha,clienteId:cliId||'',clienteNombre:cliNom||'',notas:nota,estado:'pendiente',creado:serverTimestamp()
     });
     toast('Aviso guardado','o');
     cerrarSB();
