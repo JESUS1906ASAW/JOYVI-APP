@@ -161,72 +161,6 @@ body.modo-claro .stat2-num{color:#111}
 .toggle-sw input:checked+.toggle-track{background:var(--r)}
 .toggle-sw input:checked+.toggle-track::before{transform:translateX(22px)}
 
-/* ── MODO VISUALIZACIÓN (TABLET/TALLER) ── */
-body.modo-visualizacion #topbar .logo::after{content:' · Gestión';font-size:12px;font-weight:600;color:var(--tx2);letter-spacing:0;font-family:var(--font)}
-body.modo-visualizacion #topbar .logo{cursor:default!important;pointer-events:none!important}
-.kiosk-badge{display:none;background:rgba(255,152,0,.15);border:1px solid rgba(255,152,0,.35);color:#ff9800;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.5px}
-body.modo-visualizacion .kiosk-badge{display:inline-flex;align-items:center;gap:5px}
-/* Modo gestión: solo ocultar acciones de EDICIÓN/BORRADO, no creación */
-body.modo-visualizacion [onclick*="abrirFParte('"],
-body.modo-visualizacion [onclick*="abrirFPartePreservando"],
-body.modo-visualizacion [onclick*="clonarParte"],
-body.modo-visualizacion [onclick*="guardarParteComoPlantilla"],
-body.modo-visualizacion [onclick*="archivarParte"],
-body.modo-visualizacion [onclick*="archivarCliente"],
-body.modo-visualizacion [onclick*="guardarCli("],
-body.modo-visualizacion [onclick*="eliminarMant"],
-body.modo-visualizacion [onclick*="borrarArchivo"],
-body.modo-visualizacion [onclick*="restaurarArchivo"],
-body.modo-visualizacion [onclick*="doLogout"],
-body.modo-visualizacion [onclick*="eliminarGrupoCompleto"],
-body.modo-visualizacion [onclick*="borrarImagen"],
-body.modo-visualizacion [onclick*="flujoCompletarFirmarPDF"],
-body.modo-visualizacion [onclick*="flujoCompletarFirmar("],
-body.modo-visualizacion .btn-del{display:none!important}
-/* Botón de PDF siempre visible y destacado en modo gestión */
-body.modo-visualizacion .kiosk-pdf-btn{display:flex!important}
-/* Pantalla kiosk (pantalla de selección de vista) */
-#screenKiosk{background:var(--bg)}
-.kiosk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0}
-.kiosk-section-label{grid-column:1/-1;font-size:9.5px;font-weight:800;color:var(--tx2);letter-spacing:1.5px;text-transform:uppercase;padding:4px 2px 2px;display:flex;align-items:center;gap:8px}
-.kiosk-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
-.kiosk-tile{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px 14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform .22s cubic-bezier(.16,1,.3,1),border-color .18s,background .15s,box-shadow .22s;min-height:118px;text-align:center;position:relative;overflow:hidden}
-.kiosk-tile::before{content:'';position:absolute;inset:0;background:rgba(var(--theme-rgb),0);transition:background .15s}
-.kiosk-tile.kiosk-tile-wide{grid-column:1/-1;flex-direction:row;min-height:72px;padding:16px 22px;justify-content:flex-start;gap:16px}
-.kiosk-tile.kiosk-tile-wide .kiosk-tile-txt{text-align:left}
-.kiosk-tile.kiosk-tile-crear{border-style:dashed;border-color:rgba(var(--theme-rgb),.35);background:rgba(var(--theme-rgb),.04)}
-.kiosk-tile.kiosk-tile-crear:hover{background:rgba(var(--theme-rgb),.1);border-style:solid}
-.kiosk-tile:active{transform:scale(.96)!important}
-.kiosk-tile:hover{border-color:rgba(var(--theme-rgb),.55);background:rgba(var(--theme-rgb),.07);transform:translateY(-2px);box-shadow:0 6px 20px rgba(var(--theme-rgb),.14)}
-.kiosk-tile-ico{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.15);flex-shrink:0}
-.kiosk-tile-crear .kiosk-tile-ico{background:rgba(var(--theme-rgb),.08)}
-.kiosk-tile-label{font-size:14px;font-weight:900;color:var(--tx);line-height:1.2}
-.kiosk-tile-sub{font-size:10.5px;color:var(--tx2);line-height:1.3}
-.kiosk-tile-txt{display:flex;flex-direction:column;gap:2px}
-.kiosk-header{text-align:center;padding:28px 0 20px}
-.kiosk-header-logo{width:52px;height:52px;border-radius:16px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.kiosk-header-title{font-size:22px;font-weight:900;color:var(--tx);margin-bottom:4px}
-.kiosk-header-group{font-size:13px;color:var(--r);font-weight:700;margin-bottom:3px}
-.kiosk-header-sub{font-size:12px;color:var(--tx2)}
-.kiosk-exit-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding:11px 20px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:12px;font-size:12.5px;font-weight:700;color:var(--tx2);cursor:pointer;width:100%;font-family:var(--font);transition:.15s}
-.kiosk-exit-btn:hover{border-color:var(--r);color:var(--r);background:rgba(var(--theme-rgb),.05)}
-/* Sub-pantallas kiosk */
-.kiosk-sub-header{display:flex;align-items:center;gap:12px;padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:16px;position:sticky;top:0;background:var(--bg);z-index:5;backdrop-filter:blur(12px)}
-.kiosk-back-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px 14px;color:var(--tx2);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;flex-shrink:0;transition:.15s}
-.kiosk-back-btn:hover{border-color:rgba(var(--theme-rgb),.4);color:var(--tx)}
-.kiosk-sub-title{font-size:18px;font-weight:900;color:var(--tx);flex:1}
-.kiosk-crear-fab{display:none;position:fixed;bottom:28px;right:20px;z-index:100;background:linear-gradient(135deg,var(--r2),var(--r));color:#fff;border:none;border-radius:18px;padding:14px 22px;font-size:14px;font-weight:900;font-family:var(--font);cursor:pointer;box-shadow:0 6px 24px rgba(var(--theme-rgb),.45);align-items:center;gap:8px;transition:.2s cubic-bezier(.16,1,.3,1)}
-.kiosk-crear-fab:active{transform:scale(.95)}
-/* Tarjetas kiosk mejoradas */
-.kiosk-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,transform .15s}
-.kiosk-card:active{transform:scale(.98)}
-.kiosk-card:hover{border-color:rgba(var(--theme-rgb),.35)}
-.kiosk-card-title{font-size:14px;font-weight:800;color:var(--tx);margin-bottom:3px}
-.kiosk-card-meta{font-size:12px;color:var(--tx2);line-height:1.5}
-.kiosk-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
-.kiosk-pdf-btn{display:none;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;background:rgba(var(--theme-rgb),.1);border:1px solid rgba(var(--theme-rgb),.25);color:var(--r);font-size:12px;font-weight:800;cursor:pointer;font-family:var(--font);transition:.15s}
-.kiosk-pdf-btn:hover{background:rgba(var(--theme-rgb),.18)}
-body.modo-visualizacion .kiosk-pdf-btn{display:flex!important}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{height:100%;height:100dvh}
 body{height:100%;height:100dvh;overflow:hidden;background:#0d0d0d;font-family:var(--font);color:var(--tx);font-size:15px;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;overscroll-behavior-y:none;transition:background .2s,color .2s}
@@ -1345,8 +1279,7 @@ body.offline .dash-offline-bar{display:flex}
 <div id="app">
   <!-- TOPBAR -->
   <div id="topbar">
-    <span class="logo" onclick="if(!document.body.classList.contains('modo-visualizacion'))goScreen('inicio')" style="cursor:pointer" title="Inicio">Joyvi</span>
-    <span class="kiosk-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Gestión</span>
+    <span class="logo" onclick="goScreen('inicio')" style="cursor:pointer" title="Inicio">Joyvi</span>
     <button class="tb-btn" onclick="abrirDrawer()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
   </div>
 
@@ -1454,123 +1387,6 @@ body.offline .dash-offline-bar{display:flex}
     </div>
   </div>
 
-
-  <!-- KIOSK SCREEN -->
-  <div class="screen" id="screenKiosk">
-    <div class="scroll-pad">
-      <div class="kiosk-header">
-        <div class="kiosk-header-logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-        <div class="kiosk-header-title">Modo Gestión</div>
-        <div class="kiosk-header-group" id="kioskHeaderGroup"></div>
-        <div class="kiosk-header-sub">Selecciona una sección</div>
-      </div>
-      <div class="kiosk-grid">
-        <!-- Clientes -->
-        <div class="kiosk-tile" onclick="kioskIr('grupo')">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Clientes</div><div class="kiosk-tile-sub">Ver y crear</div></div>
-        </div>
-        <!-- Partes -->
-        <div class="kiosk-tile" onclick="kioskIr('partes')">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Partes</div><div class="kiosk-tile-sub">Ver y crear</div></div>
-        </div>
-        <!-- Averías -->
-        <div class="kiosk-tile" onclick="kioskIr('averias')">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Averías</div><div class="kiosk-tile-sub">Ver y crear</div></div>
-        </div>
-        <!-- Mantenimientos -->
-        <div class="kiosk-tile" onclick="kioskIr('mant')">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Mantenimientos</div><div class="kiosk-tile-sub">Ver y crear</div></div>
-        </div>
-        <!-- Presupuestos — ancho completo -->
-        <div class="kiosk-tile kiosk-tile-wide" onclick="kioskIr('presupuestos')">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Presupuestos</div><div class="kiosk-tile-sub">Ver y crear</div></div>
-        </div>
-        <!-- Notificaciones — ancho completo -->
-        <div class="kiosk-tile kiosk-tile-wide" onclick="goScreen('notificaciones')" style="position:relative">
-          <div class="kiosk-tile-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-          <div class="kiosk-tile-txt"><div class="kiosk-tile-label">Notificaciones</div><div class="kiosk-tile-sub">Ver avisos y alertas</div></div>
-          <span class="notif-dot" id="notifDotKiosk" style="top:10px;right:10px"></span>
-        </div>
-      </div>
-
-      <!-- ── DOCUMENTOS DE HOY ── -->
-      <div style="margin-top:24px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span style="font-size:10.5px;font-weight:900;color:var(--r);letter-spacing:1.8px;text-transform:uppercase">Documentos de hoy</span>
-          <span id="kioskHoyFecha" style="font-size:11px;font-weight:700;color:var(--tx2);margin-left:auto"></span>
-        </div>
-        <div id="kioskDocsHoy">
-          <div class="empty" style="padding:20px 0"><div class="empty-ico" style="font-size:28px">📋</div><p>Cargando…</p></div>
-        </div>
-      </div>
-
-      <button class="kiosk-exit-btn" onclick="salirModoVisualizacion()" style="margin-top:28px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Salir del modo gestión</button>
-    </div>
-  </div>
-
-  <!-- KIOSK SUB-SCREENS -->
-  <div class="screen" id="screenKioskCli">
-    <div class="scroll-pad">
-      <div class="kiosk-sub-header">
-        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
-        <div class="kiosk-sub-title">👷 Clientes</div>
-      </div>
-      
-      <div id="kioskCliContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
-    </div>
-    <button class="kiosk-crear-fab" id="kiosk-fab-kioskCliContent" onclick="abrirCliExpress()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Cliente</button>
-  </div>
-  <div class="screen" id="screenKioskPartes">
-    <div class="scroll-pad">
-      <div class="kiosk-sub-header">
-        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
-        <div class="kiosk-sub-title">🔧 Partes de trabajo</div>
-      </div>
-      <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, título, operario..." oninput="_kioskFiltrar('partes',this.value)">
-      <div id="kioskPartesContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
-    </div>
-    <button class="kiosk-crear-fab" id="kiosk-fab-kioskPartesContent" onclick="abrirSelectorParte()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Nuevo parte</button>
-  </div>
-  <div class="screen" id="screenKioskAverias">
-    <div class="scroll-pad">
-      <div class="kiosk-sub-header">
-        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
-        <div class="kiosk-sub-title">⚠️ Averías</div>
-      </div>
-      <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, tipo..." oninput="_kioskFiltrar('averias',this.value)">
-      <div id="kioskAveriasContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
-    </div>
-    <button class="kiosk-crear-fab" id="kiosk-fab-kioskAveriasContent" onclick="abrirNuevaAveria()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Nueva avería</button>
-  </div>
-  <div class="screen" id="screenKioskMant">
-    <div class="scroll-pad">
-      <div class="kiosk-sub-header">
-        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
-        <div class="kiosk-sub-title">⚙️ Mantenimientos</div>
-      </div>
-      <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, trabajo..." oninput="_kioskFiltrar('mant',this.value)">
-      <div id="kioskMantContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
-    </div>
-    <button class="kiosk-crear-fab" id="kiosk-fab-kioskMantContent" onclick="window._abrirMantSBFormNuevo&&window._abrirMantSBFormNuevo()||toast('Selecciona primero un grupo','e')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Nuevo mantenimiento</button>
-  </div>
-  <div class="screen" id="screenKioskPresu">
-    <div class="scroll-pad">
-      <div class="kiosk-sub-header">
-        <button class="kiosk-back-btn" onclick="goScreen('kiosk')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Volver</button>
-        <div class="kiosk-sub-title">💶 Presupuestos</div>
-      </div>
-      <input class="sbox" style="margin-bottom:14px" placeholder="🔍 Buscar por cliente, título..." oninput="_kioskFiltrar('presu',this.value)">
-      <div id="kioskPresuContent"><div class="empty"><div class="empty-ico" style="font-size:28px">⌛</div><p>Cargando...</p></div></div>
-    </div>
-    <button class="kiosk-crear-fab" id="kiosk-fab-kioskPresuContent" onclick="abrirNuevoPresupuesto()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + Nuevo presupuesto</button>
-  </div>
-
   <!-- INSTALL BANNER PWA -->
   <div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;padding:12px 16px;background:var(--card);border-top:1px solid rgba(var(--theme-rgb),.3);box-shadow:0 -4px 24px rgba(0,0,0,.6)">
     <div style="display:flex;align-items:center;gap:14px;max-width:480px;margin:0 auto">
@@ -1603,7 +1419,7 @@ body.offline .dash-offline-bar{display:flex}
         <div style="width:64px;height:64px;border-radius:20px;background:rgba(255,152,0,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 18px"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><circle cx="12" cy="12" r="7"/></svg></div>
         <div style="font-size:18px;font-weight:900;color:var(--tx);margin-bottom:8px">Mantenimientos</div>
         <div style="font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:20px">Los mantenimientos y el calendario ahora están integrados en la pestaña <strong>Mantenimientos</strong> del menú de grupo.</div>
-        <button class="btn btn-p" onclick="goScreen('grupo');switchGTab('mant')">⚙️ Ir a Mantenimientos →</button>
+        <button class="btn btn-p" onclick="abrirTabExclusiva('mant')">⚙️ Ir a Mantenimientos →</button>
       </div>
     </div>
   </div>
@@ -1686,7 +1502,7 @@ body.offline .dash-offline-bar{display:flex}
   <!-- ─── PANTALLA: NOTIFICACIONES ─── -->
   <div class="screen" id="screenNotificaciones">
     <div class="scroll-pad">
-      <div class="volver-btn" id="notifVolverBtn" onclick="goScreen(document.body.classList.contains('modo-visualizacion')?'kiosk':'grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span id="notifVolverTxt">Inicio</span></div><div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:16px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notificaciones</div>
+      <div class="volver-btn" id="notifVolverBtn" onclick="goScreen('grupo')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> <span id="notifVolverTxt">Inicio</span></div><div style="font-size:20px;font-weight:900;color:var(--tx);margin-bottom:16px;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notificaciones</div>
       <div id="notifContent"></div>
     </div>
   </div>
@@ -2425,7 +2241,7 @@ const iniciarFCMForeground=()=>{
 };
 
 // NAVEGACIÓN — History API (botón atrás nativo del navegador/móvil)
-const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',log:'screenLog',kiosk:'screenKiosk',kioskCli:'screenKioskCli',kioskPartes:'screenKioskPartes',kioskAverias:'screenKioskAverias',kioskMant:'screenKioskMant',kioskPresu:'screenKioskPresu',historialGlobal:'screenHistorialGlobal'};
+const screens={inicio:'screenInicio',grupo:'screenGrupo',mantenimiento:'screenMantenimiento',administracion:'screenAdministracion',calendario:'screenCalendario',archivos:'screenArchivos',imagenes:'screenImagenes',averias:'screenAverias',presupuestos:'screenPresupuestos',notificaciones:'screenNotificaciones',perfil:'screenPerfil',log:'screenLog',historialGlobal:'screenHistorialGlobal'};
 
 // Flag para evitar bucles al manejar popstate
 let _navFromPop=false;
@@ -2454,7 +2270,6 @@ const _renderScreen=id=>{
   else if(id==='notificaciones')renderNotificaciones();
   else if(id==='perfil')renderPerfil();
   else if(id==='historialGlobal')renderHistorialGlobal();
-  else if(id==='kiosk')setTimeout(()=>window.renderKioskDocsHoy&&window.renderKioskDocsHoy(),150);
 };
 
 window.goScreen=id=>{
@@ -2514,15 +2329,6 @@ window.addEventListener('popstate',e=>{
   }
   // Caso 3: navegación entre pantallas
   _navFromPop=true;
-  // En modo gestión: interceptar popstate y redirigir a kiosk
-  if(localStorage.getItem('joyvi_kiosk')==='1'){
-    const cur=document.querySelector('.screen.active');
-    const curKey=cur?Object.keys(screens).find(k=>screens[k]===cur.id):null;
-    if(curKey!=='kiosk'){ _renderScreen('kiosk'); } // siempre al menú kiosk
-    history.pushState({screen:'kiosk',sbOpen:false},'','#kiosk'); // evitar salir del historial
-    _navFromPop=false;
-    return;
-  }
   if(e.state&&e.state.screen&&!e.state.sbOpen){
     _renderScreen(e.state.screen);
   } else if(screenHistory.length){
@@ -2554,34 +2360,22 @@ history.replaceState({screen:'inicio',sbOpen:false},'',location.href.split('#')[
 
 // DRAWER
 window.abrirDrawer=()=>{
-  const isKiosk = localStorage.getItem('joyvi_kiosk')==='1';
   const body = document.getElementById('drawerBody');
-  if(body) body.innerHTML = _buildDrawerBody(isKiosk, !!CGID);
+  if(body) body.innerHTML = _buildDrawerBody(!!CGID);
   // Actualizar avatar y banner cada vez que se abre
   if(typeof actualizarDrawer==='function') actualizarDrawer();
   $('drawer').classList.add('open');
   $('drawerOverlay').style.display='block';
 };
 
-window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
+window._buildDrawerBody=(tieneGrupo)=>{
   // SVG helpers inline
   const icoHome=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
   const icoNotif=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
   const icoLogout=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
-  const icoSalirKiosk=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
-  const icoKiosk=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
 
   const sep = `<div class="d-sep"></div>`;
   const logoutBtn = `<div class="d-item" onclick="doLogout()" style="color:#ff5252"><span class="d-icon">${icoLogout}</span>Cerrar sesión</div>`;
-
-  // ── MODO KIOSK: solo Salir modo, Cerrar sesión (sin Inicio) ──
-  if(isKiosk){
-    return `
-      <div class="d-section">Principal</div>
-      <div class="d-item" onclick="salirModoVisualizacion();cerrarDrawer()" style="color:#ff9800"><span class="d-icon">${icoSalirKiosk}</span>Salir modo gestión</div>
-      ${sep}
-      ${logoutBtn}`;
-  }
 
   // ── SIN GRUPO ACTIVO: nombre, previsualización de grupos, cerrar sesión ──
   if(!tieneGrupo){
@@ -2622,8 +2416,8 @@ window._buildDrawerBody=(isKiosk, tieneGrupo)=>{
     <div class="d-item${act('inicio')}" onclick="drawerIrInicio()"><span class="d-icon">${icoHome}</span>Volver</div>
     ${sep}
     <div class="d-grupo-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${grupoNombre}</div>
-    <div class="d-item${act('grupo','mant')}" onclick="goScreen('grupo');switchGTab('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
-    <div class="d-item${act('grupo','aver')}" onclick="goScreen('grupo');switchGTab('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
+    <div class="d-item${act('grupo','mant')}" onclick="abrirTabExclusiva('mant');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></span>Mantenimientos</div>
+    <div class="d-item${act('grupo','aver')}" onclick="abrirTabExclusiva('aver');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Averías pendientes</div>
     <div class="d-item${act('calendario')}" onclick="goScreen('calendario');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Calendario</div>
     <div class="d-item${act('imagenes')}" onclick="goScreen('imagenes');cerrarDrawer()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>Galería de instalaciones</div>
     <div class="d-item" onclick="cerrarDrawer();abrirSelectorImprimirPartes()"><span class="d-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>Imprimir partes</div>
@@ -3291,15 +3085,10 @@ const iniciarApp=async()=>{
     const dot=$('notifDot');
     if(count>0){
       if(dot){dot.classList.add('show');dot.textContent=count>9?'9+':count;}
-      // Sincronizar badge kiosk
-      const dotK=document.getElementById('notifDotKiosk');
-      if(dotK){dotK.className=dot?dot.className:'notif-dot show';dotK.textContent=count>9?'9+':count;}
       // Sin aviso emergente (ni toast ni notificación local): solo se actualiza
       // el contador. Las notificaciones se consultan en su propia pantalla.
     }else{
       if(dot)dot.classList.remove('show');
-      const dotK=document.getElementById('notifDotKiosk');
-      if(dotK)dotK.classList.remove('show');
     }
   });
 
@@ -3875,11 +3664,6 @@ let activeGTab='cli';
 window.switchGTab=tab=>{
   activeGTab=tab;
   sessionStorage.setItem('joyvi_gtab',tab);
-  // ── MODO SIMPLE: ventana exclusiva sin menú de grupo ──
-  if (localStorage.getItem('joyvi_kiosk')==='1') {
-    _renderVentanaExclusiva(tab);
-    return;
-  }
   const tabs=['cli','part','aver','presu','mant','avis','cobros','entregas'];
   const tabIds={cli:'tabCli',part:'tabPart',aver:'tabAver',presu:'tabPresu',mant:'tabMant',avis:'tabAvis',cobros:'tabCobros',entregas:'tabEntregas'};
   const contentIds={cli:'tabCliContent',part:'tabPartContent',aver:'tabAverContent',presu:'tabPresuContent',mant:'tabMantContent',avis:'tabAvisContent',cobros:'tabCobrosContent',entregas:'tabEntregasContent'};
@@ -3898,6 +3682,16 @@ window.switchGTab=tab=>{
   else if(tab==='entregas') _renderGTabSimple('entrega');
 };
 
+// ── Abrir una pestaña como pantalla EXCLUSIVA (sin el menú principal / gtabs) ──
+// Usado por Mantenimientos y Averías: entran directas a su propia vista,
+// en vez de abrirse dentro de la pantalla de grupo con Clientes/Partes/etc.
+window.abrirTabExclusiva=(tab)=>{
+  goScreen('grupo');
+  activeGTab=tab;
+  sessionStorage.setItem('joyvi_gtab',tab);
+  _renderVentanaExclusiva(tab);
+};
+
 // ── Ventana exclusiva (modo simple): muestra solo la sección seleccionada ──
 const _labelTab={cli:'👷 Clientes',part:'🔧 Partes',aver:'⚠️ Averías',presu:'💶 Presupuestos',mant:'⚙️ Mantenimientos',avis:'💬 Avisos'};
 const _renderVentanaExclusiva = (tab) => {
@@ -3906,9 +3700,10 @@ const _renderVentanaExclusiva = (tab) => {
   let innerHTML='';
   if(tab==='cli') innerHTML=renderTabClientes();
   else if(tab==='part') innerHTML=renderTabPartes();
+  // El botón vuelve siempre a inicio.
   el.innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <button onclick="goScreen('kiosk')" style="background:rgba(var(--theme-rgb),.12);border:1px solid rgba(var(--theme-rgb),.25);border-radius:12px;padding:9px 16px;font-size:13px;font-weight:800;color:var(--r);font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:6px">
+      <button onclick="goScreen('inicio')" style="background:rgba(var(--theme-rgb),.12);border:1px solid rgba(var(--theme-rgb),.25);border-radius:12px;padding:9px 16px;font-size:13px;font-weight:800;color:var(--r);font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:6px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         Menú
       </button>
@@ -6754,7 +6549,7 @@ window.verParte=id=>{
       <button class="btn btn-s btn-sm" onclick="abrirFPartePreservandoCli('${id}')">✏️ Editar</button>
       <button class="btn btn-s btn-sm" onclick="clonarParte('${id}')" style="background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.3);color:var(--r)">📋 Clonar</button>
       <button class="btn btn-s btn-sm" onclick="_gClick(this,()=>guardarParteComoPlantilla('${id}'))">📄 Plantilla</button>
-      <button class="btn btn-p btn-sm kiosk-pdf-btn" style="display:flex" onclick="generarPDF('${id}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</button>
+      <button class="btn btn-p btn-sm" onclick="generarPDF('${id}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</button>
       <button class="btn btn-ok btn-sm" onclick="crearPresupuestoDesdeParteId('${id}')" style="background:linear-gradient(135deg,#1565c0,#1e88e5);color:#fff;border:none"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Presupuesto</button>
       <button class="btn btn-del btn-sm" onclick="archivarParte('${id}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'/></svg>Archivar</button>
     </div>
@@ -11808,15 +11603,14 @@ const renderNotificaciones=async()=>{
   }
 
   // Adaptar botón volver
-  const esKiosk=document.body.classList.contains('modo-visualizacion');
   const volverTxt=document.getElementById('notifVolverTxt');
-  if(volverTxt)volverTxt.textContent=esKiosk?'Modo Gestión':'Inicio';
+  if(volverTxt)volverTxt.textContent='Inicio';
 
   // Renderizar cabecera + formulario envío
   const buildHeader=()=>{
     let h='';
-    if(CGID&&!esKiosk)h=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo: ${CG?.nombre||''}</div>`;
-    if(CGID&&!esKiosk){
+    if(CGID)h=`<div class="quick-back" onclick="goScreen('grupo')">← Volver al grupo: ${CG?.nombre||''}</div>`;
+    if(CGID){
       h+=`<div style="background:linear-gradient(135deg,rgba(var(--theme-rgb),.1),rgba(var(--theme-rgb),.04));border:1px solid rgba(var(--theme-rgb),.2);border-radius:14px;padding:14px 16px;margin-bottom:20px">
       <div style="font-size:12px;font-weight:900;color:var(--r);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -12058,14 +11852,9 @@ window.rechazarSolDesdeNotif=async(notifId,uid,nombre,grupoId)=>{
 // Avatar SVG ilustrados — 6 opciones de persona
 
 const renderPerfil=()=>{
-  const _esModoSimple = localStorage.getItem('joyvi_kiosk')==='1';
   let html='';
   // Botón volver siempre visible en la parte superior
-  if(_esModoSimple){
-    html+=`<div class="volver-btn" onclick="goScreen('kiosk')" style="margin-bottom:16px">‹ Volver</div>`;
-  } else {
-    html+=`<div class="volver-btn" onclick="goScreen('grupo')" style="margin-bottom:16px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</div>`;
-  }
+  html+=`<div class="volver-btn" onclick="goScreen('grupo')" style="margin-bottom:16px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</div>`;
 
   // ── FOTO DE PERFIL ──
   const _fotoPerfil=CUD?.fotoUrl||'';
@@ -13238,7 +13027,7 @@ const _checkMantProximos=async()=>{
     const banner=document.createElement('div');
     banner.id='mantAlertaBanner';
     banner.style.cssText='position:fixed;bottom:80px;left:12px;right:12px;z-index:9000;background:linear-gradient(135deg,rgba(var(--theme-rgb),.95),rgba(198,40,40,.95));border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:fadeIn .3s ease;cursor:pointer';
-    banner.onclick=()=>{banner.remove();goScreen('grupo');switchGTab&&switchGTab('mant');};
+    banner.onclick=()=>{banner.remove();abrirTabExclusiva('mant');};
     banner.innerHTML=`<div style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">⚙️</div><div style="flex:1"><div style="font-size:13px;font-weight:900;color:#fff">${n} mantenimiento${n>1?'s':''} próximo${n>1?'s':''}</div><div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">${n===1?cuerpo:'Pulsa para ver el calendario'}</div></div><button onclick="event.stopPropagation();document.getElementById('mantAlertaBanner')?.remove()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>`;
     document.body.appendChild(banner);
     setTimeout(()=>banner?.remove(),9000);
@@ -13419,8 +13208,8 @@ window._hgSetFiltro=(f)=>{ _hgFiltro=f; _renderHGUI(); };
 window._hgNavegar=(tipo,id,cliId)=>{
   if(!CGID)return;
   if(tipo==='parte'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('part');setTimeout(()=>verParte&&verParte(id),100);},200);}
-  else if(tipo==='mant'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('mant');setTimeout(()=>verMant&&verMant(id),100);},200);}
-  else if(tipo==='averia'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('aver');setTimeout(()=>verAveria&&verAveria(id),100);},200);}
+  else if(tipo==='mant'){abrirTabExclusiva('mant');setTimeout(()=>verMant&&verMant(id),200);}
+  else if(tipo==='averia'){abrirTabExclusiva('aver');setTimeout(()=>verAveria&&verAveria(id),200);}
   else if(tipo==='presu'){goScreen('grupo');setTimeout(()=>{switchGTab&&switchGTab('presu');},200);}
 };
 
@@ -13773,288 +13562,6 @@ window._calgNavegar=(tipo,id,cliId)=>{
 };
 
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MODO VISUALIZACIÓN (TABLET/TALLER)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const _aplicarModoVisualizacion=()=>{
-  const activo=localStorage.getItem('joyvi_kiosk')==='1';
-  document.body.classList.toggle('modo-visualizacion',activo);
-};
-_aplicarModoVisualizacion();
-
-window.salirModoVisualizacion=()=>{
-  localStorage.removeItem('joyvi_kiosk');
-  _aplicarModoVisualizacion();
-  toast('Modo normal restaurado','o');
-  goScreen('inicio');
-  renderPerfil&&renderPerfil();
-};
-
-// Datos base para búsqueda kiosk (se rellena al cargar cada pantalla)
-window._kioskData = { averias:[], mant:[], presu:[], partes:[] };
-
-window._kioskFiltrar = (tipo, q) => {
-  const ids = { averias:'kioskAveriasContent', mant:'kioskMantContent', presu:'kioskPresuContent', partes:'kioskPartesContent' };
-  const el = document.getElementById(ids[tipo]);
-  if(!el) return;
-  const data = window._kioskData[tipo] || [];
-  const words = (q||'').toLowerCase().trim().split(/\s+/).filter(Boolean);
-  const list = words.length ? data.filter(item => {
-    const hay = [item._buscar||''].join(' ').toLowerCase();
-    return words.every(w => hay.includes(w));
-  }) : data;
-  if(!list.length){
-    el.innerHTML = words.length
-      ? `<div class="empty"><p>Sin resultados para "<strong>${(q||'').trim()}</strong>"</p></div>`
-      : `<div class="empty"><p>Sin datos</p></div>`;
-    return;
-  }
-  el.innerHTML = list.map(item => item._html).join('');
-};
-
-// PDF svg inline para botones kiosk
-const _kioskPdfSvg=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
-
-// Mostrar/ocultar FAB de creación en sub-pantallas kiosk
-const _kioskToggleFab=(screenId,show)=>{
-  const fab=document.getElementById('kiosk-fab-'+screenId);
-  if(fab)fab.style.display=show?'flex':'none';
-};
-
-window.kioskIr=async(dest)=>{
-  if(!CGID){toast('Selecciona un grupo primero','e');return;}
-  if(!CG){
-    try{const snap=await getDoc(doc(db,'grupos',CGID));if(snap.exists())CG={id:snap.id,...snap.data()};}catch(e){}
-  }
-  // Actualizar nombre grupo en header kiosk
-  const hg=document.getElementById('kioskHeaderGroup');
-  if(hg)hg.textContent=CG?.nombre||'';
-
-  if(dest==='grupo'){
-    goScreen('kioskCli');
-    _kioskToggleFab('kioskCliContent',true);
-    setTimeout(()=>{
-      const el=document.getElementById('kioskCliContent');
-      if(el)el.innerHTML=typeof renderTabClientes==='function'?renderTabClientes():'<div class="empty"><p>Sin datos</p></div>';
-    },80);
-  } else if(dest==='partes'){
-    goScreen('kioskPartes');
-    _kioskToggleFab('kioskPartesContent',true);
-    setTimeout(()=>{
-      const el=document.getElementById('kioskPartesContent');
-      if(!el)return;
-      const partes=(allPartes||[]).filter(p=>!p.archivado).sort((a,b)=>_tsN(b.creado)-_tsN(a.creado));
-      window._kioskData.partes = partes.map(p=>{
-        const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
-        const esComp=p.estado==='completado';
-        const badge=esComp
-          ?'<span style="font-size:10.5px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 9px">✓ Completado</span>'
-          :'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Pendiente</span>';
-        const pdfBadgeKiosk=p.pdfGenerado?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#1565c0;background:rgba(21,101,192,.1);border:1px solid rgba(21,101,192,.25);border-radius:6px;padding:2px 6px;flex-shrink:0"><svg width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF ✓</span>`:'';
-        return {
-          _buscar:[p.titulo,p.descripcion,p.operario,p.edificio,p.clienteNombre,cli?.nombre].filter(Boolean).join(' '),
-          _html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'#ff9800'}" onclick="verParte('${p.id}')">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap">
-              <div class="kiosk-card-title">${p.titulo||'Parte sin título'}</div>
-              <div style="display:flex;gap:4px;flex-shrink:0">${pdfBadgeKiosk}${badge}</div>
-            </div>
-            <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'} · ${fmtF(p.creado)}${p.operario?' · '+p.operario:''}</div>
-            ${p.descripcion?`<div class="kiosk-card-meta" style="margin-top:3px">${p.descripcion}</div>`:''}
-            <div class="kiosk-card-footer">
-              <div style="font-size:13px;font-weight:900;color:var(--r)">${p.importeManoObra||p.importeMateriales?fmtM(calcTotal(p)):''}</div>
-              <button class="kiosk-pdf-btn" onclick="event.stopPropagation();generarPDF('${p.id}')">${_kioskPdfSvg}PDF</button>
-            </div>
-          </div>`
-        };
-      });
-      if(!window._kioskData.partes.length){el.innerHTML='<div class="empty"><div class="empty-ico">🔧</div><p>Sin partes de trabajo</p></div>';return;}
-      el.innerHTML=window._kioskData.partes.map(x=>x._html).join('');
-    },80);
-  } else if(dest==='averias'){
-    goScreen('kioskAverias');
-    _kioskToggleFab('kioskAveriasContent',true);
-    setTimeout(()=>{
-      const el=document.getElementById('kioskAveriasContent');
-      if(!el)return;
-      const avsPend=(_averiasPend||[]);
-      const avsRes=(_averiasRes||[]);
-      const allAvs=[...avsPend.map(a=>({...a,_res:false})),...avsRes.map(a=>({...a,_res:true}))];
-      window._kioskData.averias = allAvs.map(a=>{
-        const cli=(allClientes||[]).find(x=>x.id===a.clienteId);
-        const esRes=a._res;
-        const cardBg=esRes?'rgba(76,175,80,.05)':'rgba(var(--theme-rgb),.04)';
-        const cardBorder=esRes?'rgba(76,175,80,.2)':'rgba(var(--theme-rgb),.18)';
-        const badge=esRes
-          ?'<span style="font-size:10.5px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 9px">✓ Resuelta</span>'
-          :'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Pendiente</span>';
-        return {
-          _buscar:[a.tipo,a.descripcion,a.clienteNombre,cli?.nombre].filter(Boolean).join(' '),
-          _html:`<div class="kiosk-card" style="background:${cardBg};border-color:${cardBorder}">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-              <div class="kiosk-card-title">${a.tipo||'Avería'}</div>${badge}
-            </div>
-            <div class="kiosk-card-meta">${cli?cli.nombre:a.clienteNombre||'—'} · ${fmtF(esRes?(a.resueltaEn||a.creado):a.creado)}</div>
-            ${a.descripcion?`<div class="kiosk-card-meta" style="margin-top:3px">${a.descripcion}</div>`:''}
-          </div>`
-        };
-      });
-      if(!window._kioskData.averias.length){el.innerHTML='<div class="empty"><div class="empty-ico">✅</div><p>Sin averías</p></div>';return;}
-      el.innerHTML=window._kioskData.averias.map(x=>x._html).join('');
-    },80);
-  } else if(dest==='mant'){
-    goScreen('kioskMant');
-    setTimeout(()=>{
-      const el=document.getElementById('kioskMantContent');
-      if(!el)return;
-      const mants=(allMantenimientos||[]).filter(m=>m.estado!=='completado').sort((a,b)=>(a.fechaProxima||'')>(b.fechaProxima||'')?1:-1);
-      window._kioskData.mant = mants.map(m=>{
-        const cli=(allClientes||[]).find(x=>x.id===m.clienteId);
-        const hoy=new Date().toISOString().split('T')[0];
-        const esUrgente=m.fechaProxima&&m.fechaProxima<=hoy;
-        return {
-          _buscar:[m.nombreTrabajo,m.clienteNombre,cli?.nombre,m.notas,m.frecuencia].filter(Boolean).join(' '),
-          _html:`<div class="kiosk-card" style="${esUrgente?'border-left:3px solid #ff9800':''}">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-              <div class="kiosk-card-title">${m.nombreTrabajo||m.nombre||'Mantenimiento'}</div>
-              ${esUrgente?'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Próximo</span>':''}
-            </div>
-            <div class="kiosk-card-meta">${cli?cli.nombre:m.clienteNombre||'—'}${m.frecuencia?' · '+m.frecuencia:''}${m.fechaProxima?' · Próx: '+m.fechaProxima:''}</div>
-            ${m.notas?`<div class="kiosk-card-meta" style="margin-top:3px">${m.notas}</div>`:''}
-          </div>`
-        };
-      });
-      if(!window._kioskData.mant.length){el.innerHTML='<div class="empty"><div class="empty-ico">⚙️</div><p>Sin mantenimientos pendientes</p></div>';return;}
-      el.innerHTML=window._kioskData.mant.map(x=>x._html).join('');
-    },80);
-  } else if(dest==='presupuestos'){
-    goScreen('kioskPresu');
-    _kioskToggleFab('kioskPresuContent',true);
-    setTimeout(()=>{
-      const el=document.getElementById('kioskPresuContent');
-      if(!el)return;
-      const allPresu=[...(_presusPend||[]).map(p=>({...p,_comp:false})),...(_presusComp||[]).map(p=>({...p,_comp:true}))];
-      window._kioskData.presu = allPresu.map(p=>{
-        const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
-        const total=typeof _calcTotal==='function'?_calcTotal(p):((parseFloat(p.importeManoObra)||0)+(parseFloat(p.importeMateriales)||0)+(parseFloat(p.importeDesplazamiento)||0));
-        const esComp=p._comp;
-        const badge=esComp
-          ?'<span style="font-size:10.5px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 9px">✓ Aceptado</span>'
-          :'<span style="font-size:10.5px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 9px">Pendiente</span>';
-        return {
-          _buscar:[p.titulo,p.notas,p.clienteNombre,cli?.nombre].filter(Boolean).join(' '),
-          _html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'rgba(var(--theme-rgb),.4)'}">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-              <div class="kiosk-card-title">${p.titulo||'Presupuesto'}</div>${badge}
-            </div>
-            <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'} · ${fmtF(p.creado)}</div>
-            <div class="kiosk-card-footer">
-              ${total?`<div style="font-size:14px;font-weight:900;color:var(--r)">${fmtM(total)}</div>`:'<div></div>'}
-              <button class="kiosk-pdf-btn" onclick="event.stopPropagation();exportarPresupuestoPDF('${p.id}')">${_kioskPdfSvg}PDF</button>
-            </div>
-          </div>`
-        };
-      });
-      if(!window._kioskData.presu.length){el.innerHTML='<div class="empty"><div class="empty-ico">💶</div><p>Sin presupuestos</p></div>';return;}
-      el.innerHTML=window._kioskData.presu.map(x=>x._html).join('');
-    },80);
-  } else {
-    goScreen(dest);
-  }
-};
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// DOCUMENTOS DE HOY (Modo Gestión)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-window.renderKioskDocsHoy=()=>{
-  const el=document.getElementById('kioskDocsHoy');
-  const fechaEl=document.getElementById('kioskHoyFecha');
-  if(!el)return;
-
-  const ahora=Date.now();
-  const hoy=new Date();
-  const hoyStr=hoy.toISOString().split('T')[0];
-  const hoyIniS=new Date(hoyStr+'T00:00:00').getTime()/1000;
-  const hoyFinS=hoyIniS+86400;
-
-  if(fechaEl){
-    fechaEl.textContent=hoy.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
-  }
-
-  const esHoy=ts=>{const s=ts?.seconds||0;return s>=hoyIniS&&s<hoyFinS;};
-
-  let items=[];
-
-  // ── Partes de hoy ──
-  (allPartes||[]).filter(p=>!p.archivado&&esHoy(p.creado)).forEach(p=>{
-    const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
-    const esComp=p.estado==='completado';
-    const pdfBadge=p.pdfGenerado?`<span style="font-size:10px;font-weight:800;color:#1565c0;background:rgba(21,101,192,.1);border:1px solid rgba(21,101,192,.22);border-radius:6px;padding:2px 6px;flex-shrink:0">PDF ✓</span>`:'';
-    items.push({ts:p.creado?.seconds||0,html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'#ff9800'};cursor:pointer" onclick="verParte('${p.id}')">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
-        <span style="font-size:10px;font-weight:900;color:#fff;background:var(--r);border-radius:5px;padding:2px 7px;flex-shrink:0">PARTE</span>
-        <span class="kiosk-card-title" style="margin:0;flex:1;min-width:0">${p.titulo||'Sin título'}</span>
-        ${pdfBadge}
-        ${esComp?'<span style="font-size:10px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px;flex-shrink:0">✓ Completado</span>':'<span style="font-size:10px;font-weight:800;color:#ff9800;background:rgba(255,152,0,.12);border-radius:20px;padding:2px 8px;flex-shrink:0">Pendiente</span>'}
-      </div>
-      <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'}${p.operario?' · '+p.operario:''}</div>
-      ${p.descripcion?`<div class="kiosk-card-meta" style="margin-top:2px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.descripcion}</div>`:''}
-      <div class="kiosk-card-footer">
-        <div style="font-size:13px;font-weight:900;color:var(--r)">${(p.importeManoObra||p.importeMateriales)?fmtM(calcTotal(p)):''}</div>
-        <button class="kiosk-pdf-btn" onclick="event.stopPropagation();generarPDF('${p.id}')">${_kioskPdfSvg}PDF</button>
-      </div>
-    </div>`});
-  });
-
-  // ── Averías de hoy ──
-  const todasAverias=[...(_averiasPend||[]).map(a=>({...a,_res:false})),...(_averiasRes||[]).map(a=>({...a,_res:true}))];
-  todasAverias.filter(a=>esHoy(a.creado)).forEach(a=>{
-    const cli=(allClientes||[]).find(x=>x.id===a.clienteId);
-    const esRes=a._res;
-    items.push({ts:a.creado?.seconds||0,html:`<div class="kiosk-card" style="border-left:3px solid ${esRes?'#4caf50':'#e53935'}">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
-        <span style="font-size:10px;font-weight:900;color:#fff;background:#e53935;border-radius:5px;padding:2px 7px;flex-shrink:0">AVERÍA</span>
-        <span class="kiosk-card-title" style="margin:0;flex:1;min-width:0">${a.tipo||'Avería'}</span>
-        ${esRes?'<span style="font-size:10px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px;flex-shrink:0">✓ Resuelta</span>':'<span style="font-size:10px;font-weight:800;color:#e53935;background:rgba(229,57,53,.08);border-radius:20px;padding:2px 8px;flex-shrink:0">Pendiente</span>'}
-      </div>
-      <div class="kiosk-card-meta">${cli?cli.nombre:a.clienteNombre||'—'}</div>
-      ${a.descripcion?`<div class="kiosk-card-meta" style="margin-top:2px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.descripcion}</div>`:''}
-    </div>`});
-  });
-
-  // ── Presupuestos de hoy ──
-  const todosPresu=[...(_presusPend||[]).map(p=>({...p,_comp:false})),...(_presusComp||[]).map(p=>({...p,_comp:true}))];
-  todosPresu.filter(p=>esHoy(p.creado)).forEach(p=>{
-    const cli=(allClientes||[]).find(x=>x.id===p.clienteId);
-    const esComp=p._comp;
-    const total=(parseFloat(p.importeManoObra)||0)+(parseFloat(p.importeMateriales)||0)+(parseFloat(p.importeDesplazamiento)||0);
-    items.push({ts:p.creado?.seconds||0,html:`<div class="kiosk-card" style="border-left:3px solid ${esComp?'#4caf50':'#1e88e5'}">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
-        <span style="font-size:10px;font-weight:900;color:#fff;background:#1e88e5;border-radius:5px;padding:2px 7px;flex-shrink:0">PRESUP.</span>
-        <span class="kiosk-card-title" style="margin:0;flex:1;min-width:0">${p.titulo||'Presupuesto'}</span>
-        ${esComp?'<span style="font-size:10px;font-weight:800;color:#4caf50;background:rgba(76,175,80,.12);border-radius:20px;padding:2px 8px;flex-shrink:0">✓ Aceptado</span>':'<span style="font-size:10px;font-weight:800;color:#1e88e5;background:rgba(30,136,229,.09);border-radius:20px;padding:2px 8px;flex-shrink:0">Pendiente</span>'}
-      </div>
-      <div class="kiosk-card-meta">${cli?cli.nombre:p.clienteNombre||'—'}</div>
-      <div class="kiosk-card-footer">
-        ${total?`<div style="font-size:13px;font-weight:900;color:var(--r)">${fmtM(total)}</div>`:'<div></div>'}
-        <button class="kiosk-pdf-btn" onclick="event.stopPropagation();exportarPresupuestoPDF('${p.id}')">${_kioskPdfSvg}PDF</button>
-      </div>
-    </div>`});
-  });
-
-  // Más reciente primero
-  items.sort((a,b)=>b.ts-a.ts);
-
-  if(!items.length){
-    el.innerHTML=`<div class="empty" style="padding:18px 0"><div class="empty-ico" style="font-size:28px">📋</div><p style="font-size:13px;color:var(--tx2)">Ningún documento creado hoy todavía</p></div>`;
-    return;
-  }
-  el.innerHTML=items.map(i=>i.html).join('');
-
-  // Sincronizar badge de notificaciones del kiosk con el normal
-  const dotK=document.getElementById('notifDotKiosk');
-  const dot=document.getElementById('notifDot');
-  if(dotK&&dot){dotK.className=dot.className;dotK.textContent=dot.textContent;}
-};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ACCESIBILIDAD
