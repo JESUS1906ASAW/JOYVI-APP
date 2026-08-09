@@ -11,8 +11,8 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
-const CN       = 'joyvi-v9';       // bump de versión: fix banner calendario grupo desactualizado offline
-const SHELL_CN = 'joyvi-shell-v9';
+const CN       = 'joyvi-v10';       // bump de versión: firma offline con ID real (sin cola de reconciliación) + crear ficha de cliente al instante
+const SHELL_CN = 'joyvi-shell-v10';
 
 // Assets del app shell que se pre-cachean en el install
 const SHELL_ASSETS = [

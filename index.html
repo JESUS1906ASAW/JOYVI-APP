@@ -2003,13 +2003,13 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
           <input id="${hiddenId}-search" type="text" placeholder="🔍 Buscar cliente..." autocomplete="off" style="width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--tx);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box" oninput="window._filterCliSel('${hiddenId}',this.value)">
         </div>
         <div id="${hiddenId}-list" style="overflow-y:auto;max-height:240px">
+          <div class="cli-sel-opt-nuevo" id="${hiddenId}-crearficha" data-id="__crear_ficha_directo__" style="display:none;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(var(--theme-rgb),.06);border-bottom:1px dashed rgba(var(--theme-rgb),.3);color:var(--r);font-size:13px;font-weight:900" onmouseover="this.style.background='rgba(var(--theme-rgb),.14)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.06)'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>✨ Crear ficha de "<span id="${hiddenId}-crearficha-txt"></span>"</span>
+          </div>
           <div class="cli-sel-opt-guardar-sinficha" id="${hiddenId}-guardarsinficha" data-id="__personalizado_directo__" style="display:none;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(76,175,80,.1);border-bottom:1px dashed rgba(76,175,80,.4);color:#4caf50;font-size:13px;font-weight:900" onmouseover="this.style.background='rgba(76,175,80,.18)'" onmouseout="this.style.background='rgba(76,175,80,.1)'">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             <span>💾 Guardar "<span id="${hiddenId}-guardarsinficha-txt"></span>" sin ficha</span>
-          </div>
-          <div class="cli-sel-opt-nuevo" data-id="__nuevo__" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(var(--theme-rgb),.06);border-bottom:1px dashed rgba(var(--theme-rgb),.3);color:var(--r);font-size:13px;font-weight:900" onmouseover="this.style.background='rgba(var(--theme-rgb),.14)'" onmouseout="this.style.background='rgba(var(--theme-rgb),.06)'">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>+ Crear nuevo cliente</span>
           </div>
           <div class="cli-sel-opt cli-sel-opt-sincliente ${preCliId ? '' : 'selected'}" data-id="" data-color="" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer" onmouseover="this.style.background='rgba(128,128,128,.1)'" onmouseout="this.style.background=''">
             <span class="cli-sel-dot" style="background:rgba(255,255,255,.2)"></span>
@@ -2046,19 +2046,24 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
   trigger.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();} });
 
   const pickOpt = (id, col, nombre) => {
-    hidden.value = id==='__nuevo__' ? '' : id;
-    if(id==='__nuevo__'){
-      close();
-      // Abrir creación de cliente express y al guardar seleccionarlo
-      window._pendingCliSelectCb = (nuevoId, nuevoNombre) => {
-        hidden.value = nuevoId;
-        trigger.innerHTML = `${_colorDot('verde')}<span class="cli-sel-txt"><strong style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.3px">${nuevoNombre}</strong></span>`;
-        if(onchangeCb) onchangeCb(nuevoId);
-      };
-      if(typeof abrirFCli==='function') abrirFCli(null);
-      else if(typeof abrirCliExpress==='function') abrirCliExpress();
+    if(id==='__crear_ficha_directo__'){
+      const si = document.getElementById(hiddenId+'-search');
+      const nomNuevo = (si?.value||'').trim();
+      if(!nomNuevo){ if(si) si.focus(); return; }
+      if(typeof _crearClienteInstantaneo==='function'){
+        const ok = _crearClienteInstantaneo(nomNuevo, (nuevoId, nuevoNombre, nuevoColor) => {
+          hidden.value = nuevoId;
+          hidden.dataset.nombrePersonalizado = '';
+          trigger.innerHTML = `${_colorDot(nuevoColor||'verde')}<span class="cli-sel-txt"><strong style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.3px">${nuevoNombre}</strong></span>`;
+          if(onchangeCb) onchangeCb(nuevoId);
+        });
+        if(ok) close(); // si el nombre estaba duplicado, se deja abierto para elegir de la lista o corregir el nombre
+      } else {
+        close();
+      }
       return;
     }
+    hidden.value = id;
     if(id==='__personalizado_directo__'){
       const si = document.getElementById(hiddenId+'-search');
       const nomPersonal = (si?.value||'').trim();
@@ -2089,9 +2094,9 @@ window._buildCliSelect = (hiddenId, preCliId, onchangeCb, preNombrePersonalizado
       pickOpt(id, col, nombre);
     });
   });
-  // Opción "Crear nuevo cliente"
-  const btnNuevo = dropdown.querySelector('.cli-sel-opt-nuevo');
-  if(btnNuevo) btnNuevo.addEventListener('click', e => { e.stopPropagation(); pickOpt('__nuevo__','',''); });
+  // Opción "Crear ficha" directa (aparece al escribir un nombre sin coincidencias)
+  const btnCrearFicha = document.getElementById(hiddenId+'-crearficha');
+  if(btnCrearFicha) btnCrearFicha.addEventListener('click', e => { e.stopPropagation(); pickOpt('__crear_ficha_directo__','',''); });
   // Opción "Guardar sin ficha" directa (aparece al escribir un nombre sin coincidencias)
   const btnGuardarDirecto = document.getElementById(hiddenId+'-guardarsinficha');
   if(btnGuardarDirecto) btnGuardarDirecto.addEventListener('click', e => { e.stopPropagation(); pickOpt('__personalizado_directo__','',''); });
@@ -2116,15 +2121,25 @@ window._filterCliSel = (hiddenId, q) => {
   // Siempre mostrar "Sin cliente"
   const sinCli = list.querySelector('.cli-sel-opt-sincliente');
   if(sinCli) sinCli.style.display = '';
-  // Mostrar botón "Guardar sin ficha" siempre que haya texto escrito, coincida o no con clientes existentes
+  // Mostrar botones "Crear ficha" y "Guardar sin ficha" siempre que haya texto escrito, coincida o no con clientes existentes
   const btnGuardar = document.getElementById(hiddenId+'-guardarsinficha');
   const txtGuardar = document.getElementById(hiddenId+'-guardarsinficha-txt');
+  const btnCrearFicha = document.getElementById(hiddenId+'-crearficha');
+  const txtCrearFicha = document.getElementById(hiddenId+'-crearficha-txt');
   if(btnGuardar){
     if(q && q.trim()){
       btnGuardar.style.display = 'flex';
       if(txtGuardar) txtGuardar.textContent = q.trim();
     } else {
       btnGuardar.style.display = 'none';
+    }
+  }
+  if(btnCrearFicha){
+    if(q && q.trim()){
+      btnCrearFicha.style.display = 'flex';
+      if(txtCrearFicha) txtCrearFicha.textContent = q.trim();
+    } else {
+      btnCrearFicha.style.display = 'none';
     }
   }
 };
@@ -3556,6 +3571,27 @@ const _offlineSave = (colRef, data, onLocalId) => {
     })
     .catch(()=>{ /* Firestore lo reintentará automáticamente cuando haya red */ });
   return tempId;
+};
+
+// ── Guardado offline con ID real generado en el dispositivo (sin red) ──
+// A diferencia de _offlineSave (que usa addDoc con ID autogenerado por el
+// servidor, y por tanto necesita ids temporales "local_..." + reconciliación
+// posterior), aquí generamos el ID del documento en el propio dispositivo con
+// doc(colRef) — esto NO necesita red — y escribimos con setDoc. El ID es real
+// desde el primer instante, offline incluido, así que cualquier operación
+// posterior sobre ese documento (p.ej. añadir la firma de un parte recién
+// creado sin conexión) puede apuntar directamente a él con un updateDoc
+// normal: Firestore lo encola solo gracias a persistentLocalCache y lo
+// sincroniza en cuanto hay red, sin colas manuales ni reconciliación por
+// nuestra parte.
+const _offlineSaveWithId = (colRef, data) => {
+  const ref = doc(colRef); // ID real generado localmente, sin red
+  const colPath = colRef.path || colRef._query?.path?.segments?.join('/') || 'unknown';
+  _addPending(ref.id, colPath);
+  setDoc(ref, data)
+    .then(() => { _removePending(ref.id); })
+    .catch(() => { /* Firestore lo reintentará automáticamente cuando haya red */ });
+  return ref.id;
 };
 
 // ── Reconciliar firmas pendientes con su parte real ──
@@ -6246,6 +6282,34 @@ window.usarUbicacionExpressCli=()=>{
   );
 };
 
+// ── Creación instantánea de cliente desde cualquier selector de cliente ──
+// Usada por el botón "✨ Crear ficha de..." del selector compartido
+// (_buildCliSelect): a partir de solo el nombre, crea una ficha de cliente
+// real (no un simple texto suelto como "guardar sin ficha") sin mostrar
+// ningún formulario ni interrumpir lo que se estaba creando (parte, aviso,
+// presupuesto, cobro, entrega...). Usa _offlineSaveWithId para que el ID sea
+// real desde el primer instante, offline incluido, así que el documento que
+// se esté creando puede referenciarlo de inmediato sin esperas ni colas de
+// reconciliación de IDs. El resto de la ficha (teléfono, dirección, foto...)
+// se puede completar después editando el cliente.
+window._crearClienteInstantaneo = (nombre, cb) => {
+  if(!CGID){ toast('Selecciona un grupo primero','e'); return false; }
+  const nomTrim = (nombre||'').trim();
+  if(!nomTrim){ return false; }
+  const dup = allClientes.find(c=>!c.archivado && c.nombre.trim().toLowerCase()===nomTrim.toLowerCase());
+  if(dup){
+    toast(`Ya existe un cliente llamado "${dup.nombre}". Cambia el nombre o elígelo de la lista.`,'e');
+    return false;
+  }
+  const data = {nombre:nomTrim,direccion:'',edificio:'',telefono:'',email:'',notas:'',color:'verde',lat:null,lng:null,creado:serverTimestamp(),actualizado:serverTimestamp()};
+  const nuevoId = _offlineSaveWithId(collection(db,'grupos',CGID,'clientes'), data);
+  allClientes = [...allClientes, {id:nuevoId,...data}];
+  _lcSave('clientes',CGID,allClientes);
+  toast(`Ficha de "${nomTrim}" creada`,'o');
+  if(cb) cb(nuevoId, nomTrim, 'verde');
+  return true;
+};
+
 window.guardarCliExpress=async()=>{
   const nom=document.getElementById('ceNom')?.value.trim();
   if(!nom){toast('El nombre es obligatorio','e');return;}
@@ -6843,7 +6907,7 @@ window.guardarParte=async(id)=>{
       const fechaCreado=fechaParteVal?new Date(fechaParteVal+'T12:00:00'):new Date();
       const newData={...data,creado:Timestamp.fromDate(fechaCreado)};
       // Optimistic: añadir a la lista local ya, sin esperar red
-      parteId=_offlineSave(collection(db,'grupos',CGID,'partes'), newData);
+      parteId=_offlineSaveWithId(collection(db,'grupos',CGID,'partes'), newData);
       const parteLocal={id:parteId,...newData};
       allPartes=[parteLocal,...allPartes];
       _lcSave('partes',CGID,allPartes);
@@ -6961,19 +7025,16 @@ window._guardarFirmaParteNuevo = async (parteId) => {
   if(!hayTinta){ toast('Dibuja la firma antes de guardar','i'); return; }
   const firmaDataURL = canvas.toDataURL('image/png');
   const firmaData = { firmaCliente:firmaDataURL, firmadoEn:serverTimestamp(), firmado:true };
-  // El parte recién creado puede tener todavía un ID temporal ("local_...") si
-  // Firestore no ha confirmado aún el addDoc — en ese caso no existe ningún
-  // documento real con ese ID y un updateDoc directo se perdería silenciosamente.
-  // Resolvemos el ID real si ya se conoce (_idMap), y si no, encolamos la firma
-  // para aplicarla en cuanto _offlineSave confirme la creación del documento.
+  // El parte se crea siempre con un ID real generado en el dispositivo (ver
+  // _offlineSaveWithId), así que aquí ya podemos escribir directamente sobre
+  // el documento real, haya o no conexión. _idMap solo cubre partes que
+  // hubieran quedado en caché con ID temporal de antes de este cambio.
   const realId = _idMap[parteId] || parteId;
-  // Reflejar la firma ya mismo en la UI/caché local, sea cual sea el ID actual
+  // Reflejar la firma ya mismo en la UI/caché local, offline incluido
   const idxLocal = allPartes.findIndex(x=>x.id===realId || x.id===parteId);
   if(idxLocal>=0){ allPartes[idxLocal] = {...allPartes[idxLocal], firmaCliente:firmaDataURL, firmado:true}; _lcSave('partes',CGID,allPartes); }
   if(String(realId).startsWith('local_')){
-    // Todavía no hay documento real en Firestore: encolar la firma en memoria
-    // Y también en localStorage (_fpQueue), para que sobreviva aunque la app
-    // se cierre antes de que _offlineSave confirme la creación del documento.
+    // Compatibilidad con partes de antes de este cambio, todavía sin ID real
     _firmaPendienteTemp[realId] = firmaData;
     _fpQueue(CGID, realId, firmaDataURL);
     cerrarSBTotal();
@@ -6981,20 +7042,13 @@ window._guardarFirmaParteNuevo = async (parteId) => {
     haptic('medium');
     return;
   }
-  try{
-    await updateDoc(doc(db,'grupos',CGID,'partes',realId), firmaData);
-    _fpClear(CGID, parteId);
-    cerrarSBTotal();
-    toast('✍️ Firma guardada en el parte','o');
-    haptic('medium');
-  }catch(e){
-    // El documento aún no existía en el servidor: encolar para cuando se confirme
-    _firmaPendienteTemp[realId] = firmaData;
-    _fpQueue(CGID, realId, firmaDataURL);
-    cerrarSBTotal();
-    toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
-    haptic('medium');
-  }
+  // Escritura "fire-and-forget": Firestore la encola sola (persistentLocalCache)
+  // si no hay conexión y la sincroniza en cuanto vuelve la red, aunque la app
+  // se cierre mientras tanto — no hace falta esperar ni encolar a mano.
+  updateDoc(doc(db,'grupos',CGID,'partes',realId), firmaData).catch(()=>{});
+  cerrarSBTotal();
+  toast('✍️ Firma guardada en el parte','o');
+  haptic('medium');
 };
 
 // ─── Selector de plantilla de parte ───
@@ -7469,10 +7523,9 @@ window.guardarFirmaSinPDF=async(id)=>{
   const firmaDataURL=canvas.toDataURL('image/png');
   const updateData={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
   const localData={firmaCliente:firmaDataURL,firmado:true,firmadoEn:{seconds:Math.floor(Date.now()/1000)}};
-  // El parte puede tener todavía un ID temporal ("local_...") si se creó offline
-  // y Firestore aún no ha confirmado el addDoc — resolvemos el ID real si ya se
-  // conoce (_idMap). Un updateDoc contra el ID temporal apuntaría a un documento
-  // que no existe y la firma se perdería sin avisar.
+  // El parte se crea siempre con un ID real generado en el dispositivo (ver
+  // _offlineSaveWithId); _idMap solo cubre partes que hubieran quedado en
+  // caché con ID temporal de antes de este cambio.
   const realId=_idMap[id]||id;
   // Reflejar la firma ya mismo en memoria Y en la caché local (localStorage),
   // para que sobreviva aunque se cierre la app antes de terminar de sincronizar.
@@ -7487,9 +7540,7 @@ window.guardarFirmaSinPDF=async(id)=>{
     }
   };
   if(String(realId).startsWith('local_')){
-    // El parte todavía no tiene documento real en Firestore: encolar la firma
-    // para que _offlineSave la aplique en cuanto confirme la creación. También
-    // se guarda en localStorage (_fpQueue) para sobrevivir a un cierre de la app.
+    // Compatibilidad con partes de antes de este cambio, todavía sin ID real
     _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
     _fpQueue(CGID, realId, firmaDataURL);
     _refrescarListaPartes();
@@ -7497,22 +7548,13 @@ window.guardarFirmaSinPDF=async(id)=>{
     cerrarSB();
     return;
   }
-  try{
-    await updateDoc(doc(db,'grupos',CGID,'partes',realId),updateData);
-    _fpClear(CGID, id);
-    _refrescarListaPartes();
-    toast('✍️ Firma guardada en el parte','o');
-    cerrarSB();
-  }catch(e){
-    // El documento aún no existía en el servidor (p.ej. creado offline y no
-    // confirmado todavía): encolar para cuando _offlineSave lo confirme.
-    console.warn('No se pudo guardar la firma directamente, se encola:',e);
-    _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()};
-    _fpQueue(CGID, realId, firmaDataURL);
-    _refrescarListaPartes();
-    toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');
-    cerrarSB();
-  }
+  // Escritura "fire-and-forget": Firestore la encola sola si no hay conexión
+  // (persistentLocalCache) y la sincroniza al volver la red, aunque la app se
+  // cierre mientras tanto — no hace falta esperar ni encolar a mano.
+  updateDoc(doc(db,'grupos',CGID,'partes',realId),updateData).catch(()=>{});
+  _refrescarListaPartes();
+  toast('✍️ Firma guardada en el parte','o');
+  cerrarSB();
 };
 
 window.limpiarFirma=()=>{
@@ -7561,9 +7603,9 @@ window.generarPDFConFirma=async(id,firmaDataURL)=>{
     localData.firmado=true;
     localData.firmadoEn={seconds:Math.floor(Date.now()/1000)};
   }
-  // El parte puede tener todavía un ID temporal ("local_...") si se creó offline
-  // y Firestore aún no ha confirmado el addDoc — resolvemos el ID real si ya se
-  // conoce (_idMap), igual que en guardarFirmaSinPDF.
+  // El parte se crea siempre con un ID real generado en el dispositivo (ver
+  // _offlineSaveWithId); _idMap solo cubre partes que hubieran quedado en
+  // caché con ID temporal de antes de este cambio.
   const realId=_idMap[id]||id;
   const idx=allPartes.findIndex(x=>x.id===realId||x.id===id);
   if(idx>=0){ allPartes[idx]={...allPartes[idx],...localData,id:realId}; _lcSave('partes',CGID,allPartes); }
@@ -7576,22 +7618,18 @@ window.generarPDFConFirma=async(id,firmaDataURL)=>{
     }
   };
   if(String(realId).startsWith('local_')){
+    // Compatibilidad con partes de antes de este cambio, todavía sin ID real
     if(firmaDataURL){ _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()}; _fpQueue(CGID, realId, firmaDataURL); }
     _refrescarListaPartes();
     if(firmaDataURL){toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');cerrarSB();}
     return;
   }
-  try{
-    await updateDoc(doc(db,'grupos',CGID,'partes',realId),updateData);
-    if(firmaDataURL) _fpClear(CGID, id);
-    _refrescarListaPartes();
-    if(firmaDataURL){toast('✍️ Firma guardada en el parte','o');cerrarSB();}
-  }catch(e){
-    console.warn('No se pudo marcar pdfGenerado, se encola la firma si había:',e);
-    if(firmaDataURL){ _firmaPendienteTemp[realId]={firmaCliente:firmaDataURL,firmado:true,firmadoEn:serverTimestamp()}; _fpQueue(CGID, realId, firmaDataURL); }
-    _refrescarListaPartes();
-    if(firmaDataURL){toast('✍️ Firma guardada — se sincronizará en cuanto el parte se confirme','o');cerrarSB();}
-  }
+  // Escritura "fire-and-forget": Firestore la encola sola si no hay conexión
+  // (persistentLocalCache) y la sincroniza al volver la red, aunque la app se
+  // cierre mientras tanto — no hace falta esperar ni encolar a mano.
+  updateDoc(doc(db,'grupos',CGID,'partes',realId),updateData).catch(()=>{});
+  _refrescarListaPartes();
+  if(firmaDataURL){toast('✍️ Firma guardada en el parte','o');cerrarSB();}
 };
 
 // ─── BACKUP MEJORADO — índice con carpetas por cliente ───
@@ -10543,7 +10581,7 @@ window._crearParteExpressDesdeAveria = async (averiaId) => {
   };
   // Optimistic: fire-and-forget, no blocking
   const newDataExpress={...data,creado:Timestamp.fromDate(new Date())};
-  const parteIdExpress=_offlineSave(collection(db,'grupos',CGID,'partes'),newDataExpress);
+  const parteIdExpress=_offlineSaveWithId(collection(db,'grupos',CGID,'partes'),newDataExpress);
   allPartes=[{id:parteIdExpress,...newDataExpress},...allPartes];
   _lcSave('partes',CGID,allPartes);
   if(_averiasPend){ const ai=_averiasPend.findIndex(x=>x.id===averiaId); if(ai>=0)_averiasPend.splice(ai,1); _lcSave('averias_pend',CGID,_averiasPend); }
