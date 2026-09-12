@@ -2499,7 +2499,13 @@ window._fabSetDefault=(key)=>{
   document.addEventListener('click',e=>{
     const item=e.target.closest?.('.swipe-item');
     if(!item)return;
-    if(item.dataset.justDragged==='1'){ e.stopPropagation(); e.preventDefault(); return; }
+    // El "justDragged" solo debe bloquear el tap sobre el CONTENIDO (para no
+    // abrir el detalle sin querer justo tras arrastrar). Si el toque es sobre
+    // un botón de acción (Eliminar, WhatsApp, Completar...), nunca se bloquea:
+    // antes esto obligaba a pulsar dos veces el botón cuando se tocaba justo
+    // después de deslizar, porque la marca "justDragged" seguía activa y
+    // tragaba también ese primer clic sobre el propio botón.
+    if(item.dataset.justDragged==='1' && !e.target.closest('.swipe-actions')){ e.stopPropagation(); e.preventDefault(); return; }
     // Si la fila ya está abierta y el toque fue en el contenido (no en un botón
     // de acción), el primer tap solo la cierra: evita abrir el detalle por error.
     if(item.classList.contains('swipe-open') && !e.target.closest('.swipe-actions')){
@@ -11128,7 +11134,56 @@ window.calcPresuTotal=()=>{
   if(ivaEl)ivaEl.textContent=iva>0?fmtM(iva):'—';
   if(tot)tot.textContent=fmtM(total);
 };
-window.guardarPresupuesto=async()=>{
+window.editarPresupuesto=async(prId)=>{
+  let p=(_presusPend||[]).find(x=>x.id===prId)||(_presusComp||[]).find(x=>x.id===prId);
+  if(!p){
+    try{
+      const snap=await getDoc(doc(db,'grupos',CGID,'presupuestos',prId));
+      if(snap.exists()) p={id:snap.id,...snap.data()};
+    }catch(e){}
+  }
+  if(!p){toast('No se pudo cargar el presupuesto','e');return;}
+  abrirSB('Editar presupuesto',`
+    <div class="fsec">
+      <div class="fgrp"><label>Título / descripción del trabajo</label><input id="prTitulo" value="${(p.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Reparación bomba piso 3"></div>
+      <div class="fgrp"><label>Cliente</label><div id="prCli-wrap"></div></div>
+      <div class="fgrp"><label>Dirección</label><input id="prDir" value="${(p.clienteDireccion||'').replace(/"/g,'&quot;')}" placeholder="Dirección del cliente"></div>
+      <div class="fgrp"><label>Edificio / Comunidad</label><input id="prEdif" value="${(p.clienteEdificio||'').replace(/"/g,'&quot;')}" placeholder="Edificio o comunidad"></div>
+      <div class="fgrp"><label>Teléfono</label><input id="prTel" value="${(p.clienteTelefono||'').replace(/"/g,'&quot;')}" placeholder="Teléfono de contacto" type="tel"></div>
+    </div>
+    <div style="font-size:12px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Costes</div>
+    <div class="card" style="margin-bottom:12px;padding:14px">
+      <div class="fgrp"><label>Mano de obra (€)</label><input type="number" id="prMO" value="${p.importeManoObra||0}" min="0" step="0.01" oninput="calcPresuTotal()"></div>
+      <div class="fgrp"><label>Materiales (€)</label><input type="number" id="prMat" value="${p.importeMateriales||0}" min="0" step="0.01" oninput="calcPresuTotal()"></div>
+      <div class="fgrp"><label>Desplazamiento (€)</label><input type="number" id="prDesp" value="${p.importeDesplazamiento||0}" min="0" step="0.01" oninput="calcPresuTotal()"></div>
+      <div class="toggle-row" style="cursor:pointer;margin-top:6px" onclick="togglePresuIVA()">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--tx)">Aplicar IVA (21%) a materiales</div>
+          <div style="font-size:12px;color:var(--tx2)" id="prIVADesc">IVA no incluido</div>
+        </div>
+        <div id="prIVAToggle" style="width:44px;height:24px;border-radius:14px;background:var(--border);transition:.2s;position:relative;flex-shrink:0">
+          <div id="prIVADot" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:14px;font-weight:700;color:var(--tx2)">TOTAL</div>
+      <div style="font-size:22px;font-weight:900;color:var(--r)" id="prTotal">0,00 €</div>
+    </div>
+    <div class="fgrp"><label>Notas adicionales</label><textarea id="prNotas" rows="2" placeholder="Observaciones para el cliente...">${(p.notas||'').replace(/</g,'&lt;')}</textarea></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-p" style="flex:1" onclick="_gClick(this,()=>guardarPresupuesto('${prId}'))">💾 Guardar cambios</button>
+    </div>
+  `);
+  _prIVA=p.aplicarIVA||false;
+  calcPresuTotal();
+  setTimeout(()=>_buildCliSelect('prCli',p.clienteId||'',id=>{
+    const c=allClientes.find(x=>x.id===id);
+    if(c){const d=$('prDir'),e=$('prEdif'),t=$('prTel');if(d&&!d.value&&c.direccion)d.value=c.direccion;if(e&&!e.value&&c.edificio)e.value=c.edificio;if(t&&!t.value&&c.telefono)t.value=c.telefono;}
+  },p.clienteId?'':(p.clienteNombre||'')),0);
+};
+
+window.guardarPresupuesto=async(editId)=>{
   const cliEl=$('prCli');
   const cliId=cliEl?.value||'';
   const nombrePersonal=cliEl?.dataset?.nombrePersonalizado||'';
@@ -11140,6 +11195,47 @@ window.guardarPresupuesto=async()=>{
   const desp=parseFloat($('prDesp')?.value)||0;
   const partRows=[];
   const cliNom=cliId?(allClientes.find(c=>c.id===cliId)?.nombre||''):nombrePersonal;
+
+  // ── Modo edición: actualiza el presupuesto existente en vez de crear uno nuevo ──
+  if(editId){
+    const existente=(_presusPend||[]).find(x=>x.id===editId)||(_presusComp||[]).find(x=>x.id===editId);
+    const cambios={
+      clienteId:cliId,
+      clienteNombre:cliNom,
+      clienteDireccion:$('prDir')?.value.trim()||'',
+      clienteEdificio:$('prEdif')?.value.trim()||'',
+      clienteTelefono:$('prTel')?.value.trim()||'',
+      titulo,
+      importeManoObra:mo,
+      importeMateriales:mat,
+      importeDesplazamiento:desp,
+      aplicarIVA:_prIVA,
+      notas:$('prNotas')?.value.trim()||'',
+      actualizadoEn:serverTimestamp()
+    };
+    // Conserva partidas/firma/estado/fecha de creación existentes: este formulario no los edita.
+    const actualizarLocal=(arr)=>(arr||[]).map(x=>x.id===editId?{...x,...cambios,actualizadoEn:{seconds:Math.floor(Date.now()/1000)}}:x);
+    _presusPend=actualizarLocal(_presusPend);
+    _presusComp=actualizarLocal(_presusComp);
+    _lcSave('presus_pend',CGID,_presusPend);
+    _lcSave('presus_comp',CGID,_presusComp);
+    if(typeof _renderPresuInline==='function') _renderPresuInline();
+    if(typeof _renderPresuTab==='function') _renderPresuTab('presupuestosContent');
+    if(typeof _renderPresuExcl==='function') _renderPresuExcl();
+    cerrarSB();
+    try{
+      await updateDoc(doc(db,'grupos',CGID,'presupuestos',editId),cambios);
+      toast('✅ Presupuesto actualizado','o');
+    }catch(e){
+      console.error('guardarPresupuesto(edit)',e);
+      toast('Sin conexión: se actualizará al recuperar internet','i');
+    }
+    // Reabrir el detalle con los datos ya actualizados
+    const pActualizado={...(existente||{}),...cambios,id:editId};
+    _renderVerPresupuesto(editId,pActualizado);
+    return;
+  }
+
   const presuData={
     clienteId:cliId,
     clienteNombre:cliNom,
@@ -11302,11 +11398,20 @@ const _renderVerPresupuesto=(prId,p)=>{
       <div style="display:flex;justify-content:space-between;padding:10px 0 0;margin-top:4px"><span style="font-size:14px;font-weight:800;color:var(--tx)">TOTAL</span><span style="font-size:20px;font-weight:900;color:var(--r)">${fmtM(total)}</span></div>
     </div>
     ${p.notas?`<div style="font-size:13px;color:var(--tx2);margin-bottom:14px;padding:10px;background:var(--card2);border-radius:12px">${p.notas}</div>`:''}
+    ${p.firmado&&p.firmaCliente?`
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">✍️ Firma del cliente</div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px">
+          <img src="${p.firmaCliente}" style="max-width:100%;max-height:130px;display:block;margin:0 auto">
+        </div>
+      </div>
+    `:''}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
       <button class="btn ${isAcep?'btn-s':'btn-p'}" style="flex:1" onclick="toggleEstadoPresupuesto('${prId}','${isAcep?'espera':'aceptado'}')">${isAcep?'↩️ Marcar como pendiente':'✅ Marcar como completado'}</button>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-      <button class="btn btn-s btn-sm" style="flex:1;background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.35);color:var(--r);font-weight:900" onclick="usarPresupuesto('${prId}')">📋 Usar como base</button>
+      <button class="btn btn-s btn-sm" style="flex:1;background:rgba(var(--theme-rgb),.1);border-color:rgba(var(--theme-rgb),.35);color:var(--r);font-weight:900" onclick="editarPresupuesto('${prId}')">✏️ Editar</button>
+      <button class="btn btn-s btn-sm" style="flex:1" onclick="usarPresupuesto('${prId}')">📋 Usar como base</button>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-s" style="flex:1" onclick="exportarPresupuestoPDF('${prId}')"><svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' style='margin-right:4px'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>PDF</button>
