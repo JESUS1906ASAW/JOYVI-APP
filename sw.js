@@ -11,19 +11,19 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
-const CN       = 'joyvi-v10';       // bump de versión: firma offline con ID real (sin cola de reconciliación) + crear ficha de cliente al instante
-const SHELL_CN = 'joyvi-shell-v10';
+const CN       = 'alberto-v11';       // bump de versión: firma offline con ID real (sin cola de reconciliación) + crear ficha de cliente al instante
+const SHELL_CN = 'alberto-shell-v11';
 
 // Assets del app shell que se pre-cachean en el install
 const SHELL_ASSETS = [
-  '/JOYVI-APP/',
-  '/JOYVI-APP/index.html',
-  '/JOYVI-APP/icon-192.png',
-  '/JOYVI-APP/icon-512.png',
-  '/JOYVI-APP/icon-192-maskable.png',
-  '/JOYVI-APP/icon-512-maskable.png',
-  '/JOYVI-APP/logo-splash.png',
-  '/JOYVI-APP/manifest.json',
+  '/Alberto/',
+  '/Alberto/index.html',
+  '/Alberto/icon-192.png',
+  '/Alberto/icon-512.png',
+  '/Alberto/icon-192-maskable.png',
+  '/Alberto/icon-512-maskable.png',
+  '/Alberto/logo-splash.png',
+  '/Alberto/manifest.json',
 ];
 
 // ── Install: pre-cachear app shell ──
@@ -96,16 +96,20 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Navegación HTML (index.html): Network-first con fallback a caché
+  // Navegación HTML (index.html): Network-first con fallback a caché.
+  // Usamos {cache:'no-store'} para saltarnos también la caché HTTP del
+  // navegador (no solo la Cache API): así cada carga trae siempre el
+  // index.html más reciente del servidor, sin esperar a que expire el
+  // Cache-Control que pone GitHub Pages.
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
     e.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-store' })
         .then(res => {
           if (res.ok) caches.open(SHELL_CN).then(c => c.put(req, res.clone()));
           return res;
         })
         .catch(() =>
-          caches.match(req).then(r => r || caches.match('/JOYVI-APP/index.html'))
+          caches.match(req).then(r => r || caches.match('/Alberto/index.html'))
         )
     );
     return;
@@ -142,13 +146,13 @@ messaging.onBackgroundMessage(payload => {
   const d = payload.data || {};
   self.registration.showNotification(n.title || '🔔 Joyvi', {
     body: n.body || 'Nueva notificación',
-    icon: d.icon || '/JOYVI-APP/icon-192.png',
-    badge: '/JOYVI-APP/icon-192.png',
+    icon: d.icon || '/Alberto/icon-192.png',
+    badge: '/Alberto/icon-192.png',
     vibrate: [300, 100, 300, 100, 300],
     tag: d.tag || 'joyvi-notif-' + Date.now(),
     renotify: true,
     requireInteraction: true,
-    data: { url: d.url || '/JOYVI-APP/' }
+    data: { url: d.url || '/Alberto/' }
   });
 });
 
@@ -160,13 +164,13 @@ self.addEventListener('push', e => {
   e.waitUntil(
     self.registration.showNotification(d.title || '🔔 Joyvi', {
       body: d.body || 'Nueva notificación',
-      icon: '/JOYVI-APP/icon-192.png',
-      badge: '/JOYVI-APP/icon-192.png',
+      icon: '/Alberto/icon-192.png',
+      badge: '/Alberto/icon-192.png',
       vibrate: [300, 100, 300, 100, 300],
       tag: 'joyvi-notif-' + Date.now(),
       renotify: true,
       requireInteraction: true,
-      data: { url: '/JOYVI-APP/' }
+      data: { url: '/Alberto/' }
     })
   );
 });
@@ -176,7 +180,7 @@ self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
-      const url = e.notification.data?.url || '/JOYVI-APP/';
+      const url = e.notification.data?.url || '/Alberto/';
       const w = cs.find(c => c.url.includes(location.origin));
       if (w) return w.focus();
       return clients.openWindow(url);
