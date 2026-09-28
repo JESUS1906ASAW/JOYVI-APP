@@ -3568,7 +3568,7 @@ window.abrirGrupo=async id=>{
   unsubM = onSnapshot(collection(db,'grupos',id,'mantenimientos'), snap=>{
     allMantenimientos = snap.docs.map(d=>({id:d.id,...d.data()}));
     _lcSave('mantenimientos', id, allMantenimientos);
-    if(allMantenimientos.some(m=>(m.mv||0)<3)) setTimeout(()=>_mpMigrar(),1500);
+    if(allMantenimientos.some(m=>(m.mv||0)<4)) setTimeout(()=>_mpMigrar(),1500);
     if(document.querySelector('#screenGrupo.active')&&activeGTab==='mant') _renderGTabMantenimientos();
   }, ()=>{
     const cached = _lcLoad('mantenimientos', id);
@@ -4384,10 +4384,15 @@ const _mpPeriodosEnRango=(freq,a,b)=>{
 };
 
 // ── Datos base ──
+// Inicio "limpio": primer día del periodo siguiente al de hoy (lo de hoy y
+// lo anterior no cuenta ni como pendiente ni como atrasado).
+const _mpInicioLimpio=(f,hoy)=>{f=_mpFreq(f);return f==='unico'?_mdAdd(hoy,1):_mdAdd(_mpPeriodo(f,hoy).fin,1);};
 const _mpInicio=m=>{
-  if(m.fechaInicio) return m.fechaInicio;
-  if(m.creado?.seconds) return _mdStr(new Date(m.creado.seconds*1000));
-  return '2000-01-01';
+  let ini=m.fechaInicio||(m.creado?.seconds?_mdStr(new Date(m.creado.seconds*1000)):'2000-01-01');
+  // Mantenimientos anteriores a este sistema que aún no se han actualizado en
+  // la base de datos: se muestran ya con el punto de partida limpio.
+  if((m.mv||0)<4){const base=_mpInicioLimpio(m.frecuencia,_mdHoy());if(base>ini) ini=base;}
+  return ini;
 };
 const _mpFechaParte=p=>{
   if(p.fechaParte) return p.fechaParte;
@@ -4903,7 +4908,7 @@ window._mpDeshacer=async(mantId,parteId,ri)=>{
 // ── Crear mantenimiento (ID real generado en el dispositivo: funciona sin conexión
 //    y el parte puede enlazarlo al instante) ──
 const _mpCrearMant=(data)=>{
-  const full={estado:'activo',pausado:false,registro:[],equipos:'',notas:'',...data,mv:3,creado:serverTimestamp()};
+  const full={estado:'activo',pausado:false,registro:[],equipos:'',notas:'',...data,mv:4,creado:serverTimestamp()};
   const id=_offlineSaveWithId(collection(db,'grupos',CGID,'mantenimientos'),full);
   allMantenimientos=[{...full,id,creado:{seconds:Math.floor(Date.now()/1000),nanoseconds:0}},...allMantenimientos.filter(x=>x.id!==id)];
   _lcSave('mantenimientos',CGID,allMantenimientos);
@@ -5130,8 +5135,8 @@ window._mpGuardarMant=async()=>{
   let id=_mpFM.mantId;
   if(id){
     const i=allMantenimientos.findIndex(x=>x.id===id);
-    if(i>=0){allMantenimientos[i]={...allMantenimientos[i],...data,mv:3};_lcSave('mantenimientos',CGID,allMantenimientos);}
-    updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{...data,mv:3,actualizado:serverTimestamp()}).catch(()=>{});
+    if(i>=0){allMantenimientos[i]={...allMantenimientos[i],...data,mv:4};_lcSave('mantenimientos',CGID,allMantenimientos);}
+    updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{...data,mv:4,actualizado:serverTimestamp()}).catch(()=>{});
     toast('Mantenimiento actualizado','o');
   } else {
     const dup=allMantenimientos.find(x=>x.clienteId===cliId&&!x.pausado&&_mpFreq(x.frecuencia)===f&&(x.nombreTrabajo||'').trim().toLowerCase()===nom.toLowerCase());
@@ -5473,21 +5478,25 @@ ${deudasPdf.map(d=>`<tr><td><div class="cli">${E(_mpCliNombre(d.m))}</div></td><
 let _mpMigrando=false;
 const _mpMigrar=async()=>{
   if(!CGID||_mpMigrando||!navigator.onLine) return;
-  const pend=(allMantenimientos||[]).filter(m=>(m.mv||0)<3&&!String(m.id).startsWith('local_'));
+  const pend=(allMantenimientos||[]).filter(m=>(m.mv||0)<4&&!String(m.id).startsWith('local_'));
   if(!pend.length) return;
   _mpMigrando=true;
   const gid=CGID;
   try{
+    // Historial del sistema antiguo (solo se usa para conservarlo en la ficha)
     let hist=[];
-    try{const s=await getDocs(collection(db,'grupos',gid,'historial_mantenimientos'));hist=s.docs.map(d=>({id:d.id,...d.data()}));}catch(e){return;}
+    if(pend.some(m=>(m.mv||0)<2)){try{const s=await getDocs(collection(db,'grupos',gid,'historial_mantenimientos'));hist=s.docs.map(d=>({id:d.id,...d.data()}));}catch(e){hist=[];}}
     if(gid!==CGID) return;
     const hoy=_mdHoy();
     const cambios=pend.map(m=>{
-      // Punto de partida: todos los mantenimientos que ya existían empiezan a
-      // contar HOY. Todo lo anterior se da por hecho (no genera pendientes).
-      if(m.mv===2){
-        const ini=m.fechaInicio&&m.fechaInicio>hoy?m.fechaInicio:hoy;
-        return {id:m.id,upd:{mv:3,fechaInicio:ini},local:{mv:3,fechaInicio:ini}};
+      // Punto de partida: los mantenimientos que ya existían empiezan a contar
+      // en el periodo SIGUIENTE al de hoy. Todo lo anterior (y el periodo en
+      // curso) se da por hecho: no genera pendientes ni atrasados.
+      const freq=MP_FREQS[m.frecuencia]?m.frecuencia:'unico';
+      const limpio=_mpInicioLimpio(freq,hoy);
+      const ini=m.fechaInicio&&m.fechaInicio>limpio?m.fechaInicio:limpio;
+      if((m.mv||0)>=2){
+        return {id:m.id,upd:{mv:4,fechaInicio:ini},local:{mv:4,fechaInicio:ini}};
       }
       const reg=[...(m.registro||[])]; const vistos=new Set(reg.map(r=>r.fecha));
       hist.filter(h=>h.mantenimientoId===m.id).forEach(h=>{
@@ -5496,11 +5505,8 @@ const _mpMigrar=async()=>{
         reg.push({fecha:f,por:h.completadoPor||'',titulo:'',origen:'legacy'});
       });
       if(m.ultimoCompletado&&!vistos.has(m.ultimoCompletado)){vistos.add(m.ultimoCompletado);reg.push({fecha:m.ultimoCompletado,por:'',titulo:'',origen:'legacy'});}
-      const freq=MP_FREQS[m.frecuencia]?m.frecuencia:'unico';
-      if(m.estado==='completado'&&!reg.length) reg.push({fecha:m.fechaProxima&&m.fechaProxima<=hoy?m.fechaProxima:hoy,por:'',titulo:'',origen:'legacy'});
       reg.sort((a,b)=>a.fecha<b.fecha?-1:1);
-      const ini=m.fechaInicio&&m.fechaInicio>hoy?m.fechaInicio:hoy;
-      return {id:m.id,upd:{mv:3,frecuencia:freq,fechaInicio:ini,registro:reg,pausado:false,estado:'activo',fechaProxima:deleteField(),ultimoCompletado:deleteField(),atrasado:deleteField(),fechaOriginal:deleteField()},local:{mv:3,frecuencia:freq,fechaInicio:ini,registro:reg,pausado:false,estado:'activo'}};
+      return {id:m.id,upd:{mv:4,frecuencia:freq,fechaInicio:ini,registro:reg,pausado:false,estado:'activo',fechaProxima:deleteField(),ultimoCompletado:deleteField(),atrasado:deleteField(),fechaOriginal:deleteField()},local:{mv:4,frecuencia:freq,fechaInicio:ini,registro:reg,pausado:false,estado:'activo'}};
     });
     for(let i=0;i<cambios.length;i+=400){
       const b=writeBatch(db);
@@ -5511,8 +5517,8 @@ const _mpMigrar=async()=>{
     cambios.forEach(c=>{const i=allMantenimientos.findIndex(x=>x.id===c.id);if(i>=0){const n={...allMantenimientos[i],...c.local};delete n.fechaProxima;delete n.ultimoCompletado;delete n.atrasado;delete n.fechaOriginal;allMantenimientos[i]=n;}});
     _lcSave('mantenimientos',gid,allMantenimientos);
     _mpRefrescar();
-    console.info(`Mantenimientos migrados al sistema por periodos: ${cambios.length}`);
-  }catch(e){console.warn('Migración de mantenimientos pendiente:',e);}
+    console.info(`Mantenimientos actualizados al punto de partida limpio: ${cambios.length}`);
+  }catch(e){console.warn('Actualización de mantenimientos pendiente:',e);}
   finally{_mpMigrando=false;}
 };
 window._mpMigrar=_mpMigrar;
