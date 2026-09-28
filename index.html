@@ -3568,7 +3568,7 @@ window.abrirGrupo=async id=>{
   unsubM = onSnapshot(collection(db,'grupos',id,'mantenimientos'), snap=>{
     allMantenimientos = snap.docs.map(d=>({id:d.id,...d.data()}));
     _lcSave('mantenimientos', id, allMantenimientos);
-    if(allMantenimientos.some(m=>m.mv!==2)) setTimeout(()=>_mpMigrar(),1500);
+    if(allMantenimientos.some(m=>(m.mv||0)<3)) setTimeout(()=>_mpMigrar(),1500);
     if(document.querySelector('#screenGrupo.active')&&activeGTab==='mant') _renderGTabMantenimientos();
   }, ()=>{
     const cached = _lcLoad('mantenimientos', id);
@@ -4396,7 +4396,7 @@ const _mpFechaParte=p=>{
   return '';
 };
 const _mpCliNombre=m=>{const c=allClientes.find(x=>x.id===m.clienteId);return c?.nombre||m.clienteNombre||'Sin cliente';};
-const _mpActivos=()=>(allMantenimientos||[]).filter(m=>!m.pausado&&!(m.mv!==2&&m.estado==='completado'));
+const _mpActivos=()=>(allMantenimientos||[]).filter(m=>!m.pausado&&!(!m.mv&&m.estado==='completado'));
 
 // Índice mantId → realizaciones [{fecha, por, parteId, titulo, origen}]
 // Fuentes: partes vivos marcados como mantenimiento + registro guardado en el
@@ -4903,7 +4903,7 @@ window._mpDeshacer=async(mantId,parteId,ri)=>{
 // ── Crear mantenimiento (ID real generado en el dispositivo: funciona sin conexión
 //    y el parte puede enlazarlo al instante) ──
 const _mpCrearMant=(data)=>{
-  const full={estado:'activo',pausado:false,registro:[],equipos:'',notas:'',...data,mv:2,creado:serverTimestamp()};
+  const full={estado:'activo',pausado:false,registro:[],equipos:'',notas:'',...data,mv:3,creado:serverTimestamp()};
   const id=_offlineSaveWithId(collection(db,'grupos',CGID,'mantenimientos'),full);
   allMantenimientos=[{...full,id,creado:{seconds:Math.floor(Date.now()/1000),nanoseconds:0}},...allMantenimientos.filter(x=>x.id!==id)];
   _lcSave('mantenimientos',CGID,allMantenimientos);
@@ -5130,8 +5130,8 @@ window._mpGuardarMant=async()=>{
   let id=_mpFM.mantId;
   if(id){
     const i=allMantenimientos.findIndex(x=>x.id===id);
-    if(i>=0){allMantenimientos[i]={...allMantenimientos[i],...data,mv:2};_lcSave('mantenimientos',CGID,allMantenimientos);}
-    updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{...data,mv:2,actualizado:serverTimestamp()}).catch(()=>{});
+    if(i>=0){allMantenimientos[i]={...allMantenimientos[i],...data,mv:3};_lcSave('mantenimientos',CGID,allMantenimientos);}
+    updateDoc(doc(db,'grupos',CGID,'mantenimientos',id),{...data,mv:3,actualizado:serverTimestamp()}).catch(()=>{});
     toast('Mantenimiento actualizado','o');
   } else {
     const dup=allMantenimientos.find(x=>x.clienteId===cliId&&!x.pausado&&_mpFreq(x.frecuencia)===f&&(x.nombreTrabajo||'').trim().toLowerCase()===nom.toLowerCase());
@@ -5473,7 +5473,7 @@ ${deudasPdf.map(d=>`<tr><td><div class="cli">${E(_mpCliNombre(d.m))}</div></td><
 let _mpMigrando=false;
 const _mpMigrar=async()=>{
   if(!CGID||_mpMigrando||!navigator.onLine) return;
-  const pend=(allMantenimientos||[]).filter(m=>m.mv!==2&&!String(m.id).startsWith('local_'));
+  const pend=(allMantenimientos||[]).filter(m=>(m.mv||0)<3&&!String(m.id).startsWith('local_'));
   if(!pend.length) return;
   _mpMigrando=true;
   const gid=CGID;
@@ -5483,6 +5483,12 @@ const _mpMigrar=async()=>{
     if(gid!==CGID) return;
     const hoy=_mdHoy();
     const cambios=pend.map(m=>{
+      // Punto de partida: todos los mantenimientos que ya existían empiezan a
+      // contar HOY. Todo lo anterior se da por hecho (no genera pendientes).
+      if(m.mv===2){
+        const ini=m.fechaInicio&&m.fechaInicio>hoy?m.fechaInicio:hoy;
+        return {id:m.id,upd:{mv:3,fechaInicio:ini},local:{mv:3,fechaInicio:ini}};
+      }
       const reg=[...(m.registro||[])]; const vistos=new Set(reg.map(r=>r.fecha));
       hist.filter(h=>h.mantenimientoId===m.id).forEach(h=>{
         const f=h.fechaCompletado||(h.creado?.seconds?_mdStr(new Date(h.creado.seconds*1000)):'');
@@ -5493,12 +5499,8 @@ const _mpMigrar=async()=>{
       const freq=MP_FREQS[m.frecuencia]?m.frecuencia:'unico';
       if(m.estado==='completado'&&!reg.length) reg.push({fecha:m.fechaProxima&&m.fechaProxima<=hoy?m.fechaProxima:hoy,por:'',titulo:'',origen:'legacy'});
       reg.sort((a,b)=>a.fecha<b.fecha?-1:1);
-      // Inicio: no se inventan atrasos. Se empieza a contar desde el primer
-      // registro conocido o, si no hay, desde la fecha que tenía pendiente.
-      const fp=m.fechaOriginal||m.fechaProxima||'';
-      let ini=reg.length?reg[0].fecha:(fp&&fp<=hoy?fp:hoy);
-      if(m.fechaInicio&&m.fechaInicio>ini) ini=m.fechaInicio;
-      return {id:m.id,upd:{mv:2,frecuencia:freq,fechaInicio:ini,registro:reg,pausado:false,estado:'activo',fechaProxima:deleteField(),ultimoCompletado:deleteField(),atrasado:deleteField(),fechaOriginal:deleteField()},local:{mv:2,frecuencia:freq,fechaInicio:ini,registro:reg,pausado:false,estado:'activo'}};
+      const ini=m.fechaInicio&&m.fechaInicio>hoy?m.fechaInicio:hoy;
+      return {id:m.id,upd:{mv:3,frecuencia:freq,fechaInicio:ini,registro:reg,pausado:false,estado:'activo',fechaProxima:deleteField(),ultimoCompletado:deleteField(),atrasado:deleteField(),fechaOriginal:deleteField()},local:{mv:3,frecuencia:freq,fechaInicio:ini,registro:reg,pausado:false,estado:'activo'}};
     });
     for(let i=0;i<cambios.length;i+=400){
       const b=writeBatch(db);
