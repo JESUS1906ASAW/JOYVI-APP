@@ -4554,7 +4554,9 @@ const _mpUISave=()=>{try{sessionStorage.setItem('joyvi_mp_ui',JSON.stringify({su
 
 // Rango de fechas que abarca la vista actual
 const _mpRango=()=>{
-  const hoy=new Date(), v=_mpUI.vista, o=_mpUI.off;
+  // El periodo que se muestra lo marca el filtro de frecuencia:
+  // Semanal → semanas; el resto (y "Todas") → meses. Las flechas avanzan en esa unidad.
+  const hoy=new Date(), v=_mpUI.freq==='semanal'?'semana':'mes', o=_mpUI.off;
   if(v==='semana'){
     const base=_mdAdd(_mdHoy(),7*o);
     const p=_mpPeriodo('semanal',base);
@@ -4665,7 +4667,7 @@ window._mpSetSub=(s)=>{_mpUI.sub=s;_mpUISave();_mpPintar();};
 window._mpSetVista=(v)=>{_mpUI.vista=v;_mpUI.off=0;_mpUISave();_mpPintar();};
 window._mpNav=(d)=>{_mpUI.off=d===0?0:_mpUI.off+d;_mpPintar();};
 window._mpSetFiltro=(f)=>{_mpUI.filtro=f;_mpUISave();_mpPintar();};
-window._mpSetFreq=(f)=>{_mpUI.freq=f;_mpUISave();_mpPintar();};
+window._mpSetFreq=(f)=>{_mpUI.freq=f;_mpUI.off=0;_mpUISave();_mpPintar();};
 
 const _mpPintar=()=>{
   const seg=$('mpSeg'), head=$('mpHead'), list=$('mpList');
@@ -4698,7 +4700,6 @@ const _mpPintar=()=>{
 
   head.innerHTML=`
     ${_mpPanelDeudasHTML()}
-    <div class="mp-vistas">${vistas.map(([v,l])=>`<button class="${_mpUI.vista===v?'on':''}" onclick="_mpSetVista('${v}')">${l}</button>`).join('')}</div>
     <div class="mp-nav">
       <button class="mp-arrow" onclick="_mpNav(-1)" aria-label="Periodo anterior">‹</button>
       <div class="mp-nav-t"><b>${_mpEsc(R.lbl)}</b><span>${_mpEsc(R.sub||'')}${_mpUI.off!==0?` · <a onclick="_mpNav(0)" style="color:var(--r);cursor:pointer;font-weight:900">Volver a hoy</a>`:''}</span></div>
