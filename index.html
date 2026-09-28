@@ -3599,7 +3599,6 @@ window.abrirGrupo=async id=>{
   setTimeout(_cargarAvataresCli, 800);
   setTimeout(()=>_checkBackupAutomatico(),3000);
   setTimeout(()=>_mpMigrar(),2500);
-  setTimeout(()=>_mpAvisoDiario(),5000);
   setTimeout(()=>{ if(typeof window._geoCheckAlAbrir==='function') window._geoCheckAlAbrir(); },3500);
   try{await registrarLog('abrir_grupo',`Grupo abierto: ${CG?.nombre||id}`,{grupoId:id});}catch(e){}
 
@@ -3646,7 +3645,6 @@ const renderGrupo=()=>{
       </div>
     </div>
   </div>
-  ${_mpAvisoHTML()}
   <div class="gtabs-main">
     <button class="gtab-big active" id="tabCli" onclick="switchGTab('cli')">
       <div class="gtab-big-ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
